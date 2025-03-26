@@ -2,8 +2,8 @@ title: Suleman Manji
 email: ssmanji89@gmail.com
 description: Enterprise Technology Strategy | Cloud Architecture | Process Automation
 
-theme: jekyll-theme-modernist
 remote_theme: pages-themes/modernist@v0.2.0
+theme: jekyll-theme-modernist
 
 plugins:
   - jekyll-remote-theme

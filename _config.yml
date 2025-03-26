@@ -11,6 +11,11 @@ plugins:
 domain: www.sulemanji.com
 url: https://www.sulemanji.com
 
+# Custom CSS
+sass:
+  sass_dir: assets/css
+
+# Navigation
 navigation:
   - title: Home
     url: /

@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Suleman Manji - Business Process Transformation Specialist
+title: Suleman Manji - Enterprise Technology Strategist
 ---
 
 <div class="profile-container">
@@ -8,28 +8,27 @@ title: Suleman Manji - Business Process Transformation Specialist
   
   <div class="profile-content">
     # Suleman Manji
-    ## Enterprise Technology Transformation Expert
-
-    **Contact:** 281.904.1969 | ssmanji89@gmail.com
-    **Location:** Houston, TX
+    ## Enterprise Technology Strategist
+    
+    **Technical Leadership | Cloud Architecture | Process Automation**
   </div>
 </div>
 
 ### Professional Mission
-Pioneering innovative business process transformation through strategic technology integration, adaptive automation, and intelligent system design.
+Transforming enterprise technology through strategic cloud optimization, security engineering, and intelligent workflow automation.
 
-### Transformation Capabilities
-- Comprehensive Process Reengineering
-- AI-Driven Workflow Optimization
-- Cross-Platform Automation Strategies
-- Enterprise Technology Innovation
+### Core Capabilities
+- Enterprise Cloud Infrastructure
+- Security Compliance Architecture
+- Intelligent Process Automation
+- Strategic Technology Integration
 
-### Collaboration Opportunities
-- Open-Source BPA Framework Development
-- Academic Research Partnerships
-- Industry-Specific Transformation Initiatives
-- Strategic Technology Consulting
+### Transformation Approach
+- Analytical Problem Solving
+- Modular System Design
+- Data-Driven Optimization
+- Adaptive Technology Implementation
 
-[Explore Transformation Projects](/transformation-projects)
-[View Professional Experience](/experience)
-[Business Process Automation](/bpa)
+[Professional Evolution](/professional-evolution)
+[Transformation Strategies](/transformation-strategies)
+[Experience](/experience)

@@ -2,30 +2,16 @@ title: Suleman Manji
 email: ssmanji89@gmail.com
 description: Enterprise Technology Strategy | Cloud Architecture | Process Automation
 
+theme: jekyll-theme-modernist
 remote_theme: pages-themes/modernist@v0.2.0
 
 plugins:
   - jekyll-remote-theme
   - jekyll-seo-tag
+  - jekyll-feed
 
 domain: www.sulemanji.com
 url: https://www.sulemanji.com
-
-navigation:
-  - title: Home
-    url: /
-  - title: Professional Evolution
-    url: /professional-evolution
-  - title: Transformation Strategies
-    url: /transformation-strategies
-  - title: Experience
-    url: /experience
-  - title: Projects
-    url: /projects
-  - title: Business Process Automation
-    url: /bpa
-  - title: Philosophy
-    url: /philosophy
 
 github_username: ssmanji89
 linkedin_username: suleman-manji-1a46852a0
@@ -42,7 +28,3 @@ exclude:
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
-
-# Theme-specific settings
-modernist:
-  color_scheme: default

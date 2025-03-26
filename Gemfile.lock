@@ -257,6 +257,7 @@ DEPENDENCIES
   jekyll-feed
   jekyll-remote-theme
   jekyll-seo-tag
+  jekyll-theme-modernist
 
 BUNDLED WITH
    1.17.2

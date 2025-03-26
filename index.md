@@ -11,17 +11,17 @@ title: Suleman Manji - Enterprise Technology Strategist
 ### Professional Mission
 Driving enterprise technology innovation through strategic cloud optimization, security engineering, and intelligent workflow automation.
 
-### Core Capabilities
+### Core Technological Capabilities
 - Enterprise Cloud Infrastructure Design
 - Security Compliance Architecture
 - Intelligent Process Automation
 - Strategic Technology Integration
 
-### Transformation Approach
-- Analytical Problem Solving
-- Modular System Design
+### Transformation Methodology
+- Analytical Problem Resolution
+- Modular System Architecture
 - Data-Driven Optimization
 - Adaptive Technology Implementation
 
-[Professional Evolution](/professional-evolution)
-[Transformation Strategies](/transformation-strategies)
+[Explore Professional Evolution](/professional-evolution)
+[View Transformation Strategies](/transformation-strategies)

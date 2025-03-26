@@ -1,6 +1,6 @@
 title: Suleman Manji
 email: ssmanji89@gmail.com
-description: Enterprise Technology Transformation | Cloud Architecture | Business Process Automation
+description: Enterprise Technology Transformation | Business Process Automation | Strategic Innovation
 
 remote_theme: pages-themes/hacker@v0.2.0
 
@@ -16,6 +16,8 @@ navigation:
     url: /
   - title: Experience
     url: /experience
+  - title: Transformation Projects
+    url: /transformation-projects
   - title: Business Process Automation
     url: /bpa
   - title: Projects

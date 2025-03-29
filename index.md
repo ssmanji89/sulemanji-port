@@ -41,6 +41,11 @@ Automated cryptocurrency activity tracking and reporting solution for simplified
 - **Technologies**: Python, Blockchain APIs, Data Analytics
 - [View on GitHub](https://github.com/ssmanji89/bitrepo-repo) <i class="fab fa-github"></i>
 
+### FinBots
+End-to-end Python-based momentum trading system for automated market strategies.
+- **Technologies**: Python, Pandas, NumPy, Alpaca API
+- [View on GitHub](https://github.com/ssmanji89/finBots) <i class="fab fa-github"></i>
+
 [Explore All Projects](/projects){: .btn}
 
 ## Transformation Impact

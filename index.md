@@ -4,13 +4,13 @@ title: Suleman Manji - Enterprise Technology Strategist
 description: Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation.
 ---
 
-<div class="hero-section animate-on-scroll">
+<div class="hero-section">
     <div class="profile-container">
         <img src="/images/sulemanji-profile.png" alt="Suleman Manji" class="profile-image">
         <div class="profile-content">
             <h1>Suleman Manji</h1>
             <h2>Enterprise Technology Strategist</h2>
-            <p class="lead-text">Driving enterprise transformation through strategic cloud adoption, security engineering, and intelligent process automation.</p>
+            <p>Driving enterprise transformation through strategic cloud adoption, security engineering, and intelligent process automation.</p>
             <div class="hero-cta">
                 <a href="/projects" class="btn">View Projects</a>
                 <a href="/experience" class="btn btn-outline">My Experience</a>
@@ -19,7 +19,7 @@ description: Enterprise technology strategist specializing in cloud architecture
     </div>
 </div>
 
-<div class="section animate-on-scroll">
+<section class="section">
     <h2 class="section-title">Core Competencies</h2>
     <div class="skills-overview">
         <div class="skill-category">
@@ -38,9 +38,9 @@ description: Enterprise technology strategist specializing in cloud architecture
             <p>Development of intelligent workflow solutions using Power Automate, PowerShell, and custom integration frameworks to streamline business operations.</p>
         </div>
     </div>
-</div>
+</section>
 
-<div class="section animate-on-scroll">
+<section class="section">
     <h2 class="section-title">Featured Projects</h2>
     <div class="projects-grid">
         <div class="project-card" data-categories="ai,integration">
@@ -91,12 +91,12 @@ description: Enterprise technology strategist specializing in cloud architecture
             </div>
         </div>
     </div>
-    <div class="text-center mt-40">
+    <div class="text-center">
         <a href="/projects" class="btn">View All Projects</a>
     </div>
-</div>
+</section>
 
-<div class="section animate-on-scroll">
+<section class="section">
     <h2 class="section-title">Transformation Impact</h2>
     <div class="impact-stats">
         <div class="stat-box">
@@ -112,9 +112,67 @@ description: Enterprise technology strategist specializing in cloud architecture
             <div class="stat-label">Enhanced Security Posture</div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="section animate-on-scroll">
+<section class="section">
+    <h2 class="section-title">Technology Stack</h2>
+    <div class="tech-stack">
+        <div class="tech-category">
+            <h3>Cloud Platforms</h3>
+            <div class="tech-items">
+                <div class="tech-item"><i class="fab fa-microsoft"></i> Azure</div>
+                <div class="tech-item"><i class="fas fa-cloud"></i> Microsoft 365</div>
+                <div class="tech-item"><i class="fab fa-aws"></i> AWS</div>
+            </div>
+        </div>
+        
+        <div class="tech-category">
+            <h3>Security Tools</h3>
+            <div class="tech-items">
+                <div class="tech-item"><i class="fas fa-shield-alt"></i> CyberArk</div>
+                <div class="tech-item"><i class="fas fa-user-shield"></i> DLDM</div>
+                <div class="tech-item"><i class="fas fa-lock"></i> Azure AD</div>
+            </div>
+        </div>
+        
+        <div class="tech-category">
+            <h3>Automation</h3>
+            <div class="tech-items">
+                <div class="tech-item"><i class="fas fa-cogs"></i> Power Automate</div>
+                <div class="tech-item"><i class="fas fa-terminal"></i> PowerShell</div>
+                <div class="tech-item"><i class="fas fa-code"></i> Python</div>
+            </div>
+        </div>
+        
+        <div class="tech-category">
+            <h3>Development</h3>
+            <div class="tech-items">
+                <div class="tech-item"><i class="fas fa-window-restore"></i> .NET</div>
+                <div class="tech-item"><i class="fab fa-python"></i> Python</div>
+                <div class="tech-item"><i class="fas fa-mobile-alt"></i> Azure DevOps</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section">
+    <h2 class="section-title">Transformation Impact</h2>
+    <div>
+        <p><strong>88.8%</strong> Enhanced Security Posture</p>
+        <p>Elevated Microsoft 365 Secure Score across multiple enterprise environments</p>
+        
+        <p><strong>40%</strong> Reduced Cloud Costs</p>
+        <p>Optimized cloud resource utilization and architecture design</p>
+        
+        <p><strong>70+</strong> Automation Workflows</p>
+        <p>Process automation solutions implemented across multiple domains</p>
+        
+        <p><strong>75%</strong> Faster Deployments</p>
+        <p>Reduced deployment times through CI/CD pipeline optimization</p>
+    </div>
+</section>
+
+<section class="section">
     <h2 class="section-title">Professional Approach</h2>
     <div class="approach-grid">
         <div class="approach-item">
@@ -130,17 +188,14 @@ description: Enterprise technology strategist specializing in cloud architecture
             <p>Leveraging metrics and performance analytics to continuously refine and enhance technological ecosystems.</p>
         </div>
     </div>
-</div>
+</section>
 
-<div class="cta-section animate-on-scroll">
-    <h2>Ready to Transform Your Technology Strategy?</h2>
-    <p>Let's discuss how strategic technology implementation can drive your organizational objectives.</p>
-    <div class="cta-buttons">
-        <a href="/experience" class="btn">View My Experience</a>
-        <a href="/philosophy" class="btn btn-outline">My Approach</a>
-    </div>
-</div>
+<section>
+    <h2>Interested in the detailed professional journey?</h2>
+    <a href="/experience" class="btn">View My Experience</a>
+</section>
 
-<div class="dark-mode-toggle">
-    <i class="fas fa-moon"></i>
-</div>
+<section>
+    <h2>Want to see technology in action?</h2>
+    <a href="/projects" class="btn">Explore Projects</a>
+</section>

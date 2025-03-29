@@ -181,7 +181,7 @@ header {
 /* ====== Main Content ====== */
 .main-content {
   background-color: var(--section-bg);
-  padding: var(--space-xl) 0;
+  padding: var(--space-xl) var(--space-lg);
   margin-top: var(--space-lg);
   margin-bottom: var(--space-lg);
   border-radius: 8px;
@@ -196,7 +196,7 @@ section {
 .hero-section {
   background-color: var(--dark-bg);
   color: var(--dark-text);
-  padding: var(--space-xl) 0;
+  padding: var(--space-xl) var(--space-lg);
   margin-bottom: var(--space-xl);
   border-radius: 8px;
 }
@@ -231,6 +231,7 @@ section {
   margin-bottom: var(--space-lg);
   position: relative;
   padding-bottom: var(--space-sm);
+  border-bottom: none;
 }
 
 .section-title::after {
@@ -254,6 +255,7 @@ section {
   padding: var(--space-lg);
   border-radius: 8px;
   background-color: var(--section-bg);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
 .skill-icon {
@@ -271,6 +273,7 @@ section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
 }
 
 .project-card {
@@ -300,6 +303,11 @@ section {
 .project-title {
   margin-top: 0;
   margin-bottom: var(--space-sm);
+}
+
+.project-description {
+  color: var(--text-color-light);
+  margin-bottom: var(--space-md);
 }
 
 .project-tech {
@@ -356,6 +364,18 @@ section {
   color: var(--text-color);
   margin-bottom: var(--space-md);
   font-size: 1.2rem;
+  position: relative;
+  padding-bottom: var(--space-xs);
+}
+
+.tech-category h3::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 30px;
+  height: 2px;
+  background-color: var(--primary-color);
 }
 
 .tech-items {
@@ -375,20 +395,30 @@ section {
   color: var(--primary-color);
 }
 
-/* ====== CTA Section ====== */
-.cta-section {
+/* Center alignment helper */
+.text-center {
   text-align: center;
-  padding: var(--space-xl);
-  background-color: var(--section-bg);
-  border-radius: 8px;
-  margin: var(--space-xl) 0;
+  margin-top: var(--space-lg);
 }
 
-.cta-buttons {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-md);
+/* ====== Approach Grid ====== */
+.approach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-lg);
   margin-top: var(--space-lg);
+}
+
+.approach-item {
+  padding: var(--space-lg);
+  background-color: var(--section-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.approach-item h3 {
+  margin-bottom: var(--space-sm);
+  color: var(--primary-color);
 }
 
 /* ====== Buttons ====== */
@@ -401,6 +431,7 @@ section {
   text-decoration: none;
   font-weight: 500;
   transition: background-color 0.2s ease;
+  margin: var(--space-xs);
 }
 
 .btn:hover, .btn:focus {
@@ -418,6 +449,12 @@ section {
 .btn-outline:hover, .btn-outline:focus {
   background-color: var(--primary-color);
   color: white;
+}
+
+.hero-cta {
+  display: flex;
+  gap: var(--space-md);
+  flex-wrap: wrap;
 }
 
 /* ====== Footer ====== */
@@ -489,6 +526,10 @@ footer {
   .impact-stats {
     grid-template-columns: 1fr;
   }
+  
+  .approach-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -502,9 +543,19 @@ footer {
     gap: var(--space-md);
   }
   
-  .cta-buttons {
+  .hero-cta {
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
+  }
+  
+  .site-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .social-links {
+    margin-top: var(--space-md);
+    justify-content: center;
   }
 }
 

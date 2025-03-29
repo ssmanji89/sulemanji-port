@@ -22,7 +22,7 @@
 {"@context":"https://schema.org","@type":"WebPage","description":"Explore Suleman Manji’s expertise in business process automation, workflow optimization, and intelligent automation solutions.","headline":"Business Process Automation Suleman Manji","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"}},"url":"https://www.sulemanji.com/bpa"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/assets/css/style.css?v=7e7b9c1b87a04db41b9faf7576a6b23ae6981033">
+    <link rel="stylesheet" href="/assets/css/style.css?v=ecce61fad91152ebea3b522c9bb162b651376ead">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -37,6 +37,60 @@
 
 <!-- Meta tags -->
 <meta name="theme-color" content="#0366d6" id="theme-color-meta">
+<meta name="color-scheme" content="light dark">
+
+<!-- Additional Styles for Dark Mode Consistency -->
+<style>
+  /* Override any conflicting styles for dark mode */
+  @media (prefers-color-scheme: dark) {
+    body:not(.forced-light) {
+      background-color: #0d1117 !important;
+      color: #c9d1d9 !important;
+    }
+  }
+  
+  /* Enhance contrast for accessibility */
+  .tech-tag {
+    background-color: #e1e4e8 !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode .tech-tag {
+    background-color: #30363d !important;
+    color: #e6edf3 !important;
+  }
+  
+  /* Fix any UI elements that might be hard to see in dark mode */
+  body.dark-mode a:not(.btn) {
+    color: #58a6ff;
+  }
+  
+  body.dark-mode .fa-moon {
+    color: #c9d1d9;
+  }
+  
+  /* Force white background in light mode and dark background in dark mode */
+  body:not(.dark-mode) {
+    background-color: #f6f8fa !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode {
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+  }
+  
+  body.dark-mode header, 
+  body.dark-mode section,
+  body.dark-mode p {
+    color: #c9d1d9 !important;
+  }
+  
+  /* Animation to help with theme transitions */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+</style>
 
 <!-- Dark mode script for meta tag -->
 <script>
@@ -50,14 +104,35 @@
       'content', 
       isDarkMode ? '#0d1117' : '#0366d6'
     );
+    
+    // Also update color-scheme meta
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', isDarkMode ? 'dark' : 'light dark');
+    }
   };
   
   // Run once at load
-  document.addEventListener('DOMContentLoaded', updateThemeColorMeta);
+  document.addEventListener('DOMContentLoaded', function() {
+    updateThemeColorMeta();
+    
+    // Fix for blank dark mode pages - force redraw if needed
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark' && !document.body.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+      // Force redraw
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // This line forces a reflow
+      document.body.style.display = '';
+    }
+  });
   
   // Update when theme changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta);
 </script>
+
+<!-- Debug Dark Mode Toggle script (development only - remove in production) -->
+<script src="/assets/js/toggle-finder.js"></script>
 
 <!-- Schema.org for SEO -->
 <script type="application/ld+json">
@@ -98,16 +173,7 @@
           <a href="/business-process-automation">Automation</a>
         </nav>
         
-        <div class="theme-switch-wrapper">
-          <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider round">
-              <i class="fas fa-moon"></i>
-              <i class="fas fa-sun"></i>
-            </div>
-          </label>
-          <span class="theme-label">Dark Mode</span>
-        </div>
+        <!-- Dark Mode Toggle moved to footer for better UI consistency -->
       </header>
       <section>
 
@@ -478,7 +544,23 @@
       </section>
       <footer>
         <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
-        <!-- Custom script to remove dark mode toggle -->
+        <!-- Theme Switch -->
+<div class="theme-switch-wrapper" aria-label="Toggle dark mode">
+  <label class="theme-switch" for="checkbox">
+    <input type="checkbox" id="checkbox" aria-label="Switch between dark and light mode" />
+    <div class="slider round">
+      <i class="fas fa-moon" aria-hidden="true"></i>
+      <i class="fas fa-sun" aria-hidden="true"></i>
+    </div>
+  </label>
+  <span class="theme-label">Dark Mode</span>
+</div>
+
+<!-- Custom JavaScript -->
+<script src="/assets/js/main.js"></script>
+<script src="/assets/js/dark-mode-cleanup.js"></script>
+
+<!-- Custom script to remove dark mode toggle -->
 <script>
   // Function to remove the specific dark mode toggle shown in screenshot
   function removeSpecificToggle() {
@@ -520,12 +602,52 @@
   });
 </script>
 
+<!-- Accessibility improvements -->
+<script>
+  // Add proper focus styles for accessibility
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fix any potential accessibility issues with tech tags
+    const techTags = document.querySelectorAll('.tech-tag');
+    techTags.forEach(tag => {
+      // Ensure good contrast
+      if (tag.style.backgroundColor === '#f6f8fa' || tag.style.backgroundColor === 'rgb(246, 248, 250)') {
+        tag.style.backgroundColor = '#e1e4e8';
+        tag.style.color = '#24292e';
+      }
+    });
+    
+    // Fix any buttons without accessible names
+    const buttons = document.querySelectorAll('button:not([aria-label]):not([title])');
+    buttons.forEach(button => {
+      if (!button.textContent.trim()) {
+        // Try to determine what the button does from its icon or context
+        if (button.querySelector('.fa-github')) {
+          button.setAttribute('aria-label', 'Visit GitHub Profile');
+        } else if (button.querySelector('.fa-linkedin')) {
+          button.setAttribute('aria-label', 'Visit LinkedIn Profile');
+        } else if (button.closest('nav')) {
+          button.setAttribute('aria-label', 'Navigation button');
+        } else {
+          button.setAttribute('aria-label', 'Button');
+        }
+      }
+    });
+    
+    // Fix contrast issues with links
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+      if (window.getComputedStyle(link).color === 'rgb(88, 96, 105)' || 
+          window.getComputedStyle(link).color === '#586069') {
+        link.style.color = '#0366d6';
+      }
+    });
+  });
+</script>
+
       </footer>
     </div>
     <script src="/assets/js/scale.fix.js"></script>
-    <script src="/assets/js/main.js"></script>
-    <script src="/assets/js/dark-mode-cleanup.js"></script>
-    <script src="/assets/js/toggle-finder.js"></script>
+    <!-- The main.js and dark-mode-cleanup.js are already included in footer-custom.html -->
     
     <!-- Remove any extra dark mode toggles with inline script -->
     <script>

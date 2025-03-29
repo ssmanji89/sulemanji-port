@@ -45,7 +45,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Contact
 
 For any questions or feedback regarding this website, please contact me through GitHub.
-
----
-
-© 2025 Suleman Manji. All rights reserved.

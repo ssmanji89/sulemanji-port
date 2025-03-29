@@ -3,28 +3,58 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
     <title>Professional Resume</title>
+    <meta name="description" content="Enterprise Technology Strategy | Cloud Architecture | Process Automation">
+    <meta name="author" content="Suleman Manji">
+    
+    <!-- Structured data for better SEO -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "name": "Suleman Manji",
+        "description": "Enterprise Technology Strategy | Cloud Architecture | Process Automation",
+        "url": "https://www.sulemanji.com/resume",
+        "author": {
+            "@type": "Person",
+            "name": "Suleman Manji",
+            "url": "https://www.sulemanji.com"
+        }
+    }
+    </script>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" href="/assets/css/style.css" as="style">
+    <link rel="preload" href="/assets/css/custom.css" as="style">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/custom.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Enterprise Technology Strategy | Cloud Architecture | Process Automation">
-    <meta name="author" content="Suleman Manji">
+    
+    <!-- Favicon -->
     <link rel="icon" href="/images/favicon.ico">
+    
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/main.js" defer></script>
 </head>
 <body>
+    <!-- Skip to content link for accessibility -->
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    
     <div class="wrapper">
-        <header>
+        <header role="banner">
             <div class="logo">
-                <a href="/">
+                <a href="/" aria-label="Homepage">
                     <h1>Suleman Manji</h1>
                 </a>
             </div>
             <p class="tagline">Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
             
-            <nav class="main-nav">
+            <nav class="main-nav" role="navigation" aria-label="Main navigation">
                 <ul>
                     <li><a href="/" >Home</a></li>
                     <li><a href="/about" >About</a></li>
@@ -36,12 +66,16 @@
             </nav>
             
             <div class="social-links">
-                <a href="https://github.com/ssmanji89" target="_blank" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
-                <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+                <a href="https://github.com/ssmanji89" target="_blank" rel="noopener" aria-label="GitHub Profile">
+                    <i class="fab fa-github" aria-hidden="true"></i>
+                </a>
+                <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
+                    <i class="fab fa-linkedin" aria-hidden="true"></i>
+                </a>
             </div>
         </header>
         
-        <section class="main-content">
+        <section id="main-content" class="main-content" role="main">
             <h1 id="business-process-automation-journey">Business Process Automation Journey</h1>
 
 <h2 id="automation-highlights">Automation Highlights</h2>
@@ -83,29 +117,52 @@
 
         </section>
         
-        <footer>
+        <footer role="contentinfo">
             <div class="footer-content">
                 <div class="copyright">
                     <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
                 </div>
-                <div class="footer-nav">
+                <nav class="footer-nav" aria-label="Footer navigation">
                     <a href="/">Home</a>
                     <a href="/about">About</a>
                     <a href="/projects">Projects</a>
-                </div>
+                </nav>
             </div>
         </footer>
     </div>
     
+    <!-- Dark mode toggle button - Enhanced with ARIA -->
+    <button class="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle between light and dark mode">
+        <i class="fas fa-moon" aria-hidden="true"></i>
+    </button>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for system preference
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const storedPreference = localStorage.getItem('darkMode');
+            
+            // Set initial mode based on stored preference or system preference
+            if (storedPreference === 'true' || (storedPreference === null && prefersDarkMode)) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('.dark-mode-toggle i').classList.remove('fa-moon');
+                document.querySelector('.dark-mode-toggle i').classList.add('fa-sun');
+            }
+            
             // Add smooth scrolling
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    document.querySelector(this.getAttribute('href')).scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    const targetId = this.getAttribute('href');
+                    if (targetId !== '#' && document.querySelector(targetId)) {
+                        e.preventDefault();
+                        document.querySelector(targetId).scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                        
+                        // Set focus to the target for better accessibility
+                        document.querySelector(targetId).setAttribute('tabindex', '-1');
+                        document.querySelector(targetId).focus({preventScroll: true});
+                    }
                 });
             });
         });

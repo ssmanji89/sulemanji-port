@@ -1,0 +1,162 @@
+/**
+ * Skills section styles for sulemanji.com
+ * Skills cards and categories display
+ */
+
+.skills-overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.skill-category {
+  flex: 1;
+  min-width: 280px;
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.skill-icon {
+  font-size: 2rem;
+  color: #0366d6;
+  margin-bottom: 15px;
+}
+
+.skill-category h3 {
+  margin-bottom: 12px;
+  color: #24292e;
+}
+
+.skill-category p {
+  color: #586069;
+}
+
+/* Enhanced skills styling for technical skills showcase */
+.technical-skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+  margin-top: 30px;
+}
+
+.skill-group {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  padding: 25px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.skill-group:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.skill-group-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 15px;
+}
+
+.skill-group-icon {
+  font-size: 2.2rem;
+  color: #0366d6;
+  margin-right: 15px;
+}
+
+.skill-group h3 {
+  margin: 0;
+  color: #24292e;
+  font-size: 1.3rem;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.skill-tag {
+  background-color: #f6f8fa;
+  color: #24292e;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.skill-tag i {
+  margin-right: 6px;
+  font-size: 1rem;
+}
+
+.skill-proficiency {
+  display: flex;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.proficiency-bar {
+  height: 8px;
+  background-color: #e1e4e8;
+  border-radius: 4px;
+  flex: 1;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.proficiency-level {
+  height: 100%;
+  background-color: #0366d6;
+  border-radius: 4px;
+}
+
+.proficiency-text {
+  font-size: 0.85rem;
+  color: #586069;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* Dark Mode Skills Styles */
+body.dark-mode .skill-category,
+body.dark-mode .skill-group {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+}
+
+body.dark-mode .skill-category h3,
+body.dark-mode .skill-group h3 {
+  color: #f0f6fc;
+}
+
+body.dark-mode .skill-category p {
+  color: #8b949e;
+}
+
+body.dark-mode .skill-group-header {
+  border-bottom: 1px solid #30363d;
+}
+
+body.dark-mode .skill-tag {
+  background-color: #21262d;
+  color: #c9d1d9;
+}
+
+body.dark-mode .proficiency-bar {
+  background-color: #21262d;
+}
+
+body.dark-mode .proficiency-text {
+  color: #8b949e;
+}

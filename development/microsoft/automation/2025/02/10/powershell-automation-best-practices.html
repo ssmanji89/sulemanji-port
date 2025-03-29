@@ -1,292 +1,213 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="https://www.sulemanji.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.sulemanji.com/" rel="alternate" type="text/html" /><updated>2025-03-29T04:55:51+00:00</updated><id>https://www.sulemanji.com/feed.xml</id><title type="html">Suleman Manji</title><subtitle>Enterprise Technology Strategy | Cloud Architecture | Process Automation</subtitle><entry><title type="html">Welcome to Jekyll!</title><link href="https://www.sulemanji.com/jekyll/update/2025/03/26/welcome-to-jekyll.html" rel="alternate" type="text/html" title="Welcome to Jekyll!" /><published>2025-03-26T16:52:59+00:00</published><updated>2025-03-26T16:52:59+00:00</updated><id>https://www.sulemanji.com/jekyll/update/2025/03/26/welcome-to-jekyll</id><content type="html" xml:base="https://www.sulemanji.com/jekyll/update/2025/03/26/welcome-to-jekyll.html"><![CDATA[<p>You’ll find this post in your <code class="language-plaintext highlighter-rouge">_posts</code> directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run <code class="language-plaintext highlighter-rouge">jekyll serve</code>, which launches a web server and auto-regenerates your site when a file is updated.</p>
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<p>To add new posts, simply add a file in the <code class="language-plaintext highlighter-rouge">_posts</code> directory that follows the convention <code class="language-plaintext highlighter-rouge">YYYY-MM-DD-name-of-post.ext</code> and includes the necessary front matter. Take a look at the source for this post to get an idea about how it works.</p>
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>PowerShell Automation Best Practices for Microsoft 365 | Suleman Manji</title>
+<meta name="generator" content="Jekyll v3.9.5" />
+<meta property="og:title" content="PowerShell Automation Best Practices for Microsoft 365" />
+<meta name="author" content="Suleman Manji" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="PowerShell Automation Best Practices for Microsoft 365" />
+<meta property="og:description" content="PowerShell Automation Best Practices for Microsoft 365" />
+<link rel="canonical" href="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html" />
+<meta property="og:url" content="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html" />
+<meta property="og:site_name" content="Suleman Manji" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-02-10T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="PowerShell Automation Best Practices for Microsoft 365" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Suleman Manji"},"dateModified":"2025-02-10T00:00:00+00:00","datePublished":"2025-02-10T00:00:00+00:00","description":"PowerShell Automation Best Practices for Microsoft 365","headline":"PowerShell Automation Best Practices for Microsoft 365","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"},"name":"Suleman Manji"},"url":"https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html"}</script>
+<!-- End Jekyll SEO tag -->
 
-<p>Jekyll also offers powerful support for code snippets:</p>
+    <link rel="stylesheet" href="/assets/css/style.css?v=1a93f66acc155571a36c7b1fd3ada3b9f748e6b1">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-<figure class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">print_hi</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
-  <span class="nb">puts</span> <span class="s2">"Hi, </span><span class="si">#{</span><span class="nb">name</span><span class="si">}</span><span class="s2">"</span>
-<span class="k">end</span>
-<span class="n">print_hi</span><span class="p">(</span><span class="s1">'Tom'</span><span class="p">)</span>
-<span class="c1">#=&gt; prints 'Hi, Tom' to STDOUT.</span></code></pre></figure>
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<p>Check out the <a href="https://jekyllrb.com/docs/home">Jekyll docs</a> for more info on how to get the most out of Jekyll. File all bugs/feature requests at <a href="https://github.com/jekyll/jekyll">Jekyll’s GitHub repo</a>. If you have questions, you can ask them on <a href="https://talk.jekyllrb.com/">Jekyll Talk</a>.</p>]]></content><author><name></name></author><category term="jekyll" /><category term="update" /><summary type="html"><![CDATA[You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your changes. You can rebuild the site in many different ways, but the most common way is to run jekyll serve, which launches a web server and auto-regenerates your site when a file is updated.]]></summary></entry><entry><title type="html">Leveraging Microsoft Graph API for Enterprise Automation</title><link href="https://www.sulemanji.com/development/microsoft/automation/2025/03/15/leveraging-microsoft-graph-api.html" rel="alternate" type="text/html" title="Leveraging Microsoft Graph API for Enterprise Automation" /><published>2025-03-15T00:00:00+00:00</published><updated>2025-03-15T00:00:00+00:00</updated><id>https://www.sulemanji.com/development/microsoft/automation/2025/03/15/leveraging-microsoft-graph-api</id><content type="html" xml:base="https://www.sulemanji.com/development/microsoft/automation/2025/03/15/leveraging-microsoft-graph-api.html"><![CDATA[<h1 id="leveraging-microsoft-graph-api-for-enterprise-automation">Leveraging Microsoft Graph API for Enterprise Automation</h1>
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
 
-<p>Microsoft Graph API provides a unified programmability model that can be used to access tremendous amounts of data in Microsoft 365, Windows 10, and Enterprise Mobility + Security. Despite its power, many developers still struggle with the complexities of authentication, permission management, and efficient query construction when working with Graph API.</p>
+<!-- Meta tags -->
+<meta name="theme-color" content="#0366d6" id="theme-color-meta">
+<meta name="color-scheme" content="light dark">
 
-<p>In this article, I’ll share some practical techniques for leveraging Graph API in enterprise automation scenarios based on my experience developing the <a href="https://github.com/ssmanji89/graph-tools">Graph Tools</a> package.</p>
-
-<h2 id="understanding-the-graph-api-architecture">Understanding the Graph API Architecture</h2>
-
-<p>At its core, Microsoft Graph is a RESTful web API that uses OAuth 2.0 for authentication and OData for query parameters. It acts as a unified gateway to various Microsoft services:</p>
-
-<ul>
-  <li>Office 365 services (Exchange, SharePoint, Teams)</li>
-  <li>Azure AD identity services</li>
-  <li>Intune device management</li>
-  <li>Windows 10 services</li>
-</ul>
-
-<p>The beauty of Graph is that it abstracts away the underlying service complexities, providing a consistent interface across all these services.</p>
-
-<h2 id="authentication-best-practices">Authentication Best Practices</h2>
-
-<p>The most common challenge when working with Graph API is authentication. Here are some key patterns to consider:</p>
-
-<h3 id="1-client-credentials-flow-app-only">1. Client Credentials Flow (App-Only)</h3>
-
-<p>For background services or daemon applications without a user context:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Using the graph-tools package</span>
-<span class="kd">const</span> <span class="p">{</span> <span class="nx">GraphClient</span> <span class="p">}</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">graph-tools</span><span class="dl">'</span><span class="p">);</span>
-
-<span class="kd">const</span> <span class="nx">graph</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GraphClient</span><span class="p">({</span>
-  <span class="na">auth</span><span class="p">:</span> <span class="p">{</span>
-    <span class="na">clientId</span><span class="p">:</span> <span class="dl">'</span><span class="s1">your-client-id</span><span class="dl">'</span><span class="p">,</span>
-    <span class="na">clientSecret</span><span class="p">:</span> <span class="dl">'</span><span class="s1">your-client-secret</span><span class="dl">'</span><span class="p">,</span>
-    <span class="na">tenantId</span><span class="p">:</span> <span class="dl">'</span><span class="s1">your-tenant-id</span><span class="dl">'</span>
-  <span class="p">}</span>
-<span class="p">});</span>
-
-<span class="c1">// Access resources with application permissions</span>
-<span class="kd">const</span> <span class="nx">sites</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">sites</span><span class="p">.</span><span class="nx">getAll</span><span class="p">();</span>
-</code></pre></div></div>
-
-<h3 id="2-authorization-code-flow-user-delegated">2. Authorization Code Flow (User Delegated)</h3>
-
-<p>For applications acting on behalf of a signed-in user:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Configure auth with user delegation</span>
-<span class="kd">const</span> <span class="nx">graph</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GraphClient</span><span class="p">({</span>
-  <span class="na">auth</span><span class="p">:</span> <span class="p">{</span>
-    <span class="na">clientId</span><span class="p">:</span> <span class="dl">'</span><span class="s1">your-client-id</span><span class="dl">'</span><span class="p">,</span>
-    <span class="na">redirectUri</span><span class="p">:</span> <span class="dl">'</span><span class="s1">your-redirect-uri</span><span class="dl">'</span><span class="p">,</span>
-    <span class="na">scopes</span><span class="p">:</span> <span class="p">[</span><span class="dl">'</span><span class="s1">User.Read</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Mail.ReadWrite</span><span class="dl">'</span><span class="p">]</span>
-  <span class="p">}</span>
-<span class="p">});</span>
-
-<span class="c1">// Handle redirect and token acquisition</span>
-<span class="c1">// ...</span>
-
-<span class="c1">// Access resources on behalf of user</span>
-<span class="kd">const</span> <span class="nx">messages</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">me</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">top</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="kd">get</span><span class="p">();</span>
-</code></pre></div></div>
-
-<h2 id="efficient-query-construction">Efficient Query Construction</h2>
-
-<p>Graph API queries can become complex, especially when filtering, expanding, or selecting specific properties. Here are some techniques to make query construction more efficient:</p>
-
-<h3 id="using-the-fluent-interface-pattern">Using the Fluent Interface Pattern</h3>
-
-<p>The fluent interface pattern makes complex queries more readable and maintainable:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Without fluent interface</span>
-<span class="c1">// GET /users/john.doe@example.com?$select=displayName,jobTitle&amp;$expand=manager($select=displayName)</span>
-
-<span class="c1">// With fluent interface</span>
-<span class="kd">const</span> <span class="nx">user</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">users</span><span class="p">(</span><span class="dl">'</span><span class="s1">john.doe@example.com</span><span class="dl">'</span><span class="p">)</span>
-  <span class="p">.</span><span class="nx">select</span><span class="p">([</span><span class="dl">'</span><span class="s1">displayName</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">jobTitle</span><span class="dl">'</span><span class="p">])</span>
-  <span class="p">.</span><span class="nx">expand</span><span class="p">(</span><span class="dl">'</span><span class="s1">manager</span><span class="dl">'</span><span class="p">,</span> <span class="p">[</span><span class="dl">'</span><span class="s1">displayName</span><span class="dl">'</span><span class="p">])</span>
-  <span class="p">.</span><span class="kd">get</span><span class="p">();</span>
-</code></pre></div></div>
-
-<h3 id="batch-requests-for-performance">Batch Requests for Performance</h3>
-
-<p>When you need to make multiple requests, batch them together to reduce network overhead:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">const</span> <span class="nx">batchResults</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">batch</span><span class="p">([</span>
-  <span class="nx">graph</span><span class="p">.</span><span class="nx">me</span><span class="p">.</span><span class="kd">get</span><span class="p">(),</span>
-  <span class="nx">graph</span><span class="p">.</span><span class="nx">me</span><span class="p">.</span><span class="nx">messages</span><span class="p">.</span><span class="nx">top</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="kd">get</span><span class="p">(),</span>
-  <span class="nx">graph</span><span class="p">.</span><span class="nx">me</span><span class="p">.</span><span class="nx">drive</span><span class="p">.</span><span class="nx">root</span><span class="p">.</span><span class="nx">children</span><span class="p">.</span><span class="kd">get</span><span class="p">()</span>
-<span class="p">]);</span>
-
-<span class="c1">// Access results</span>
-<span class="kd">const</span> <span class="nx">profile</span> <span class="o">=</span> <span class="nx">batchResults</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-<span class="kd">const</span> <span class="nx">messages</span> <span class="o">=</span> <span class="nx">batchResults</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-<span class="kd">const</span> <span class="nx">files</span> <span class="o">=</span> <span class="nx">batchResults</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
-</code></pre></div></div>
-
-<h2 id="handling-permissions-and-consent">Handling Permissions and Consent</h2>
-
-<p>Graph API permissions can be complex, especially in enterprise environments. Here are some strategies for managing them effectively:</p>
-
-<h3 id="least-privilege-principle">Least Privilege Principle</h3>
-
-<p>Always request only the permissions your application needs:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Bad practice - requesting too many permissions</span>
-<span class="kd">const</span> <span class="nx">scopes</span> <span class="o">=</span> <span class="p">[</span><span class="dl">'</span><span class="s1">Directory.ReadWrite.All</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Files.ReadWrite.All</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Mail.ReadWrite</span><span class="dl">'</span><span class="p">];</span>
-
-<span class="c1">// Better practice - minimal required permissions</span>
-<span class="kd">const</span> <span class="nx">scopes</span> <span class="o">=</span> <span class="p">[</span><span class="dl">'</span><span class="s1">User.Read</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Mail.Read</span><span class="dl">'</span><span class="p">,</span> <span class="dl">'</span><span class="s1">Files.Read</span><span class="dl">'</span><span class="p">];</span>
-</code></pre></div></div>
-
-<h3 id="incremental-consent">Incremental Consent</h3>
-
-<p>Request permissions as they’re needed rather than all at once:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Initial minimal permissions</span>
-<span class="kd">const</span> <span class="nx">initialScopes</span> <span class="o">=</span> <span class="p">[</span><span class="dl">'</span><span class="s1">User.Read</span><span class="dl">'</span><span class="p">];</span>
-
-<span class="c1">// Later, request additional permissions when needed</span>
-<span class="kd">const</span> <span class="nx">additionalScopes</span> <span class="o">=</span> <span class="p">[</span><span class="dl">'</span><span class="s1">Mail.Read</span><span class="dl">'</span><span class="p">];</span>
-<span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">auth</span><span class="p">.</span><span class="nx">requestAdditionalConsent</span><span class="p">(</span><span class="nx">additionalScopes</span><span class="p">);</span>
-</code></pre></div></div>
-
-<h2 id="real-world-automation-examples">Real-World Automation Examples</h2>
-
-<p>Let’s look at some practical examples of Graph API automation in enterprise environments:</p>
-
-<h3 id="example-1-user-onboarding-automation">Example 1: User Onboarding Automation</h3>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="kd">function</span> <span class="nx">onboardNewEmployee</span><span class="p">(</span><span class="nx">userData</span><span class="p">)</span> <span class="p">{</span>
-  <span class="c1">// Create user account</span>
-  <span class="kd">const</span> <span class="nx">newUser</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
-    <span class="na">displayName</span><span class="p">:</span> <span class="nx">userData</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
-    <span class="na">mailNickname</span><span class="p">:</span> <span class="nx">userData</span><span class="p">.</span><span class="nx">alias</span><span class="p">,</span>
-    <span class="na">userPrincipalName</span><span class="p">:</span> <span class="s2">`</span><span class="p">${</span><span class="nx">userData</span><span class="p">.</span><span class="nx">alias</span><span class="p">}</span><span class="s2">@contoso.com`</span><span class="p">,</span>
-    <span class="na">passwordProfile</span><span class="p">:</span> <span class="p">{</span>
-      <span class="na">password</span><span class="p">:</span> <span class="nx">generateSecurePassword</span><span class="p">(),</span>
-      <span class="na">forceChangePasswordNextSignIn</span><span class="p">:</span> <span class="kc">true</span>
-    <span class="p">},</span>
-    <span class="na">accountEnabled</span><span class="p">:</span> <span class="kc">true</span>
-  <span class="p">});</span>
+<!-- Additional Styles for Dark Mode Consistency -->
+<style>
+  /* Override any conflicting styles for dark mode */
+  @media (prefers-color-scheme: dark) {
+    body:not(.forced-light) {
+      background-color: #0d1117 !important;
+      color: #c9d1d9 !important;
+    }
+  }
   
-  <span class="c1">// Add to appropriate groups</span>
-  <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">groups</span><span class="p">(</span><span class="nx">userData</span><span class="p">.</span><span class="nx">departmentGroup</span><span class="p">).</span><span class="nx">members</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="nx">newUser</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+  /* Enhance contrast for accessibility */
+  .tech-tag {
+    background-color: #e1e4e8 !important;
+    color: #24292e !important;
+  }
   
-  <span class="c1">// Create OneDrive folder structure</span>
-  <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">users</span><span class="p">(</span><span class="nx">newUser</span><span class="p">.</span><span class="nx">id</span><span class="p">).</span><span class="nx">drive</span><span class="p">.</span><span class="nx">root</span><span class="p">.</span><span class="nx">createFolder</span><span class="p">(</span><span class="dl">'</span><span class="s1">Projects</span><span class="dl">'</span><span class="p">);</span>
-  <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">users</span><span class="p">(</span><span class="nx">newUser</span><span class="p">.</span><span class="nx">id</span><span class="p">).</span><span class="nx">drive</span><span class="p">.</span><span class="nx">root</span><span class="p">.</span><span class="nx">createFolder</span><span class="p">(</span><span class="dl">'</span><span class="s1">Training</span><span class="dl">'</span><span class="p">);</span>
+  body.dark-mode .tech-tag {
+    background-color: #30363d !important;
+    color: #e6edf3 !important;
+  }
   
-  <span class="c1">// Send welcome email</span>
-  <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">users</span><span class="p">(</span><span class="dl">'</span><span class="s1">hr@contoso.com</span><span class="dl">'</span><span class="p">).</span><span class="nx">sendMail</span><span class="p">({</span>
-    <span class="na">toRecipients</span><span class="p">:</span> <span class="p">[{</span> <span class="na">emailAddress</span><span class="p">:</span> <span class="p">{</span> <span class="na">address</span><span class="p">:</span> <span class="nx">newUser</span><span class="p">.</span><span class="nx">userPrincipalName</span> <span class="p">}</span> <span class="p">}],</span>
-    <span class="na">subject</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Welcome to Contoso!</span><span class="dl">'</span><span class="p">,</span>
-    <span class="na">body</span><span class="p">:</span> <span class="p">{</span>
-      <span class="na">content</span><span class="p">:</span> <span class="s2">`Welcome </span><span class="p">${</span><span class="nx">userData</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span><span class="s2">! Your account has been set up...`</span><span class="p">,</span>
-      <span class="na">contentType</span><span class="p">:</span> <span class="dl">'</span><span class="s1">Text</span><span class="dl">'</span>
-    <span class="p">}</span>
-  <span class="p">});</span>
+  /* Fix any UI elements that might be hard to see in dark mode */
+  body.dark-mode a:not(.btn) {
+    color: #58a6ff;
+  }
   
-  <span class="k">return</span> <span class="nx">newUser</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h3 id="example-2-security-compliance-reporting">Example 2: Security Compliance Reporting</h3>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="kd">function</span> <span class="nx">generateSecurityReport</span><span class="p">()</span> <span class="p">{</span>
-  <span class="c1">// Get users without MFA</span>
-  <span class="kd">const</span> <span class="nx">usersWithoutMFA</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">reports</span><span class="p">.</span><span class="nx">getCredentialUserRegistrationDetails</span><span class="p">()</span>
-    <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="dl">"</span><span class="s2">isMfaRegistered eq false</span><span class="dl">"</span><span class="p">)</span>
-    <span class="p">.</span><span class="kd">get</span><span class="p">();</span>
+  body.dark-mode .fa-moon {
+    color: #c9d1d9;
+  }
   
-  <span class="c1">// Get devices without compliance</span>
-  <span class="kd">const</span> <span class="nx">nonCompliantDevices</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">deviceManagement</span><span class="p">.</span><span class="nx">managedDevices</span>
-    <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="dl">"</span><span class="s2">complianceState eq 'noncompliant'</span><span class="dl">"</span><span class="p">)</span>
-    <span class="p">.</span><span class="kd">get</span><span class="p">();</span>
+  /* Force white background in light mode and dark background in dark mode */
+  body:not(.dark-mode) {
+    background-color: #f6f8fa !important;
+    color: #24292e !important;
+  }
   
-  <span class="c1">// Get recent sign-in risks</span>
-  <span class="kd">const</span> <span class="nx">riskySignIns</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">graph</span><span class="p">.</span><span class="nx">identityProtection</span><span class="p">.</span><span class="nx">riskDetections</span>
-    <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="dl">"</span><span class="s2">riskState eq 'confirmedCompromised'</span><span class="dl">"</span><span class="p">)</span>
-    <span class="p">.</span><span class="kd">get</span><span class="p">();</span>
+  body.dark-mode {
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+  }
   
-  <span class="c1">// Compile report</span>
-  <span class="k">return</span> <span class="p">{</span>
-    <span class="na">mfaStatus</span><span class="p">:</span> <span class="nx">usersWithoutMFA</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">u</span> <span class="o">=&gt;</span> <span class="p">({</span>
-      <span class="na">user</span><span class="p">:</span> <span class="nx">u</span><span class="p">.</span><span class="nx">userPrincipalName</span><span class="p">,</span>
-      <span class="na">registrationStatus</span><span class="p">:</span> <span class="nx">u</span><span class="p">.</span><span class="nx">isMfaRegistered</span> <span class="p">?</span> <span class="dl">'</span><span class="s1">Registered</span><span class="dl">'</span> <span class="p">:</span> <span class="dl">'</span><span class="s1">Not Registered</span><span class="dl">'</span>
-    <span class="p">})),</span>
-    <span class="na">deviceCompliance</span><span class="p">:</span> <span class="nx">nonCompliantDevices</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">d</span> <span class="o">=&gt;</span> <span class="p">({</span>
-      <span class="na">device</span><span class="p">:</span> <span class="nx">d</span><span class="p">.</span><span class="nx">deviceName</span><span class="p">,</span>
-      <span class="na">owner</span><span class="p">:</span> <span class="nx">d</span><span class="p">.</span><span class="nx">userPrincipalName</span><span class="p">,</span>
-      <span class="na">compliance</span><span class="p">:</span> <span class="nx">d</span><span class="p">.</span><span class="nx">complianceState</span>
-    <span class="p">})),</span>
-    <span class="na">securityRisks</span><span class="p">:</span> <span class="nx">riskySignIns</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">r</span> <span class="o">=&gt;</span> <span class="p">({</span>
-      <span class="na">user</span><span class="p">:</span> <span class="nx">r</span><span class="p">.</span><span class="nx">userPrincipalName</span><span class="p">,</span>
-      <span class="na">riskType</span><span class="p">:</span> <span class="nx">r</span><span class="p">.</span><span class="nx">riskType</span><span class="p">,</span>
-      <span class="na">detectedDateTime</span><span class="p">:</span> <span class="nx">r</span><span class="p">.</span><span class="nx">detectedDateTime</span>
-    <span class="p">}))</span>
-  <span class="p">};</span>
-<span class="p">}</span>
-</code></pre></div></div>
-
-<h2 id="error-handling-and-resilience">Error Handling and Resilience</h2>
-
-<p>Robust error handling is critical for production applications. Here’s a pattern for resilient Graph API calls:</p>
-
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="kd">function</span> <span class="nx">resilientGraphCall</span><span class="p">(</span><span class="nx">graphCall</span><span class="p">,</span> <span class="nx">maxRetries</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
-  <span class="kd">let</span> <span class="nx">retries</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  body.dark-mode header, 
+  body.dark-mode section,
+  body.dark-mode p {
+    color: #c9d1d9 !important;
+  }
   
-  <span class="k">while</span> <span class="p">(</span><span class="nx">retries</span> <span class="o">&lt;</span> <span class="nx">maxRetries</span><span class="p">)</span> <span class="p">{</span>
-    <span class="k">try</span> <span class="p">{</span>
-      <span class="k">return</span> <span class="k">await</span> <span class="nx">graphCall</span><span class="p">();</span>
-    <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
-      <span class="c1">// Detect types of errors that might benefit from retry</span>
-      <span class="k">if</span> <span class="p">(</span><span class="nx">error</span><span class="p">.</span><span class="nx">statusCode</span> <span class="o">===</span> <span class="mi">429</span> <span class="o">||</span> <span class="nx">error</span><span class="p">.</span><span class="nx">statusCode</span> <span class="o">&gt;=</span> <span class="mi">500</span><span class="p">)</span> <span class="p">{</span>
-        <span class="c1">// Exponential backoff</span>
-        <span class="kd">const</span> <span class="nx">delay</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nx">retries</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">;</span>
-        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">`Retry </span><span class="p">${</span><span class="nx">retries</span> <span class="o">+</span> <span class="mi">1</span><span class="p">}</span><span class="s2">/</span><span class="p">${</span><span class="nx">maxRetries</span><span class="p">}</span><span class="s2"> after </span><span class="p">${</span><span class="nx">delay</span><span class="p">}</span><span class="s2">ms`</span><span class="p">);</span>
-        <span class="k">await</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="nx">resolve</span> <span class="o">=&gt;</span> <span class="nx">setTimeout</span><span class="p">(</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">delay</span><span class="p">));</span>
-        <span class="nx">retries</span><span class="o">++</span><span class="p">;</span>
-      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="c1">// Non-retriable error</span>
-        <span class="k">throw</span> <span class="nx">error</span><span class="p">;</span>
-      <span class="p">}</span>
-    <span class="p">}</span>
-  <span class="p">}</span>
+  /* Animation to help with theme transitions */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+</style>
+
+<!-- Dark mode script for meta tag -->
+<script>
+  // Update theme-color meta tag based on dark mode preference
+  const updateThemeColorMeta = () => {
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                     (localStorage.getItem('theme') === 'dark') ||
+                     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    document.getElementById('theme-color-meta').setAttribute(
+      'content', 
+      isDarkMode ? '#0d1117' : '#0366d6'
+    );
+    
+    // Also update color-scheme meta
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', isDarkMode ? 'dark' : 'light dark');
+    }
+  };
   
-  <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s2">`Failed after </span><span class="p">${</span><span class="nx">maxRetries</span><span class="p">}</span><span class="s2"> retries`</span><span class="p">);</span>
-<span class="p">}</span>
+  // Run once at load
+  document.addEventListener('DOMContentLoaded', function() {
+    updateThemeColorMeta();
+    
+    // Fix for blank dark mode pages - force redraw if needed
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark' && !document.body.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+      // Force redraw
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // This line forces a reflow
+      document.body.style.display = '';
+    }
+  });
+  
+  // Update when theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta);
+</script>
 
-<span class="c1">// Usage</span>
-<span class="kd">const</span> <span class="nx">users</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">resilientGraphCall</span><span class="p">(()</span> <span class="o">=&gt;</span> 
-  <span class="nx">graph</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nx">top</span><span class="p">(</span><span class="mi">100</span><span class="p">).</span><span class="kd">get</span><span class="p">()</span>
-<span class="p">);</span>
-</code></pre></div></div>
+<!-- Debug Dark Mode Toggle script (development only - remove in production) -->
+<script src="/assets/js/toggle-finder.js"></script>
 
-<h2 id="monitoring-and-telemetry">Monitoring and Telemetry</h2>
+<!-- Schema.org for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "name": "Suleman Manji",
+    "description": "Enterprise Technology Strategy | Cloud Architecture | Process Automation",
+    "url": "https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html",
+    "author": {
+        "@type": "Person",
+        "name": "Suleman Manji",
+        "url": "https://www.sulemanji.com"
+    }
+}
+</script>
 
-<p>For enterprise applications, monitoring Graph API usage is essential:</p>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1><a href="https://www.sulemanji.com/">Suleman Manji</a></h1>
 
-<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Add telemetry to Graph client</span>
-<span class="kd">const</span> <span class="nx">graph</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">GraphClient</span><span class="p">({</span>
-  <span class="c1">// ... auth config</span>
-  <span class="na">middleware</span><span class="p">:</span> <span class="p">[</span>
-    <span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">next</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
-      <span class="kd">const</span> <span class="nx">startTime</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">();</span>
-      <span class="kd">const</span> <span class="nx">endpoint</span> <span class="o">=</span> <span class="nx">context</span><span class="p">.</span><span class="nx">request</span><span class="p">.</span><span class="nx">url</span><span class="p">;</span>
-      
-      <span class="k">return</span> <span class="nx">next</span><span class="p">().</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="p">{</span>
-        <span class="kd">const</span> <span class="nx">duration</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span><span class="p">()</span> <span class="o">-</span> <span class="nx">startTime</span><span class="p">;</span>
-        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">`Graph API Call: </span><span class="p">${</span><span class="nx">endpoint</span><span class="p">}</span><span class="s2"> - </span><span class="p">${</span><span class="nx">duration</span><span class="p">}</span><span class="s2">ms`</span><span class="p">);</span>
         
-        <span class="c1">// Send telemetry to your monitoring system</span>
-        <span class="nx">sendTelemetry</span><span class="p">({</span>
-          <span class="nx">endpoint</span><span class="p">,</span>
-          <span class="nx">duration</span><span class="p">,</span>
-          <span class="na">statusCode</span><span class="p">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">status</span><span class="p">,</span>
-          <span class="na">success</span><span class="p">:</span> <span class="nx">response</span><span class="p">.</span><span class="nx">status</span> <span class="o">&lt;</span> <span class="mi">400</span>
-        <span class="p">});</span>
+          <img src="/images/sulemanji-profile.png" alt="Logo" />
         
-        <span class="k">return</span> <span class="nx">response</span><span class="p">;</span>
-      <span class="p">});</span>
-    <span class="p">}</span>
-  <span class="p">]</span>
-<span class="p">});</span>
-</code></pre></div></div>
 
-<h2 id="conclusion">Conclusion</h2>
+        <p>Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
 
-<p>Microsoft Graph API offers tremendous power for enterprise automation, but it requires thoughtful implementation to address authentication, permission management, and query efficiency challenges. By adopting the patterns shown in this article, you can build more resilient, secure, and maintainable Graph integrations.</p>
+        <p class="view"><a href="https://github.com/ssmanji89">View My GitHub Profile</a></p>
+        
+        <nav class="main-nav">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/experience">Experience</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/technical-skills">Skills</a></li>
+            <li><a href="/npm-packages">NPM Packages</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/philosophy">Philosophy</a></li>
+            <li><a href="/business-process-automation">Automation</a></li>
+          </ul>
+        </nav>
+      </header>
+      <section>
 
-<p>For pre-built solutions to many of these challenges, check out the <a href="https://github.com/ssmanji89/graph-tools">Graph Tools</a> package, which implements many of these patterns with a developer-friendly interface.</p>
+      <div class="article-header">
+    <h1>PowerShell Automation Best Practices for Microsoft 365</h1>
+    
+    <div class="article-meta">
+        <span class="article-date">
+            <i class="far fa-calendar-alt"></i> February 10, 2025
+        </span>
+        
+        
+        <span class="article-category">development</span>
+        
+        <span class="article-category">microsoft</span>
+        
+        <span class="article-category">automation</span>
+        
+    </div>
+</div>
 
-<p>In future articles, I’ll dive deeper into specific Graph API scenarios, including Teams automation, conditional access policy management, and advanced security monitoring.</p>
-
-<hr />
-
-<p>Have questions or feedback about Microsoft Graph API integration? <a href="mailto:ssmanji89@gmail.com">Contact me</a> or join the discussion in the comments below.</p>]]></content><author><name>Suleman Manji</name></author><category term="development" /><category term="microsoft" /><category term="automation" /><category term="microsoft-graph" /><category term="powershell" /><category term="node-js" /><category term="api" /><category term="automation" /><summary type="html"><![CDATA[Leveraging Microsoft Graph API for Enterprise Automation]]></summary></entry><entry><title type="html">PowerShell Automation Best Practices for Microsoft 365</title><link href="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html" rel="alternate" type="text/html" title="PowerShell Automation Best Practices for Microsoft 365" /><published>2025-02-10T00:00:00+00:00</published><updated>2025-02-10T00:00:00+00:00</updated><id>https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices</id><content type="html" xml:base="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html"><![CDATA[<h1 id="powershell-automation-best-practices-for-microsoft-365">PowerShell Automation Best Practices for Microsoft 365</h1>
+<div class="article-content-full">
+    <h1 id="powershell-automation-best-practices-for-microsoft-365">PowerShell Automation Best Practices for Microsoft 365</h1>
 
 <p>PowerShell has become an indispensable tool for Microsoft 365 administrators and developers, providing powerful capabilities for automating repetitive tasks, managing resources at scale, and implementing complex workflows. However, writing efficient, secure, and maintainable PowerShell scripts requires more than basic scripting knowledge.</p>
 
@@ -767,4 +688,281 @@ function Update-UserSettings {
 
 <hr />
 
-<p>Do you have questions about PowerShell automation for Microsoft 365? <a href="mailto:ssmanji89@gmail.com">Contact me</a> or share your thoughts in the comments below.</p>]]></content><author><name>Suleman Manji</name></author><category term="development" /><category term="microsoft" /><category term="automation" /><category term="powershell" /><category term="microsoft-365" /><category term="scripting" /><category term="automation" /><category term="best-practices" /><summary type="html"><![CDATA[PowerShell Automation Best Practices for Microsoft 365]]></summary></entry></feed>
+<p>Do you have questions about PowerShell automation for Microsoft 365? <a href="mailto:ssmanji89@gmail.com">Contact me</a> or share your thoughts in the comments below.</p>
+
+</div>
+
+<div class="article-footer">
+    <div class="article-tags">
+        
+        <span class="article-tag">powershell</span>
+        
+        <span class="article-tag">microsoft-365</span>
+        
+        <span class="article-tag">scripting</span>
+        
+        <span class="article-tag">automation</span>
+        
+        <span class="article-tag">best-practices</span>
+        
+    </div>
+    
+    <div class="article-share">
+        <a href="https://twitter.com/intent/tweet?text=PowerShell+Automation+Best+Practices+for+Microsoft+365&url=https://www.sulemanji.com%2Fdevelopment%2Fmicrosoft%2Fautomation%2F2025%2F02%2F10%2Fpowershell-automation-best-practices.html" target="_blank" class="share-btn">
+            <i class="fab fa-twitter"></i> Share on Twitter
+        </a>
+        
+        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://www.sulemanji.com%2Fdevelopment%2Fmicrosoft%2Fautomation%2F2025%2F02%2F10%2Fpowershell-automation-best-practices.html&title=PowerShell+Automation+Best+Practices+for+Microsoft+365" target="_blank" class="share-btn">
+            <i class="fab fa-linkedin"></i> Share on LinkedIn
+        </a>
+    </div>
+</div>
+
+<div class="related-articles">
+    <h3>Related Articles</h3>
+    
+    <div class="related-articles-grid">
+        
+        
+        <article class="blog-article">
+            <div class="article-content">
+                <div class="article-meta">
+                    <span class="article-date">
+                        <i class="far fa-calendar-alt"></i> March 15, 2025
+                    </span>
+                </div>
+                
+                <h2 class="article-title">
+                    <a href="/development/microsoft/automation/2025/03/15/leveraging-microsoft-graph-api.html">Leveraging Microsoft Graph API for Enterprise Automation</a>
+                </h2>
+                
+                <div class="article-excerpt">
+                    # Leveraging Microsoft Graph API for Enterprise Automation Microsoft Graph API provides a unified programmability model that can be used...
+                </div>
+                
+                <a href="/development/microsoft/automation/2025/03/15/leveraging-microsoft-graph-api.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </article>
+        
+        <article class="blog-article">
+            <div class="article-content">
+                <div class="article-meta">
+                    <span class="article-date">
+                        <i class="far fa-calendar-alt"></i> March 26, 2025
+                    </span>
+                </div>
+                
+                <h2 class="article-title">
+                    <a href="/jekyll/update/2025/03/26/welcome-to-jekyll.html">Welcome to Jekyll!</a>
+                </h2>
+                
+                <div class="article-excerpt">
+                    You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your...
+                </div>
+                
+                <a href="/jekyll/update/2025/03/26/welcome-to-jekyll.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Syntax highlighting for code blocks
+    if (window.hljs) {
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+    }
+});
+</script>
+
+
+      </section>
+      
+      <footer>
+        <div class="footer-content">
+          <!-- Theme Switch Column -->
+          <div class="footer-info">
+            <!-- Theme Switch -->
+            <div class="theme-switch-wrapper" aria-label="Toggle dark mode">
+              <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" aria-label="Switch between dark and light mode" />
+                <div class="slider round">
+                  <i class="fas fa-moon" aria-hidden="true"></i>
+                  <i class="fas fa-sun" aria-hidden="true"></i>
+                </div>
+              </label>
+              <span class="theme-label">Dark Mode</span>
+            </div>
+          </div>
+          
+          <!-- GitHub Stats Column -->
+          <div class="footer-nav-container">
+            <h3 class="footer-nav-title">GitHub</h3>
+            <div class="footer-stats">
+              <div class="footer-stat">
+                <i class="fab fa-github"></i>
+                <span>15+ Public Repositories</span>
+              </div>
+              <div class="footer-stat">
+                <i class="fas fa-code-branch"></i>
+                <span>500+ Contributions</span>
+              </div>
+              <div class="footer-stat-action">
+                <a href="https://github.com/ssmanji89" class="btn btn-outline btn-sm">View All GitHub Projects</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Connect Column -->
+          <div class="footer-nav-container">
+            <h3 class="footer-nav-title">Connect</h3>
+            <div class="social-links-footer">
+              <a href="https://github.com/ssmanji89" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
+              <a href="https://www.linkedin.com/in/suleman-manji-1a46852a0" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+              <a href="https://www.npmjs.com/~sullyman" aria-label="NPM Profile"><i class="fab fa-npm"></i></a>
+              <a href="mailto:ssmanji89@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Custom JavaScript -->
+<script src="/assets/js/main.js"></script>
+<script src="/assets/js/dark-mode-cleanup.js"></script>
+
+<!-- Custom script to remove dark mode toggle -->
+<script>
+  // Function to remove the specific dark mode toggle shown in screenshot
+  function removeSpecificToggle() {
+    // Look for elements matching the description in the screenshot
+    const possibleToggles = document.querySelectorAll('body > .switchTheme, body > [class*="dark-mode-toggle"], body > div:not(.wrapper) > [class*="moon"], body > div:not(.wrapper) > [class*="sun"]');
+    
+    possibleToggles.forEach(function(element) {
+      const rect = element.getBoundingClientRect();
+      // Check if the element is at the bottom of the page
+      if (rect.bottom > window.innerHeight - 100) {
+        console.log('Removing specific toggle element:', element);
+        element.remove();
+      }
+    });
+    
+    // Specifically target the element in your screenshot
+    const moonSunElements = document.querySelectorAll('body > *:not(.wrapper) .fa-moon, body > *:not(.wrapper) .fa-sun');
+    moonSunElements.forEach(function(element) {
+      const parentElement = element.closest('div');
+      if (parentElement && !parentElement.closest('.theme-switch-wrapper')) {
+        console.log('Removing moon/sun element outside .wrapper:', parentElement);
+        parentElement.remove();
+      }
+    });
+    
+    // Remove any toggle with text "Dark Mode"
+    document.querySelectorAll('body > *').forEach(function(element) {
+      if (element.textContent && element.textContent.trim() === 'Dark Mode') {
+        console.log('Removing element with text "Dark Mode":', element);
+        element.remove();
+      }
+    });
+  }
+  
+  // Run on load and periodically
+  document.addEventListener('DOMContentLoaded', function() {
+    removeSpecificToggle();
+    setInterval(removeSpecificToggle, 1000);
+  });
+</script>
+
+<!-- Accessibility improvements -->
+<script>
+  // Add proper focus styles for accessibility
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fix any potential accessibility issues with tech tags
+    const techTags = document.querySelectorAll('.tech-tag');
+    techTags.forEach(tag => {
+      // Ensure good contrast
+      if (tag.style.backgroundColor === '#f6f8fa' || tag.style.backgroundColor === 'rgb(246, 248, 250)') {
+        tag.style.backgroundColor = '#e1e4e8';
+        tag.style.color = '#24292e';
+      }
+    });
+    
+    // Fix any buttons without accessible names
+    const buttons = document.querySelectorAll('button:not([aria-label]):not([title])');
+    buttons.forEach(button => {
+      if (!button.textContent.trim()) {
+        // Try to determine what the button does from its icon or context
+        if (button.querySelector('.fa-github')) {
+          button.setAttribute('aria-label', 'Visit GitHub Profile');
+        } else if (button.querySelector('.fa-linkedin')) {
+          button.setAttribute('aria-label', 'Visit LinkedIn Profile');
+        } else if (button.closest('nav')) {
+          button.setAttribute('aria-label', 'Navigation button');
+        } else {
+          button.setAttribute('aria-label', 'Button');
+        }
+      }
+    });
+    
+    // Fix contrast issues with links
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+      if (window.getComputedStyle(link).color === 'rgb(88, 96, 105)' || 
+          window.getComputedStyle(link).color === '#586069') {
+        link.style.color = '#0366d6';
+      }
+    });
+  });
+</script>
+      </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+    <script src="/assets/js/main.js"></script>
+    
+    <!-- Remove any extra dark mode toggles with inline script -->
+    <script>
+      // Use MutationObserver to detect and remove any elements added after load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Create an observer instance
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Only process Element nodes
+                  // Check if this is likely a dark mode toggle
+                  if (node.textContent && node.textContent.includes('Dark Mode') || 
+                      node.textContent && node.textContent.includes('Mode') ||
+                      node.innerHTML && (node.innerHTML.includes('moon') || 
+                      node.innerHTML.includes('sun'))) {
+                    
+                    // Make sure it's not our own toggle
+                    if (!node.closest('.theme-switch-wrapper')) {
+                      console.log('Observer removing node:', node);
+                      node.remove();
+                    }
+                  }
+                  
+                  // Check for elements at the bottom of page
+                  if (node.getBoundingClientRect && 
+                      node.getBoundingClientRect().top > (window.innerHeight - 100)) {
+                    if (!node.closest('.wrapper')) {
+                      console.log('Observer removing bottom element:', node);
+                      node.remove();
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        // Start observing the body with the configured parameters
+        observer.observe(document.body, { 
+          childList: true, 
+          subtree: true
+        });
+      });
+    </script>
+  </body>
+</html>

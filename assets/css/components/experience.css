@@ -1,0 +1,236 @@
+/**
+ * Experience timeline styles for sulemanji.com
+ * Professional history timeline
+ */
+
+.timeline {
+  position: relative;
+  margin: 40px 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  height: 100%;
+  width: 2px;
+  background-color: #e1e4e8;
+}
+
+.timeline-item {
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: 16px;
+  top: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #0366d6;
+  border: 2px solid #ffffff;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.timeline-content {
+  margin-left: 40px;
+  padding: 25px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.timeline-date {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-date span {
+  background-color: #f6f8fa;
+  color: #586069;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.timeline-date span i {
+  margin-right: 5px;
+}
+
+.timeline-title {
+  margin-bottom: 5px;
+  font-size: 1.3rem;
+  color: #24292e;
+}
+
+.timeline-subtitle {
+  margin-bottom: 15px;
+  color: #586069;
+  font-size: 1rem;
+}
+
+.timeline-description {
+  color: #586069;
+  margin-bottom: 15px;
+}
+
+.timeline-highlights {
+  margin-top: 20px;
+}
+
+.timeline-highlight {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.timeline-highlight i {
+  color: #2ea44f;
+  margin-right: 8px;
+  margin-top: 3px;
+}
+
+.timeline-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #e1e4e8;
+}
+
+.timeline-metric {
+  flex: 1;
+  min-width: 120px;
+  text-align: center;
+}
+
+.timeline-metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0366d6;
+  margin-bottom: 5px;
+}
+
+.timeline-metric-label {
+  font-size: 0.85rem;
+  color: #586069;
+}
+
+.timeline-technologies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.timeline-tech {
+  background-color: #f6f8fa;
+  color: #586069;
+  padding: 4px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+}
+
+.timeline-tech i {
+  margin-right: 5px;
+}
+
+.timeline-testimonial {
+  margin-top: 25px;
+  padding: 15px;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+  font-style: italic;
+  position: relative;
+}
+
+.timeline-testimonial::before {
+  content: """;
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  font-size: 2rem;
+  color: #0366d6;
+  opacity: 0.3;
+}
+
+.timeline-testimonial-text {
+  padding-left: 20px;
+  color: #24292e;
+}
+
+.timeline-testimonial-author {
+  margin-top: 10px;
+  text-align: right;
+  color: #586069;
+  font-size: 0.9rem;
+  font-style: normal;
+}
+
+/* Dark Mode Experience Styles */
+body.dark-mode .timeline::before {
+  background-color: #30363d;
+}
+
+body.dark-mode .timeline-dot {
+  background-color: #58a6ff;
+  border-color: #0d1117;
+}
+
+body.dark-mode .timeline-content {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+}
+
+body.dark-mode .timeline-date span {
+  background-color: #21262d;
+  color: #8b949e;
+}
+
+body.dark-mode .timeline-title {
+  color: #f0f6fc;
+}
+
+body.dark-mode .timeline-subtitle,
+body.dark-mode .timeline-description {
+  color: #8b949e;
+}
+
+body.dark-mode .timeline-metrics {
+  border-top: 1px solid #30363d;
+}
+
+body.dark-mode .timeline-metric-label {
+  color: #8b949e;
+}
+
+body.dark-mode .timeline-tech {
+  background-color: #21262d;
+  color: #8b949e;
+}
+
+body.dark-mode .timeline-testimonial {
+  background-color: #21262d;
+}
+
+body.dark-mode .timeline-testimonial-text {
+  color: #c9d1d9;
+}
+
+body.dark-mode .timeline-testimonial-author {
+  color: #8b949e;
+}

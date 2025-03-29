@@ -22,7 +22,7 @@
 {"@context":"https://schema.org","@type":"WebSite","description":"Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation.","headline":"Suleman Manji - Enterprise Technology Strategist","name":"Suleman Manji","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"}},"url":"https://www.sulemanji.com/"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/assets/css/style.css?v=0dae1059ef5ef8817bd545fc7ab496adeb68169f">
+    <link rel="stylesheet" href="/assets/css/style.css?v=1a93f66acc155571a36c7b1fd3ada3b9f748e6b1">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -150,6 +150,12 @@
 }
 </script>
 
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
   </head>
   <body>
     <div class="wrapper">
@@ -164,13 +170,18 @@
 
         <p class="view"><a href="https://github.com/ssmanji89">View My GitHub Profile</a></p>
         
-        <nav>
-          <a href="/">Home</a>
-          <a href="/about">About</a>
-          <a href="/experience">Experience</a>
-          <a href="/projects">Projects</a>
-          <a href="/philosophy">Philosophy</a>
-          <a href="/business-process-automation">Automation</a>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/experience">Experience</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/technical-skills">Skills</a></li>
+            <li><a href="/npm-packages">NPM Packages</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/philosophy">Philosophy</a></li>
+            <li><a href="/business-process-automation">Automation</a></li>
+          </ul>
         </nav>
       </header>
       <section>
@@ -181,6 +192,8 @@
 
 <div class="cta-buttons">
     <a href="/projects" class="btn">View Projects</a>
+    <a href="/technical-skills" class="btn btn-primary">Technical Skills</a>
+    <a href="/npm-packages" class="btn btn-outline">NPM Packages</a>
     <a href="/experience" class="btn btn-outline">My Experience</a>
 </div>
 
@@ -194,6 +207,50 @@
 
 <h3 id="-process-automation"><i class="fas fa-cogs"></i> Process Automation</h3>
 <p>Development of intelligent workflow solutions using Power Automate, PowerShell, and custom integration frameworks to streamline business operations.</p>
+
+<h2 id="specialized-tooling">Specialized Tooling</h2>
+
+<div class="specialties-grid">
+    <div class="specialty-card">
+        <div class="specialty-header">
+            <i class="fab fa-npm"></i>
+            <h3>NPM Packages</h3>
+        </div>
+        <p>Author of JavaScript/Node.js packages with a focus on automation and integration utilities.</p>
+        <div class="package-links">
+            <a href="https://www.npmjs.com/~sullyman" target="_blank" class="package-link">
+                <i class="fab fa-npm"></i> sullyman
+            </a>
+        </div>
+    </div>
+    
+    <div class="specialty-card">
+        <div class="specialty-header">
+            <i class="fab fa-github"></i>
+            <h3>Open Source</h3>
+        </div>
+        <p>Contributor to utilities and tools focused on enterprise automation, security, and integration.</p>
+        <div class="package-links">
+            <a href="https://github.com/ssmanji89" target="_blank" class="package-link">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+        </div>
+    </div>
+    
+    <div class="specialty-card">
+        <div class="specialty-header">
+            <i class="fas fa-terminal"></i>
+            <h3>PowerShell Modules</h3>
+        </div>
+        <p>Creator of automation modules for Microsoft 365, security, and enterprise workflows.</p>
+        <div class="code-preview">
+            <pre><code class="language-powershell">Set-ExternalInOutlook -AllowList @(
+  "domain.com",
+  "partner.com"
+)</code></pre>
+        </div>
+    </div>
+</div>
 
 <h2 id="transformation-impact">Transformation Impact</h2>
 
@@ -222,6 +279,7 @@
   <li><i class="fab fa-microsoft"></i> Azure</li>
   <li><i class="fas fa-cloud"></i> Microsoft 365</li>
   <li><i class="fab fa-aws"></i> AWS</li>
+  <li><i class="fab fa-docker"></i> Docker</li>
 </ul>
 
 <h3 id="security-tools">Security Tools</h3>
@@ -230,6 +288,7 @@
   <li><i class="fas fa-user-shield"></i> DLDM</li>
   <li><i class="fas fa-lock"></i> Azure AD</li>
   <li><i class="fas fa-key"></i> Okta</li>
+  <li><i class="fas fa-shield-virus"></i> Defender for O365</li>
 </ul>
 
 <h3 id="automation">Automation</h3>
@@ -238,6 +297,16 @@
   <li><i class="fas fa-terminal"></i> PowerShell</li>
   <li><i class="fas fa-code"></i> Python</li>
   <li><i class="fab fa-node-js"></i> Node.js</li>
+  <li><i class="fab fa-js"></i> JavaScript</li>
+</ul>
+
+<h3 id="development">Development</h3>
+<ul>
+  <li><i class="fab fa-react"></i> React</li>
+  <li><i class="fab fa-npm"></i> NPM Packages</li>
+  <li><i class="fab fa-github"></i> GitHub Actions</li>
+  <li><i class="fab fa-microsoft"></i> Graph API</li>
+  <li><i class="fab fa-python"></i> Pandas/NumPy</li>
 </ul>
 
 <h2 id="professional-approach">Professional Approach</h2>
@@ -251,10 +320,37 @@
 <h3 id="data-driven-optimization">Data-Driven Optimization</h3>
 <p>Leveraging metrics and performance analytics to continuously refine and enhance technological ecosystems.</p>
 
-<h2 id="ready-to-learn-more">Ready to Learn More?</h2>
+<h2 id="portfolio-sections">Portfolio Sections</h2>
 
-<p><a href="/experience" class="btn">View My Experience</a>
-<a href="/projects" class="btn btn-outline">Explore Projects</a></p>
+<div class="portfolio-sections">
+    <div class="portfolio-section-card">
+        <i class="fas fa-code-branch"></i>
+        <h3>Projects</h3>
+        <p>Comprehensive project portfolio showcasing solutions across multiple domains including AI, automation, cloud integration, and finance.</p>
+        <a href="/projects" class="btn btn-sm">View Projects</a>
+    </div>
+    
+    <div class="portfolio-section-card">
+        <i class="fas fa-code"></i>
+        <h3>Technical Skills</h3>
+        <p>Detailed technical skills overview with proficiency levels, certifications, and continuous learning focus areas.</p>
+        <a href="/technical-skills" class="btn btn-sm">View Skills</a>
+    </div>
+    
+    <div class="portfolio-section-card">
+        <i class="fab fa-npm"></i>
+        <h3>NPM Packages</h3>
+        <p>Open-source JavaScript and Node.js packages focused on automation, integration, and developer tooling.</p>
+        <a href="/npm-packages" class="btn btn-sm">View Packages</a>
+    </div>
+    
+    <div class="portfolio-section-card">
+        <i class="fas fa-briefcase"></i>
+        <h3>Experience</h3>
+        <p>Professional experience timeline with detailed metrics, technologies used, and project impacts.</p>
+        <a href="/experience" class="btn btn-sm">View Experience</a>
+    </div>
+</div>
 
 
       </section>
@@ -396,6 +492,7 @@
       </footer>
     </div>
     <script src="/assets/js/scale.fix.js"></script>
+    <script src="/assets/js/main.js"></script>
     
     <!-- Remove any extra dark mode toggles with inline script -->
     <script>

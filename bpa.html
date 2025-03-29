@@ -52,11 +52,13 @@
     <!-- Skip to content link for accessibility -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
     
-    <div class="wrapper">
-        <header>
+    <header>
+        <div class="container">
             <div class="site-header">
                 <div class="logo">
-                    <h1>Suleman Manji</h1>
+                    <a href="/" style="text-decoration: none; color: inherit;">
+                        <h1>Suleman Manji</h1>
+                    </a>
                     <p class="tagline">Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
                 </div>
                 <div class="social-links">
@@ -65,6 +67,9 @@
                     </a>
                     <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
                         <i class="fab fa-linkedin" aria-hidden="true"></i>
+                    </a>
+                    <a href="mailto:contact@sulemanji.com" aria-label="Email">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
@@ -76,12 +81,15 @@
                     <li><a href="/experience" >Experience</a></li>
                     <li><a href="/projects" >Projects</a></li>
                     <li><a href="/philosophy" >Philosophy</a></li>
-                    <li><a href="/bpa" class="active" aria-current="page">Automation</a></li>
+                    <li><a href="/business-process-automation" >Automation</a></li>
                 </ul>
             </nav>
-        </header>
+        </div>
+    </header>
+    
+    <div class="wrapper">
         
-        <section id="main-content" class="main-content" role="main">
+        <main id="main-content" class="main-content" role="main">
             <div class="bpa-header animate-on-scroll">
     <h1 class="section-title">Business Process Automation</h1>
     <p class="lead-text">Transforming complex business processes into efficient, scalable solutions through strategic technology implementation.</p>
@@ -445,18 +453,52 @@
     <i class="fas fa-moon"></i>
 </div>
 
-        </section>
+        </main>
         
         <footer role="contentinfo">
-            <div class="footer-content">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-info">
+                        <a href="/" class="footer-logo">Suleman Manji</a>
+                        <p class="footer-description">Enterprise technology strategist focusing on cloud architecture, security engineering, and process automation solutions for complex business environments.</p>
+                        <div class="social-links-footer">
+                            <a href="https://github.com/ssmanji89" target="_blank" rel="noopener" aria-label="GitHub Profile">
+                                <i class="fab fa-github" aria-hidden="true"></i>
+                            </a>
+                            <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
+                                <i class="fab fa-linkedin" aria-hidden="true"></i>
+                            </a>
+                            <a href="mailto:contact@sulemanji.com" aria-label="Email">
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-nav-container">
+                        <div class="footer-nav-title">Navigation</div>
+                        <nav class="footer-nav" aria-label="Footer navigation">
+                            <a href="/">Home</a>
+                            <a href="/about">About</a>
+                            <a href="/experience">Experience</a>
+                            <a href="/projects">Projects</a>
+                            <a href="/philosophy">Philosophy</a>
+                        </nav>
+                    </div>
+                    
+                    <div class="footer-nav-container">
+                        <div class="footer-nav-title">Resources</div>
+                        <nav class="footer-nav" aria-label="Resources navigation">
+                            <a href="/business-process-automation">Automation</a>
+                            <a href="/business-process-transformation">Transformation</a>
+                            <a href="/resume">Resume</a>
+                            <a href="https://github.com/ssmanji89" target="_blank" rel="noopener">GitHub Projects</a>
+                        </nav>
+                    </div>
+                </div>
+                
                 <div class="copyright">
                     <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
                 </div>
-                <nav class="footer-nav" aria-label="Footer navigation">
-                    <a href="/">Home</a>
-                    <a href="/about">About</a>
-                    <a href="/projects">Projects</a>
-                </nav>
             </div>
         </footer>
     </div>
@@ -481,7 +523,7 @@
                     e.preventDefault();
                     
                     $('html, body').animate({
-                        scrollTop: $(targetId).offset().top - 50
+                        scrollTop: $(targetId).offset().top - 70 // Adjusted for sticky header
                     }, 800);
                     
                     // Set focus to the target for better accessibility
@@ -490,6 +532,26 @@
                     }, 810);
                 }
             });
+            
+            // Animate elements when they come into view
+            const animateOnScroll = function() {
+                $('.fade-in, .slide-up, .slide-in').each(function() {
+                    const elementPosition = $(this).offset().top;
+                    const windowHeight = $(window).height();
+                    const scrollPosition = $(window).scrollTop();
+                    
+                    // If element is in viewport
+                    if (elementPosition < (scrollPosition + windowHeight * 0.9)) {
+                        $(this).css('visibility', 'visible');
+                    }
+                });
+            };
+            
+            // Run on page load
+            animateOnScroll();
+            
+            // Run on scroll
+            $(window).on('scroll', animateOnScroll);
         });
     </script>
 </body>

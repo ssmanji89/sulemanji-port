@@ -1,12 +1,12 @@
 /**
  * Main JavaScript for sulemanji.com
- * Using libraries from CDNs for better performance
+ * GitHub-inspired design and interaction patterns
  */
 
 // Use lodash for utility functions
 const debounceScroll = _.debounce(function() {
   checkAnimations();
-}, 10);
+}, 15);
 
 // Initialize on document ready
 $(document).ready(function() {
@@ -15,9 +15,6 @@ $(document).ready(function() {
   
   // Set up dark mode toggle
   setupDarkMode();
-  
-  // Initialize skill bars animation
-  initSkillBars();
   
   // Initialize project filters
   initProjectFilters();
@@ -28,8 +25,14 @@ $(document).ready(function() {
   // Set up keyboard navigation enhancements
   setupKeyboardNavigation();
   
-  // Add lazy loading to images
-  setupLazyLoading();
+  // Add parallax effect to hero section
+  initParallaxEffect();
+  
+  // Add sticky header behavior
+  initStickyHeader();
+  
+  // Add intersection observers for scroll animations
+  initScrollObservers();
 });
 
 /**
@@ -373,14 +376,129 @@ function setupKeyboardNavigation() {
  * Set up lazy loading for images
  * Using lazysizes library
  */
+/**
+ * Add parallax effect to hero section
+ * Subtle movement on scroll for visual interest
+ */
+function initParallaxEffect() {
+  const $heroSection = $('.hero-section');
+  
+  if ($heroSection.length) {
+    $(window).on('scroll', function() {
+      const scrollPosition = $(window).scrollTop();
+      const parallaxOffset = scrollPosition * 0.4;
+      
+      // Move background slightly to create parallax effect
+      $heroSection.css('background-position', `center ${50 + parallaxOffset}%`);
+      
+      // Subtle text movement
+      $heroSection.find('.profile-content').css('transform', `translateY(${parallaxOffset / 10}px)`);
+    });
+  }
+}
+
+/**
+ * Initialize sticky header behavior
+ * Header shrinks on scroll and shows shadow
+ */
+function initStickyHeader() {
+  const $header = $('header');
+  const $mainNav = $('.main-nav');
+  
+  if ($header.length) {
+    let lastScrollTop = 0;
+    const scrollThreshold = 50;
+    
+    $(window).on('scroll', function() {
+      const scrollTop = $(window).scrollTop();
+      
+      // Add compact class when scrolling down
+      if (scrollTop > scrollThreshold) {
+        $header.addClass('compact');
+      } else {
+        $header.removeClass('compact');
+      }
+      
+      // Hide/show header based on scroll direction
+      if (scrollTop > lastScrollTop && scrollTop > 200) {
+        // Scrolling down & past threshold
+        $header.addClass('header-hidden');
+      } else {
+        // Scrolling up
+        $header.removeClass('header-hidden');
+      }
+      
+      lastScrollTop = scrollTop;
+    });
+  }
+}
+
+/**
+ * Set up IntersectionObserver for scroll animations
+ * Using native browser APIs for performance
+ */
+function initScrollObservers() {
+  if ('IntersectionObserver' in window) {
+    // Fade-in animation observer
+    const fadeObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Add visible class with delay based on data attribute
+          const delay = entry.target.getAttribute('data-delay') || 0;
+          setTimeout(() => {
+            entry.target.classList.add('visible');
+          }, delay);
+          fadeObserver.unobserve(entry.target);
+        }
+      });
+    }, {
+      root: null,
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    });
+    
+    // Select all elements with animation classes
+    document.querySelectorAll('.fade-in, .slide-up, .slide-in').forEach(el => {
+      // Set initial visibility to hidden
+      el.style.visibility = 'hidden';
+      // Observe element
+      fadeObserver.observe(el);
+    });
+  }
+}
+
+/**
+ * Setup lazy loading for images
+ * Using data-src attribute pattern
+ */
 function setupLazyLoading() {
-  // Replace src with data-src for images for lazysizes to work
-  $('img:not(.lazyloaded):not(.lazyload)').each(function() {
-    const $img = $(this);
-    if (!$img.attr('data-src') && $img.attr('src')) {
-      $img.attr('data-src', $img.attr('src'))
-          .addClass('lazyload')
-          .attr('src', 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==');
-    }
-  });
+  if ('IntersectionObserver' in window) {
+    const imageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          const src = img.getAttribute('data-src');
+          
+          if (src) {
+            img.src = src;
+            img.classList.add('loaded');
+            imageObserver.unobserve(img);
+          }
+        }
+      });
+    });
+    
+    // Replace src with data-src for images
+    document.querySelectorAll('img[data-src]').forEach(img => {
+      imageObserver.observe(img);
+    });
+  } else {
+    // Fallback for browsers without IntersectionObserver
+    document.querySelectorAll('img[data-src]').forEach(img => {
+      const src = img.getAttribute('data-src');
+      if (src) {
+        img.src = src;
+      }
+    });
+  }
 }

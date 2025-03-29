@@ -52,11 +52,13 @@
     <!-- Skip to content link for accessibility -->
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
     
-    <div class="wrapper">
-        <header>
+    <header>
+        <div class="container">
             <div class="site-header">
                 <div class="logo">
-                    <h1>{{ site.title }}</h1>
+                    <a href="{{ '/' | relative_url }}" style="text-decoration: none; color: inherit;">
+                        <h1>{{ site.title }}</h1>
+                    </a>
                     <p class="tagline">{{ site.description }}</p>
                 </div>
                 <div class="social-links">
@@ -65,6 +67,9 @@
                     </a>
                     <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
                         <i class="fab fa-linkedin" aria-hidden="true"></i>
+                    </a>
+                    <a href="mailto:contact@sulemanji.com" aria-label="Email">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
@@ -76,25 +81,62 @@
                     <li><a href="{{ '/experience' | relative_url }}" {% if page.url == '/experience' %}class="active" aria-current="page"{% endif %}>Experience</a></li>
                     <li><a href="{{ '/projects' | relative_url }}" {% if page.url == '/projects' %}class="active" aria-current="page"{% endif %}>Projects</a></li>
                     <li><a href="{{ '/philosophy' | relative_url }}" {% if page.url == '/philosophy' %}class="active" aria-current="page"{% endif %}>Philosophy</a></li>
-                    <li><a href="{{ '/bpa' | relative_url }}" {% if page.url == '/bpa' %}class="active" aria-current="page"{% endif %}>Automation</a></li>
+                    <li><a href="{{ '/business-process-automation' | relative_url }}" {% if page.url == '/business-process-automation' %}class="active" aria-current="page"{% endif %}>Automation</a></li>
                 </ul>
             </nav>
-        </header>
+        </div>
+    </header>
+    
+    <div class="wrapper">
         
-        <section id="main-content" class="main-content" role="main">
+        <main id="main-content" class="main-content" role="main">
             {{ content }}
-        </section>
+        </main>
         
         <footer role="contentinfo">
-            <div class="footer-content">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-info">
+                        <a href="{{ '/' | relative_url }}" class="footer-logo">Suleman Manji</a>
+                        <p class="footer-description">Enterprise technology strategist focusing on cloud architecture, security engineering, and process automation solutions for complex business environments.</p>
+                        <div class="social-links-footer">
+                            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener" aria-label="GitHub Profile">
+                                <i class="fab fa-github" aria-hidden="true"></i>
+                            </a>
+                            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
+                                <i class="fab fa-linkedin" aria-hidden="true"></i>
+                            </a>
+                            <a href="mailto:contact@sulemanji.com" aria-label="Email">
+                                <i class="fas fa-envelope" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-nav-container">
+                        <div class="footer-nav-title">Navigation</div>
+                        <nav class="footer-nav" aria-label="Footer navigation">
+                            <a href="{{ '/' | relative_url }}">Home</a>
+                            <a href="{{ '/about' | relative_url }}">About</a>
+                            <a href="{{ '/experience' | relative_url }}">Experience</a>
+                            <a href="{{ '/projects' | relative_url }}">Projects</a>
+                            <a href="{{ '/philosophy' | relative_url }}">Philosophy</a>
+                        </nav>
+                    </div>
+                    
+                    <div class="footer-nav-container">
+                        <div class="footer-nav-title">Resources</div>
+                        <nav class="footer-nav" aria-label="Resources navigation">
+                            <a href="{{ '/business-process-automation' | relative_url }}">Automation</a>
+                            <a href="{{ '/business-process-transformation' | relative_url }}">Transformation</a>
+                            <a href="{{ '/resume' | relative_url }}">Resume</a>
+                            <a href="https://github.com/ssmanji89" target="_blank" rel="noopener">GitHub Projects</a>
+                        </nav>
+                    </div>
+                </div>
+                
                 <div class="copyright">
                     <p>&copy; {{ site.time | date: '%Y' }} Suleman Manji. All rights reserved.</p>
                 </div>
-                <nav class="footer-nav" aria-label="Footer navigation">
-                    <a href="{{ '/' | relative_url }}">Home</a>
-                    <a href="{{ '/about' | relative_url }}">About</a>
-                    <a href="{{ '/projects' | relative_url }}">Projects</a>
-                </nav>
             </div>
         </footer>
     </div>
@@ -119,7 +161,7 @@
                     e.preventDefault();
                     
                     $('html, body').animate({
-                        scrollTop: $(targetId).offset().top - 50
+                        scrollTop: $(targetId).offset().top - 70 // Adjusted for sticky header
                     }, 800);
                     
                     // Set focus to the target for better accessibility
@@ -128,6 +170,26 @@
                     }, 810);
                 }
             });
+            
+            // Animate elements when they come into view
+            const animateOnScroll = function() {
+                $('.fade-in, .slide-up, .slide-in').each(function() {
+                    const elementPosition = $(this).offset().top;
+                    const windowHeight = $(window).height();
+                    const scrollPosition = $(window).scrollTop();
+                    
+                    // If element is in viewport
+                    if (elementPosition < (scrollPosition + windowHeight * 0.9)) {
+                        $(this).css('visibility', 'visible');
+                    }
+                });
+            };
+            
+            // Run on page load
+            animateOnScroll();
+            
+            // Run on scroll
+            $(window).on('scroll', animateOnScroll);
         });
     </script>
 </body>

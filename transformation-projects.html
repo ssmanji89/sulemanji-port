@@ -7,7 +7,7 @@
     <title>Business Process Transformation Projects</title>
     <meta name="description" content="Enterprise Technology Strategy | Cloud Architecture | Process Automation">
     <meta name="author" content="Suleman Manji">
-    <meta name="theme-color" content="#0366d6">
+    <meta name="theme-color" content="#4a76c4">
     
     <!-- Structured data for better SEO -->
     <script type="application/ld+json">
@@ -33,7 +33,6 @@
     <!-- External CSS from CDNs -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeset@0.3.1/typeset.css" integrity="sha256-9irRBUtkl+JnpVbCgk9myvEzBTSFXqsQTKnkR0wZL1w=" crossorigin="anonymous">
     
     <!-- Local stylesheets -->
     <link rel="stylesheet" href="/assets/css/style.css">
@@ -45,7 +44,6 @@
     <!-- External Scripts from CDNs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha256-qXBd/EfAdjOA2FGrGAG+b3YBn2tn5A6bhz+LSgYD96k=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" integrity="sha512-q583ppKrCRc7N5O0n2nzUiJ+suUv7Et1JGels4bXOaMFQcamPk9HjdUknZuuFjBNs7tsMuadge5k9RzdmO+1GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <!-- Local scripts -->
     <script src="/assets/js/main.js" defer></script>
@@ -55,13 +53,21 @@
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
     
     <div class="wrapper">
-        <header role="banner">
-            <div class="logo">
-                <a href="/" aria-label="Homepage">
+        <header>
+            <div class="site-header">
+                <div class="logo">
                     <h1>Suleman Manji</h1>
-                </a>
+                    <p class="tagline">Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
+                </div>
+                <div class="social-links">
+                    <a href="https://github.com/ssmanji89" target="_blank" rel="noopener" aria-label="GitHub Profile">
+                        <i class="fab fa-github" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
+                        <i class="fab fa-linkedin" aria-hidden="true"></i>
+                    </a>
+                </div>
             </div>
-            <p class="tagline">Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
             
             <nav class="main-nav" role="navigation" aria-label="Main navigation">
                 <ul>
@@ -73,15 +79,6 @@
                     <li><a href="/bpa" >Automation</a></li>
                 </ul>
             </nav>
-            
-            <div class="social-links">
-                <a href="https://github.com/ssmanji89" target="_blank" rel="noopener" aria-label="GitHub Profile">
-                    <i class="fab fa-github" aria-hidden="true"></i>
-                </a>
-                <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
-                    <i class="fab fa-linkedin" aria-hidden="true"></i>
-                </a>
-            </div>
         </header>
         
         <section id="main-content" class="main-content" role="main">
@@ -175,26 +172,35 @@
         </footer>
     </div>
     
-    <!-- Dark mode toggle button - Enhanced with ARIA -->
-    <button class="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle between light and dark mode">
-        <i class="fas fa-moon" aria-hidden="true"></i>
-    </button>
-
-    <!-- Modern JavaScript utilities from CDNs -->
-    <script src="https://cdn.jsdelivr.net/npm/intersection-observer@0.12.0/intersection-observer.js" integrity="sha256-fG/wMRXdZZ3SZ95AQOBPeg+fqZQ/p5kmEUlm8dnlKsw=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js" integrity="sha512-3n19xznO0ubPpSwYCRRBgHh63DrV+bdZfHK52b1esvId4GsfwStQNPJFjeQos2h3JwCmZl0/LgLxSKMAI55hgw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    
-    <!-- Performance metrics -->
     <script>
-        // Track page load performance
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                // Collect performance metrics
-                if (window.performance && window.performance.timing) {
-                    var pageLoadTime = window.performance.timing.loadEventEnd - window.performance.timing.navigationStart;
-                    console.log('Page load time: ' + pageLoadTime + 'ms');
+        $(document).ready(function() {
+            // Check for system preference
+            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const storedPreference = localStorage.getItem('darkMode');
+            
+            // Set initial mode based on stored preference or system preference
+            if (storedPreference === 'true' || (storedPreference === null && prefersDarkMode)) {
+                $('body').addClass('dark-mode');
+            }
+            
+            // Add smooth scrolling
+            $('a[href^="#"]').on('click', function(e) {
+                const targetId = $(this).attr('href');
+                
+                // Only process if the target exists
+                if (targetId !== '#' && $(targetId).length) {
+                    e.preventDefault();
+                    
+                    $('html, body').animate({
+                        scrollTop: $(targetId).offset().top - 50
+                    }, 800);
+                    
+                    // Set focus to the target for better accessibility
+                    setTimeout(() => {
+                        $(targetId).attr('tabindex', '-1').focus().removeAttr('tabindex');
+                    }, 810);
                 }
-            }, 0);
+            });
         });
     </script>
 </body>

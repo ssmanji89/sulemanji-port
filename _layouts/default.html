@@ -34,16 +34,7 @@
           <a href="/business-process-automation">Automation</a>
         </nav>
         
-        <div class="theme-switch-wrapper">
-          <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" />
-            <div class="slider round">
-              <i class="fas fa-moon"></i>
-              <i class="fas fa-sun"></i>
-            </div>
-          </label>
-          <span class="theme-label">Dark Mode</span>
-        </div>
+        <!-- Dark Mode Toggle moved to footer for better UI consistency -->
       </header>
       <section>
 
@@ -56,9 +47,7 @@
       </footer>
     </div>
     <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
-    <script src="{{ "/assets/js/main.js" | relative_url }}"></script>
-    <script src="{{ "/assets/js/dark-mode-cleanup.js" | relative_url }}"></script>
-    <script src="{{ "/assets/js/toggle-finder.js" | relative_url }}"></script>
+    <!-- The main.js and dark-mode-cleanup.js are already included in footer-custom.html -->
     
     <!-- Remove any extra dark mode toggles with inline script -->
     <script>

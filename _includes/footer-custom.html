@@ -1,3 +1,19 @@
+<!-- Theme Switch -->
+<div class="theme-switch-wrapper" aria-label="Toggle dark mode">
+  <label class="theme-switch" for="checkbox">
+    <input type="checkbox" id="checkbox" aria-label="Switch between dark and light mode" />
+    <div class="slider round">
+      <i class="fas fa-moon" aria-hidden="true"></i>
+      <i class="fas fa-sun" aria-hidden="true"></i>
+    </div>
+  </label>
+  <span class="theme-label">Dark Mode</span>
+</div>
+
+<!-- Custom JavaScript -->
+<script src="/assets/js/main.js"></script>
+<script src="/assets/js/dark-mode-cleanup.js"></script>
+
 <!-- Custom script to remove dark mode toggle -->
 <script>
   // Function to remove the specific dark mode toggle shown in screenshot
@@ -37,5 +53,47 @@
   document.addEventListener('DOMContentLoaded', function() {
     removeSpecificToggle();
     setInterval(removeSpecificToggle, 1000);
+  });
+</script>
+
+<!-- Accessibility improvements -->
+<script>
+  // Add proper focus styles for accessibility
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fix any potential accessibility issues with tech tags
+    const techTags = document.querySelectorAll('.tech-tag');
+    techTags.forEach(tag => {
+      // Ensure good contrast
+      if (tag.style.backgroundColor === '#f6f8fa' || tag.style.backgroundColor === 'rgb(246, 248, 250)') {
+        tag.style.backgroundColor = '#e1e4e8';
+        tag.style.color = '#24292e';
+      }
+    });
+    
+    // Fix any buttons without accessible names
+    const buttons = document.querySelectorAll('button:not([aria-label]):not([title])');
+    buttons.forEach(button => {
+      if (!button.textContent.trim()) {
+        // Try to determine what the button does from its icon or context
+        if (button.querySelector('.fa-github')) {
+          button.setAttribute('aria-label', 'Visit GitHub Profile');
+        } else if (button.querySelector('.fa-linkedin')) {
+          button.setAttribute('aria-label', 'Visit LinkedIn Profile');
+        } else if (button.closest('nav')) {
+          button.setAttribute('aria-label', 'Navigation button');
+        } else {
+          button.setAttribute('aria-label', 'Button');
+        }
+      }
+    });
+    
+    // Fix contrast issues with links
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+      if (window.getComputedStyle(link).color === 'rgb(88, 96, 105)' || 
+          window.getComputedStyle(link).color === '#586069') {
+        link.style.color = '#0366d6';
+      }
+    });
   });
 </script>

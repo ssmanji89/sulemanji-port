@@ -460,6 +460,112 @@ footer {
   padding-top: 20px;
 }
 
+/* Dark Mode Styles */
+body.dark-mode {
+  background-color: #0d1117;
+  color: #c9d1d9;
+}
+
+body.dark-mode header {
+  background-color: #161b22;
+  border-bottom: 1px solid #30363d;
+}
+
+body.dark-mode header h1 {
+  color: #f0f6fc;
+}
+
+body.dark-mode header p {
+  color: #8b949e;
+}
+
+body.dark-mode .main-nav a {
+  color: #c9d1d9;
+}
+
+body.dark-mode .main-nav a:hover,
+body.dark-mode .main-nav a:focus {
+  background-color: #21262d;
+  color: #58a6ff;
+}
+
+body.dark-mode .main-nav a.active {
+  background-color: #1f6feb;
+  color: white;
+}
+
+body.dark-mode .hero-section {
+  background: linear-gradient(145deg, #161b22, #0d419d);
+}
+
+body.dark-mode .profile-content h1,
+body.dark-mode .profile-content p {
+  color: #f0f6fc;
+}
+
+body.dark-mode .section-title {
+  color: #f0f6fc;
+}
+
+body.dark-mode .section-subtitle {
+  color: #8b949e;
+}
+
+body.dark-mode .skill-category,
+body.dark-mode .project-card,
+body.dark-mode .stat-box,
+body.dark-mode .approach-item {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .skill-category h3,
+body.dark-mode .project-title {
+  color: #f0f6fc;
+}
+
+body.dark-mode .skill-category p,
+body.dark-mode .project-description {
+  color: #8b949e;
+}
+
+body.dark-mode .tech-tag {
+  background-color: #21262d;
+  color: #8b949e;
+}
+
+body.dark-mode .btn-outline {
+  color: #58a6ff;
+  border-color: #58a6ff;
+}
+
+body.dark-mode .btn-outline:hover {
+  background-color: #1f6feb;
+  color: white;
+}
+
+body.dark-mode footer {
+  background-color: #0d1117;
+  color: #8b949e;
+  border-top: 1px solid #30363d;
+}
+
+/* Accessibility Improvements */
+.tech-tag {
+  background-color: #e1e4e8;
+  color: #24292e;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+body.dark-mode .tech-tag {
+  background-color: #30363d;
+  color: #e6edf3;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .profile-container {

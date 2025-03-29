@@ -9,6 +9,60 @@
 
 <!-- Meta tags -->
 <meta name="theme-color" content="#0366d6" id="theme-color-meta">
+<meta name="color-scheme" content="light dark">
+
+<!-- Additional Styles for Dark Mode Consistency -->
+<style>
+  /* Override any conflicting styles for dark mode */
+  @media (prefers-color-scheme: dark) {
+    body:not(.forced-light) {
+      background-color: #0d1117 !important;
+      color: #c9d1d9 !important;
+    }
+  }
+  
+  /* Enhance contrast for accessibility */
+  .tech-tag {
+    background-color: #e1e4e8 !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode .tech-tag {
+    background-color: #30363d !important;
+    color: #e6edf3 !important;
+  }
+  
+  /* Fix any UI elements that might be hard to see in dark mode */
+  body.dark-mode a:not(.btn) {
+    color: #58a6ff;
+  }
+  
+  body.dark-mode .fa-moon {
+    color: #c9d1d9;
+  }
+  
+  /* Force white background in light mode and dark background in dark mode */
+  body:not(.dark-mode) {
+    background-color: #f6f8fa !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode {
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+  }
+  
+  body.dark-mode header, 
+  body.dark-mode section,
+  body.dark-mode p {
+    color: #c9d1d9 !important;
+  }
+  
+  /* Animation to help with theme transitions */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+</style>
 
 <!-- Dark mode script for meta tag -->
 <script>
@@ -22,14 +76,35 @@
       'content', 
       isDarkMode ? '#0d1117' : '#0366d6'
     );
+    
+    // Also update color-scheme meta
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', isDarkMode ? 'dark' : 'light dark');
+    }
   };
   
   // Run once at load
-  document.addEventListener('DOMContentLoaded', updateThemeColorMeta);
+  document.addEventListener('DOMContentLoaded', function() {
+    updateThemeColorMeta();
+    
+    // Fix for blank dark mode pages - force redraw if needed
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark' && !document.body.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+      // Force redraw
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // This line forces a reflow
+      document.body.style.display = '';
+    }
+  });
   
   // Update when theme changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta);
 </script>
+
+<!-- Debug Dark Mode Toggle script (development only - remove in production) -->
+<script src="/assets/js/toggle-finder.js"></script>
 
 <!-- Schema.org for SEO -->
 <script type="application/ld+json">

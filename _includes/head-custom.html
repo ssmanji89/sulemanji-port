@@ -8,7 +8,28 @@
 <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
 
 <!-- Meta tags -->
-<meta name="theme-color" content="#0366d6">
+<meta name="theme-color" content="#0366d6" id="theme-color-meta">
+
+<!-- Dark mode script for meta tag -->
+<script>
+  // Update theme-color meta tag based on dark mode preference
+  const updateThemeColorMeta = () => {
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                     (localStorage.getItem('theme') === 'dark') ||
+                     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    document.getElementById('theme-color-meta').setAttribute(
+      'content', 
+      isDarkMode ? '#0d1117' : '#0366d6'
+    );
+  };
+  
+  // Run once at load
+  document.addEventListener('DOMContentLoaded', updateThemeColorMeta);
+  
+  // Update when theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta);
+</script>
 
 <!-- Schema.org for SEO -->
 <script type="application/ld+json">

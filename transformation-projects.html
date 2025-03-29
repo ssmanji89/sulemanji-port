@@ -22,7 +22,7 @@
 {"@context":"https://schema.org","@type":"WebPage","description":"Enterprise Technology Strategy Cloud Architecture Process Automation","headline":"Business Process Transformation Projects","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"}},"url":"https://www.sulemanji.com/transformation-projects"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/assets/css/style.css?v=09a5aca5e0d65b522f108039249fa0e45724291d">
+    <link rel="stylesheet" href="/assets/css/style.css?v=7e7b9c1b87a04db41b9faf7576a6b23ae6981033">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -189,9 +189,98 @@
       </section>
       <footer>
         <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
+        <!-- Custom script to remove dark mode toggle -->
+<script>
+  // Function to remove the specific dark mode toggle shown in screenshot
+  function removeSpecificToggle() {
+    // Look for elements matching the description in the screenshot
+    const possibleToggles = document.querySelectorAll('body > .switchTheme, body > [class*="dark-mode-toggle"], body > div:not(.wrapper) > [class*="moon"], body > div:not(.wrapper) > [class*="sun"]');
+    
+    possibleToggles.forEach(function(element) {
+      const rect = element.getBoundingClientRect();
+      // Check if the element is at the bottom of the page
+      if (rect.bottom > window.innerHeight - 100) {
+        console.log('Removing specific toggle element:', element);
+        element.remove();
+      }
+    });
+    
+    // Specifically target the element in your screenshot
+    const moonSunElements = document.querySelectorAll('body > *:not(.wrapper) .fa-moon, body > *:not(.wrapper) .fa-sun');
+    moonSunElements.forEach(function(element) {
+      const parentElement = element.closest('div');
+      if (parentElement && !parentElement.closest('.theme-switch-wrapper')) {
+        console.log('Removing moon/sun element outside .wrapper:', parentElement);
+        parentElement.remove();
+      }
+    });
+    
+    // Remove any toggle with text "Dark Mode"
+    document.querySelectorAll('body > *').forEach(function(element) {
+      if (element.textContent && element.textContent.trim() === 'Dark Mode') {
+        console.log('Removing element with text "Dark Mode":', element);
+        element.remove();
+      }
+    });
+  }
+  
+  // Run on load and periodically
+  document.addEventListener('DOMContentLoaded', function() {
+    removeSpecificToggle();
+    setInterval(removeSpecificToggle, 1000);
+  });
+</script>
+
       </footer>
     </div>
     <script src="/assets/js/scale.fix.js"></script>
     <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/dark-mode-cleanup.js"></script>
+    <script src="/assets/js/toggle-finder.js"></script>
+    
+    <!-- Remove any extra dark mode toggles with inline script -->
+    <script>
+      // Use MutationObserver to detect and remove any elements added after load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Create an observer instance
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Only process Element nodes
+                  // Check if this is likely a dark mode toggle
+                  if (node.textContent && node.textContent.includes('Dark Mode') || 
+                      node.textContent && node.textContent.includes('Mode') ||
+                      node.innerHTML && (node.innerHTML.includes('moon') || 
+                      node.innerHTML.includes('sun'))) {
+                    
+                    // Make sure it's not our own toggle
+                    if (!node.closest('.theme-switch-wrapper')) {
+                      console.log('Observer removing node:', node);
+                      node.remove();
+                    }
+                  }
+                  
+                  // Check for elements at the bottom of page
+                  if (node.getBoundingClientRect && 
+                      node.getBoundingClientRect().top > (window.innerHeight - 100)) {
+                    if (!node.closest('.wrapper')) {
+                      console.log('Observer removing bottom element:', node);
+                      node.remove();
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        // Start observing the body with the configured parameters
+        observer.observe(document.body, { 
+          childList: true, 
+          subtree: true
+        });
+      });
+    </script>
   </body>
 </html>

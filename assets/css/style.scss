@@ -1,26 +1,150 @@
 ---
 ---
 
-// Variables for GitHub-like styling
-:root {
-  --primary-color: #0366d6;      /* GitHub blue */
-  --primary-light: #58a6ff;      /* Lighter blue */
-  --primary-dark: #044289;       /* Darker blue */ 
-  --text-color: #24292e;         /* GitHub main text color */
-  --text-color-light: #586069;   /* GitHub secondary text color */
-  --background-color: #f6f8fa;   /* GitHub light gray background */
-  --section-bg: #ffffff;         /* White section background */
-  --dark-bg: #0d1117;            /* Dark background for hero section */
-  --dark-text: #ffffff;          /* White text for dark backgrounds */
-  --border-color: #e1e4e8;       /* GitHub border color */
-  --accent-color: #2ea44f;       /* GitHub green for accents */
-  --section-divider: #eaecef;    /* Section divider color */
-  --card-border: #e1e4e8;        /* Card border color */
-  --card-shadow: rgba(0, 0, 0, 0.04); /* Card shadow */
-}
-
-// Import the theme
 @import "{{ site.theme }}";
 
-// Apply our custom styles after the theme import
-@import "custom";
+// Additional custom styling
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  color: #24292e;
+  line-height: 1.6;
+}
+
+section {
+  color: #24292e;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #24292e;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+h2 {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #eaecef;
+  font-size: 1.5em;
+}
+
+h3 {
+  font-size: 1.25em;
+}
+
+p {
+  margin-bottom: 16px;
+  color: #24292e;
+}
+
+a {
+  color: #0366d6;
+}
+
+a:hover {
+  color: #0366d6;
+  text-decoration: underline;
+}
+
+code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(27, 31, 35, 0.05);
+  border-radius: 3px;
+}
+
+header nav {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+header nav a {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #24292e;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+header nav a:hover {
+  background-color: #f6f8fa;
+  text-decoration: none;
+}
+
+.btn {
+  display: inline-block;
+  background-color: #2ea44f;
+  color: white !important;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none !important;
+  font-weight: 600;
+  text-align: center;
+  transition: background-color 0.2s;
+  margin: 0.5em 0.5em 0.5em 0;
+}
+
+.btn:hover {
+  background-color: #2c974b;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #0366d6 !important;
+  border: 1px solid #0366d6;
+}
+
+.btn-outline:hover {
+  background-color: #0366d6;
+  color: white !important;
+}
+
+// Utility classes
+.text-center {
+  text-align: center;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.mt-4 {
+  margin-top: 1.5rem;
+}
+
+// Icons
+i.fas, i.fab {
+  margin-right: 5px;
+}
+
+// Error page
+.error-container {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.error-title {
+  font-size: 120px;
+  margin: 0;
+  line-height: 1;
+  color: #0366d6;
+}
+
+.error-actions {
+  margin-top: 40px;
+}
+
+.error-actions a {
+  margin: 0 10px 10px 0;
+}
+
+// Responsive adjustments
+@media print, screen and (max-width: 960px) {
+  header {
+    padding-right: 0;
+  }
+}

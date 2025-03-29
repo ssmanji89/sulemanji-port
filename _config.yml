@@ -3,13 +3,13 @@ email: ssmanji89@gmail.com
 description: Enterprise Technology Strategy | Cloud Architecture | Process Automation
 
 # Theme configuration
-remote_theme: pages-themes/modernist@v0.2.0
+theme: jekyll-theme-minimal
 plugins:
-  - jekyll-remote-theme
   - jekyll-seo-tag
   - jekyll-feed
 
 # Theme-specific configurations
+logo: /images/sulemanji-profile.png
 show_downloads: false
 google_analytics: 
 

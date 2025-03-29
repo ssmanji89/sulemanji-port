@@ -1,123 +1,48 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{ site.lang | default: "en-US" }}">
   <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    {% seo %}
-
-    <link rel="stylesheet" href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
-    <script src="{{ '/assets/js/scale.fix.js' | relative_url }}"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+{% seo %}
+    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
     <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
-
     {% include head-custom.html %}
   </head>
   <body>
     <div class="wrapper">
-      <header {% unless site.description or site.github.project_tagline %} class="without-description" {% endunless %}>
-        <div class="site-header">
-          <div class="logo">
-            <h1><a href="{{ '/' | relative_url }}" style="color: inherit; text-decoration: none;">{{ site.title | default: site.github.repository_name }}</a></h1>
-            {% if site.description or site.github.project_tagline %}
-              <p class="tagline">{{ site.description | default: site.github.project_tagline }}</p>
-            {% endif %}
-          </div>
-          <div class="social-links">
-            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener" aria-label="GitHub Profile">
-                <i class="fab fa-github" aria-hidden="true"></i>
-            </a>
-            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
-                <i class="fab fa-linkedin" aria-hidden="true"></i>
-            </a>
-            <a href="mailto:contact@sulemanji.com" aria-label="Email">
-                <i class="fas fa-envelope" aria-hidden="true"></i>
-            </a>
-          </div>
-        </div>
+      <header>
+        <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
+
+        {% if site.logo %}
+          <img src="{{site.logo | relative_url}}" alt="Logo" />
+        {% endif %}
+
+        <p>{{ site.description | default: site.github.project_tagline }}</p>
+
+        <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
         
-        <nav class="main-nav" role="navigation" aria-label="Main navigation">
-          <ul>
-            <li><a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active" aria-current="page"{% endif %}>Home</a></li>
-            <li><a href="{{ '/about' | relative_url }}" {% if page.url == '/about' %}class="active" aria-current="page"{% endif %}>About</a></li>
-            <li><a href="{{ '/experience' | relative_url }}" {% if page.url == '/experience' %}class="active" aria-current="page"{% endif %}>Experience</a></li>
-            <li><a href="{{ '/projects' | relative_url }}" {% if page.url == '/projects' %}class="active" aria-current="page"{% endif %}>Projects</a></li>
-            <li><a href="{{ '/philosophy' | relative_url }}" {% if page.url == '/philosophy' %}class="active" aria-current="page"{% endif %}>Philosophy</a></li>
-            <li><a href="{{ '/business-process-automation' | relative_url }}" {% if page.url == '/business-process-automation' %}class="active" aria-current="page"{% endif %}>Automation</a></li>
-          </ul>
+        <nav>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/experience">Experience</a>
+          <a href="/projects">Projects</a>
+          <a href="/philosophy">Philosophy</a>
+          <a href="/business-process-automation">Automation</a>
         </nav>
       </header>
+      <section>
 
-      <section id="main-content">
-        {{ content }}
+      {{ content }}
+
       </section>
-      
-      <footer role="contentinfo">
-        <div class="footer-content">
-          <div class="footer-info">
-            <a href="{{ '/' | relative_url }}" class="footer-logo">Suleman Manji</a>
-            <p class="footer-description">Enterprise technology strategist focusing on cloud architecture, security engineering, and process automation solutions for complex business environments.</p>
-            <div class="social-links-footer">
-              <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener" aria-label="GitHub Profile">
-                <i class="fab fa-github" aria-hidden="true"></i>
-              </a>
-              <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
-                <i class="fab fa-linkedin" aria-hidden="true"></i>
-              </a>
-              <a href="mailto:contact@sulemanji.com" aria-label="Email">
-                <i class="fas fa-envelope" aria-hidden="true"></i>
-              </a>
-            </div>
-          </div>
-          
-          <div class="footer-nav-container">
-            <div class="footer-nav-title">Navigation</div>
-            <nav class="footer-nav" aria-label="Footer navigation">
-              <a href="{{ '/' | relative_url }}">Home</a>
-              <a href="{{ '/about' | relative_url }}">About</a>
-              <a href="{{ '/experience' | relative_url }}">Experience</a>
-              <a href="{{ '/projects' | relative_url }}">Projects</a>
-              <a href="{{ '/philosophy' | relative_url }}">Philosophy</a>
-            </nav>
-          </div>
-          
-          <div class="footer-nav-container">
-            <div class="footer-nav-title">Resources</div>
-            <nav class="footer-nav" aria-label="Resources navigation">
-              <a href="{{ '/business-process-automation' | relative_url }}">Automation</a>
-              <a href="{{ '/business-process-transformation' | relative_url }}">Transformation</a>
-              <a href="{{ '/resume' | relative_url }}">Resume</a>
-              <a href="https://github.com/ssmanji89" target="_blank" rel="noopener">GitHub Projects</a>
-            </nav>
-          </div>
-        </div>
-        
-        <div class="copyright">
-          <p>&copy; {{ site.time | date: '%Y' }} Suleman Manji. All rights reserved.</p>
-        </div>
+      <footer>
+        <p>&copy; {{ site.time | date: '%Y' }} Suleman Manji. All rights reserved.</p>
       </footer>
     </div>
-
-    <script>
-      $(document).ready(function() {
-        // Add smooth scrolling
-        $('a[href^="#"]').on('click', function(e) {
-          const targetId = $(this).attr('href');
-          
-          // Only process if the target exists
-          if (targetId !== '#' && $(targetId).length) {
-            e.preventDefault();
-            
-            $('html, body').animate({
-              scrollTop: $(targetId).offset().top - 70 // Adjusted for sticky header
-            }, 800);
-          }
-        });
-      });
-    </script>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
   </body>
 </html>

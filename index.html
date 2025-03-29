@@ -1,409 +1,196 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>Suleman Manji - Enterprise Technology Strategist</title>
-    <meta name="description" content="Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation.">
-    <meta name="author" content="Suleman Manji">
-    <meta name="theme-color" content="#4a76c4">
-    
-    <!-- Structured data for better SEO -->
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "ProfilePage",
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Suleman Manji - Enterprise Technology Strategist | Suleman Manji</title>
+<meta name="generator" content="Jekyll v3.9.5" />
+<meta property="og:title" content="Suleman Manji - Enterprise Technology Strategist" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation." />
+<meta property="og:description" content="Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation." />
+<link rel="canonical" href="https://www.sulemanji.com/" />
+<meta property="og:url" content="https://www.sulemanji.com/" />
+<meta property="og:site_name" content="Suleman Manji" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Suleman Manji - Enterprise Technology Strategist" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","description":"Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation.","headline":"Suleman Manji - Enterprise Technology Strategist","name":"Suleman Manji","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"}},"url":"https://www.sulemanji.com/"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=4b26daf0fbd2ac8674231fc6411e80eb391e05f1">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+<!-- Meta tags -->
+<meta name="theme-color" content="#0366d6">
+
+<!-- Schema.org for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "name": "Suleman Manji",
+    "description": "Enterprise Technology Strategy | Cloud Architecture | Process Automation",
+    "url": "https://www.sulemanji.com/",
+    "author": {
+        "@type": "Person",
         "name": "Suleman Manji",
-        "description": "Enterprise Technology Strategy | Cloud Architecture | Process Automation",
-        "url": "https://www.sulemanji.com/",
-        "author": {
-            "@type": "Person",
-            "name": "Suleman Manji",
-            "url": "https://www.sulemanji.com"
-        }
+        "url": "https://www.sulemanji.com"
     }
-    </script>
-    
-    <!-- Preload critical assets -->
-    <link rel="preload" href="/assets/css/style.css" as="style">
-    <link rel="preload" href="/assets/css/custom.css" as="style">
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
-    
-    <!-- External CSS from CDNs -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" integrity="sha512-NhSC1YmyruXifcj/KFRWoC561YpHpc5Jtzgvbuzx5VozKpWvQ+4nXhPdFgmx8xqexRcpAglTj9sIBWINXa8x5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-    <!-- Local stylesheets -->
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <link rel="stylesheet" href="/assets/css/custom.css">
-    
-    <!-- Favicon -->
-    <link rel="icon" href="/images/favicon.ico">
-    
-    <!-- External Scripts from CDNs -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" integrity="sha256-qXBd/EfAdjOA2FGrGAG+b3YBn2tn5A6bhz+LSgYD96k=" crossorigin="anonymous"></script>
-    
-    <!-- Local scripts -->
-    <script src="/assets/js/main.js" defer></script>
-</head>
-<body>
-    <!-- Skip to content link for accessibility -->
-    <a href="#main-content" class="skip-to-content">Skip to main content</a>
-    
-    <header>
-        <div class="container">
-            <div class="site-header">
-                <div class="logo">
-                    <a href="/" style="text-decoration: none; color: inherit;">
-                        <h1>Suleman Manji</h1>
-                    </a>
-                    <p class="tagline">Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
-                </div>
-                <div class="social-links">
-                    <a href="https://github.com/ssmanji89" target="_blank" rel="noopener" aria-label="GitHub Profile">
-                        <i class="fab fa-github" aria-hidden="true"></i>
-                    </a>
-                    <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
-                        <i class="fab fa-linkedin" aria-hidden="true"></i>
-                    </a>
-                    <a href="mailto:contact@sulemanji.com" aria-label="Email">
-                        <i class="fas fa-envelope" aria-hidden="true"></i>
-                    </a>
-                </div>
-            </div>
-            
-            <nav class="main-nav" role="navigation" aria-label="Main navigation">
-                <ul>
-                    <li><a href="/" class="active" aria-current="page">Home</a></li>
-                    <li><a href="/about" >About</a></li>
-                    <li><a href="/experience" >Experience</a></li>
-                    <li><a href="/projects" >Projects</a></li>
-                    <li><a href="/philosophy" >Philosophy</a></li>
-                    <li><a href="/business-process-automation" >Automation</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
-    
+}
+</script>
+
+  </head>
+  <body>
     <div class="wrapper">
+      <header>
+        <h1><a href="https://www.sulemanji.com/">Suleman Manji</a></h1>
+
         
-        <main id="main-content" class="main-content" role="main">
-            <div class="hero-section">
-    <div class="hero-container">
-        <div class="profile-container">
-            <div class="profile-image-container">
-                <img src="/images/sulemanji-profile.png" alt="Suleman Manji" class="profile-image" />
-            </div>
-            <div class="profile-content">
-                <h1>Suleman Manji</h1>
-                <h2>Enterprise Technology Strategist</h2>
-                <p>Driving enterprise transformation through strategic cloud adoption, security engineering, and intelligent process automation.</p>
-                <div class="hero-cta">
-                    <a href="/projects" class="btn btn-primary">View Projects</a>
-                    <a href="/experience" class="btn btn-outline">My Experience</a>
-                </div>
-            </div>
-        </div>
-    </div>
+          <img src="/images/sulemanji-profile.png" alt="Logo" />
+        
+
+        <p>Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
+
+        <p class="view"><a href="https://github.com/ssmanji89">View My GitHub Profile</a></p>
+        
+        <nav>
+          <a href="/">Home</a>
+          <a href="/about">About</a>
+          <a href="/experience">Experience</a>
+          <a href="/projects">Projects</a>
+          <a href="/philosophy">Philosophy</a>
+          <a href="/business-process-automation">Automation</a>
+        </nav>
+      </header>
+      <section>
+
+      <h2 id="enterprise-technology-strategist">Enterprise Technology Strategist</h2>
+
+<p>Driving enterprise transformation through strategic cloud adoption, security engineering, and intelligent process automation.</p>
+
+<div class="cta-buttons">
+    <a href="/projects" class="btn">View Projects</a>
+    <a href="/experience" class="btn btn-outline">My Experience</a>
 </div>
 
-<section class="section">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Core Competencies</h2>
-            <p class="section-subtitle">Specialized expertise in enterprise technology solutions</p>
-        </div>
-        <div class="skills-overview">
-            <div class="skill-category slide-up">
-                <div class="skill-icon"><i class="fas fa-cloud"></i></div>
-                <h3>Cloud Architecture</h3>
-                <p>Design and implementation of scalable, secure cloud infrastructure solutions with a focus on Microsoft Azure and Microsoft 365 environments.</p>
-            </div>
-            <div class="skill-category slide-up" style="animation-delay: 0.2s;">
-                <div class="skill-icon"><i class="fas fa-shield-alt"></i></div>
-                <h3>Security Engineering</h3>
-                <p>Comprehensive security frameworks focused on identity governance, privileged access management, and zero-trust architecture.</p>
-            </div>
-            <div class="skill-category slide-up" style="animation-delay: 0.4s;">
-                <div class="skill-icon"><i class="fas fa-cogs"></i></div>
-                <h3>Process Automation</h3>
-                <p>Development of intelligent workflow solutions using Power Automate, PowerShell, and custom integration frameworks to streamline business operations.</p>
-            </div>
-        </div>
-    </div>
-</section>
+<h2 id="core-competencies">Core Competencies</h2>
 
-<section class="projects-section">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Featured Projects</h2>
-            <p class="section-subtitle">Recent work in AI, automation, and enterprise solutions</p>
-        </div>
-        <div class="projects-grid">
-            <div class="project-card fade-in" data-categories="ai,integration">
-                <div class="project-image" style="background-image: url('/images/project-robinhood.jpg')"></div>
-                <div class="project-content">
-                    <h3 class="project-title">Robinhood Copilot</h3>
-                    <p class="project-description">AI-powered analysis assistant for Robinhood trading platform using ChatGPT integration.</p>
-                    <div class="project-tech">
-                        <span class="tech-tag">Python</span>
-                        <span class="tech-tag">OpenAI</span>
-                        <span class="tech-tag">Robinhood API</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="https://github.com/ssmanji89/robinhood-copilot" target="_blank">View on GitHub <i class="fab fa-github"></i></a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="project-card fade-in" style="animation-delay: 0.2s;" data-categories="automation,ai">
-                <div class="project-image" style="background-image: url('/images/project-assistant.jpg')"></div>
-                <div class="project-content">
-                    <h3 class="project-title">Executive Assistant</h3>
-                    <p class="project-description">Intelligent middleware for Microsoft 365 inboxes with AI-powered response drafting and task management.</p>
-                    <div class="project-tech">
-                        <span class="tech-tag">Python</span>
-                        <span class="tech-tag">OpenAI</span>
-                        <span class="tech-tag">Microsoft Graph API</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="https://github.com/ssmanji89/executive-assistant" target="_blank">View on GitHub <i class="fab fa-github"></i></a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="project-card fade-in" style="animation-delay: 0.4s;" data-categories="finance,automation">
-                <div class="project-image" style="background-image: url('/images/project-bitrepo.jpg')"></div>
-                <div class="project-content">
-                    <h3 class="project-title">BitRepo</h3>
-                    <p class="project-description">Automated cryptocurrency activity tracking and reporting solution for simplified portfolio management.</p>
-                    <div class="project-tech">
-                        <span class="tech-tag">Python</span>
-                        <span class="tech-tag">Blockchain APIs</span>
-                        <span class="tech-tag">Data Analytics</span>
-                    </div>
-                    <div class="project-links">
-                        <a href="https://github.com/ssmanji89/bitrepo-repo" target="_blank">View on GitHub <i class="fab fa-github"></i></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="text-center mt-xl">
-            <a href="/projects" class="btn btn-primary">Explore All Projects</a>
-        </div>
-    </div>
-</section>
+<h3 id="-cloud-architecture"><i class="fas fa-cloud"></i> Cloud Architecture</h3>
+<p>Design and implementation of scalable, secure cloud infrastructure solutions with a focus on Microsoft Azure and Microsoft 365 environments.</p>
 
-<section class="impact-section">
-    <div class="container">
-        <h2 class="section-title">Transformation Impact</h2>
-        <div class="impact-stats">
-            <div class="stat-box fade-in">
-                <div class="stat-number">40%</div>
-                <div class="stat-label">Cloud Cost Reduction</div>
-                <p>Optimized cloud resource utilization through architecture refinement</p>
-            </div>
-            <div class="stat-box fade-in" style="animation-delay: 0.2s;">
-                <div class="stat-number">70+</div>
-                <div class="stat-label">Automation Workflows</div>
-                <p>Comprehensive process automation solutions across multiple domains</p>
-            </div>
-            <div class="stat-box fade-in" style="animation-delay: 0.4s;">
-                <div class="stat-number">88.8%</div>
-                <div class="stat-label">Enhanced Security</div>
-                <p>Elevated Microsoft 365 Secure Score across enterprise environments</p>
-            </div>
-        </div>
-    </div>
-</section>
+<h3 id="-security-engineering"><i class="fas fa-shield-alt"></i> Security Engineering</h3>
+<p>Comprehensive security frameworks focused on identity governance, privileged access management, and zero-trust architecture.</p>
 
-<section class="tech-stack-section">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Technology Stack</h2>
-            <p class="section-subtitle">Tools and platforms leveraged for enterprise solutions</p>
-        </div>
-        <div class="tech-stack">
-            <div class="tech-category slide-up">
-                <h3>Cloud Platforms</h3>
-                <div class="tech-items">
-                    <div class="tech-item"><i class="fab fa-microsoft"></i> Azure</div>
-                    <div class="tech-item"><i class="fas fa-cloud"></i> Microsoft 365</div>
-                    <div class="tech-item"><i class="fab fa-aws"></i> AWS</div>
-                </div>
-            </div>
-            
-            <div class="tech-category slide-up" style="animation-delay: 0.2s;">
-                <h3>Security Tools</h3>
-                <div class="tech-items">
-                    <div class="tech-item"><i class="fas fa-shield-alt"></i> CyberArk</div>
-                    <div class="tech-item"><i class="fas fa-user-shield"></i> DLDM</div>
-                    <div class="tech-item"><i class="fas fa-lock"></i> Azure AD</div>
-                    <div class="tech-item"><i class="fas fa-key"></i> Okta</div>
-                </div>
-            </div>
-            
-            <div class="tech-category slide-up" style="animation-delay: 0.4s;">
-                <h3>Automation</h3>
-                <div class="tech-items">
-                    <div class="tech-item"><i class="fas fa-cogs"></i> Power Automate</div>
-                    <div class="tech-item"><i class="fas fa-terminal"></i> PowerShell</div>
-                    <div class="tech-item"><i class="fas fa-code"></i> Python</div>
-                    <div class="tech-item"><i class="fab fa-node-js"></i> Node.js</div>
-                </div>
-            </div>
-            
-            <div class="tech-category slide-up" style="animation-delay: 0.6s;">
-                <h3>Development</h3>
-                <div class="tech-items">
-                    <div class="tech-item"><i class="fas fa-window-restore"></i> .NET</div>
-                    <div class="tech-item"><i class="fab fa-python"></i> Python</div>
-                    <div class="tech-item"><i class="fas fa-code-branch"></i> Azure DevOps</div>
-                    <div class="tech-item"><i class="fab fa-github"></i> GitHub</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
+<h3 id="-process-automation"><i class="fas fa-cogs"></i> Process Automation</h3>
+<p>Development of intelligent workflow solutions using Power Automate, PowerShell, and custom integration frameworks to streamline business operations.</p>
 
-<section class="approach-section">
-    <div class="container">
-        <div class="section-header">
-            <h2 class="section-title">Professional Approach</h2>
-            <p class="section-subtitle">Core methodologies that drive successful outcomes</p>
-        </div>
-        <div class="approach-grid">
-            <div class="approach-item slide-up">
-                <h3>Analytical Problem Resolution</h3>
-                <p>Systematic decomposition of complex technological challenges into actionable components with measurable outcomes. This approach ensures clear visibility into progress and definitive validation of results.</p>
-            </div>
-            <div class="approach-item slide-up" style="animation-delay: 0.2s;">
-                <h3>Modular System Architecture</h3>
-                <p>Development of adaptable, component-based solutions that enable scalability and future enhancement. Modular design principles ensure systems can evolve alongside changing business requirements.</p>
-            </div>
-            <div class="approach-item slide-up" style="animation-delay: 0.4s;">
-                <h3>Data-Driven Optimization</h3>
-                <p>Leveraging metrics and performance analytics to continuously refine and enhance technological ecosystems. This approach transforms operational data into strategic insights that guide improvement initiatives.</p>
-            </div>
-        </div>
-    </div>
-</section>
+<h2 id="featured-projects">Featured Projects</h2>
 
-<section class="section">
-    <div class="container text-center">
-        <div class="section-header">
-            <h2 class="section-title">Ready to Learn More?</h2>
-            <p class="section-subtitle">Explore my professional journey and technical projects</p>
-        </div>
-        <div class="cta-container" style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 40px;">
-            <a href="/experience" class="btn btn-primary">View My Experience</a>
-            <a href="/projects" class="btn">Explore Projects</a>
-        </div>
-    </div>
-</section>
+<h3 id="robinhood-copilot">Robinhood Copilot</h3>
+<p>AI-powered analysis assistant for Robinhood trading platform using ChatGPT integration.</p>
+<ul>
+  <li><strong>Technologies</strong>: Python, OpenAI, Robinhood API</li>
+  <li><a href="https://github.com/ssmanji89/robinhood-copilot">View on GitHub</a> <i class="fab fa-github"></i></li>
+</ul>
 
-        </main>
-        
-        <footer role="contentinfo">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-info">
-                        <a href="/" class="footer-logo">Suleman Manji</a>
-                        <p class="footer-description">Enterprise technology strategist focusing on cloud architecture, security engineering, and process automation solutions for complex business environments.</p>
-                        <div class="social-links-footer">
-                            <a href="https://github.com/ssmanji89" target="_blank" rel="noopener" aria-label="GitHub Profile">
-                                <i class="fab fa-github" aria-hidden="true"></i>
-                            </a>
-                            <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" rel="noopener" aria-label="LinkedIn Profile">
-                                <i class="fab fa-linkedin" aria-hidden="true"></i>
-                            </a>
-                            <a href="mailto:contact@sulemanji.com" aria-label="Email">
-                                <i class="fas fa-envelope" aria-hidden="true"></i>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="footer-nav-container">
-                        <div class="footer-nav-title">Navigation</div>
-                        <nav class="footer-nav" aria-label="Footer navigation">
-                            <a href="/">Home</a>
-                            <a href="/about">About</a>
-                            <a href="/experience">Experience</a>
-                            <a href="/projects">Projects</a>
-                            <a href="/philosophy">Philosophy</a>
-                        </nav>
-                    </div>
-                    
-                    <div class="footer-nav-container">
-                        <div class="footer-nav-title">Resources</div>
-                        <nav class="footer-nav" aria-label="Resources navigation">
-                            <a href="/business-process-automation">Automation</a>
-                            <a href="/business-process-transformation">Transformation</a>
-                            <a href="/resume">Resume</a>
-                            <a href="https://github.com/ssmanji89" target="_blank" rel="noopener">GitHub Projects</a>
-                        </nav>
-                    </div>
-                </div>
-                
-                <div class="copyright">
-                    <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
-                </div>
-            </div>
-        </footer>
+<h3 id="executive-assistant">Executive Assistant</h3>
+<p>Intelligent middleware for Microsoft 365 inboxes with AI-powered response drafting and task management.</p>
+<ul>
+  <li><strong>Technologies</strong>: Python, OpenAI, Microsoft Graph API</li>
+  <li><a href="https://github.com/ssmanji89/executive-assistant">View on GitHub</a> <i class="fab fa-github"></i></li>
+</ul>
+
+<h3 id="bitrepo">BitRepo</h3>
+<p>Automated cryptocurrency activity tracking and reporting solution for simplified portfolio management.</p>
+<ul>
+  <li><strong>Technologies</strong>: Python, Blockchain APIs, Data Analytics</li>
+  <li><a href="https://github.com/ssmanji89/bitrepo-repo">View on GitHub</a> <i class="fab fa-github"></i></li>
+</ul>
+
+<p><a href="/projects" class="btn">Explore All Projects</a></p>
+
+<h2 id="transformation-impact">Transformation Impact</h2>
+
+<ul>
+  <li><strong>40%</strong> Cloud Cost Reduction
+    <ul>
+      <li>Optimized cloud resource utilization through architecture refinement</li>
+    </ul>
+  </li>
+  <li><strong>70+</strong> Automation Workflows
+    <ul>
+      <li>Comprehensive process automation solutions across multiple domains</li>
+    </ul>
+  </li>
+  <li><strong>88.8%</strong> Enhanced Security Posture
+    <ul>
+      <li>Elevated Microsoft 365 Secure Score across enterprise environments</li>
+    </ul>
+  </li>
+</ul>
+
+<h2 id="technology-stack">Technology Stack</h2>
+
+<h3 id="cloud-platforms">Cloud Platforms</h3>
+<ul>
+  <li><i class="fab fa-microsoft"></i> Azure</li>
+  <li><i class="fas fa-cloud"></i> Microsoft 365</li>
+  <li><i class="fab fa-aws"></i> AWS</li>
+</ul>
+
+<h3 id="security-tools">Security Tools</h3>
+<ul>
+  <li><i class="fas fa-shield-alt"></i> CyberArk</li>
+  <li><i class="fas fa-user-shield"></i> DLDM</li>
+  <li><i class="fas fa-lock"></i> Azure AD</li>
+  <li><i class="fas fa-key"></i> Okta</li>
+</ul>
+
+<h3 id="automation">Automation</h3>
+<ul>
+  <li><i class="fas fa-cogs"></i> Power Automate</li>
+  <li><i class="fas fa-terminal"></i> PowerShell</li>
+  <li><i class="fas fa-code"></i> Python</li>
+  <li><i class="fab fa-node-js"></i> Node.js</li>
+</ul>
+
+<h2 id="professional-approach">Professional Approach</h2>
+
+<h3 id="analytical-problem-resolution">Analytical Problem Resolution</h3>
+<p>Systematic decomposition of complex technological challenges into actionable components with measurable outcomes.</p>
+
+<h3 id="modular-system-architecture">Modular System Architecture</h3>
+<p>Development of adaptable, component-based solutions that enable scalability and future enhancement.</p>
+
+<h3 id="data-driven-optimization">Data-Driven Optimization</h3>
+<p>Leveraging metrics and performance analytics to continuously refine and enhance technological ecosystems.</p>
+
+<h2 id="ready-to-learn-more">Ready to Learn More?</h2>
+
+<p><a href="/experience" class="btn">View My Experience</a>
+<a href="/projects" class="btn btn-outline">Explore Projects</a></p>
+
+
+      </section>
+      <footer>
+        <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
+      </footer>
     </div>
-    
-    <script>
-        $(document).ready(function() {
-            // Check for system preference
-            const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const storedPreference = localStorage.getItem('darkMode');
-            
-            // Set initial mode based on stored preference or system preference
-            if (storedPreference === 'true' || (storedPreference === null && prefersDarkMode)) {
-                $('body').addClass('dark-mode');
-            }
-            
-            // Add smooth scrolling
-            $('a[href^="#"]').on('click', function(e) {
-                const targetId = $(this).attr('href');
-                
-                // Only process if the target exists
-                if (targetId !== '#' && $(targetId).length) {
-                    e.preventDefault();
-                    
-                    $('html, body').animate({
-                        scrollTop: $(targetId).offset().top - 70 // Adjusted for sticky header
-                    }, 800);
-                    
-                    // Set focus to the target for better accessibility
-                    setTimeout(() => {
-                        $(targetId).attr('tabindex', '-1').focus().removeAttr('tabindex');
-                    }, 810);
-                }
-            });
-            
-            // Animate elements when they come into view
-            const animateOnScroll = function() {
-                $('.fade-in, .slide-up, .slide-in').each(function() {
-                    const elementPosition = $(this).offset().top;
-                    const windowHeight = $(window).height();
-                    const scrollPosition = $(window).scrollTop();
-                    
-                    // If element is in viewport
-                    if (elementPosition < (scrollPosition + windowHeight * 0.9)) {
-                        $(this).css('visibility', 'visible');
-                    }
-                });
-            };
-            
-            // Run on page load
-            animateOnScroll();
-            
-            // Run on scroll
-            $(window).on('scroll', animateOnScroll);
-        });
-    </script>
-</body>
+    <script src="/assets/js/scale.fix.js"></script>
+  </body>
 </html>

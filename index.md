@@ -24,30 +24,6 @@ Comprehensive security frameworks focused on identity governance, privileged acc
 ### <i class="fas fa-cogs"></i> Process Automation
 Development of intelligent workflow solutions using Power Automate, PowerShell, and custom integration frameworks to streamline business operations.
 
-## Featured Projects
-
-### Robinhood Copilot
-AI-powered analysis assistant for Robinhood trading platform using ChatGPT integration.
-- **Technologies**: Python, OpenAI, Robinhood API
-- [View on GitHub](https://github.com/ssmanji89/robinhood-copilot) <i class="fab fa-github"></i>
-
-### Executive Assistant
-Intelligent middleware for Microsoft 365 inboxes with AI-powered response drafting and task management.
-- **Technologies**: Python, OpenAI, Microsoft Graph API
-- [View on GitHub](https://github.com/ssmanji89/executive-assistant) <i class="fab fa-github"></i>
-
-### BitRepo
-Automated cryptocurrency activity tracking and reporting solution for simplified portfolio management.
-- **Technologies**: Python, Blockchain APIs, Data Analytics
-- [View on GitHub](https://github.com/ssmanji89/bitrepo-repo) <i class="fab fa-github"></i>
-
-### FinBots
-End-to-end Python-based momentum trading system for automated market strategies.
-- **Technologies**: Python, Pandas, NumPy, Alpaca API
-- [View on GitHub](https://github.com/ssmanji89/finBots) <i class="fab fa-github"></i>
-
-[Explore All Projects](/projects){: .btn}
-
 ## Transformation Impact
 
 - **40%** Cloud Cost Reduction

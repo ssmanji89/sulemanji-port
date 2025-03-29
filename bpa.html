@@ -22,7 +22,7 @@
 {"@context":"https://schema.org","@type":"WebPage","description":"Explore Suleman Manji’s expertise in business process automation, workflow optimization, and intelligent automation solutions.","headline":"Business Process Automation Suleman Manji","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"}},"url":"https://www.sulemanji.com/bpa"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/assets/css/style.css?v=4b26daf0fbd2ac8674231fc6411e80eb391e05f1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=09a5aca5e0d65b522f108039249fa0e45724291d">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -36,7 +36,28 @@
 <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
 
 <!-- Meta tags -->
-<meta name="theme-color" content="#0366d6">
+<meta name="theme-color" content="#0366d6" id="theme-color-meta">
+
+<!-- Dark mode script for meta tag -->
+<script>
+  // Update theme-color meta tag based on dark mode preference
+  const updateThemeColorMeta = () => {
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                     (localStorage.getItem('theme') === 'dark') ||
+                     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    document.getElementById('theme-color-meta').setAttribute(
+      'content', 
+      isDarkMode ? '#0d1117' : '#0366d6'
+    );
+  };
+  
+  // Run once at load
+  document.addEventListener('DOMContentLoaded', updateThemeColorMeta);
+  
+  // Update when theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta);
+</script>
 
 <!-- Schema.org for SEO -->
 <script type="application/ld+json">
@@ -76,6 +97,17 @@
           <a href="/philosophy">Philosophy</a>
           <a href="/business-process-automation">Automation</a>
         </nav>
+        
+        <div class="theme-switch-wrapper">
+          <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider round">
+              <i class="fas fa-moon"></i>
+              <i class="fas fa-sun"></i>
+            </div>
+          </label>
+          <span class="theme-label">Dark Mode</span>
+        </div>
       </header>
       <section>
 
@@ -449,5 +481,6 @@
       </footer>
     </div>
     <script src="/assets/js/scale.fix.js"></script>
+    <script src="/assets/js/main.js"></script>
   </body>
 </html>

@@ -1,6 +1,26 @@
 ---
 ---
 
+// Variables for GitHub-like styling
+:root {
+  --primary-color: #0366d6;      /* GitHub blue */
+  --primary-light: #58a6ff;      /* Lighter blue */
+  --primary-dark: #044289;       /* Darker blue */ 
+  --text-color: #24292e;         /* GitHub main text color */
+  --text-color-light: #586069;   /* GitHub secondary text color */
+  --background-color: #f6f8fa;   /* GitHub light gray background */
+  --section-bg: #ffffff;         /* White section background */
+  --dark-bg: #0d1117;            /* Dark background for hero section */
+  --dark-text: #ffffff;          /* White text for dark backgrounds */
+  --border-color: #e1e4e8;       /* GitHub border color */
+  --accent-color: #2ea44f;       /* GitHub green for accents */
+  --section-divider: #eaecef;    /* Section divider color */
+  --card-border: #e1e4e8;        /* Card border color */
+  --card-shadow: rgba(0, 0, 0, 0.04); /* Card shadow */
+}
+
+// Import the theme
 @import "{{ site.theme }}";
 
-// Custom overrides and additional styling are in custom.css
+// Apply our custom styles after the theme import
+@import "custom";

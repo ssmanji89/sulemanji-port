@@ -5,23 +5,43 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>Professional Evolution & Technical Leadership</title>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/custom.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-    <script src="/assets/js/scale.fix.js"></script>
+    <meta name="description" content="Enterprise Technology Strategy | Cloud Architecture | Process Automation">
+    <meta name="author" content="Suleman Manji">
+    <link rel="icon" href="/images/favicon.ico">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/assets/js/main.js"></script>
 </head>
 <body>
     <div class="wrapper">
         <header>
-            <h1>Suleman Manji</h1>
-            <p>Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
-            <p class="view">
-                <a href="https://github.com/ssmanji89">
-                    View GitHub Profile
+            <div class="logo">
+                <a href="/">
+                    <h1>Suleman Manji</h1>
                 </a>
-            </p>
+            </div>
+            <p class="tagline">Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/" >Home</a></li>
+                    <li><a href="/about" >About</a></li>
+                    <li><a href="/experience" >Experience</a></li>
+                    <li><a href="/projects" >Projects</a></li>
+                    <li><a href="/philosophy" >Philosophy</a></li>
+                    <li><a href="/bpa" >Automation</a></li>
+                </ul>
+            </nav>
+            
+            <div class="social-links">
+                <a href="https://github.com/ssmanji89" target="_blank" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+            </div>
         </header>
         
-        <section>
+        <section class="main-content">
             <h1 id="professional-evolution-framework">Professional Evolution Framework</h1>
 
 <h2 id="technical-leadership-dna">Technical Leadership DNA</h2>
@@ -85,9 +105,31 @@
         </section>
         
         <footer>
-            <p>Maintained by <a href="https://github.com/ssmanji89">ssmanji89</a></p>
-            <p>Hosted on GitHub Pages</p>
+            <div class="footer-content">
+                <div class="copyright">
+                    <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
+                </div>
+                <div class="footer-nav">
+                    <a href="/">Home</a>
+                    <a href="/about">About</a>
+                    <a href="/projects">Projects</a>
+                </div>
+            </div>
         </footer>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>

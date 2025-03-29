@@ -3,52 +3,156 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Suleman Manji</title>
+    <title>Page Not Found | Suleman Manji</title>
     <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/custom.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-    <script src="/assets/js/scale.fix.js"></script>
+    <meta name="description" content="Enterprise Technology Strategy | Cloud Architecture | Process Automation">
+    <meta name="author" content="Suleman Manji">
+    <link rel="icon" href="/images/favicon.ico">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/assets/js/main.js"></script>
 </head>
 <body>
     <div class="wrapper">
         <header>
-            <h1>Suleman Manji</h1>
-            <p>Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
-            <p class="view">
-                <a href="https://github.com/ssmanji89">
-                    View GitHub Profile
+            <div class="logo">
+                <a href="/">
+                    <h1>Suleman Manji</h1>
                 </a>
-            </p>
+            </div>
+            <p class="tagline">Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="/" >Home</a></li>
+                    <li><a href="/about" >About</a></li>
+                    <li><a href="/experience" >Experience</a></li>
+                    <li><a href="/projects" >Projects</a></li>
+                    <li><a href="/philosophy" >Philosophy</a></li>
+                    <li><a href="/bpa" >Automation</a></li>
+                </ul>
+            </nav>
+            
+            <div class="social-links">
+                <a href="https://github.com/ssmanji89" target="_blank" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/in/suleman-manji-1a46852a0" target="_blank" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+            </div>
         </header>
         
-        <section>
-            <style type="text/css" media="screen">
-  .container {
-    margin: 10px auto;
-    max-width: 600px;
-    text-align: center;
-  }
-  h1 {
-    margin: 30px 0;
-    font-size: 4em;
-    line-height: 1;
-    letter-spacing: -1px;
-  }
-</style>
-
-<div class="container">
-  <h1>404</h1>
-
-  <p><strong>Page not found :(</strong></p>
-  <p>The requested page could not be found.</p>
+        <section class="main-content">
+            <div class="error-container">
+    <div class="error-content">
+        <h1 class="error-title">404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn">Return to Home</a>
+            <a href="/projects" class="btn btn-outline">View Projects</a>
+        </div>
+    </div>
+    
+    <div class="error-image">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="300" height="300">
+            <style>
+                .error-code { font: bold 120px sans-serif; fill: #267CB9; }
+                .computer { fill: #333; }
+                .screen { fill: #f4f4f4; }
+                .screen-content { fill: #267CB9; }
+                .error-msg { font: normal 20px sans-serif; fill: #333; }
+            </style>
+            <rect class="computer" x="100" y="150" width="300" height="200" rx="10" />
+            <rect class="screen" x="120" y="170" width="260" height="160" rx="5" />
+            <rect class="screen-content" x="150" y="200" width="200" height="20" rx="2" />
+            <rect class="screen-content" x="150" y="240" width="140" height="20" rx="2" />
+            <rect class="screen-content" x="150" y="280" width="180" height="20" rx="2" />
+            <text class="error-code" x="200" y="130">404</text>
+            <text class="error-msg" x="150" y="350">Page not found</text>
+        </svg>
+    </div>
 </div>
+
+<style>
+    .error-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 0;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .error-content {
+        flex: 1;
+        min-width: 300px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .error-title {
+        font-size: 120px;
+        margin: 0;
+        line-height: 1;
+        color: #267CB9;
+    }
+    
+    .error-image {
+        flex: 1;
+        min-width: 300px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .error-actions {
+        margin-top: 40px;
+    }
+    
+    .error-actions a {
+        margin: 0 10px 10px 0;
+    }
+    
+    @media (max-width: 768px) {
+        .error-container {
+            flex-direction: column;
+        }
+        
+        .error-title {
+            font-size: 80px;
+        }
+    }
+</style>
 
         </section>
         
         <footer>
-            <p>Maintained by <a href="https://github.com/ssmanji89">ssmanji89</a></p>
-            <p>Hosted on GitHub Pages</p>
+            <div class="footer-content">
+                <div class="copyright">
+                    <p>&copy; 2025 Suleman Manji. All rights reserved.</p>
+                </div>
+                <div class="footer-nav">
+                    <a href="/">Home</a>
+                    <a href="/about">About</a>
+                    <a href="/projects">Projects</a>
+                </div>
+            </div>
         </footer>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>

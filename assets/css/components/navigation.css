@@ -1,10 +1,11 @@
 /**
  * Navigation styles for sulemanji.com
- * Main navigation and menu items
+ * Main navigation and menu items with responsive enhancements
  */
 
 .main-nav {
-  margin-top: 15px;
+  margin-top: var(--spacing-md);
+  position: relative;
 }
 
 .main-nav ul {
@@ -16,44 +17,184 @@
   flex-wrap: wrap;
 }
 
+@media (max-width: 768px) {
+  .main-nav ul {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: var(--spacing-sm);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+    mask-image: linear-gradient(to right, transparent, black 10px, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 10px, black 90%, transparent);
+  }
+  
+  .main-nav ul::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .main-nav ul::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .main-nav ul::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: var(--border-radius-full);
+  }
+}
+
 .main-nav li {
   margin: 0;
+}
+
+@media (max-width: 768px) {
+  .main-nav li {
+    flex-shrink: 0;
+  }
 }
 
 .main-nav a {
   display: block;
   padding: 8px 12px;
-  color: #24292e;
+  color: var(--color-foreground);
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius-md);
   font-weight: 500;
-  font-size: 0.9rem;
-  transition: background 0.2s;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  position: relative;
 }
 
 .main-nav a:hover, 
 .main-nav a:focus {
   background-color: #f6f8fa;
-  color: #0366d6;
+  color: var(--color-primary);
+  transform: translateY(-2px);
 }
 
 .main-nav a.active {
-  background-color: #0366d6;
+  background-color: var(--color-primary);
   color: white;
+}
+
+/* Indicator for active page */
+.main-nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  background-color: var(--color-primary);
+  border-radius: 50%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .main-nav a {
+    transition: all 0.2s ease;
+  }
+}
+
+/* Mobile Navigation Toggle */
+.mobile-nav-toggle {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .mobile-nav-toggle {
+    display: block;
+    position: absolute;
+    top: -45px;
+    right: 0;
+    z-index: 10;
+    background: transparent;
+    border: none;
+    color: var(--color-foreground);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: var(--spacing-xs);
+  }
+  
+  .main-nav {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  
+  .main-nav.open {
+    max-height: 300px;
+  }
+  
+  .main-nav ul {
+    flex-direction: column;
+    overflow: visible;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+  
+  .main-nav li {
+    width: 100%;
+  }
+  
+  .main-nav a {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: 0;
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .main-nav a:hover,
+  .main-nav a:focus,
+  .main-nav a.active {
+    transform: none;
+  }
+  
+  .main-nav a.active::after {
+    display: none;
+  }
 }
 
 /* Dark Mode Navigation Styles */
 body.dark-mode .main-nav a {
-  color: #c9d1d9;
+  color: var(--color-foreground);
 }
 
 body.dark-mode .main-nav a:hover,
 body.dark-mode .main-nav a:focus {
   background-color: #21262d;
-  color: #58a6ff;
+  color: var(--color-primary);
 }
 
 body.dark-mode .main-nav a.active {
-  background-color: #1f6feb;
+  background-color: var(--color-primary);
   color: white;
+}
+
+body.dark-mode .mobile-nav-toggle {
+  color: var(--color-foreground);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .main-nav a,
+  .main-nav {
+    transition: none;
+  }
+  
+  .main-nav a:hover,
+  .main-nav a:focus {
+    transform: none;
+  }
+}
+
+/* Focus states for keyboard navigation */
+.main-nav a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.mobile-nav-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }

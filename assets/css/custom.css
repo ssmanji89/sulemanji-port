@@ -10,6 +10,7 @@
 @import url('components/hero.css');
 @import url('components/skills.css');
 @import url('components/projects.css');
+@import url('components/portfolio.css');
 @import url('components/buttons.css');
 @import url('components/stats.css');
 @import url('components/footer.css');
@@ -18,124 +19,9 @@
 @import url('components/responsive.css');
 @import url('components/index.css');
 @import url('components/blog.css');
+@import url('components/utilities.css');
+@import url('components/code.css');
+@import url('components/animations.css');
+@import url('components/print.css');
 
-/* Code syntax highlighting for code blocks */
-pre, code {
-  font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
-  color: #333;
-  font-size: 0.8rem;
-  background-color: #f8f8f8;
-  border: 1px solid #e5e5e5;
-  overflow-x: auto;
-  border-radius: 4px;
-  padding: 0.3rem 0.5rem;
-}
-
-pre code {
-  border: none;
-  padding: 0;
-}
-
-pre {
-  padding: 1rem;
-  line-height: 1.4;
-}
-
-/* Animations */
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s, transform 0.5s;
-}
-
-.animate-on-scroll.in-view {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Code preview styling */
-.code-preview {
-  background-color: #f6f8fa;
-  border-radius: 6px;
-  padding: 10px;
-  margin-top: 15px;
-  overflow-x: auto;
-}
-
-.code-preview pre {
-  margin: 0;
-  background-color: #ffffff;
-  border: 1px solid #e1e4e8;
-}
-
-/* Utility Classes */
-.text-center {
-  text-align: center;
-}
-
-.mt-1 { margin-top: 0.5rem; }
-.mt-2 { margin-top: 1rem; }
-.mt-3 { margin-top: 1.5rem; }
-.mt-4 { margin-top: 2rem; }
-.mt-5 { margin-top: 2.5rem; }
-
-.mb-1 { margin-bottom: 0.5rem; }
-.mb-2 { margin-bottom: 1rem; }
-.mb-3 { margin-bottom: 1.5rem; }
-.mb-4 { margin-bottom: 2rem; }
-.mb-5 { margin-bottom: 2.5rem; }
-
-.py-1 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-.py-2 { padding-top: 1rem; padding-bottom: 1rem; }
-.py-3 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
-.py-4 { padding-top: 2rem; padding-bottom: 2rem; }
-.py-5 { padding-top: 2.5rem; padding-bottom: 2.5rem; }
-
-.px-1 { padding-left: 0.5rem; padding-right: 0.5rem; }
-.px-2 { padding-left: 1rem; padding-right: 1rem; }
-.px-3 { padding-left: 1.5rem; padding-right: 1.5rem; }
-.px-4 { padding-left: 2rem; padding-right: 2rem; }
-.px-5 { padding-left: 2.5rem; padding-right: 2.5rem; }
-
-.w-100 { width: 100%; }
-.w-75 { width: 75%; }
-.w-50 { width: 50%; }
-.w-25 { width: 25%; }
-
-.d-flex { display: flex; }
-.justify-center { justify-content: center; }
-.align-center { align-items: center; }
-.flex-column { flex-direction: column; }
-.flex-wrap { flex-wrap: wrap; }
-.gap-1 { gap: 0.5rem; }
-.gap-2 { gap: 1rem; }
-.gap-3 { gap: 1.5rem; }
-
-/* Print styles */
-@media print {
-  body {
-    background-color: #ffffff;
-    color: #000000;
-  }
-  
-  header, footer, .dark-mode-toggle, .theme-switch-wrapper {
-    display: none;
-  }
-  
-  .wrapper {
-    width: 100%;
-    max-width: none;
-    padding: 0;
-  }
-  
-  a {
-    color: #000000;
-    text-decoration: none;
-  }
-  
-  .project-card, .skill-category, .stat-box, .approach-item {
-    page-break-inside: avoid;
-    box-shadow: none;
-    border: 1px solid #cccccc;
-  }
-}
+/* All styles have been modularized into separate component files for better maintainability */

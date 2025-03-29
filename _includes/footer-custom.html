@@ -1,0 +1,41 @@
+<!-- Custom script to remove dark mode toggle -->
+<script>
+  // Function to remove the specific dark mode toggle shown in screenshot
+  function removeSpecificToggle() {
+    // Look for elements matching the description in the screenshot
+    const possibleToggles = document.querySelectorAll('body > .switchTheme, body > [class*="dark-mode-toggle"], body > div:not(.wrapper) > [class*="moon"], body > div:not(.wrapper) > [class*="sun"]');
+    
+    possibleToggles.forEach(function(element) {
+      const rect = element.getBoundingClientRect();
+      // Check if the element is at the bottom of the page
+      if (rect.bottom > window.innerHeight - 100) {
+        console.log('Removing specific toggle element:', element);
+        element.remove();
+      }
+    });
+    
+    // Specifically target the element in your screenshot
+    const moonSunElements = document.querySelectorAll('body > *:not(.wrapper) .fa-moon, body > *:not(.wrapper) .fa-sun');
+    moonSunElements.forEach(function(element) {
+      const parentElement = element.closest('div');
+      if (parentElement && !parentElement.closest('.theme-switch-wrapper')) {
+        console.log('Removing moon/sun element outside .wrapper:', parentElement);
+        parentElement.remove();
+      }
+    });
+    
+    // Remove any toggle with text "Dark Mode"
+    document.querySelectorAll('body > *').forEach(function(element) {
+      if (element.textContent && element.textContent.trim() === 'Dark Mode') {
+        console.log('Removing element with text "Dark Mode":', element);
+        element.remove();
+      }
+    });
+  }
+  
+  // Run on load and periodically
+  document.addEventListener('DOMContentLoaded', function() {
+    removeSpecificToggle();
+    setInterval(removeSpecificToggle, 1000);
+  });
+</script>

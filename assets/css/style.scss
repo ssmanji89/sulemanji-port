@@ -142,13 +142,28 @@ i.fas, i.fab {
   margin: 0 10px 10px 0;
 }
 
-// Dark mode toggle
+// Dark mode toggle - ours
 .theme-switch-wrapper {
   display: flex;
   align-items: center;
   margin-top: 20px;
   position: relative;
   z-index: 1;
+}
+
+// Hide any other dark mode toggles
+body > *:not(.wrapper) > [class*="dark-mode"],
+body > *:not(.wrapper) > [id*="dark-mode"],
+body > .dark-mode-toggle,
+body > [class*="theme-toggle"],
+body > [id*="theme-toggle"],
+body > .toggle-theme,
+body > [class*="toggle-theme"],
+body > [id*="toggle-theme"] {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .theme-switch {

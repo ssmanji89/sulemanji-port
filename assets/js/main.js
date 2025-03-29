@@ -10,7 +10,30 @@ $(document).ready(function() {
   
   // Add smooth scrolling to anchor links
   initSmoothScrolling();
+  
+  // Remove any extra dark mode toggles
+  removeExtraToggles();
 });
+
+/**
+ * Remove any extra dark mode toggles that might be injected
+ */
+function removeExtraToggles() {
+  // This function runs after a short delay to ensure all elements are loaded
+  setTimeout(() => {
+    // Select all elements with moon or sun icons that are not inside our theme-switch-wrapper
+    $('body > .theme-toggle, body > [class*="dark-mode"], body > [class*="darkMode"], body > [id*="dark-mode"], body > [id*="darkMode"]').remove();
+    $('footer ~ .theme-toggle, footer ~ [class*="dark-mode"], footer ~ [class*="darkMode"], footer ~ [id*="dark-mode"], footer ~ [id*="darkMode"]').remove();
+    
+    // Look for specific elements that might be the floating toggle
+    $('[class*="moon"], [class*="sun"]').each(function() {
+      // Only remove if it's not within our theme-switch-wrapper
+      if (!$(this).parents('.theme-switch-wrapper').length) {
+        $(this).parent().remove();
+      }
+    });
+  }, 500);
+}
 
 /**
  * Initialize dark mode functionality

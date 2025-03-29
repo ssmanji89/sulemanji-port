@@ -52,9 +52,57 @@
       </section>
       <footer>
         <p>&copy; {{ site.time | date: '%Y' }} Suleman Manji. All rights reserved.</p>
+        {% include footer-custom.html %}
       </footer>
     </div>
     <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
     <script src="{{ "/assets/js/main.js" | relative_url }}"></script>
+    <script src="{{ "/assets/js/dark-mode-cleanup.js" | relative_url }}"></script>
+    <script src="{{ "/assets/js/toggle-finder.js" | relative_url }}"></script>
+    
+    <!-- Remove any extra dark mode toggles with inline script -->
+    <script>
+      // Use MutationObserver to detect and remove any elements added after load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Create an observer instance
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Only process Element nodes
+                  // Check if this is likely a dark mode toggle
+                  if (node.textContent && node.textContent.includes('Dark Mode') || 
+                      node.textContent && node.textContent.includes('Mode') ||
+                      node.innerHTML && (node.innerHTML.includes('moon') || 
+                      node.innerHTML.includes('sun'))) {
+                    
+                    // Make sure it's not our own toggle
+                    if (!node.closest('.theme-switch-wrapper')) {
+                      console.log('Observer removing node:', node);
+                      node.remove();
+                    }
+                  }
+                  
+                  // Check for elements at the bottom of page
+                  if (node.getBoundingClientRect && 
+                      node.getBoundingClientRect().top > (window.innerHeight - 100)) {
+                    if (!node.closest('.wrapper')) {
+                      console.log('Observer removing bottom element:', node);
+                      node.remove();
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        // Start observing the body with the configured parameters
+        observer.observe(document.body, { 
+          childList: true, 
+          subtree: true
+        });
+      });
+    </script>
   </body>
 </html>

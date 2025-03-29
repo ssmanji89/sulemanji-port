@@ -11,6 +11,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
     {% include head-custom.html %}
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
   </head>
   <body>
     <div class="wrapper">
@@ -25,13 +31,18 @@
 
         <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
         
-        <nav>
-          <a href="/">Home</a>
-          <a href="/about">About</a>
-          <a href="/experience">Experience</a>
-          <a href="/projects">Projects</a>
-          <a href="/philosophy">Philosophy</a>
-          <a href="/business-process-automation">Automation</a>
+        <nav class="main-nav">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/experience">Experience</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/technical-skills">Skills</a></li>
+            <li><a href="/npm-packages">NPM Packages</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/philosophy">Philosophy</a></li>
+            <li><a href="/business-process-automation">Automation</a></li>
+          </ul>
         </nav>
       </header>
       <section>
@@ -91,6 +102,7 @@
       </footer>
     </div>
     <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
+    <script src="{{ "/assets/js/main.js" | relative_url }}"></script>
     
     <!-- Remove any extra dark mode toggles with inline script -->
     <script>

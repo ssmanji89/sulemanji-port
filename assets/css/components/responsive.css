@@ -1,0 +1,184 @@
+/**
+ * Responsive styles for sulemanji.com
+ * Media queries for different screen sizes
+ */
+
+/* Tablets and smaller desktops */
+@media (max-width: 900px) {
+  .profile-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .profile-content {
+    text-align: center;
+  }
+  
+  .hero-cta {
+    justify-content: center;
+  }
+  
+  .skill-category, 
+  .project-card,
+  .stat-box,
+  .approach-item {
+    min-width: 100%;
+  }
+  
+  .footer-content {
+    justify-content: center;
+  }
+  
+  .technical-skills {
+    grid-template-columns: 1fr;
+  }
+  
+  .npm-packages {
+    grid-template-columns: 1fr;
+  }
+  
+  .project-categories {
+    flex-direction: column;
+  }
+  
+  .category-card {
+    width: 100%;
+  }
+}
+
+/* Larger phones and small tablets */
+@media (max-width: 768px) {
+  header {
+    padding: 10px 0;
+  }
+  
+  .main-nav ul {
+    overflow-x: auto;
+    padding-bottom: 10px;
+  }
+  
+  .main-nav li {
+    flex-shrink: 0;
+  }
+  
+  .site-header {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .footer-content {
+    flex-direction: column;
+    gap: 30px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .footer-info {
+    align-items: center;
+  }
+  
+  .footer-nav-container {
+    min-width: 100%;
+    max-width: none;
+  }
+  
+  .social-links-footer {
+    justify-content: center;
+  }
+  
+  .theme-switch-wrapper {
+    margin: 0 auto;
+  }
+  
+  .footer-nav-title {
+    text-align: center;
+  }
+  
+  .footer-stats {
+    align-items: center;
+  }
+  
+  .footer-stat {
+    justify-content: center;
+  }
+  
+  .github-stats {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .npm-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .npm-logo {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .timeline-content {
+    margin-left: 0;
+    padding-left: 60px;
+  }
+}
+
+/* Mobile phones */
+@media (max-width: 480px) {
+  .btn {
+    width: 100%;
+    margin: 5px 0;
+  }
+  
+  .hero-cta {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .hero-section {
+    padding: 30px 0;
+  }
+  
+  .profile-image {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .profile-content h1 {
+    font-size: 2rem;
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .project-filters {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .filter-btn {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .npm-metrics {
+    flex-direction: column;
+  }
+  
+  .npm-metric {
+    min-width: 100%;
+  }
+  
+  .dark-mode-toggle {
+    bottom: 15px;
+    right: 15px;
+    width: 40px;
+    height: 40px;
+  }
+}

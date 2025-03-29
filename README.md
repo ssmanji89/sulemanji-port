@@ -1,47 +1,35 @@
-# Suleman Manji - Personal Portfolio
+# Suleman Manji Portfolio Site
 
-This repository contains the source code for my personal portfolio website, showcasing my professional experience, projects, and technology expertise.
+This is the source code for my personal portfolio site, hosted at [sulemanji.com](https://www.sulemanji.com).
 
-## Site Overview
+## Overview
 
-This is a Jekyll-based static website deployed through GitHub Pages. The site features:
+This portfolio showcases my work as an Enterprise Technology Strategist, with a focus on cloud architecture, security engineering, and process automation.
 
-- Professional experience and skills showcase
-- Featured technology projects and case studies
-- Technology philosophy and approach
-- Business process automation expertise
+## Sections
 
-## Technology Stack
+- **Projects**: Showcases technical solutions across multiple domains 
+- **Technical Skills**: Detailed breakdown of technical expertise
+- **NPM Packages**: Open-source JavaScript and Node.js packages
+- **Experience**: Professional history with detailed metrics
+- **Blog & Resources**: Technical articles and downloadable resources
 
-- **Framework**: Jekyll with GitHub Pages
-- **Theme**: Modified Modernist theme
-- **CSS**: Custom styling with responsive design
-- **JavaScript**: Custom animations and interactive elements
-- **Deployment**: GitHub Pages with custom domain
+## Technology
 
-## Local Development
+- Built with Jekyll and GitHub Pages
+- Custom CSS framework
+- Responsive design for all devices
+- Dark mode support
+
+## Development
 
 To run this site locally:
 
-1. Ensure you have Ruby and Jekyll installed
-2. Clone this repository
-3. Run `bundle install` to install dependencies
-4. Run `bundle exec jekyll serve` to start the local server
-5. Visit `http://localhost:4000` to view the site
-
-## Site Structure
-
-- `_layouts/`: Contains the main layout template
-- `_includes/`: Component templates and reusable elements
-- `assets/`: CSS, JavaScript, and other static assets
-- `images/`: Site images and project screenshots
-- `_data/`: Data files for site configuration
-- Root directory Markdown files: Main content pages
+1. Clone the repository
+2. Install Jekyll and dependencies: `bundle install`
+3. Start the local server: `bundle exec jekyll serve`
+4. Visit `http://localhost:4000` in your browser
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-For any questions or feedback regarding this website, please contact me through GitHub.
+MIT License Copyright (c) 2025 sulemanji.com

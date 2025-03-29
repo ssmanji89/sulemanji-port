@@ -1,142 +1,156 @@
 /**
  * Main JavaScript for sulemanji.com
- * GitHub-inspired design and interaction patterns
+ * Contains interactive functionality for the portfolio site
  */
 
-// Initialize on document ready
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize scroll animations
+  initScrollAnimations();
+  
   // Initialize dark mode toggle
-  initDarkMode();
+  initDarkModeToggle();
   
-  // Add smooth scrolling to anchor links
-  initSmoothScrolling();
+  // Initialize project filtering
+  initProjectFilters();
   
-  // Remove any extra dark mode toggles
-  removeExtraToggles();
+  // Initialize syntax highlighting for code blocks
+  initSyntaxHighlighting();
 });
 
 /**
- * Remove any extra dark mode toggles that might be injected
+ * Initialize animations for elements when they scroll into view
  */
-function removeExtraToggles() {
-  // This function runs after a short delay to ensure all elements are loaded
-  setTimeout(() => {
-    // Select all elements with moon or sun icons that are not inside our theme-switch-wrapper
-    $('body > .theme-toggle, body > [class*="dark-mode"], body > [class*="darkMode"], body > [id*="dark-mode"], body > [id*="darkMode"]').remove();
-    $('footer ~ .theme-toggle, footer ~ [class*="dark-mode"], footer ~ [class*="darkMode"], footer ~ [id*="dark-mode"], footer ~ [id*="darkMode"]').remove();
-    
-    // Look for specific elements that might be the floating toggle
-    $('[class*="moon"], [class*="sun"]').each(function() {
-      // Only remove if it's not within our theme-switch-wrapper
-      if (!$(this).parents('.theme-switch-wrapper').length) {
-        $(this).parent().remove();
-      }
+function initScrollAnimations() {
+  const animatedElements = document.querySelectorAll('.animate-on-scroll');
+  
+  if (animatedElements.length > 0) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('in-view');
+        }
+      });
+    }, {
+      threshold: 0.1
     });
-  }, 500);
+    
+    animatedElements.forEach(element => {
+      observer.observe(element);
+    });
+  }
 }
 
 /**
- * Initialize dark mode functionality
+ * Initialize dark mode toggle functionality
  */
-function initDarkMode() {
-  const toggleSwitch = document.querySelector('#checkbox');
-  const currentTheme = localStorage.getItem('theme');
+function initDarkModeToggle() {
+  const darkModeToggle = document.getElementById('checkbox');
+  const themeLabel = document.querySelector('.theme-label');
   
-  if (!toggleSwitch) {
-    console.error('Dark mode toggle (#checkbox) not found');
-    return;
-  }
+  // Check for saved theme preference or respect OS preference
+  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const storedTheme = localStorage.getItem('theme');
   
-  // Apply the current theme on page load
-  if (currentTheme) {
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    
-    if (currentTheme === 'dark') {
-      toggleSwitch.checked = true;
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
+  if (storedTheme === 'dark' || (!storedTheme && prefersDarkScheme.matches)) {
+    document.body.classList.add('dark-mode');
+    if (darkModeToggle) {
+      darkModeToggle.checked = true;
+    }
+    if (themeLabel) {
+      themeLabel.textContent = 'Light Mode';
     }
   } else {
-    // Check system preference if no saved preference
-    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-    if (prefersDarkScheme.matches) {
-      toggleSwitch.checked = true;
-      document.body.classList.add('dark-mode');
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
+    document.body.classList.remove('dark-mode');
+    if (darkModeToggle) {
+      darkModeToggle.checked = false;
+    }
+    if (themeLabel) {
+      themeLabel.textContent = 'Dark Mode';
     }
   }
   
-  // Listen for toggle changes
-  toggleSwitch.addEventListener('change', function(e) {
-    if (this.checked) {
-      document.body.classList.add('dark-mode');
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('theme', 'dark');
-      console.log('Dark mode activated');
-    } else {
-      document.body.classList.remove('dark-mode');
-      document.documentElement.setAttribute('data-theme', 'light');
-      localStorage.setItem('theme', 'light');
-      console.log('Light mode activated');
-    }
-    
-    // Update theme color meta tag
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
-    if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', this.checked ? '#0d1117' : '#0366d6');
-    }
-    
-    // Force redraw of the page to ensure all styles are applied correctly
-    document.body.style.display = 'none';
-    document.body.offsetHeight; // This line forces a reflow
-    document.body.style.display = '';
-  });
-  
-  // Listen for system preference changes
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-    // Only apply if user hasn't set a preference
-    const savedTheme = localStorage.getItem('theme');
-    if (!savedTheme) {
-      if (e.matches) {
-        toggleSwitch.checked = true;
+  // Add event listener for theme toggle
+  if (darkModeToggle) {
+    darkModeToggle.addEventListener('change', function() {
+      if (this.checked) {
         document.body.classList.add('dark-mode');
-        document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem('theme', 'dark');
+        if (themeLabel) {
+          themeLabel.textContent = 'Light Mode';
+        }
       } else {
-        toggleSwitch.checked = false;
         document.body.classList.remove('dark-mode');
-        document.documentElement.setAttribute('data-theme', 'light');
         localStorage.setItem('theme', 'light');
+        if (themeLabel) {
+          themeLabel.textContent = 'Dark Mode';
+        }
       }
-    }
-  });
+    });
+  }
+  
+  // Add standalone dark mode toggle button
+  const darkModeButton = document.querySelector('.dark-mode-toggle');
+  if (darkModeButton) {
+    darkModeButton.addEventListener('click', function() {
+      document.body.classList.toggle('dark-mode');
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      
+      if (darkModeToggle) {
+        darkModeToggle.checked = isDarkMode;
+      }
+      
+      if (themeLabel) {
+        themeLabel.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+      }
+    });
+  }
 }
 
 /**
- * Smooth scrolling to anchor links
- * Using jQuery's animate for cross-browser compatibility
+ * Initialize project filtering functionality
  */
-function initSmoothScrolling() {
-  $('a[href^="#"]').on('click', function(e) {
-    const targetId = $(this).attr('href');
-    
-    // Only process if the target exists
-    if (targetId !== '#' && $(targetId).length) {
-      e.preventDefault();
-      
-      $('html, body').animate({
-        scrollTop: $(targetId).offset().top - 50
-      }, 800);
-      
-      // Set focus to the target element for better accessibility
-      setTimeout(() => {
-        $(targetId).attr('tabindex', '-1').focus().removeAttr('tabindex');
-      }, 810);
-    }
-  });
+function initProjectFilters() {
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const projectCards = document.querySelectorAll('.project-card');
+  
+  if (filterButtons.length > 0 && projectCards.length > 0) {
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Get filter value
+        const filterValue = button.getAttribute('data-filter');
+        
+        // Filter projects
+        projectCards.forEach(card => {
+          if (filterValue === 'all') {
+            card.style.display = 'block';
+          } else {
+            const categories = card.getAttribute('data-categories').split(',');
+            if (categories.includes(filterValue)) {
+              card.style.display = 'block';
+            } else {
+              card.style.display = 'none';
+            }
+          }
+        });
+      });
+    });
+  }
+}
+
+/**
+ * Initialize syntax highlighting for code blocks
+ */
+function initSyntaxHighlighting() {
+  if (window.hljs) {
+    document.querySelectorAll('pre code').forEach(block => {
+      hljs.highlightBlock(block);
+    });
+  }
 }

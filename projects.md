@@ -13,13 +13,91 @@ permalink: /projects
         <button class="filter-btn active" data-filter="all">All Projects</button>
         <button class="filter-btn" data-filter="ai">AI Solutions</button>
         <button class="filter-btn" data-filter="automation">Automation</button>
+        <button class="filter-btn" data-filter="cloud">Cloud Integration</button>
         <button class="filter-btn" data-filter="finance">Finance</button>
-        <button class="filter-btn" data-filter="integration">Integration</button>
+        <button class="filter-btn" data-filter="security">Security</button>
     </div>
 </div>
 
+<!-- Project Categories Section -->
+<div class="project-categories animate-on-scroll">
+    <div class="category-card">
+        <div class="category-header">
+            <div class="category-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3 class="category-name">AI-Powered Solutions</h3>
+        </div>
+        <div class="category-content">
+            <p class="category-description">Intelligent applications that leverage AI and machine learning to enhance automation, analytics, and user experiences.</p>
+            
+            <div class="category-projects">
+                <a href="#robinhood-copilot" class="category-project-link">Robinhood Copilot</a>
+                <a href="#executive-assistant" class="category-project-link">Executive Assistant</a>
+                <a href="#amazon-seo" class="category-project-link">Amazon SEO Article Generator</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category-card">
+        <div class="category-header">
+            <div class="category-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <h3 class="category-name">Automation Tools</h3>
+        </div>
+        <div class="category-content">
+            <p class="category-description">Streamlined workflows and automated processes that reduce manual effort and enhance productivity.</p>
+            
+            <div class="category-projects">
+                <a href="#executive-assistant" class="category-project-link">Executive Assistant</a>
+                <a href="#halopsa-triager" class="category-project-link">HaloPSA Triager</a>
+                <a href="#universal-discovery" class="category-project-link">Universal Discovery Export Tool</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category-card">
+        <div class="category-header">
+            <div class="category-icon">
+                <i class="fas fa-cloud"></i>
+            </div>
+            <h3 class="category-name">Cloud Integrations</h3>
+        </div>
+        <div class="category-content">
+            <p class="category-description">Solutions that leverage cloud platforms to enhance scalability, security, and collaboration capabilities.</p>
+            
+            <div class="category-projects">
+                <a href="#audit-inspection" class="category-project-link">Audit Inspection App</a>
+                <a href="#universal-discovery" class="category-project-link">Universal Discovery Export Tool</a>
+                <a href="#graph-tools" class="category-project-link">Graph API Utilities</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="category-card">
+        <div class="category-header">
+            <div class="category-icon">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <h3 class="category-name">Financial Tech</h3>
+        </div>
+        <div class="category-content">
+            <p class="category-description">Financial technology solutions that enhance investment strategies, portfolio management, and crypto tracking.</p>
+            
+            <div class="category-projects">
+                <a href="#robinhood-copilot" class="category-project-link">Robinhood Copilot</a>
+                <a href="#bitrepo" class="category-project-link">BitRepo</a>
+                <a href="#finbots" class="category-project-link">FinBots</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="section-title mt-5 animate-on-scroll">Featured Projects</h2>
+
 <div class="projects-grid animate-on-scroll">
-    <div class="project-card" data-categories="ai,integration">
+    <div id="robinhood-copilot" class="project-card" data-categories="ai,finance">
         <div class="project-image" style="background-image: url('/images/project-robinhood.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">Robinhood Copilot</h3>
@@ -54,12 +132,12 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/robinhood-copilot" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/robinhood-copilot" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
             </div>
         </div>
     </div>
     
-    <div class="project-card" data-categories="automation,ai">
+    <div id="executive-assistant" class="project-card" data-categories="automation,ai">
         <div class="project-image" style="background-image: url('/images/project-assistant.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">Executive Assistant</h3>
@@ -95,12 +173,12 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/executive-assistant" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/executive-assistant" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
             </div>
         </div>
     </div>
     
-    <div class="project-card" data-categories="finance,automation">
+    <div id="bitrepo" class="project-card" data-categories="finance,automation">
         <div class="project-image" style="background-image: url('/images/project-bitrepo.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">BitRepo</h3>
@@ -136,12 +214,12 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/bitrepo-repo" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/bitrepo-repo" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
             </div>
         </div>
     </div>
     
-    <div class="project-card" data-categories="automation,integration">
+    <div id="halopsa-triager" class="project-card" data-categories="automation,integration">
         <div class="project-image" style="background-image: url('/images/project-halopsa.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">HaloPSA Triager</h3>
@@ -176,13 +254,13 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/halopsa-triager" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/halopsa-triager" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
             </div>
         </div>
     </div>
     
     <!-- FinBots Project -->
-    <div class="project-card" data-categories="finance,automation">
+    <div id="finbots" class="project-card" data-categories="finance,automation">
         <div class="project-image" style="background-image: url('/images/project-finbots.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">FinBots</h3>
@@ -216,13 +294,13 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/finBots" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/finBots" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
             </div>
         </div>
     </div>
     
     <!-- Audit Inspection App Project -->
-    <div class="project-card" data-categories="integration">
+    <div id="audit-inspection" class="project-card" data-categories="integration,cloud">
         <div class="project-image" style="background-image: url('/images/project-audit-inspection.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">Audit Inspection App</h3>
@@ -255,13 +333,13 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/audit-inspection-app" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/audit-inspection-app" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
             </div>
         </div>
     </div>
     
     <!-- Universal Discovery Export Download Tool Project -->
-    <div class="project-card" data-categories="integration,automation">
+    <div id="universal-discovery" class="project-card" data-categories="integration,automation,cloud">
         <div class="project-image" style="background-image: url('/images/project-universal-discovery.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">Universal Discovery Export Download Tool</h3>
@@ -294,13 +372,13 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/universal-discovery-export-download-tool" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/universal-discovery-export-download-tool" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
             </div>
         </div>
     </div>
     
     <!-- Amazon SEO Article Generator Bot Project -->
-    <div class="project-card" data-categories="automation,ai">
+    <div id="amazon-seo" class="project-card" data-categories="automation,ai">
         <div class="project-image" style="background-image: url('/images/project-amazon-seo.jpg')"></div>
         <div class="project-content">
             <h3 class="project-title">Amazon SEO Article Generator Bot</h3>
@@ -334,7 +412,49 @@ permalink: /projects
             </div>
             
             <div class="project-links">
-                <a href="https://github.com/ssmanji89/amazon-SEO-article-generator-bot" target="_blank">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://github.com/ssmanji89/amazon-SEO-article-generator-bot" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Graph API Utilities Project -->
+    <div id="graph-tools" class="project-card" data-categories="cloud,integration,security">
+        <div class="project-image" style="background-image: url('/images/project-graph-tools.jpg')"></div>
+        <div class="project-content">
+            <h3 class="project-title">Graph API Utilities</h3>
+            <p class="project-description">Comprehensive toolkit for Microsoft Graph API integration and automation.</p>
+            
+            <div class="project-details">
+                <h4>Challenge</h4>
+                <p>Developers struggle with the complexity of Microsoft Graph API implementation, particularly around authentication, permission management, and efficient query construction.</p>
+                
+                <h4>Solution</h4>
+                <p>Developed a simplified Node.js library that abstracts the complexities of Graph API integration, providing streamlined interfaces for common operations and enhanced error handling.</p>
+                
+                <h4>Key Features</h4>
+                <ul>
+                    <li>Simplified authentication workflows</li>
+                    <li>Fluent query builder pattern</li>
+                    <li>Batch request optimization</li>
+                    <li>Comprehensive error handling</li>
+                    <li>Rate limiting and throttling management</li>
+                </ul>
+                
+                <h4>Technology Stack</h4>
+                <div class="project-tech">
+                    <span class="tech-tag">Node.js</span>
+                    <span class="tech-tag">TypeScript</span>
+                    <span class="tech-tag">Microsoft Graph API</span>
+                    <span class="tech-tag">Azure AD</span>
+                </div>
+                
+                <h4>Results</h4>
+                <p>Reduced development time for Graph API integrations by approximately 60%, while improving reliability and security of the resulting implementations.</p>
+            </div>
+            
+            <div class="project-links">
+                <a href="https://github.com/ssmanji89/graph-tools" target="_blank" class="btn btn-sm btn-outline">GitHub Repository <i class="fab fa-github"></i></a>
+                <a href="https://www.npmjs.com/package/graph-tools" target="_blank" class="btn btn-sm btn-outline">NPM Package <i class="fab fa-npm"></i></a>
             </div>
         </div>
     </div>
@@ -360,6 +480,70 @@ permalink: /projects
     <a href="https://github.com/ssmanji89" target="_blank" class="btn">View All GitHub Projects</a>
 </div>
 
-<div class="dark-mode-toggle">
-    <i class="fas fa-moon"></i>
+<div class="cross-section-links animate-on-scroll">
+    <div class="cross-link">
+        <i class="fab fa-npm"></i>
+        <h3>NPM Packages</h3>
+        <p>Explore my open-source JavaScript and Node.js packages for automation and integration.</p>
+        <a href="/npm-packages" class="btn btn-sm btn-outline">View NPM Packages</a>
+    </div>
+    
+    <div class="cross-link">
+        <i class="fas fa-code"></i>
+        <h3>Technical Skills</h3>
+        <p>See a comprehensive breakdown of my technical expertise and capabilities.</p>
+        <a href="/technical-skills" class="btn btn-sm btn-outline">View Technical Skills</a>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation for elements when they come into view
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('in-view');
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    animatedElements.forEach(element => {
+        observer.observe(element);
+    });
+    
+    // Project filtering functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            button.classList.add('active');
+            
+            // Get filter value
+            const filterValue = button.getAttribute('data-filter');
+            
+            // Filter projects
+            projectCards.forEach(card => {
+                if (filterValue === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const categories = card.getAttribute('data-categories').split(',');
+                    if (categories.includes(filterValue)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        });
+    });
+});
+</script>

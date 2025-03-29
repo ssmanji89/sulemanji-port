@@ -1,0 +1,82 @@
+/**
+ * Hero section styles for sulemanji.com
+ * Banner and profile showcase at the top of the page
+ */
+
+.hero-section {
+  background: linear-gradient(145deg, #0d1117, #044289);
+  color: white;
+  padding: 60px 0;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/images/grid-pattern.svg');
+  background-size: 30px 30px;
+  opacity: 0.1;
+}
+
+.profile-container {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.profile-image {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #58a6ff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.profile-content {
+  flex: 1;
+  min-width: 300px;
+}
+
+.profile-content h1 {
+  font-size: 2.5rem;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.profile-content h2 {
+  color: #58a6ff;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.profile-content p {
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-cta {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* Dark Mode Hero Styles */
+body.dark-mode .hero-section {
+  background: linear-gradient(145deg, #161b22, #0d419d);
+}
+
+body.dark-mode .profile-content h1,
+body.dark-mode .profile-content p {
+  color: #f0f6fc;
+}

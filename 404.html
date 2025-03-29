@@ -1,24 +1,88 @@
 ---
 layout: default
+title: Page Not Found | Suleman Manji
+permalink: /404.html
 ---
 
-<style type="text/css" media="screen">
-  .container {
-    margin: 10px auto;
-    max-width: 600px;
-    text-align: center;
-  }
-  h1 {
-    margin: 30px 0;
-    font-size: 4em;
-    line-height: 1;
-    letter-spacing: -1px;
-  }
-</style>
-
-<div class="container">
-  <h1>404</h1>
-
-  <p><strong>Page not found :(</strong></p>
-  <p>The requested page could not be found.</p>
+<div class="error-container">
+    <div class="error-content">
+        <h1 class="error-title">404</h1>
+        <h2>Page Not Found</h2>
+        <p>The page you're looking for doesn't exist or has been moved.</p>
+        
+        <div class="error-actions">
+            <a href="/" class="btn">Return to Home</a>
+            <a href="/projects" class="btn btn-outline">View Projects</a>
+        </div>
+    </div>
+    
+    <div class="error-image">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="300" height="300">
+            <style>
+                .error-code { font: bold 120px sans-serif; fill: #267CB9; }
+                .computer { fill: #333; }
+                .screen { fill: #f4f4f4; }
+                .screen-content { fill: #267CB9; }
+                .error-msg { font: normal 20px sans-serif; fill: #333; }
+            </style>
+            <rect class="computer" x="100" y="150" width="300" height="200" rx="10" />
+            <rect class="screen" x="120" y="170" width="260" height="160" rx="5" />
+            <rect class="screen-content" x="150" y="200" width="200" height="20" rx="2" />
+            <rect class="screen-content" x="150" y="240" width="140" height="20" rx="2" />
+            <rect class="screen-content" x="150" y="280" width="180" height="20" rx="2" />
+            <text class="error-code" x="200" y="130">404</text>
+            <text class="error-msg" x="150" y="350">Page not found</text>
+        </svg>
+    </div>
 </div>
+
+<style>
+    .error-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 0;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .error-content {
+        flex: 1;
+        min-width: 300px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .error-title {
+        font-size: 120px;
+        margin: 0;
+        line-height: 1;
+        color: #267CB9;
+    }
+    
+    .error-image {
+        flex: 1;
+        min-width: 300px;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    .error-actions {
+        margin-top: 40px;
+    }
+    
+    .error-actions a {
+        margin: 0 10px 10px 0;
+    }
+    
+    @media (max-width: 768px) {
+        .error-container {
+            flex-direction: column;
+        }
+        
+        .error-title {
+            font-size: 80px;
+        }
+    }
+</style>

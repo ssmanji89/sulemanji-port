@@ -1,52 +1,295 @@
 ---
 layout: default
-title: Professional Experience
+title: Professional Experience | Suleman Manji
+description: Overview of Suleman Manji's professional experience in cloud architecture, security engineering, and process automation.
 permalink: /experience
 ---
 
-# Professional Experience Journey
+<div class="experience-header animate-on-scroll">
+    <h1 class="section-title">Professional Experience</h1>
+    <p class="lead-text">A journey of technology innovation and transformation leadership.</p>
+</div>
 
-## Enterprise Technology Transformation
+<div class="timeline-container animate-on-scroll">
+    <h2 class="section-title">Career Timeline</h2>
+    
+    <div class="timeline">
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-date">2022 - Present</span>
+                <h3>Technology Transformation Consultant</h3>
+                <h4>Independent Consultant</h4>
+                <p>Providing strategic technology advisory services focused on cloud optimization, security architecture, and process automation for medium to large enterprises.</p>
+                <div class="achievement-list">
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Elevated Microsoft 365 Secure Score by 40% across multiple client environments</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Reduced cloud hosting expenses by 40% through resource optimization and architecture refinement</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Designed and implemented comprehensive zero-trust security frameworks</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-date">2020 - 2022</span>
+                <h3>Technology Solutions Architect</h3>
+                <h4>ZG Companies</h4>
+                <p>Led cloud infrastructure design, security implementation, and process automation initiatives for a rapidly growing enterprise.</p>
+                <div class="achievement-list">
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Developed 70+ Power Automate flows for business process optimization</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Architected and implemented Microsoft 365 security frameworks</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Created automated financial reconciliation system with Expensify integration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-date">2018 - 2020</span>
+                <h3>Cloud Security Engineer</h3>
+                <h4>StackAdvisors</h4>
+                <p>Specialized in designing and implementing secure cloud architectures for enterprise clients across multiple industries.</p>
+                <div class="achievement-list">
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Implemented PowerShell automation scripts for security monitoring and response</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Developed identity governance frameworks for multiple enterprise clients</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Streamlined partner onboarding workflows through security automation</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-content">
+                <span class="timeline-date">2015 - 2018</span>
+                <h3>DevOps Engineer</h3>
+                <h4>Nexus Technologies</h4>
+                <p>Focused on CI/CD pipeline optimization, cloud migration, and infrastructure automation for scalable application deployment.</p>
+                <div class="achievement-list">
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Designed and implemented microservices architecture for core applications</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Reduced deployment times by 75% through CI/CD pipeline optimization</span>
+                    </div>
+                    <div class="achievement">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Orchestrated successful cloud migration for legacy applications</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-### Cloud Infrastructure & Security Optimization
-- Engineered strategic cloud migration and security frameworks
-- Implemented advanced identity governance across enterprise ecosystems
-- Developed robust compliance and risk management solutions
+<div class="expertise-container animate-on-scroll">
+    <h2 class="section-title">Technology Leadership Domains</h2>
+    
+    <div class="expertise-grid">
+        <div class="expertise-card">
+            <div class="expertise-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h3>Enterprise Security Architecture</h3>
+            <ul class="expertise-list">
+                <li>Privileged access management implementation</li>
+                <li>Multi-layered security compliance strategies</li>
+                <li>Zero-trust security frameworks</li>
+                <li>Security risk assessment methodologies</li>
+                <li>Comprehensive identity governance</li>
+            </ul>
+        </div>
+        
+        <div class="expertise-card">
+            <div class="expertise-icon">
+                <i class="fas fa-cloud"></i>
+            </div>
+            <h3>Cloud & DevOps Innovation</h3>
+            <ul class="expertise-list">
+                <li>Scalable microservices architectures</li>
+                <li>Optimized CI/CD deployment pipelines</li>
+                <li>System monitoring and proactive error detection</li>
+                <li>Cloud migration strategy development</li>
+                <li>Infrastructure-as-code implementation</li>
+            </ul>
+        </div>
+        
+        <div class="expertise-card">
+            <div class="expertise-icon">
+                <i class="fas fa-cogs"></i>
+            </div>
+            <h3>Business Process Automation</h3>
+            <ul class="expertise-list">
+                <li>Cross-platform workflow solutions</li>
+                <li>Operational efficiency optimization</li>
+                <li>Intelligent automation frameworks</li>
+                <li>API integration architecture</li>
+                <li>Automated reporting systems</li>
+            </ul>
+        </div>
+        
+        <div class="expertise-card">
+            <div class="expertise-icon">
+                <i class="fas fa-users-cog"></i>
+            </div>
+            <h3>Strategic Technology Advisory</h3>
+            <ul class="expertise-list">
+                <li>Cloud adoption strategy development</li>
+                <li>Enterprise technology team training</li>
+                <li>Cross-functional integration planning</li>
+                <li>Technology investment optimization</li>
+                <li>Digital transformation roadmapping</li>
+            </ul>
+        </div>
+    </div>
+</div>
 
-### Key Achievements
-- **Security Enhancement:** Elevated Microsoft 365 Secure Score by 40%
-- **Cost Optimization:** Reduced cloud hosting expenses by 40%
-- **Automation Impact:** Created 70+ workflow optimization solutions
+<div class="tech-stack-container animate-on-scroll">
+    <h2 class="section-title">Technology Stack</h2>
+    
+    <div class="tech-categories">
+        <div class="tech-category">
+            <h3>Cloud Platforms</h3>
+            <div class="tech-icons">
+                <div class="tech-icon">
+                    <i class="fab fa-microsoft"></i>
+                    <span>Azure</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fab fa-microsoft"></i>
+                    <span>Microsoft 365</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fab fa-aws"></i>
+                    <span>AWS</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tech-category">
+            <h3>Security Tools</h3>
+            <div class="tech-icons">
+                <div class="tech-icon">
+                    <i class="fas fa-key"></i>
+                    <span>CyberArk</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>MDM</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Azure AD</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tech-category">
+            <h3>Automation</h3>
+            <div class="tech-icons">
+                <div class="tech-icon">
+                    <i class="fas fa-bolt"></i>
+                    <span>Power Automate</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-terminal"></i>
+                    <span>PowerShell</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-code"></i>
+                    <span>Python</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tech-category">
+            <h3>Development</h3>
+            <div class="tech-icons">
+                <div class="tech-icon">
+                    <i class="fab fa-windows"></i>
+                    <span>.NET</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fab fa-microsoft"></i>
+                    <span>Blazor</span>
+                </div>
+                <div class="tech-icon">
+                    <i class="fas fa-code-branch"></i>
+                    <span>Azure DevOps</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-## Technology Leadership Domains
+<div class="impact-container animate-on-scroll">
+    <h2 class="section-title">Transformation Impact</h2>
+    
+    <div class="impact-metrics">
+        <div class="impact-metric">
+            <div class="metric-value">40%</div>
+            <div class="metric-label">Enhanced Security Posture</div>
+            <div class="metric-description">Elevated Microsoft 365 Secure Score across multiple enterprise environments</div>
+        </div>
+        
+        <div class="impact-metric">
+            <div class="metric-value">40%</div>
+            <div class="metric-label">Reduced Cloud Costs</div>
+            <div class="metric-description">Optimized cloud resource utilization and architecture design</div>
+        </div>
+        
+        <div class="impact-metric">
+            <div class="metric-value">70+</div>
+            <div class="metric-label">Automation Workflows</div>
+            <div class="metric-description">Process optimization solutions implemented across multiple domains</div>
+        </div>
+        
+        <div class="impact-metric">
+            <div class="metric-value">75%</div>
+            <div class="metric-label">Faster Deployments</div>
+            <div class="metric-description">Reduced deployment times through CI/CD pipeline optimization</div>
+        </div>
+    </div>
+</div>
 
-### Enterprise Security Architecture
-- Specialized in privileged access management
-- Designed multi-layered security compliance strategies
-- Implemented zero-trust security frameworks
+<div class="cta-container animate-on-scroll">
+    <div class="resume-cta">
+        <h3>Interested in the detailed professional journey?</h3>
+        <a href="/assets/SulemanManji_Resume.pdf" class="btn" target="_blank">Download Full Resume</a>
+    </div>
+    
+    <div class="projects-cta">
+        <h3>Want to see technology in action?</h3>
+        <a href="/projects" class="btn">View Project Portfolio</a>
+    </div>
+</div>
 
-### Cloud & DevOps Innovation
-- Developed scalable microservices architectures
-- Optimized CI/CD deployment pipelines
-- Enhanced system monitoring and proactive error detection
-
-### Business Process Automation
-- Integrated cross-platform workflow solutions
-- Streamlined organizational operational efficiency
-- Developed intelligent automation frameworks
-
-## Technical Consulting Expertise
-
-### Strategic Technology Advisory
-- Provided expert guidance on cloud adoption strategies
-- Conducted specialized training for enterprise technology teams
-- Facilitated cross-functional technology integration projects
-
-### Key Technologies
-- Cloud Platforms: Azure, Microsoft 365
-- Security Tools: CyberArk, MDM
-- Automation Frameworks: Power Automate, PowerShell
-- Development: .NET, Blazor, Azure DevOps
-
-[Download Full Resume](/assets/SulemanManji_Resume.pdf)
-[View Detailed Projects](/projects)
+<div class="dark-mode-toggle">
+    <i class="fas fa-moon"></i>
+</div>

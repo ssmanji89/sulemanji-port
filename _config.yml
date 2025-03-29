@@ -15,6 +15,7 @@ google_analytics:
 # Site settings
 domain: www.sulemanji.com
 url: https://www.sulemanji.com
+baseurl: ""
 
 # Social profiles
 github_username: ssmanji89
@@ -22,6 +23,22 @@ linkedin_username: suleman-manji-1a46852a0
 
 # Build settings
 markdown: kramdown
+sass:
+  style: compressed
+
+# Collections
+collections:
+  projects:
+    output: true
+    permalink: /projects/:name
+
+# Default front matter
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"
 
 # Exclude from processing
 exclude:
@@ -32,3 +49,5 @@ exclude:
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
+  - README.md
+  - LICENSE

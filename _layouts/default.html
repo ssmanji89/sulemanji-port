@@ -5,30 +5,72 @@
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <title>{{ page.title | default: site.title }}</title>
     <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
-    <script src="{{ '/assets/js/scale.fix.js' | relative_url }}"></script>
+    <meta name="description" content="{{ page.description | default: site.description }}">
+    <meta name="author" content="Suleman Manji">
+    <link rel="icon" href="{{ '/images/favicon.ico' | relative_url }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ '/assets/js/main.js' | relative_url }}"></script>
 </head>
 <body>
     <div class="wrapper">
         <header>
-            <h1>{{ site.title }}</h1>
-            <p>{{ site.description }}</p>
-            <p class="view">
-                <a href="https://github.com/{{ site.github_username }}">
-                    View GitHub Profile
+            <div class="logo">
+                <a href="{{ '/' | relative_url }}">
+                    <h1>{{ site.title }}</h1>
                 </a>
-            </p>
+            </div>
+            <p class="tagline">{{ site.description }}</p>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>Home</a></li>
+                    <li><a href="{{ '/about' | relative_url }}" {% if page.url == '/about' %}class="active"{% endif %}>About</a></li>
+                    <li><a href="{{ '/experience' | relative_url }}" {% if page.url == '/experience' %}class="active"{% endif %}>Experience</a></li>
+                    <li><a href="{{ '/projects' | relative_url }}" {% if page.url == '/projects' %}class="active"{% endif %}>Projects</a></li>
+                    <li><a href="{{ '/philosophy' | relative_url }}" {% if page.url == '/philosophy' %}class="active"{% endif %}>Philosophy</a></li>
+                    <li><a href="{{ '/bpa' | relative_url }}" {% if page.url == '/bpa' %}class="active"{% endif %}>Automation</a></li>
+                </ul>
+            </nav>
+            
+            <div class="social-links">
+                <a href="https://github.com/{{ site.github_username }}" target="_blank" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
+                <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+            </div>
         </header>
         
-        <section>
+        <section class="main-content">
             {{ content }}
         </section>
         
         <footer>
-            <p>Maintained by <a href="https://github.com/{{ site.github_username }}">{{ site.github_username }}</a></p>
-            <p>Hosted on GitHub Pages</p>
+            <div class="footer-content">
+                <div class="copyright">
+                    <p>&copy; {{ site.time | date: '%Y' }} Suleman Manji. All rights reserved.</p>
+                </div>
+                <div class="footer-nav">
+                    <a href="{{ '/' | relative_url }}">Home</a>
+                    <a href="{{ '/about' | relative_url }}">About</a>
+                    <a href="{{ '/projects' | relative_url }}">Projects</a>
+                </div>
+            </div>
         </footer>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
 </body>
 </html>

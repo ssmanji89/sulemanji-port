@@ -1,407 +1,99 @@
 /**
- * Base styles for sulemanji.com (2025 Edition)
- * Contains core element styling and design system variables
+ * Base styles for sulemanji.com
+ * Contains core element styling and variables
  */
 
-/* CSS Custom Properties for Design System */
+/* CSS Custom Properties for Consistent Theming */
 :root {
-  /* Primary Color Palette - Vibrant yet professional */
-  --color-primary-50: #e6f1ff;
-  --color-primary-100: #c5e0ff;
-  --color-primary-200: #a1ccff;
-  --color-primary-300: #7cb7ff;
-  --color-primary-400: #58a6ff;
-  --color-primary-500: #0366d6;
-  --color-primary-600: #0256b4;
-  --color-primary-700: #024694;
-  --color-primary-800: #01377a;
-  --color-primary-900: #012a5c;
-
-  /* Secondary Color - Accent color for CTAs and highlights */
-  --color-secondary-50: #e6f7ee;
-  --color-secondary-100: #c5ebd6;
-  --color-secondary-200: #9ddcbe;
-  --color-secondary-300: #6eca9e;
-  --color-secondary-400: #39b97d;
-  --color-secondary-500: #2ea44f;
-  --color-secondary-600: #238c40;
-  --color-secondary-700: #197334;
-  --color-secondary-800: #145a2a;
-  --color-secondary-900: #0f4522;
-
-  /* Neutral Palette - For text, backgrounds, borders */
-  --color-neutral-50: #f6f8fa;
-  --color-neutral-100: #ebeef1;
-  --color-neutral-200: #d0d7de;
-  --color-neutral-300: #afb8c1;
-  --color-neutral-400: #8b949e;
-  --color-neutral-500: #6e7781;
-  --color-neutral-600: #57606a;
-  --color-neutral-700: #424a53;
-  --color-neutral-800: #32383f;
-  --color-neutral-900: #24292f;
+  /* Color Variables */
+  --color-background: #f6f8fa;
+  --color-foreground: #24292e;
+  --color-primary: #0366d6;
+  --color-primary-hover: #045cc8;
+  --color-secondary: #2ea44f;
+  --color-secondary-hover: #2c974b;
+  --color-accent: #58a6ff;
+  --color-muted: #586069;
+  --color-border: #e1e4e8;
+  --color-card-bg: #ffffff;
+  --color-card-shadow: rgba(0, 0, 0, 0.05);
   
-  /* Semantic Colors */
-  --color-success: #2ea043;
-  --color-warning: #efa31d;
-  --color-error: #d73a49;
-  --color-info: #0366d6;
-
-  /* Surface Colors */
-  --color-background: var(--color-neutral-50);
-  --color-foreground: var(--color-neutral-900);
-  --color-surface-1: #ffffff;
-  --color-surface-2: #f8f9fa;
-  --color-surface-3: #f3f4f6;
+  /* Typography */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-size-base: 16px;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
   
-  /* Border & Outline Colors */
-  --color-border: var(--color-neutral-200);
-  --color-border-focus: var(--color-primary-400);
-  --color-outline: rgba(3, 102, 214, 0.3);
-  
-  /* Typography System */
-  --font-family-base: 'Inter var', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-family-code: 'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-family-display: var(--font-family-base);
-  
-  /* Font Sizes - Using fluid typography */
-  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
-  --font-size-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);
-  --font-size-md: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
-  --font-size-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);
-  --font-size-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
-  --font-size-2xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);
-  --font-size-3xl: clamp(1.875rem, 1.6rem + 1.375vw, 2.25rem);
-  --font-size-4xl: clamp(2.25rem, 1.85rem + 2vw, 3rem);
-  
-  /* Font Weights */
-  --font-weight-light: 300;
-  --font-weight-normal: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  
-  /* Line Heights */
-  --line-height-none: 1;
-  --line-height-tight: 1.2;
-  --line-height-snug: 1.33;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.75;
-  
-  /* Letter Spacing */
-  --letter-spacing-tight: -0.025em;
-  --letter-spacing-normal: 0em;
-  --letter-spacing-wide: 0.025em;
-  --letter-spacing-wider: 0.05em;
-  
-  /* Spacing System (8-point grid) */
-  --space-0: 0;
-  --space-1: 0.25rem;  /* 4px */
-  --space-2: 0.5rem;   /* 8px */
-  --space-3: 0.75rem;  /* 12px */
-  --space-4: 1rem;     /* 16px */
-  --space-5: 1.25rem;  /* 20px */
-  --space-6: 1.5rem;   /* 24px */
-  --space-8: 2rem;     /* 32px */
-  --space-10: 2.5rem;  /* 40px */
-  --space-12: 3rem;    /* 48px */
-  --space-16: 4rem;    /* 64px */
-  --space-20: 5rem;    /* 80px */
-  --space-24: 6rem;    /* 96px */
-  --space-32: 8rem;    /* 128px */
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
   
   /* Layout */
-  --site-width: 1280px;
-  --content-width-narrow: 768px;
-  --content-width-medium: 1024px;
-  --content-width-wide: 1440px;
-  
-  /* Border Radius */
-  --radius-none: 0;
-  --radius-sm: 0.25rem;   /* 4px */
-  --radius-md: 0.375rem;  /* 6px */
-  --radius-lg: 0.5rem;    /* 8px */
-  --radius-xl: 0.75rem;   /* 12px */
-  --radius-2xl: 1rem;     /* 16px */
-  --radius-3xl: 1.5rem;   /* 24px */
-  --radius-full: 9999px;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
-  
-  /* Transition Speeds */
-  --transition-fast: 150ms;
-  --transition-normal: 250ms;
-  --transition-slow: 350ms;
-  --transition-slower: 500ms;
-  
-  /* Z-index Values */
-  --z-negative: -1;
-  --z-0: 0;
-  --z-10: 10;
-  --z-20: 20;
-  --z-30: 30;
-  --z-40: 40;
-  --z-50: 50;
-  --z-tooltip: 100;
-  --z-fixed: 200;
-  --z-modal: 300;
-  --z-popover: 400;
-  --z-max: 9999;
+  --content-width: 1280px;
+  --border-radius-sm: 3px;
+  --border-radius-md: 6px;
+  --border-radius-lg: 8px;
+  --border-radius-full: 9999px;
 }
 
 /* Dark Mode Variables */
-.dark-theme {
-  /* Surface Colors - Dark */
-  --color-background: #0d1117;
-  --color-foreground: #e6edf3;
-  --color-surface-1: #161b22;
-  --color-surface-2: #21262d;
-  --color-surface-3: #2d333b;
-  
-  /* Border Colors - Dark */
-  --color-border: #30363d;
-  
-  /* Primary Colors - Adjusted for dark mode */
-  --color-primary-500: #58a6ff;
-  --color-primary-600: #79c0ff;
-  
-  /* Secondary Colors - Adjusted for dark mode */
-  --color-secondary-500: #3fb950;
-  --color-secondary-600: #56d364;
-  
-  /* Neutral Palette - Dark */
-  --color-neutral-50: #0d1117;
-  --color-neutral-100: #161b22;
-  --color-neutral-200: #21262d;
-  --color-neutral-300: #30363d;
-  --color-neutral-400: #484f58;
-  --color-neutral-500: #6e7681;
-  --color-neutral-600: #8b949e;
-  --color-neutral-700: #b1bac4;
-  --color-neutral-800: #c9d1d9;
-  --color-neutral-900: #e6edf3;
-  
-  /* Semantic Colors - Dark */
-  --color-success: #3fb950;
-  --color-warning: #d29922;
-  --color-error: #f85149;
-  --color-info: #58a6ff;
-  
-  /* Shadow - Dark */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-}
-
-/* CSS Reset & Base Styles */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html {
-  font-size: 100%;
-  text-size-adjust: 100%;
-  scroll-behavior: smooth;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-}
-
-@supports (font-variation-settings: normal) {
-  html {
-    font-family: 'Inter var', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0d1117;
+    --color-foreground: #c9d1d9;
+    --color-primary: #58a6ff;
+    --color-primary-hover: #79c0ff;
+    --color-muted: #8b949e;
+    --color-border: #30363d;
+    --color-card-bg: #161b22;
+    --color-card-shadow: rgba(0, 0, 0, 0.1);
   }
+}
+
+/* Base Element Styling */
+html {
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  /* Using calc for more precise control over font-size scaling */
+  font-size: clamp(14px, calc(0.875rem + 0.5vw), 18px);
+  /* This fluid typography formula:
+   * - Minimum size: 14px on small screens
+   * - Scales smoothly based on viewport width
+   * - Maximum size: 18px on large screens 
+   */
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
 }
 
 body {
   font-family: var(--font-family-base);
-  font-size: var(--font-size-md);
-  line-height: var(--line-height-normal);
-  font-weight: var(--font-weight-normal);
-  color: var(--color-foreground);
   background-color: var(--color-background);
-  min-height: 100vh;
-  text-rendering: optimizeSpeed;
-  transition: background-color var(--transition-normal) ease-in-out, 
-              color var(--transition-normal) ease-in-out;
-}
-
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  margin-top: 0;
-  font-family: var(--font-family-display);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-tight);
   color: var(--color-foreground);
-  scroll-margin-top: 100px;
-}
-
-h1 {
-  font-size: var(--font-size-4xl);
-  letter-spacing: var(--letter-spacing-tight);
-  margin-bottom: var(--space-6);
-}
-
-h2 {
-  font-size: var(--font-size-3xl);
-  letter-spacing: var(--letter-spacing-tight);
-  margin-bottom: var(--space-5);
-  position: relative;
-}
-
-h3 {
-  font-size: var(--font-size-2xl);
-  margin-bottom: var(--space-4);
-}
-
-h4 {
-  font-size: var(--font-size-xl);
-  margin-bottom: var(--space-3);
-}
-
-h5 {
-  font-size: var(--font-size-lg);
-  margin-bottom: var(--space-2);
-}
-
-h6 {
-  font-size: var(--font-size-md);
-  margin-bottom: var(--space-2);
-}
-
-/* Section Heading with Modern Underline */
-h2.section-heading {
-  position: relative;
-  display: inline-block;
-  padding-bottom: var(--space-3);
-}
-
-h2.section-heading::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  height: 4px;
-  width: 60px;
-  background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-300));
-  border-radius: var(--radius-full);
-}
-
-.text-center h2.section-heading::after {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-p {
-  margin-bottom: var(--space-4);
-}
-
-a {
-  color: var(--color-primary-500);
-  text-decoration: none;
-  transition: color var(--transition-fast) ease-in-out, 
-              text-decoration var(--transition-fast) ease-in-out;
-}
-
-a:hover, a:focus {
-  color: var(--color-primary-600);
-  text-decoration: underline;
-}
-
-a:focus {
-  outline: 2px solid var(--color-outline);
-  outline-offset: 2px;
-}
-
-/* Links that look like buttons */
-a.link-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-2) var(--space-4);
-  background-color: transparent;
-  border: 1px solid var(--color-primary-500);
-  color: var(--color-primary-500);
-  border-radius: var(--radius-md);
-  font-weight: var(--font-weight-medium);
-  transition: all var(--transition-fast) ease-in-out;
-}
-
-a.link-button:hover, a.link-button:focus {
-  background-color: var(--color-primary-500);
-  color: white;
-  text-decoration: none;
-}
-
-/* Lists */
-ul, ol {
-  padding-left: var(--space-5);
-  margin-bottom: var(--space-4);
-}
-
-li {
-  margin-bottom: var(--space-2);
-}
-
-/* Code and Pre */
-code {
-  font-family: var(--font-family-code);
-  font-size: 90%;
-  background-color: var(--color-neutral-100);
-  padding: 0.1em 0.3em;
-  border-radius: var(--radius-sm);
-}
-
-pre {
-  font-family: var(--font-family-code);
-  font-size: 90%;
-  background-color: var(--color-neutral-100);
-  padding: var(--space-4);
-  border-radius: var(--radius-md);
-  overflow-x: auto;
-  margin-bottom: var(--space-4);
-}
-
-pre code {
-  background-color: transparent;
   padding: 0;
-  font-size: inherit;
+  margin: 0;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Focus States */
-:focus {
-  outline: 2px solid var(--color-outline);
-  outline-offset: 2px;
-}
-
-:focus:not(:focus-visible) {
-  outline: none;
-}
-
-:focus-visible {
-  outline: 2px solid var(--color-outline);
-  outline-offset: 2px;
-}
-
-/* Images */
-img, svg, video {
-  display: block;
+img, svg {
   max-width: 100%;
   height: auto;
+  display: block;
 }
 
-/* Responsive image utilities */
+/* Responsive images with different behaviors */
 .img-responsive {
   max-width: 100%;
   height: auto;
@@ -420,7 +112,101 @@ img, svg, video {
   object-fit: contain;
 }
 
-/* Utilities */
+/* Responsive image sizes at different breakpoints */
+.img-fluid-sm {
+  max-width: 100%;
+  width: clamp(200px, 50vw, 300px);
+  height: auto;
+}
+
+.img-fluid-md {
+  max-width: 100%;
+  width: clamp(300px, 60vw, 500px);
+  height: auto;
+}
+
+.img-fluid-lg {
+  max-width: 100%;
+  width: clamp(400px, 80vw, 800px);
+  height: auto;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  line-height: 1.2;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  margin-bottom: var(--spacing-lg);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  margin-bottom: var(--spacing-md);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  margin-bottom: var(--spacing-md);
+}
+
+h4 {
+  font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+  margin-bottom: var(--spacing-sm);
+}
+
+h5 {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  margin-bottom: var(--spacing-sm);
+}
+
+h6 {
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  margin-bottom: var(--spacing-sm);
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Layout Container */
+.wrapper {
+  width: 100%;
+  max-width: var(--content-width);
+  padding: 0 clamp(var(--spacing-md), 5vw, var(--spacing-xl));
+  margin: 0 auto;
+}
+
+/* Container with constrained width for better readability on large screens */
+.container-narrow {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+}
+
+/* Container with centered content */
+.container-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+/* Utility Classes */
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -433,18 +219,8 @@ img, svg, video {
   border-width: 0;
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
+/* Dark Mode Base Styles */
+body.dark-mode {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
-
-/* Font imports */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
-@import url('https://rsms.me/inter/inter.css');

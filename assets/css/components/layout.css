@@ -1,460 +1,72 @@
 /**
- * Layout components for sulemanji.com (2025 Edition)
- * Contains grid systems, containers, and structural components
+ * Layout components for sulemanji.com
+ * Header, wrapper, and main section containers
  */
 
-/* Main Layout Container */
-.container {
+header {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin: 0;
+  padding: 15px 0;
+  position: relative;
   width: 100%;
-  max-width: var(--site-width);
-  margin: 0 auto;
-  padding-left: var(--space-4);
-  padding-right: var(--space-4);
+  border-bottom: 1px solid #e1e4e8;
 }
 
-@media (min-width: 768px) {
-  .container {
-    padding-left: var(--space-6);
-    padding-right: var(--space-6);
-  }
+header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.2;
 }
 
-/* Container widths */
-.container-narrow {
-  max-width: var(--content-width-narrow);
+header p {
+  margin: 5px 0 0;
+  color: #586069;
+  font-size: 0.9rem;
 }
 
-.container-medium {
-  max-width: var(--content-width-medium);
+section {
+  margin-bottom: 50px;
+  padding: 0;
 }
 
-.container-wide {
-  max-width: var(--content-width-wide);
-}
-
-/* Page Section */
 .section {
-  padding-top: var(--space-10);
-  padding-bottom: var(--space-10);
+  border-bottom: 1px solid #e1e4e8;
+  padding-bottom: 40px;
+}
+
+.section-title {
+  font-size: 1.8rem;
+  color: #24292e;
+  margin-bottom: 20px;
   position: relative;
+  display: inline-block;
 }
 
-@media (min-width: 768px) {
-  .section {
-    padding-top: var(--space-16);
-    padding-bottom: var(--space-16);
-  }
+.section-subtitle {
+  color: #586069;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
 }
 
-.section--sm {
-  padding-top: var(--space-6);
-  padding-bottom: var(--space-6);
+/* Dark Mode Layout Styles */
+body.dark-mode header {
+  background-color: #161b22;
+  border-bottom: 1px solid #30363d;
 }
 
-.section--lg {
-  padding-top: var(--space-16);
-  padding-bottom: var(--space-16);
+body.dark-mode header h1 {
+  color: #f0f6fc;
 }
 
-@media (min-width: 768px) {
-  .section--lg {
-    padding-top: var(--space-20);
-    padding-bottom: var(--space-20);
-  }
+body.dark-mode header p {
+  color: #8b949e;
 }
 
-/* Section with background color */
-.section--alt {
-  background-color: var(--color-surface-2);
+body.dark-mode .section-title {
+  color: #f0f6fc;
 }
 
-/* Section with divider */
-.section--divider {
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* Modern Grid System using CSS Grid */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: var(--space-4);
-}
-
-@media (min-width: 768px) {
-  .grid {
-    gap: var(--space-6);
-  }
-}
-
-/* Grid column spans */
-.col-span-1 { grid-column: span 1; }
-.col-span-2 { grid-column: span 2; }
-.col-span-3 { grid-column: span 3; }
-.col-span-4 { grid-column: span 4; }
-.col-span-5 { grid-column: span 5; }
-.col-span-6 { grid-column: span 6; }
-.col-span-7 { grid-column: span 7; }
-.col-span-8 { grid-column: span 8; }
-.col-span-9 { grid-column: span 9; }
-.col-span-10 { grid-column: span 10; }
-.col-span-11 { grid-column: span 11; }
-.col-span-12 { grid-column: span 12; }
-
-/* For mobile, default to full width */
-@media (max-width: 767px) {
-  .grid > * {
-    grid-column: 1 / -1;
-  }
-}
-
-/* Responsive column spans */
-@media (min-width: 768px) {
-  .md\:col-span-1 { grid-column: span 1; }
-  .md\:col-span-2 { grid-column: span 2; }
-  .md\:col-span-3 { grid-column: span 3; }
-  .md\:col-span-4 { grid-column: span 4; }
-  .md\:col-span-5 { grid-column: span 5; }
-  .md\:col-span-6 { grid-column: span 6; }
-  .md\:col-span-7 { grid-column: span 7; }
-  .md\:col-span-8 { grid-column: span 8; }
-  .md\:col-span-9 { grid-column: span 9; }
-  .md\:col-span-10 { grid-column: span 10; }
-  .md\:col-span-11 { grid-column: span 11; }
-  .md\:col-span-12 { grid-column: span 12; }
-}
-
-@media (min-width: 1024px) {
-  .lg\:col-span-1 { grid-column: span 1; }
-  .lg\:col-span-2 { grid-column: span 2; }
-  .lg\:col-span-3 { grid-column: span 3; }
-  .lg\:col-span-4 { grid-column: span 4; }
-  .lg\:col-span-5 { grid-column: span 5; }
-  .lg\:col-span-6 { grid-column: span 6; }
-  .lg\:col-span-7 { grid-column: span 7; }
-  .lg\:col-span-8 { grid-column: span 8; }
-  .lg\:col-span-9 { grid-column: span 9; }
-  .lg\:col-span-10 { grid-column: span 10; }
-  .lg\:col-span-11 { grid-column: span 11; }
-  .lg\:col-span-12 { grid-column: span 12; }
-}
-
-/* 2025 Modern layout patterns */
-.layout-sidebar {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-6);
-}
-
-@media (min-width: 768px) {
-  .layout-sidebar {
-    grid-template-columns: 300px 1fr;
-  }
-}
-
-@media (min-width: 1200px) {
-  .layout-sidebar {
-    grid-template-columns: 350px 1fr;
-  }
-}
-
-/* 2025-style glass morphism cards */
-.glass-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-md);
-}
-
-.dark-theme .glass-card {
-  background: rgba(22, 27, 34, 0.8);
-  border: 1px solid rgba(48, 54, 61, 0.2);
-}
-
-/* Auto Grid - Equal width columns that wrap */
-.auto-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--auto-grid-min, 300px)), 1fr));
-  gap: var(--space-6);
-}
-
-/* Flex utilities */
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.flex-row {
-  flex-direction: row;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.items-start {
-  align-items: flex-start;
-}
-
-.items-end {
-  align-items: flex-end;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.justify-start {
-  justify-content: flex-start;
-}
-
-.justify-end {
-  justify-content: flex-end;
-}
-
-.flex-wrap {
-  flex-wrap: wrap;
-}
-
-.flex-nowrap {
-  flex-wrap: nowrap;
-}
-
-.gap-1 { gap: var(--space-1); }
-.gap-2 { gap: var(--space-2); }
-.gap-3 { gap: var(--space-3); }
-.gap-4 { gap: var(--space-4); }
-.gap-5 { gap: var(--space-5); }
-.gap-6 { gap: var(--space-6); }
-.gap-8 { gap: var(--space-8); }
-.gap-10 { gap: var(--space-10); }
-.gap-12 { gap: var(--space-12); }
-
-/* Modern 2025 Layout Components */
-.page-header {
-  padding-top: var(--space-20);
-  padding-bottom: var(--space-10);
-  position: relative;
-}
-
-.page-header--compact {
-  padding-top: var(--space-10);
-  padding-bottom: var(--space-6);
-}
-
-/* Background gradients */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
-  color: white;
-}
-
-.bg-gradient-secondary {
-  background: linear-gradient(135deg, var(--color-secondary-500), var(--color-secondary-700));
-  color: white;
-}
-
-.bg-gradient-neutral {
-  background: linear-gradient(135deg, var(--color-neutral-100), var(--color-neutral-200));
-}
-
-.dark-theme .bg-gradient-neutral {
-  background: linear-gradient(135deg, var(--color-neutral-800), var(--color-neutral-900));
-}
-
-/* 2025-style wave dividers and shapes */
-.wave-divider {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  overflow: hidden;
-  line-height: 0;
-}
-
-.wave-divider svg {
-  position: relative;
-  display: block;
-  width: calc(100% + 1.3px);
-  height: 72px;
-}
-
-.wave-divider .shape-fill {
-  fill: #FFFFFF;
-}
-
-.dark-theme .wave-divider .shape-fill {
-  fill: var(--color-neutral-50);
-}
-
-/* Content wrapper for main page content */
-.content-wrapper {
-  position: relative;
-  width: 100%;
-  padding-top: var(--space-4);
-  padding-bottom: var(--space-8);
-}
-
-@media (min-width: 768px) {
-  .content-wrapper {
-    padding-top: var(--space-6);
-    padding-bottom: var(--space-12);
-  }
-}
-
-/* Two column layout with sidebar */
-.two-columns {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-8);
-}
-
-@media (min-width: 1024px) {
-  .two-columns {
-    grid-template-columns: 2fr 1fr;
-  }
-}
-
-/* Three column layout */
-.three-columns {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--space-6);
-}
-
-@media (min-width: 768px) {
-  .three-columns {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* Masonry-like layout using grid */
-.masonry-grid {
-  column-count: 1;
-  column-gap: var(--space-4);
-}
-
-.masonry-grid > * {
-  break-inside: avoid;
-  margin-bottom: var(--space-4);
-}
-
-@media (min-width: 640px) {
-  .masonry-grid {
-    column-count: 2;
-    column-gap: var(--space-6);
-  }
-  
-  .masonry-grid > * {
-    margin-bottom: var(--space-6);
-  }
-}
-
-@media (min-width: 1024px) {
-  .masonry-grid {
-    column-count: 3;
-  }
-}
-
-/* Horizontal scroll container (for portfolios and galleries) */
-.scroll-container {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: var(--space-4);
-  width: 100%;
-  overflow-x: auto;
-  padding-bottom: var(--space-2);
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scroll-behavior: smooth;
-}
-
-.scroll-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.scroll-container::-webkit-scrollbar-track {
-  background-color: var(--color-neutral-100);
-  border-radius: var(--radius-full);
-}
-
-.scroll-container::-webkit-scrollbar-thumb {
-  background-color: var(--color-neutral-300);
-  border-radius: var(--radius-full);
-}
-
-.scroll-item {
-  flex: 0 0 auto;
-  width: 90%;
-  max-width: 350px;
-  scroll-snap-align: start;
-}
-
-@media (min-width: 768px) {
-  .scroll-item {
-    width: 45%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .scroll-item {
-    width: 30%;
-  }
-}
-
-/* Overlay panels (for modals, drawers, etc.) */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: var(--z-modal);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity var(--transition-normal) ease,
-              visibility var(--transition-normal) ease;
-}
-
-.overlay.is-active {
-  opacity: 1;
-  visibility: visible;
-}
-
-.overlay-content {
-  background-color: var(--color-surface-1);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: var(--shadow-xl);
-  max-width: 90%;
-  max-height: 90%;
-  overflow-y: auto;
-}
-
-/* Modern wrapper structure */
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1 0 auto;
-}
-
-footer {
-  flex-shrink: 0;
+body.dark-mode .section-subtitle {
+  color: #8b949e;
 }

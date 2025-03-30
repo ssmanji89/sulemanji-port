@@ -255,9 +255,8 @@ PLATFORMS
 DEPENDENCIES
   github-pages
   jekyll-feed
-  jekyll-remote-theme
   jekyll-seo-tag
-  jekyll-theme-modernist
+  jekyll-theme-minimal
 
 BUNDLED WITH
    1.17.2

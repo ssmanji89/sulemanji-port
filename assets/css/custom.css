@@ -23,5 +23,6 @@
 @import url('components/code.css');
 @import url('components/animations.css');
 @import url('components/print.css');
+@import url('components/impact.css');
 
 /* All styles have been modularized into separate component files for better maintainability */

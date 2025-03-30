@@ -24,7 +24,7 @@ Design and implementation of scalable, secure cloud infrastructure solutions wit
 Comprehensive security frameworks focused on identity governance, privileged access management, and zero-trust architecture.
 
 ### <i class="fas fa-cogs"></i> Process Automation
-Development of intelligent workflow solutions using Power Automate, PowerShell, and custom integration frameworks to streamline business operations.
+Development of intelligent workflow solutions using Power Automate and custom integration frameworks to streamline business operations.
 
 ## Specialized Tooling
 
@@ -54,17 +54,29 @@ Development of intelligent workflow solutions using Power Automate, PowerShell, 
             </a>
         </div>
     </div>
+</div>
 
 ## Transformation Impact
 
-- **40%** Cloud Cost Reduction
-  - Optimized cloud resource utilization through architecture refinement
-
-- **70+** Automation Workflows
-  - Comprehensive process automation solutions across multiple domains
-
-- **88.8%** Enhanced Security Posture
-  - Elevated Microsoft 365 Secure Score across enterprise environments
+<div class="impact-metrics">
+    <div class="impact-metric">
+        <div class="metric-value">40%</div>
+        <div class="metric-label">Cloud Cost Reduction</div>
+        <div class="metric-description">Optimized cloud resource utilization through architecture refinement</div>
+    </div>
+    
+    <div class="impact-metric">
+        <div class="metric-value">70+</div>
+        <div class="metric-label">Automation Workflows</div>
+        <div class="metric-description">Comprehensive process automation solutions across multiple domains</div>
+    </div>
+    
+    <div class="impact-metric">
+        <div class="metric-value">88.8%</div>
+        <div class="metric-label">Security Posture</div>
+        <div class="metric-description">Elevated Microsoft 365 Secure Score across enterprise environments</div>
+    </div>
+</div>
 
 ## Technology Stack
 
@@ -83,7 +95,6 @@ Development of intelligent workflow solutions using Power Automate, PowerShell, 
 
 ### Automation
 - <i class="fas fa-cogs"></i> Power Automate
-- <i class="fas fa-terminal"></i> PowerShell
 - <i class="fas fa-code"></i> Python
 - <i class="fab fa-node-js"></i> Node.js
 - <i class="fab fa-js"></i> JavaScript

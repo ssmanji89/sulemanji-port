@@ -1,422 +1,511 @@
 /**
- * Main JavaScript for sulemanji.com
- * Contains interactive functionality for the portfolio site
+ * Main JavaScript for sulemanji.com (2025 Edition)
+ * Modern interactions and functionality
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize scroll animations
+  // Initialize all components
+  initThemeToggle();
+  initMobileMenu();
   initScrollAnimations();
-  
-  // Initialize dark mode toggle
-  initDarkModeToggle();
-  
-  // Initialize project filtering
+  initStickyHeader();
+  initScrollToTop();
+  initLazyLoading();
   initProjectFilters();
-  
-  // Initialize syntax highlighting for code blocks
-  initSyntaxHighlighting();
-  
-  // Initialize mobile navigation
-  initMobileNavigation();
-  
-  // Initialize skill proficiency animation
-  initSkillProficiencyAnimation();
+  initCodeHighlighting();
+  initSmoothScroll();
+  initTooltips();
+  initParallaxEffect();
 });
 
 /**
- * Initialize animations for elements when they scroll into view
+ * Theme Toggle Functionality
+ * Modern dark/light mode with localStorage persistence and system preference detection
+ */
+function initThemeToggle() {
+  const themeToggle = document.querySelector('.theme-switch input');
+  const themeLabel = document.querySelector('.theme-label');
+  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  const currentTheme = localStorage.getItem('theme');
+  
+  // Set initial theme based on saved preference or system preference
+  if (currentTheme === 'dark') {
+    document.body.classList.add('dark-theme');
+    if (themeToggle) themeToggle.checked = true;
+    if (themeLabel) themeLabel.textContent = 'Dark Mode';
+  } else if (currentTheme === 'light') {
+    document.body.classList.remove('dark-theme');
+    if (themeToggle) themeToggle.checked = false;
+    if (themeLabel) themeLabel.textContent = 'Light Mode';
+  } else if (prefersDarkScheme.matches) {
+    document.body.classList.add('dark-theme');
+    if (themeToggle) themeToggle.checked = true;
+    if (themeLabel) themeLabel.textContent = 'Dark Mode';
+  }
+  
+  // Add transition class after initial load to enable smooth theme transitions
+  setTimeout(() => {
+    document.body.classList.add('theme-transition');
+  }, 100);
+  
+  // Handle theme toggle click
+  if (themeToggle) {
+    themeToggle.addEventListener('change', function() {
+      if (this.checked) {
+        document.body.classList.add('dark-theme');
+        localStorage.setItem('theme', 'dark');
+        if (themeLabel) themeLabel.textContent = 'Dark Mode';
+      } else {
+        document.body.classList.remove('dark-theme');
+        localStorage.setItem('theme', 'light');
+        if (themeLabel) themeLabel.textContent = 'Light Mode';
+      }
+    });
+  }
+  
+  // Handle system preference change
+  prefersDarkScheme.addEventListener('change', function(e) {
+    // Only update if the user hasn't set a preference
+    if (!localStorage.getItem('theme')) {
+      if (e.matches) {
+        document.body.classList.add('dark-theme');
+        if (themeToggle) themeToggle.checked = true;
+        if (themeLabel) themeLabel.textContent = 'Dark Mode';
+      } else {
+        document.body.classList.remove('dark-theme');
+        if (themeToggle) themeToggle.checked = false;
+        if (themeLabel) themeLabel.textContent = 'Light Mode';
+      }
+    }
+  });
+}
+
+/**
+ * Mobile Menu Functionality
+ * Modern mobile navigation with smooth animations
+ */
+function initMobileMenu() {
+  const menuToggle = document.querySelector('.menu-toggle');
+  const mobileNav = document.querySelector('.mobile-nav');
+  const mobileNavOverlay = document.querySelector('.mobile-nav-overlay');
+  const mobileNavLinks = document.querySelectorAll('.mobile-nav a');
+  
+  if (!menuToggle || !mobileNav) return;
+  
+  // Toggle mobile menu
+  menuToggle.addEventListener('click', function() {
+    menuToggle.classList.toggle('is-active');
+    mobileNav.classList.toggle('is-active');
+    if (mobileNavOverlay) mobileNavOverlay.classList.toggle('is-active');
+    document.body.classList.toggle('menu-open');
+  });
+  
+  // Close menu when overlay is clicked
+  if (mobileNavOverlay) {
+    mobileNavOverlay.addEventListener('click', function() {
+      menuToggle.classList.remove('is-active');
+      mobileNav.classList.remove('is-active');
+      mobileNavOverlay.classList.remove('is-active');
+      document.body.classList.remove('menu-open');
+    });
+  }
+  
+  // Close menu when link is clicked
+  mobileNavLinks.forEach(link => {
+    link.addEventListener('click', function() {
+      menuToggle.classList.remove('is-active');
+      mobileNav.classList.remove('is-active');
+      if (mobileNavOverlay) mobileNavOverlay.classList.remove('is-active');
+      document.body.classList.remove('menu-open');
+    });
+  });
+  
+  // Handle escape key press
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && mobileNav.classList.contains('is-active')) {
+      menuToggle.classList.remove('is-active');
+      mobileNav.classList.remove('is-active');
+      if (mobileNavOverlay) mobileNavOverlay.classList.remove('is-active');
+      document.body.classList.remove('menu-open');
+    }
+  });
+}
+
+/**
+ * Scroll Animations
+ * Modern reveal animations when elements scroll into view
  */
 function initScrollAnimations() {
-  const animatedElements = document.querySelectorAll('.animate-on-scroll');
+  // Check if IntersectionObserver is supported
+  if (!('IntersectionObserver' in window)) return;
   
-  if (animatedElements.length > 0 && !prefersReducedMotion()) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('in-view');
-          
-          // Remove observer after animation is triggered to improve performance
-          observer.unobserve(entry.target);
-        }
-      });
-    }, {
-      threshold: 0.15,
-      rootMargin: '0px 0px -50px 0px'
+  const elementsToAnimate = document.querySelectorAll(
+    '.scroll-fade-in, .scroll-slide-up, .scroll-slide-left, .scroll-slide-right, .scroll-scale-in, .stagger-item'
+  );
+  
+  const options = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.1
+  };
+  
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target); // Stop observing once visible
+      }
     });
-    
-    animatedElements.forEach(element => {
-      observer.observe(element);
-    });
-  } else {
-    // If prefers-reduced-motion, add in-view class to all elements immediately
-    animatedElements.forEach(element => {
-      element.classList.add('in-view');
-    });
-  }
+  }, options);
+  
+  elementsToAnimate.forEach(element => {
+    observer.observe(element);
+  });
 }
 
 /**
- * Initialize dark mode toggle functionality
+ * Sticky Header
+ * Modern header that changes on scroll
  */
-function initDarkModeToggle() {
-  const darkModeToggle = document.getElementById('checkbox');
-  const themeLabel = document.querySelector('.theme-label');
-  const darkModeButtons = document.querySelectorAll('.dark-mode-toggle');
+function initStickyHeader() {
+  const header = document.querySelector('.site-header');
+  if (!header) return;
   
-  // Check for saved theme preference or respect OS preference
-  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-  const storedTheme = localStorage.getItem('theme');
+  const headerHeight = header.offsetHeight;
+  const scrollThreshold = 100; // Pixels to scroll before header changes
   
-  function setTheme(isDark) {
-    if (isDark) {
-      document.body.classList.add('dark-mode');
-      if (darkModeToggle) {
-        darkModeToggle.checked = true;
-      }
-      if (themeLabel) {
-        themeLabel.textContent = 'Light Mode';
-      }
+  window.addEventListener('scroll', function() {
+    const scrollPosition = window.scrollY;
+    
+    if (scrollPosition > scrollThreshold) {
+      header.classList.add('scrolled');
     } else {
-      document.body.classList.remove('dark-mode');
-      if (darkModeToggle) {
-        darkModeToggle.checked = false;
-      }
-      if (themeLabel) {
-        themeLabel.textContent = 'Dark Mode';
-      }
-    }
-  }
-  
-  // Set initial theme
-  if (storedTheme === 'dark' || (!storedTheme && prefersDarkScheme.matches)) {
-    setTheme(true);
-  } else {
-    setTheme(false);
-  }
-  
-  // Add event listener for theme toggle
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener('change', function() {
-      setTheme(this.checked);
-      localStorage.setItem('theme', this.checked ? 'dark' : 'light');
-    });
-  }
-  
-  // Add standalone dark mode toggle buttons
-  if (darkModeButtons.length > 0) {
-    darkModeButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        setTheme(!isDarkMode);
-        localStorage.setItem('theme', !isDarkMode ? 'dark' : 'light');
-      });
-    });
-  }
-  
-  // Listen for OS theme changes
-  prefersDarkScheme.addEventListener('change', e => {
-    if (!localStorage.getItem('theme')) {
-      setTheme(e.matches);
+      header.classList.remove('scrolled');
     }
   });
 }
 
 /**
- * Initialize project filtering functionality
+ * Scroll to Top Button
+ * Modern button that appears when scrolling down
+ */
+function initScrollToTop() {
+  const scrollTopButton = document.querySelector('.scroll-top');
+  if (!scrollTopButton) return;
+  
+  const scrollThreshold = 400; // Pixels to scroll before button appears
+  
+  // Show/hide button based on scroll position
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > scrollThreshold) {
+      scrollTopButton.classList.add('visible');
+    } else {
+      scrollTopButton.classList.remove('visible');
+    }
+  });
+  
+  // Scroll to top when button is clicked
+  scrollTopButton.addEventListener('click', function() {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  });
+}
+
+/**
+ * Lazy Loading Images
+ * Modern performance optimization for images
+ */
+function initLazyLoading() {
+  // Check if IntersectionObserver is supported
+  if (!('IntersectionObserver' in window)) return;
+  
+  const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+  
+  const imageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        const src = img.getAttribute('data-src');
+        
+        if (src) {
+          img.src = src;
+          img.removeAttribute('data-src');
+        }
+        
+        observer.unobserve(img);
+      }
+    });
+  });
+  
+  lazyImages.forEach(img => {
+    imageObserver.observe(img);
+  });
+}
+
+/**
+ * Project Filters
+ * Modern filtering system for portfolio projects
  */
 function initProjectFilters() {
-  const filterButtons = document.querySelectorAll('.filter-btn, .category-btn');
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const projectItems = document.querySelectorAll('.project-item');
   
-  if (filterButtons.length > 0) {
-    const targetElements = document.querySelector('.filter-btn') 
-      ? document.querySelectorAll('.project-card')
-      : document.querySelectorAll('.blog-article');
-    
-    const filterAttribute = document.querySelector('.filter-btn')
-      ? 'data-categories'
-      : 'data-categories';
-    
-    filterButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        // Remove active class from all buttons
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        
-        // Add active class to clicked button
-        button.classList.add('active');
-        
-        // Get filter value
-        const filterValue = button.getAttribute('data-filter') || button.getAttribute('data-category');
-        
-        // Filter elements
-        targetElements.forEach(element => {
-          if (filterValue === 'all') {
-            element.style.display = '';
-            
-            // Optional animation for appearing elements
-            if (!prefersReducedMotion()) {
-              element.classList.add('filter-fade-in');
-              setTimeout(() => {
-                element.classList.remove('filter-fade-in');
-              }, 500);
-            }
-          } else {
-            const categories = element.getAttribute(filterAttribute).split(',');
-            
-            if (categories.includes(filterValue)) {
-              element.style.display = '';
-              
-              // Optional animation
-              if (!prefersReducedMotion()) {
-                element.classList.add('filter-fade-in');
-                setTimeout(() => {
-                  element.classList.remove('filter-fade-in');
-                }, 500);
-              }
-            } else {
-              element.style.display = 'none';
-            }
-          }
-        });
-      });
-    });
-  }
-}
-
-/**
- * Initialize syntax highlighting for code blocks
- */
-function initSyntaxHighlighting() {
-  const codeBlocks = document.querySelectorAll('pre code');
+  if (!filterButtons.length || !projectItems.length) return;
   
-  if (window.hljs && codeBlocks.length > 0) {
-    codeBlocks.forEach(block => {
-      hljs.highlightBlock(block);
-    });
-  }
-}
-
-/**
- * Initialize mobile navigation menu
- */
-function initMobileNavigation() {
-  const nav = document.querySelector('.main-nav');
-  
-  if (nav && window.innerWidth <= 480) {
-    // Create toggle button
-    const toggleButton = document.createElement('button');
-    toggleButton.classList.add('mobile-nav-toggle');
-    toggleButton.setAttribute('aria-label', 'Toggle navigation menu');
-    toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
-    
-    // Add toggle functionality
-    toggleButton.addEventListener('click', function() {
-      nav.classList.toggle('open');
-      this.innerHTML = nav.classList.contains('open') 
-        ? '<i class="fas fa-times"></i>' 
-        : '<i class="fas fa-bars"></i>';
+  filterButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // Update active button
+      filterButtons.forEach(btn => btn.classList.remove('active'));
+      this.classList.add('active');
       
-      // Set aria-expanded attribute
-      this.setAttribute('aria-expanded', nav.classList.contains('open'));
-    });
-    
-    // Insert before nav
-    nav.parentNode.insertBefore(toggleButton, nav);
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(event) {
-      if (!nav.contains(event.target) && !toggleButton.contains(event.target) && nav.classList.contains('open')) {
-        nav.classList.remove('open');
-        toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
-        toggleButton.setAttribute('aria-expanded', 'false');
-      }
-    });
-    
-    // Close menu when a link is clicked
-    const navLinks = nav.querySelectorAll('a');
-    navLinks.forEach(link => {
-      link.addEventListener('click', function() {
-        nav.classList.remove('open');
-        toggleButton.innerHTML = '<i class="fas fa-bars"></i>';
-        toggleButton.setAttribute('aria-expanded', 'false');
-      });
-    });
-  }
-}
-
-/**
- * Initialize skill proficiency bar animations
- */
-function initSkillProficiencyAnimation() {
-  const skillGroups = document.querySelectorAll('.skill-group');
-  
-  if (skillGroups.length > 0 && !prefersReducedMotion()) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const proficiencyLevel = entry.target.querySelector('.proficiency-level');
-          
-          if (proficiencyLevel) {
-            const width = proficiencyLevel.style.width || proficiencyLevel.getAttribute('data-width') || '0%';
-            
-            // Animate the width
-            setTimeout(() => {
-              proficiencyLevel.style.width = width;
-            }, 100);
-          }
-          
-          // Add in-view class for other animations
-          entry.target.classList.add('in-view');
-          
-          // Unobserve after animation
-          observer.unobserve(entry.target);
+      const filterValue = this.getAttribute('data-filter');
+      
+      // Filter projects
+      projectItems.forEach(item => {
+        if (filterValue === 'all') {
+          item.style.display = 'block';
+          setTimeout(() => {
+            item.classList.remove('hidden');
+          }, 10);
+        } else if (item.classList.contains(filterValue)) {
+          item.style.display = 'block';
+          setTimeout(() => {
+            item.classList.remove('hidden');
+          }, 10);
+        } else {
+          item.classList.add('hidden');
+          setTimeout(() => {
+            item.style.display = 'none';
+          }, 300);
         }
       });
-    }, {
-      threshold: 0.2
     });
-    
-    skillGroups.forEach(group => {
-      // Store the width in a data attribute to animate later
-      const proficiencyLevel = group.querySelector('.proficiency-level');
-      if (proficiencyLevel) {
-        const width = proficiencyLevel.style.width;
-        proficiencyLevel.setAttribute('data-width', width);
-        proficiencyLevel.style.width = '0%';
-      }
-      
-      observer.observe(group);
-    });
-  } else {
-    // If prefers-reduced-motion, just show the bars without animation
-    skillGroups.forEach(group => {
-      group.classList.add('in-view');
-    });
-  }
-}
-
-/**
- * Check if user prefers reduced motion
- * @returns {boolean} True if user prefers reduced motion
- */
-function prefersReducedMotion() {
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-/**
- * Lazy load images for performance
- */
-function lazyLoadImages() {
-  if ('loading' in HTMLImageElement.prototype) {
-    // Browser supports native lazy loading
-    const images = document.querySelectorAll('img[loading="lazy"]');
-    images.forEach(img => {
-      img.src = img.dataset.src;
-    });
-  } else {
-    // Fallback for browsers that don't support lazy loading
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js';
-    document.body.appendChild(script);
-  }
-}
-
-/**
- * Handle responsive iframes (like YouTube embeds)
- */
-function setupResponsiveIframes() {
-  const iframes = document.querySelectorAll('iframe');
-  
-  iframes.forEach(iframe => {
-    // Skip if already wrapped
-    if (iframe.parentNode.classList.contains('responsive-iframe-container')) {
-      return;
-    }
-    
-    // Create wrapper
-    const wrapper = document.createElement('div');
-    wrapper.classList.add('responsive-iframe-container');
-    
-    // Wrap iframe
-    iframe.parentNode.insertBefore(wrapper, iframe);
-    wrapper.appendChild(iframe);
-    
-    // Add aspect ratio class if it's a video embed
-    if (iframe.src.includes('youtube.com') || iframe.src.includes('vimeo.com')) {
-      wrapper.classList.add('aspect-ratio-16-9');
-    }
   });
 }
 
 /**
- * Initialize dynamic page header highlighting
+ * Code Highlighting
+ * Syntax highlighting for code blocks
  */
-function initHeaderHighlighting() {
-  const sections = document.querySelectorAll('section[id]');
-  const navLinks = document.querySelectorAll('.main-nav a');
-  
-  if (sections.length > 0 && navLinks.length > 0) {
-    window.addEventListener('scroll', () => {
-      let current = '';
-      const scrollPosition = window.scrollY + 100; // Offset for better UX
-      
-      sections.forEach(section => {
-        const sectionTop = section.offsetTop;
-        const sectionHeight = section.offsetHeight;
-        
-        if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-          current = section.getAttribute('id');
-        }
-      });
-      
-      navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href').substring(1) === current) {
-          link.classList.add('active');
-        }
-      });
+function initCodeHighlighting() {
+  // Check if highlight.js is loaded
+  if (typeof hljs !== 'undefined') {
+    document.querySelectorAll('pre code').forEach((block) => {
+      hljs.highlightElement(block);
     });
   }
 }
 
 /**
- * Add CSS-only scroll indicator to show more content is available
+ * Smooth Scroll
+ * Smooth scrolling for anchor links
  */
-function addScrollIndicators() {
-  const scrollContainers = document.querySelectorAll('.scroll-container');
+function initSmoothScroll() {
+  const anchorLinks = document.querySelectorAll('a[href^="#"]:not([href="#"])');
   
-  scrollContainers.forEach(container => {
-    // Check if scroll is possible
-    if (container.scrollWidth > container.clientWidth) {
-      container.classList.add('has-scroll');
+  anchorLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
       
-      // Create indicators
-      const leftIndicator = document.createElement('div');
-      leftIndicator.classList.add('scroll-indicator', 'scroll-left');
+      const targetId = this.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
       
-      const rightIndicator = document.createElement('div');
-      rightIndicator.classList.add('scroll-indicator', 'scroll-right');
-      
-      // Add to container
-      container.appendChild(leftIndicator);
-      container.appendChild(rightIndicator);
-      
-      // Update indicator visibility on scroll
-      container.addEventListener('scroll', () => {
-        if (container.scrollLeft <= 20) {
-          leftIndicator.classList.add('hidden');
-        } else {
-          leftIndicator.classList.remove('hidden');
-        }
+      if (targetElement) {
+        const headerHeight = document.querySelector('.site-header')?.offsetHeight || 0;
+        const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
         
-        if (container.scrollLeft + container.clientWidth >= container.scrollWidth - 20) {
-          rightIndicator.classList.add('hidden');
-        } else {
-          rightIndicator.classList.remove('hidden');
-        }
-      });
+        window.scrollTo({
+          top: targetPosition,
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+}
+
+/**
+ * Tooltips
+ * Modern tooltip system
+ */
+function initTooltips() {
+  const tooltipTriggers = document.querySelectorAll('[data-tooltip]');
+  
+  tooltipTriggers.forEach(trigger => {
+    const tooltipText = trigger.getAttribute('data-tooltip');
+    const tooltipPosition = trigger.getAttribute('data-tooltip-position') || 'top';
+    
+    // Create tooltip element
+    const tooltip = document.createElement('div');
+    tooltip.className = `tooltip tooltip-${tooltipPosition}`;
+    tooltip.textContent = tooltipText;
+    
+    // Add tooltip to DOM
+    document.body.appendChild(tooltip);
+    
+    // Show tooltip on hover/focus
+    trigger.addEventListener('mouseenter', function() {
+      const triggerRect = trigger.getBoundingClientRect();
       
-      // Initial state
-      container.dispatchEvent(new Event('scroll'));
-    }
+      // Position tooltip based on position attribute
+      switch (tooltipPosition) {
+        case 'top':
+          tooltip.style.bottom = `${window.innerHeight - triggerRect.top + 10}px`;
+          tooltip.style.left = `${triggerRect.left + triggerRect.width / 2}px`;
+          tooltip.style.transform = 'translateX(-50%)';
+          break;
+        case 'bottom':
+          tooltip.style.top = `${triggerRect.bottom + 10}px`;
+          tooltip.style.left = `${triggerRect.left + triggerRect.width / 2}px`;
+          tooltip.style.transform = 'translateX(-50%)';
+          break;
+        case 'left':
+          tooltip.style.top = `${triggerRect.top + triggerRect.height / 2}px`;
+          tooltip.style.right = `${window.innerWidth - triggerRect.left + 10}px`;
+          tooltip.style.transform = 'translateY(-50%)';
+          break;
+        case 'right':
+          tooltip.style.top = `${triggerRect.top + triggerRect.height / 2}px`;
+          tooltip.style.left = `${triggerRect.right + 10}px`;
+          tooltip.style.transform = 'translateY(-50%)';
+          break;
+      }
+      
+      tooltip.classList.add('visible');
+    });
+    
+    // Hide tooltip on mouseleave/blur
+    trigger.addEventListener('mouseleave', function() {
+      tooltip.classList.remove('visible');
+    });
+    
+    trigger.addEventListener('focus', function() {
+      const triggerRect = trigger.getBoundingClientRect();
+      
+      // Position tooltip based on position attribute (same logic as mouseenter)
+      switch (tooltipPosition) {
+        case 'top':
+          tooltip.style.bottom = `${window.innerHeight - triggerRect.top + 10}px`;
+          tooltip.style.left = `${triggerRect.left + triggerRect.width / 2}px`;
+          tooltip.style.transform = 'translateX(-50%)';
+          break;
+        case 'bottom':
+          tooltip.style.top = `${triggerRect.bottom + 10}px`;
+          tooltip.style.left = `${triggerRect.left + triggerRect.width / 2}px`;
+          tooltip.style.transform = 'translateX(-50%)';
+          break;
+        case 'left':
+          tooltip.style.top = `${triggerRect.top + triggerRect.height / 2}px`;
+          tooltip.style.right = `${window.innerWidth - triggerRect.left + 10}px`;
+          tooltip.style.transform = 'translateY(-50%)';
+          break;
+        case 'right':
+          tooltip.style.top = `${triggerRect.top + triggerRect.height / 2}px`;
+          tooltip.style.left = `${triggerRect.right + 10}px`;
+          tooltip.style.transform = 'translateY(-50%)';
+          break;
+      }
+      
+      tooltip.classList.add('visible');
+    });
+    
+    trigger.addEventListener('blur', function() {
+      tooltip.classList.remove('visible');
+    });
+  });
+}
+
+/**
+ * Parallax Effect
+ * Modern parallax scrolling for background elements
+ */
+function initParallaxEffect() {
+  const parallaxElements = document.querySelectorAll('.parallax-bg');
+  
+  if (!parallaxElements.length) return;
+  
+  // Update parallax positions on scroll
+  window.addEventListener('scroll', function() {
+    const scrollPosition = window.scrollY;
+    
+    parallaxElements.forEach(element => {
+      const speed = element.getAttribute('data-parallax-speed') || 0.2;
+      const yPos = -(scrollPosition * speed);
+      
+      element.style.transform = `translate3d(0, ${yPos}px, 0)`;
+    });
+  });
+}
+
+/**
+ * Tilt Effect
+ * Modern 3D tilt effect for interactive elements
+ * @param {string} selector - CSS selector for elements to apply tilt effect
+ */
+function initTiltEffect(selector = '.tilt-element') {
+  const tiltElements = document.querySelectorAll(selector);
+  
+  if (!tiltElements.length) return;
+  
+  tiltElements.forEach(element => {
+    element.addEventListener('mousemove', function(e) {
+      const rect = element.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const deltaX = (x - centerX) / centerX;
+      const deltaY = (y - centerY) / centerY;
+      
+      const tiltX = deltaY * 10; // Max tilt in degrees
+      const tiltY = -deltaX * 10; // Max tilt in degrees
+      
+      element.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+    });
+    
+    element.addEventListener('mouseleave', function() {
+      element.style.transform = 'perspective(1000px) rotateX(0) rotateY(0)';
+    });
+  });
+}
+
+/**
+ * Count Up Animation
+ * Animate counting up numbers when they scroll into view
+ */
+function initCountUpAnimation() {
+  const countElements = document.querySelectorAll('.count-up');
+  
+  if (!countElements.length || !('IntersectionObserver' in window)) return;
+  
+  const observer = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const element = entry.target;
+        const target = parseInt(element.getAttribute('data-target'), 10);
+        const duration = parseInt(element.getAttribute('data-duration'), 10) || 2000;
+        const increment = target / (duration / 16);
+        
+        let current = 0;
+        const timer = setInterval(() => {
+          current += increment;
+          element.textContent = Math.floor(current).toLocaleString();
+          
+          if (current >= target) {
+            element.textContent = target.toLocaleString();
+            clearInterval(timer);
+          }
+        }, 16);
+        
+        observer.unobserve(element);
+      }
+    });
+  });
+  
+  countElements.forEach(element => {
+    observer.observe(element);
   });
 }

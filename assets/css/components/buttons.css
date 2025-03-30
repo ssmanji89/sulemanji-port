@@ -1,59 +1,615 @@
 /**
- * Button styles for sulemanji.com
- * Various button types and states
+ * Button components for sulemanji.com (2025 Edition)
+ * Modern button styles, CTA elements, and interactive controls
  */
 
+/* Base button styles */
 .btn {
-  display: inline-block;
-  background-color: #2ea44f;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
   text-decoration: none;
-  font-weight: 600;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-  text-align: center;
-  margin: 5px;
+  cursor: pointer;
+  transition: all var(--transition-fast) ease-in-out;
+  border: none;
+  line-height: 1.5;
+  gap: var(--space-2);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.btn:hover {
-  background-color: #2c974b;
-  color: white;
-  text-decoration: none;
+/* Button sizes */
+.btn-sm {
+  font-size: var(--font-size-sm);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-sm);
 }
 
+.btn-lg {
+  font-size: var(--font-size-lg);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+}
+
+.btn-xl {
+  font-size: var(--font-size-xl);
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-xl);
+}
+
+/* Button variants */
 .btn-primary {
-  background-color: #0366d6;
+  background-color: var(--color-primary-500);
+  color: white;
 }
 
-.btn-primary:hover {
-  background-color: #045cc8;
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--color-primary-600);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary-500);
+  color: white;
+}
+
+.btn-secondary:hover, .btn-secondary:focus {
+  background-color: var(--color-secondary-600);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-outline {
   background-color: transparent;
-  color: #0366d6;
-  border: 1px solid #0366d6;
+  color: var(--color-primary-500);
+  border: 1px solid var(--color-primary-500);
 }
 
-.btn-outline:hover {
-  background-color: #0366d6;
+.btn-outline:hover, .btn-outline:focus {
+  background-color: var(--color-primary-500);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-outline-secondary {
+  background-color: transparent;
+  color: var(--color-secondary-500);
+  border: 1px solid var(--color-secondary-500);
+}
+
+.btn-outline-secondary:hover, .btn-outline-secondary:focus {
+  background-color: var(--color-secondary-500);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-outline-secondary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-text {
+  background-color: transparent;
+  color: var(--color-primary-500);
+  padding: var(--space-1) var(--space-2);
+}
+
+.btn-text:hover, .btn-text:focus {
+  background-color: var(--color-surface-2);
+  color: var(--color-primary-600);
+}
+
+/* Ghost button (subtle background on hover only) */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-foreground);
+}
+
+.btn-ghost:hover, .btn-ghost:focus {
+  background-color: var(--color-surface-2);
+  color: var(--color-primary-500);
+}
+
+/* Subtle ghost button for UI elements */
+.btn-subtle {
+  background-color: var(--color-surface-2);
+  color: var(--color-neutral-700);
+  padding: var(--space-1) var(--space-2);
+}
+
+.btn-subtle:hover, .btn-subtle:focus {
+  background-color: var(--color-surface-3);
+  color: var(--color-neutral-900);
+}
+
+/* Icon-only buttons */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-full);
+}
+
+.btn-icon-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.btn-icon-lg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Modern (2025) gradient buttons */
+.btn-gradient {
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
   color: white;
 }
 
-.btn-sm {
-  padding: 5px 15px;
-  font-size: 0.8rem;
+.btn-gradient:hover, .btn-gradient:focus {
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-/* Dark Mode Button Styles */
-body.dark-mode .btn-outline {
-  color: #58a6ff;
-  border-color: #58a6ff;
-}
-
-body.dark-mode .btn-outline:hover {
-  background-color: #1f6feb;
+.btn-gradient-secondary {
+  background: linear-gradient(135deg, var(--color-secondary-500), var(--color-secondary-700));
   color: white;
+}
+
+.btn-gradient-secondary:hover, .btn-gradient-secondary:focus {
+  background: linear-gradient(135deg, var(--color-secondary-600), var(--color-secondary-800));
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Glass morphism buttons (2025 trend) */
+.btn-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.btn-glass:hover, .btn-glass:focus {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.dark-theme .btn-glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dark-theme .btn-glass:hover, .dark-theme .btn-glass:focus {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Loading state */
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  border-right-color: transparent;
+  animation: button-loading-spinner 0.75s linear infinite;
+}
+
+@keyframes button-loading-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Disabled state */
+.btn:disabled, .btn.disabled {
+  opacity: 0.65;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Button with icon */
+.btn-icon-left {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.btn-icon-left i, .btn-icon-left svg {
+  margin-right: var(--space-1);
+}
+
+.btn-icon-right {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.btn-icon-right i, .btn-icon-right svg {
+  margin-left: var(--space-1);
+}
+
+/* Button group */
+.btn-group {
+  display: inline-flex;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.btn-group .btn {
+  border-radius: 0;
+  margin: 0;
+}
+
+.btn-group .btn:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.btn-group .btn:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+/* Filter buttons */
+.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-700);
+  background-color: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-fast) ease-in-out;
+}
+
+.filter-btn:hover, .filter-btn:focus {
+  background-color: var(--color-surface-3);
+  border-color: var(--color-neutral-400);
+}
+
+.filter-btn.active {
+  background-color: var(--color-primary-500);
+  color: white;
+  border-color: var(--color-primary-500);
+}
+
+/* Modern Floating Action Button (FAB) */
+.fab {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-500);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  z-index: var(--z-fixed);
+  transition: all var(--transition-fast) ease-in-out;
+}
+
+.fab:hover, .fab:focus {
+  background-color: var(--color-primary-600);
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: var(--shadow-xl);
+}
+
+.fab:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Extended FAB with text */
+.fab-extended {
+  padding: 0 var(--space-4) 0 var(--space-3);
+  width: auto;
+  min-width: 56px;
+  gap: var(--space-2);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+}
+
+/* Mini FAB */
+.fab-mini {
+  width: 40px;
+  height: 40px;
+}
+
+/* Button with modern hover effect */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shine::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.7s ease;
+  z-index: -1;
+}
+
+.btn-shine:hover::before, .btn-shine:focus::before {
+  left: 100%;
+}
+
+/* CTA containers */
+.cta-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-6) 0;
+}
+
+.cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-6) 0;
+}
+
+/* 3D Button (2025 trend) */
+.btn-3d {
+  background-color: var(--color-primary-500);
+  color: white;
+  box-shadow: 
+    0 4px 0 var(--color-primary-700),
+    0 8px 10px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  transition: all var(--transition-fast) ease-in-out;
+}
+
+.btn-3d:hover, .btn-3d:focus {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 var(--color-primary-700),
+    0 10px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-3d:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 0 var(--color-primary-700),
+    0 5px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Neumorphic button (2025 trend) */
+.btn-neumorphic {
+  background-color: var(--color-surface-1);
+  color: var(--color-foreground);
+  box-shadow: 
+    5px 5px 10px rgba(0, 0, 0, 0.05),
+    -5px -5px 10px rgba(255, 255, 255, 0.8);
+  border: none;
+}
+
+.btn-neumorphic:hover, .btn-neumorphic:focus {
+  box-shadow: 
+    7px 7px 15px rgba(0, 0, 0, 0.1),
+    -7px -7px 15px rgba(255, 255, 255, 0.9);
+}
+
+.btn-neumorphic:active {
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.05),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.5);
+}
+
+.dark-theme .btn-neumorphic {
+  background-color: var(--color-surface-2);
+  box-shadow: 
+    5px 5px 10px rgba(0, 0, 0, 0.2),
+    -5px -5px 10px rgba(255, 255, 255, 0.05);
+}
+
+.dark-theme .btn-neumorphic:hover, .dark-theme .btn-neumorphic:focus {
+  box-shadow: 
+    7px 7px 15px rgba(0, 0, 0, 0.3),
+    -7px -7px 15px rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme .btn-neumorphic:active {
+  box-shadow: 
+    inset 2px 2px 5px rgba(0, 0, 0, 0.2),
+    inset -2px -2px 5px rgba(255, 255, 255, 0.05);
+}
+
+/* Button with progress indicator */
+.btn-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-progress .progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: width var(--transition-normal) linear;
+}
+
+/* Social Media Buttons */
+.btn-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+  transition: all var(--transition-fast) ease-in-out;
+}
+
+.btn-github {
+  background-color: #24292e;
+  color: white;
+}
+
+.btn-github:hover, .btn-github:focus {
+  background-color: #2c3137;
+  color: white;
+}
+
+.btn-linkedin {
+  background-color: #0077b5;
+  color: white;
+}
+
+.btn-linkedin:hover, .btn-linkedin:focus {
+  background-color: #0088c9;
+  color: white;
+}
+
+.btn-twitter {
+  background-color: #1da1f2;
+  color: white;
+}
+
+.btn-twitter:hover, .btn-twitter:focus {
+  background-color: #1a91da;
+  color: white;
+}
+
+/* Toggle Switch (Modern 2025) */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--color-neutral-300);
+  transition: background-color var(--transition-fast) ease-in-out;
+  border-radius: 34px;
+}
+
+.toggle-switch .slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: transform var(--transition-fast) ease-in-out;
+  border-radius: 50%;
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-switch input:checked + .slider {
+  background-color: var(--color-primary-500);
+}
+
+.toggle-switch input:focus + .slider {
+  box-shadow: 0 0 0 2px var(--color-outline);
+}
+
+.toggle-switch input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Scroll to top button */
+.scroll-top {
+  position: fixed;
+  bottom: var(--space-6);
+  right: var(--space-6);
+  width: 45px;
+  height: 45px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-500);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all var(--transition-fast) ease-in-out;
+  z-index: var(--z-tooltip);
+}
+
+.scroll-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.scroll-top:hover, .scroll-top:focus {
+  background-color: var(--color-primary-600);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }

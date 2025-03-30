@@ -54,21 +54,6 @@ Development of intelligent workflow solutions using Power Automate, PowerShell, 
             </a>
         </div>
     </div>
-    
-    <div class="specialty-card">
-        <div class="specialty-header">
-            <i class="fas fa-terminal"></i>
-            <h3>PowerShell Modules</h3>
-        </div>
-        <p>Creator of automation modules for Microsoft 365, security, and enterprise workflows.</p>
-        <div class="code-preview">
-            <pre><code class="language-powershell">Set-ExternalInOutlook -AllowList @(
-  "domain.com",
-  "partner.com"
-)</code></pre>
-        </div>
-    </div>
-</div>
 
 ## Transformation Impact
 

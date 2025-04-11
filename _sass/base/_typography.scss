@@ -1,0 +1,232 @@
+// _typography.scss
+// Typography styles for the theme
+
+// Headings
+h1, .h1 {
+  font-size: $font-size-xxlarge;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  
+  @include breakpoint-down(sm) {
+    font-size: $font-size-xlarge;
+  }
+}
+
+h2, .h2 {
+  font-size: $font-size-xlarge;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid $color-gray-light;
+  
+  @include breakpoint-down(sm) {
+    font-size: $font-size-large;
+  }
+}
+
+h3, .h3 {
+  font-size: $font-size-large;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  
+  @include breakpoint-down(sm) {
+    font-size: calc(#{$font-size-base} + 2px);
+  }
+}
+
+h4, .h4 {
+  font-size: calc(#{$font-size-base} + 2px);
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+}
+
+h5, .h5 {
+  font-size: $font-size-base;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: $font-weight-medium;
+}
+
+h6, .h6 {
+  font-size: $font-size-small;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: $font-weight-medium;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+// Paragraphs
+p {
+  margin-bottom: $spacing-base;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Lists
+ul, ol {
+  margin-bottom: $spacing-base;
+  padding-left: $spacing-large;
+  
+  li {
+    margin-bottom: $spacing-xsmall;
+  }
+  
+  ul, ol {
+    margin-top: $spacing-xsmall;
+    margin-bottom: 0;
+  }
+}
+
+dl {
+  margin-bottom: $spacing-base;
+  
+  dt {
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-xxsmall;
+  }
+  
+  dd {
+    margin-bottom: $spacing-small;
+    margin-left: 0;
+  }
+}
+
+// Inline text elements
+strong, b {
+  font-weight: $font-weight-bold;
+}
+
+em, i {
+  font-style: italic;
+}
+
+small, .small {
+  font-size: $font-size-small;
+}
+
+mark, .mark {
+  background-color: rgba($color-accent, 0.15);
+  padding: 0.1em 0.2em;
+}
+
+// Code and pre
+code, pre {
+  font-family: $font-family-mono;
+  font-size: $font-size-xsmall;
+}
+
+code {
+  padding: 0.2em 0.4em;
+  background-color: rgba($color-dark, 0.05);
+  border-radius: $border-radius-small;
+}
+
+pre {
+  display: block;
+  margin-bottom: $spacing-base;
+  padding: $spacing-base;
+  background-color: $color-light;
+  border-radius: $border-radius-base;
+  overflow-x: auto;
+  
+  code {
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    font-size: $font-size-xsmall;
+  }
+}
+
+// Links
+a {
+  color: $color-primary;
+  text-decoration: none;
+  transition: $transition-base;
+  
+  &:hover {
+    color: darken($color-primary, 10%);
+    text-decoration: underline;
+  }
+  
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+    text-decoration: none;
+  }
+}
+
+// Blockquote
+blockquote {
+  margin: 0 0 $spacing-base;
+  padding: $spacing-small 0 $spacing-small $spacing-base;
+  border-left: 4px solid $color-gray-light;
+  color: $color-gray-dark;
+  
+  p {
+    margin-bottom: $spacing-small;
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  cite {
+    display: block;
+    margin-top: $spacing-small;
+    font-style: italic;
+    
+    &::before {
+      content: "— ";
+    }
+  }
+}
+
+// HR
+hr {
+  margin-top: $spacing-large;
+  margin-bottom: $spacing-large;
+  border: 0;
+  border-top: 1px solid $color-gray-light;
+}
+
+// Dark mode typography
+body.dark-mode {
+  color: $color-dark-text;
+  
+  h1, h2, h3, h4, h5, h6,
+  .h1, .h2, .h3, .h4, .h5, .h6 {
+    color: $color-dark-heading;
+  }
+  
+  h2, .h2 {
+    border-color: $color-dark-border;
+  }
+  
+  a {
+    color: $color-dark-link;
+    
+    &:hover {
+      color: $color-dark-link-hover;
+    }
+  }
+  
+  code {
+    background-color: rgba($color-dark-heading, 0.1);
+  }
+  
+  pre {
+    background-color: $color-dark-surface;
+  }
+  
+  blockquote {
+    border-left-color: $color-dark-border;
+    color: $color-gray-medium;
+  }
+  
+  hr {
+    border-top-color: $color-dark-border;
+  }
+}

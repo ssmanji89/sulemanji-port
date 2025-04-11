@@ -1,0 +1,87 @@
+// _variables.scss
+// Core variables for the theme
+
+// Color Palette
+// Main colors
+$color-primary: #0366d6;
+$color-secondary: #2ea44f;
+$color-accent: #f39c12;
+
+// Neutral colors
+$color-dark: #24292e;
+$color-gray-dark: #586069;
+$color-gray-medium: #8b949e;
+$color-gray-light: #e1e4e8;
+$color-light: #f6f8fa;
+$color-white: #ffffff;
+
+// Dark mode colors
+$color-dark-bg: #0d1117;
+$color-dark-surface: #161b22;
+$color-dark-border: #30363d;
+$color-dark-text: #c9d1d9;
+$color-dark-heading: #f0f6fc;
+$color-dark-link: #58a6ff;
+$color-dark-link-hover: #79c0ff;
+
+// Typography
+$font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+$font-family-mono: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
+
+$font-size-base: 16px;
+$font-size-small: 14px;
+$font-size-xsmall: 12px;
+$font-size-large: 18px;
+$font-size-xlarge: 24px;
+$font-size-xxlarge: 32px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+
+$line-height-base: 1.6;
+$line-height-heading: 1.3;
+
+// Spacing
+$spacing-xxsmall: 4px;
+$spacing-xsmall: 8px;
+$spacing-small: 12px;
+$spacing-base: 16px;
+$spacing-medium: 24px;
+$spacing-large: 32px;
+$spacing-xlarge: 48px;
+$spacing-xxlarge: 64px;
+
+// Border radius
+$border-radius-small: 3px;
+$border-radius-base: 6px;
+$border-radius-large: 12px;
+$border-radius-full: 999px;
+
+// Box shadows
+$box-shadow-small: 0 1px 2px rgba(0, 0, 0, 0.1);
+$box-shadow-medium: 0 2px 4px rgba(0, 0, 0, 0.1);
+$box-shadow-large: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+// Z-index scale
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-tooltip: 1060;
+
+// Breakpoints
+$breakpoint-xs: 480px;
+$breakpoint-sm: 768px;
+$breakpoint-md: 960px;
+$breakpoint-lg: 1200px;
+$breakpoint-xl: 1400px;
+
+// Container widths
+$container-width: 860px;
+
+// Transitions
+$transition-base: all 0.2s ease;
+$transition-slow: all 0.4s ease;
+$transition-fast: all 0.1s ease;

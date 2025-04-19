@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0366d6">
+    <meta name="color-scheme" content="light dark">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>PowerShell Automation Best Practices for Microsoft 365 | Suleman Manji</title>
+<meta name="generator" content="Jekyll v3.9.5" />
+<meta property="og:title" content="PowerShell Automation Best Practices for Microsoft 365" />
+<meta name="author" content="Suleman Manji" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="PowerShell Automation Best Practices for Microsoft 365" />
+<meta property="og:description" content="PowerShell Automation Best Practices for Microsoft 365" />
+<link rel="canonical" href="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html" />
+<meta property="og:url" content="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html" />
+<meta property="og:site_name" content="Suleman Manji" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-02-10T00:00:00-06:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="PowerShell Automation Best Practices for Microsoft 365" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Suleman Manji"},"dateModified":"2025-02-10T00:00:00-06:00","datePublished":"2025-02-10T00:00:00-06:00","description":"PowerShell Automation Best Practices for Microsoft 365","headline":"PowerShell Automation Best Practices for Microsoft 365","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"},"name":"Suleman Manji"},"url":"https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=b4a556fdff20cae7c9d98933b4d460eafc871185">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+<!-- Meta tags -->
+<meta name="theme-color" content="#0366d6" id="theme-color-meta">
+<meta name="color-scheme" content="light dark">
+
+<!-- Additional Styles for Dark Mode Consistency -->
+<style>
+  /* Override any conflicting styles for dark mode */
+  @media (prefers-color-scheme: dark) {
+    body:not(.forced-light) {
+      background-color: #0d1117 !important;
+      color: #c9d1d9 !important;
+    }
+  }
+  
+  /* Enhance contrast for accessibility */
+  .tech-tag {
+    background-color: #e1e4e8 !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode .tech-tag {
+    background-color: #30363d !important;
+    color: #e6edf3 !important;
+  }
+  
+  /* Fix any UI elements that might be hard to see in dark mode */
+  body.dark-mode a:not(.btn) {
+    color: #58a6ff;
+  }
+  
+  body.dark-mode .fa-moon {
+    color: #c9d1d9;
+  }
+  
+  /* Force white background in light mode and dark background in dark mode */
+  body:not(.dark-mode) {
+    background-color: #f6f8fa !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode {
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+  }
+  
+  body.dark-mode header, 
+  body.dark-mode section,
+  body.dark-mode p {
+    color: #c9d1d9 !important;
+  }
+  
+  /* Animation to help with theme transitions */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+</style>
+
+<!-- Dark mode script for meta tag -->
+<script>
+  // Update theme-color meta tag based on dark mode preference
+  const updateThemeColorMeta = () => {
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                     (localStorage.getItem('theme') === 'dark') ||
+                     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    document.getElementById('theme-color-meta').setAttribute(
+      'content', 
+      isDarkMode ? '#0d1117' : '#0366d6'
+    );
+    
+    // Also update color-scheme meta
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', isDarkMode ? 'dark' : 'light dark');
+    }
+  };
+  
+  // Run once at load
+  document.addEventListener('DOMContentLoaded', function() {
+    updateThemeColorMeta();
+    
+    // Fix for blank dark mode pages - force redraw if needed
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark' && !document.body.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+      // Force redraw
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // This line forces a reflow
+      document.body.style.display = '';
+    }
+  });
+  
+  // Update when theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta);
+</script>
+
+<!-- Debug Dark Mode Toggle script (development only - remove in production) -->
+<script src="/assets/js/toggle-finder.js"></script>
+
+<!-- Schema.org for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "name": "Suleman Manji",
+    "description": "Enterprise Technology Strategy | Cloud Architecture | Process Automation",
+    "url": "https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html",
+    "author": {
+        "@type": "Person",
+        "name": "Suleman Manji",
+        "url": "https://www.sulemanji.com"
+    }
+}
+</script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1><a href="https://www.sulemanji.com/">Suleman Manji</a></h1>
+
+        
+          <img src="/images/sulemanji-profile.png" alt="Logo" />
+        
+
+        <p>Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
+
+        <p class="view"><a href="https://github.com/ssmanji89">View My GitHub Profile</a></p>
+        
+        <nav class="main-nav">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/experience">Experience</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/technical-skills">Skills</a></li>
+            <li><a href="/npm-packages">NPM Packages</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/philosophy">Philosophy</a></li>
+            <li><a href="/business-process-automation">Automation</a></li>
+          </ul>
+        </nav>
+      </header>
+      <section>
+
+      <div class="article-header">
+    <h1>PowerShell Automation Best Practices for Microsoft 365</h1>
+    
+    <div class="article-meta">
+        <span class="article-date">
+            <i class="far fa-calendar-alt"></i> February 10, 2025
+        </span>
+        
+        
+        <span class="article-category">development</span>
+        
+        <span class="article-category">microsoft</span>
+        
+        <span class="article-category">automation</span>
+        
+    </div>
+</div>
+
+<div class="article-content-full">
+    <h1 id="powershell-automation-best-practices-for-microsoft-365">PowerShell Automation Best Practices for Microsoft 365</h1>
+
+<p>PowerShell has become an indispensable tool for Microsoft 365 administrators and developers, providing powerful capabilities for automating repetitive tasks, managing resources at scale, and implementing complex workflows. However, writing efficient, secure, and maintainable PowerShell scripts requires more than basic scripting knowledge.</p>
+
+<p>In this article, I’ll share best practices and patterns that I’ve developed over years of creating PowerShell automation for enterprise Microsoft 365 environments.</p>
+
+<h2 id="modular-script-design">Modular Script Design</h2>
+
+<p>One of the most important aspects of maintainable PowerShell automation is modular design. Breaking your scripts into reusable functions makes them easier to test, maintain, and share.</p>
+
+<h3 id="function-structure-pattern">Function Structure Pattern</h3>
+
+<p>Follow a consistent structure for your functions:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Verb-Noun</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">,</span><span class="w"> 
+                   </span><span class="n">ValueFromPipeline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">,</span><span class="w">
+                   </span><span class="n">HelpMessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Description of parameter"</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">ValidateNotNullOrEmpty</span><span class="p">()]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$RequiredParam</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$OptionalParam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"DefaultValue"</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    
+    </span><span class="kr">begin</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Initialize resources, connect to services</span><span class="w">
+        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Starting Verb-Noun operation"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    
+    </span><span class="kr">process</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="c"># Main function logic</span><span class="w">
+            </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Processing </span><span class="nv">$RequiredParam</span><span class="s2">"</span><span class="w">
+            </span><span class="c"># ...</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Error in Verb-Noun: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
+            </span><span class="kr">throw</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    
+    </span><span class="kr">end</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Clean up resources</span><span class="w">
+        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Completed Verb-Noun operation"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="creating-reusable-modules">Creating Reusable Modules</h3>
+
+<p>Group related functions into modules for easier reuse:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Save as M365Management.psm1</span><span class="w">
+</span><span class="kr">function</span><span class="w"> </span><span class="nf">Connect-M365Services</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">pscredential</span><span class="p">]</span><span class="nv">$Credential</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$ExchangeOnline</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$SharePointOnline</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$Teams</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    
+    </span><span class="c"># Connection logic for each service</span><span class="w">
+    </span><span class="c"># ...</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="kr">function</span><span class="w"> </span><span class="nf">Get-M365UserReport</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="c"># Report generation logic</span><span class="w">
+    </span><span class="c"># ...</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span><span class="c"># Export functions</span><span class="w">
+</span><span class="n">Export-ModuleMember</span><span class="w"> </span><span class="nt">-Function</span><span class="w"> </span><span class="nx">Connect-M365Services</span><span class="p">,</span><span class="w"> </span><span class="nx">Get-M365UserReport</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="secure-authentication">Secure Authentication</h2>
+
+<p>Security should be a top priority in your PowerShell scripts, especially when they interact with Microsoft 365 services.</p>
+
+<h3 id="modern-authentication">Modern Authentication</h3>
+
+<p>Always use modern authentication methods instead of basic authentication:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Connect to Exchange Online with modern auth</span><span class="w">
+</span><span class="kr">function</span><span class="w"> </span><span class="nf">Connect-ExchangeOnlineSecure</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="p">()</span><span class="w">
+    
+    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Check for EXO V2 module</span><span class="w">
+        </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">Get-Module</span><span class="w"> </span><span class="nt">-ListAvailable</span><span class="w"> </span><span class="nt">-Name</span><span class="w"> </span><span class="nx">ExchangeOnlineManagement</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Exchange Online Management module not found. Install using: Install-Module ExchangeOnlineManagement -Force"</span><span class="w">
+            </span><span class="kr">return</span><span class="w"> </span><span class="bp">$false</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        
+        </span><span class="c"># Import module</span><span class="w">
+        </span><span class="n">Import-Module</span><span class="w"> </span><span class="nx">ExchangeOnlineManagement</span><span class="w">
+        
+        </span><span class="c"># Connect using modern authentication</span><span class="w">
+        </span><span class="n">Connect-ExchangeOnline</span><span class="w"> </span><span class="nt">-ShowProgress</span><span class="w"> </span><span class="bp">$true</span><span class="w">
+        
+        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Failed to connect to Exchange Online: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
+        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$false</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="handling-credentials-securely">Handling Credentials Securely</h3>
+
+<p>Never hardcode credentials in your scripts:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Bad practice</span><span class="w">
+</span><span class="nv">$username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"admin@contoso.com"</span><span class="w">
+</span><span class="nv">$password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"PlainTextPassword"</span><span class="w"> 
+</span><span class="nv">$secPassword</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConvertTo-SecureString</span><span class="w"> </span><span class="nv">$password</span><span class="w"> </span><span class="nt">-AsPlainText</span><span class="w"> </span><span class="nt">-Force</span><span class="w">
+</span><span class="nv">$credential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nx">System.Management.Automation.PSCredential</span><span class="p">(</span><span class="nv">$username</span><span class="p">,</span><span class="w"> </span><span class="nv">$secPassword</span><span class="p">)</span><span class="w">
+
+</span><span class="c"># Better practice - retrieve from certificate</span><span class="w">
+</span><span class="kr">function</span><span class="w"> </span><span class="nf">Get-CertificateCredential</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$CertificateThumbprint</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$TenantId</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$ApplicationId</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    
+    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nv">$certificate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="s2">"Cert:\CurrentUser\My\</span><span class="nv">$CertificateThumbprint</span><span class="s2">"</span><span class="w">
+        
+        </span><span class="n">Connect-MgGraph</span><span class="w"> </span><span class="nt">-TenantId</span><span class="w"> </span><span class="nv">$TenantId</span><span class="w"> </span><span class="nt">-ClientId</span><span class="w"> </span><span class="nv">$ApplicationId</span><span class="w"> </span><span class="nt">-Certificate</span><span class="w"> </span><span class="nv">$certificate</span><span class="w">
+        
+        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$true</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Failed to authenticate using certificate: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
+        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$false</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="error-handling-and-logging">Error Handling and Logging</h2>
+
+<p>Robust error handling and logging are essential for troubleshooting and monitoring your scripts.</p>
+
+<h3 id="structured-error-handling">Structured Error Handling</h3>
+
+<p>Implement structured error handling in all your scripts:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Set-UserLicenses</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$UserPrincipalName</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">[]]</span><span class="nv">$LicenseSkuIds</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    
+    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Main logic</span><span class="w">
+        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Assigning licenses to </span><span class="nv">$UserPrincipalName</span><span class="s2">"</span><span class="w">
+        </span><span class="c"># ...</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="kr">catch</span><span class="w"> </span><span class="p">[</span><span class="n">Microsoft.Open.AzureAD16.Client.ApiException</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Handle Azure AD specific errors</span><span class="w">
+        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Azure AD error: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
+        </span><span class="kr">throw</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="kr">catch</span><span class="w"> </span><span class="p">[</span><span class="n">System.Net.WebException</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Handle connectivity issues</span><span class="w">
+        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Network error: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
+        </span><span class="kr">throw</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Handle other errors</span><span class="w">
+        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Unexpected error: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
+        </span><span class="kr">throw</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="kr">finally</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Clean up code that always runs</span><span class="w">
+        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"License operation completed."</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="comprehensive-logging">Comprehensive Logging</h3>
+
+<p>Implement proper logging that captures important details:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Write-Log</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$Message</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">ValidateSet</span><span class="p">(</span><span class="s1">'Info'</span><span class="p">,</span><span class="s1">'Warning'</span><span class="p">,</span><span class="s1">'Error'</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$Level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Info'</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$LogFilePath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\Logs\M365Automation_</span><span class="si">$(</span><span class="n">Get-Date</span><span class="w"> </span><span class="nt">-Format</span><span class="w"> </span><span class="s1">'yyyyMMdd'</span><span class="p">)</span><span class="o">.</span><span class="nf">log</span><span class="s2">"
+    )
+    
+    # Create timestamp
+    </span><span class="nv">$timestamp</span><span class="s2"> = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    
+    # Format log entry
+    </span><span class="nv">$logEntry</span><span class="s2"> = "</span><span class="p">[</span><span class="nv">$timestamp</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="nv">$Level</span><span class="p">]</span><span class="w"> </span><span class="nv">$Message</span><span class="s2">"
+    
+    # Ensure log directory exists
+    </span><span class="nv">$logDir</span><span class="s2"> = Split-Path -Path </span><span class="nv">$LogFilePath</span><span class="s2"> -Parent
+    if (!(Test-Path -Path </span><span class="nv">$logDir</span><span class="s2">)) {
+        New-Item -Path </span><span class="nv">$logDir</span><span class="s2"> -ItemType Directory -Force | Out-Null
+    }
+    
+    # Write to log file
+    Add-Content -Path </span><span class="nv">$LogFilePath</span><span class="s2"> -Value </span><span class="nv">$logEntry</span><span class="s2">
+    
+    # Output to console with color
+    switch (</span><span class="nv">$Level</span><span class="s2">) {
+        'Info'    { Write-Host </span><span class="nv">$logEntry</span><span class="s2"> -ForegroundColor Cyan }
+        'Warning' { Write-Host </span><span class="nv">$logEntry</span><span class="s2"> -ForegroundColor Yellow }
+        'Error'   { Write-Host </span><span class="nv">$logEntry</span><span class="s2"> -ForegroundColor Red }
+    }
+}
+
+# Usage
+function Update-UserSettings {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = </span><span class="bp">$true</span><span class="s2">)]
+        [string[]]</span><span class="nv">$UserIds</span><span class="s2">
+    )
+    
+    Write-Log "</span><span class="n">Starting</span><span class="w"> </span><span class="nx">batch</span><span class="w"> </span><span class="nx">update</span><span class="w"> </span><span class="nx">for</span><span class="w"> </span><span class="err">$</span><span class="p">(</span><span class="nv">$UserIds</span><span class="o">.</span><span class="nf">Count</span><span class="si">)</span><span class="s2"> users"</span><span class="w">
+    
+    </span><span class="kr">foreach</span><span class="w"> </span><span class="p">(</span><span class="nv">$userId</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nv">$UserIds</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="c"># Update logic</span><span class="w">
+            </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Processing user </span><span class="nv">$userId</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Info'</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Failed to update user </span><span class="nv">$userId</span><span class="s2">: </span><span class="bp">$_</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Error'</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    
+    </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Batch update completed"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="performance-optimization">Performance Optimization</h2>
+
+<p>Optimizing script performance becomes crucial when working with large Microsoft 365 tenants.</p>
+
+<h3 id="batch-processing">Batch Processing</h3>
+
+<p>Process items in batches to improve performance:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Set-BulkUserProperties</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$CsvFilePath</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">int</span><span class="p">]</span><span class="nv">$BatchSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">50</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    
+    </span><span class="c"># Import CSV</span><span class="w">
+    </span><span class="nv">$users</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Import-Csv</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$CsvFilePath</span><span class="w">
+    </span><span class="nv">$totalUsers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$users</span><span class="o">.</span><span class="nf">Count</span><span class="w">
+    </span><span class="nv">$processedUsers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
+    
+    </span><span class="c"># Process in batches</span><span class="w">
+    </span><span class="kr">for</span><span class="w"> </span><span class="p">(</span><span class="nv">$i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="nv">$i</span><span class="w"> </span><span class="o">-lt</span><span class="w"> </span><span class="nv">$totalUsers</span><span class="p">;</span><span class="w"> </span><span class="nv">$i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nv">$BatchSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nv">$userBatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$users</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Select-Object</span><span class="w"> </span><span class="nt">-Skip</span><span class="w"> </span><span class="nv">$i</span><span class="w"> </span><span class="nt">-First</span><span class="w"> </span><span class="nv">$BatchSize</span><span class="w">
+        
+        </span><span class="c"># Process the batch</span><span class="w">
+        </span><span class="nv">$batchTasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">@()</span><span class="w">
+        </span><span class="kr">foreach</span><span class="w"> </span><span class="p">(</span><span class="nv">$user</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nv">$userBatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nv">$batchTasks</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Update-UserPropertiesAsync</span><span class="w"> </span><span class="nt">-User</span><span class="w"> </span><span class="nv">$user</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        
+        </span><span class="c"># Wait for all batch operations to complete</span><span class="w">
+        </span><span class="nv">$results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Wait-Job</span><span class="w"> </span><span class="nt">-Job</span><span class="w"> </span><span class="nv">$batchTasks</span><span class="w">
+        
+        </span><span class="c"># Update progress</span><span class="w">
+        </span><span class="nv">$processedUsers</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nv">$userBatch</span><span class="o">.</span><span class="nf">Count</span><span class="w">
+        </span><span class="nv">$percentComplete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">math</span><span class="p">]::</span><span class="n">Round</span><span class="p">((</span><span class="nv">$processedUsers</span><span class="w"> </span><span class="n">/</span><span class="w"> </span><span class="nv">$totalUsers</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w">
+        </span><span class="n">Write-Progress</span><span class="w"> </span><span class="nt">-Activity</span><span class="w"> </span><span class="s2">"Updating User Properties"</span><span class="w"> </span><span class="nt">-Status</span><span class="w"> </span><span class="s2">"</span><span class="nv">$processedUsers</span><span class="s2"> of </span><span class="nv">$totalUsers</span><span class="s2"> users processed"</span><span class="w"> </span><span class="nt">-PercentComplete</span><span class="w"> </span><span class="nv">$percentComplete</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    
+    </span><span class="n">Write-Progress</span><span class="w"> </span><span class="nt">-Activity</span><span class="w"> </span><span class="s2">"Updating User Properties"</span><span class="w"> </span><span class="nt">-Completed</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="parallel-processing">Parallel Processing</h3>
+
+<p>Use parallel processing for independent operations:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Get-AllSiteCollectionSizes</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">int</span><span class="p">]</span><span class="nv">$ThrottleLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    
+    </span><span class="c"># Connect to SharePoint Online</span><span class="w">
+    </span><span class="n">Connect-PnPOnline</span><span class="w"> </span><span class="nt">-Url</span><span class="w"> </span><span class="s2">"https://contoso-admin.sharepoint.com"</span><span class="w"> </span><span class="nt">-Interactive</span><span class="w">
+    
+    </span><span class="c"># Get all site collections</span><span class="w">
+    </span><span class="nv">$siteCollections</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-PnPTenantSite</span><span class="w">
+    
+    </span><span class="c"># Process sites in parallel</span><span class="w">
+    </span><span class="nv">$siteCollections</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">ForEach-Object</span><span class="w"> </span><span class="nt">-ThrottleLimit</span><span class="w"> </span><span class="nv">$ThrottleLimit</span><span class="w"> </span><span class="nt">-Parallel</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nv">$site</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$_</span><span class="w">
+        
+        </span><span class="c"># Connect to the specific site</span><span class="w">
+        </span><span class="n">Connect-PnPOnline</span><span class="w"> </span><span class="nt">-Url</span><span class="w"> </span><span class="nv">$site</span><span class="o">.</span><span class="nf">Url</span><span class="w"> </span><span class="nt">-Interactive</span><span class="w">
+        
+        </span><span class="c"># Get site size and other properties</span><span class="w">
+        </span><span class="nv">$siteData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">PSCustomObject</span><span class="p">]@{</span><span class="w">
+            </span><span class="nx">Url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$site</span><span class="err">.</span><span class="nx">Url</span><span class="w">
+            </span><span class="nx">Title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$site</span><span class="err">.</span><span class="nx">Title</span><span class="w">
+            </span><span class="nx">StorageUsageMB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">math</span><span class="p">]</span><span class="err">::</span><span class="nx">Round</span><span class="err">(</span><span class="nv">$site</span><span class="err">.</span><span class="nx">StorageUsageCurrent</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="err">)</span><span class="w">
+            </span><span class="nx">LastModified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$site</span><span class="err">.</span><span class="nx">LastContentModifiedDate</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        
+        </span><span class="c"># Output the result</span><span class="w">
+        </span><span class="nv">$siteData</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h2 id="automating-microsoft-365-security-tasks">Automating Microsoft 365 Security Tasks</h2>
+
+<p>Security tasks are one of the most common automation scenarios in Microsoft 365 environments.</p>
+
+<h3 id="creating-a-conditional-access-policy">Creating a Conditional Access Policy</h3>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">New-ConditionalAccessPolicy</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$PolicyName</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">[]]</span><span class="nv">$TargetGroups</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">[]]</span><span class="nv">$TargetApps</span><span class="p">,</span><span class="w">
+        
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$RequireMFA</span><span class="w">
+    </span><span class="p">)</span><span class="w">
+    
+    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="c"># Connect to Microsoft Graph (Authentication handled separately)</span><span class="w">
+        
+        </span><span class="c"># Create conditions</span><span class="w">
+        </span><span class="nv">$conditions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessConditionSet</span><span class="w">
+        
+        </span><span class="c"># Add users</span><span class="w">
+        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Users</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessUserCondition</span><span class="w">
+        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Users</span><span class="o">.</span><span class="nf">IncludeGroups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$TargetGroups</span><span class="w">
+        
+        </span><span class="c"># Add applications</span><span class="w">
+        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Applications</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessApplicationCondition</span><span class="w">
+        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Applications</span><span class="o">.</span><span class="nf">IncludeApplications</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$TargetApps</span><span class="w">
+        
+        </span><span class="c"># Create grant controls</span><span class="w">
+        </span><span class="nv">$grantControls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessGrantControls</span><span class="w">
+        </span><span class="nv">$grantControls</span><span class="o">.</span><span class="nf">Operator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"OR"</span><span class="w">
+        
+        </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nv">$RequireMFA</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nv">$grantControls</span><span class="o">.</span><span class="nf">BuiltInControls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Mfa"</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+        
+        </span><span class="c"># Create new policy</span><span class="w">
+        </span><span class="n">New-AzureADMSConditionalAccessPolicy</span><span class="w"> </span><span class="se">`
+</span><span class="w">            </span><span class="nt">-DisplayName</span><span class="w"> </span><span class="nv">$PolicyName</span><span class="w"> </span><span class="se">`
+</span><span class="w">            </span><span class="nt">-State</span><span class="w"> </span><span class="s2">"Enabled"</span><span class="w"> </span><span class="se">`
+</span><span class="w">            </span><span class="nt">-Conditions</span><span class="w"> </span><span class="nv">$conditions</span><span class="w"> </span><span class="se">`
+</span><span class="w">            </span><span class="nt">-GrantControls</span><span class="w"> </span><span class="nv">$grantControls</span><span class="w">
+        
+        </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Created conditional access policy: </span><span class="nv">$PolicyName</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Info'</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Failed to create conditional access policy: </span><span class="bp">$_</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Error'</span><span class="w">
+        </span><span class="kr">throw</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="security-report-generation">Security Report Generation</h3>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Get-SecurityComplianceReport</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
+    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
+        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
+        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$OutputPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\Reports\SecurityCompliance_</span><span class="si">$(</span><span class="n">Get-Date</span><span class="w"> </span><span class="nt">-Format</span><span class="w"> </span><span class="s1">'yyyyMMdd'</span><span class="p">)</span><span class="o">.</span><span class="nf">csv</span><span class="s2">"
+    )
+    
+    try {
+        # Get users without MFA
+        </span><span class="nv">$usersWithoutMFA</span><span class="s2"> = Get-UsersWithoutMFA
+        
+        # Get accounts with risky sign-ins
+        </span><span class="nv">$riskyAccounts</span><span class="s2"> = Get-RiskySignInAccounts
+        
+        # Get guest accounts
+        </span><span class="nv">$guestAccounts</span><span class="s2"> = Get-AzureADUser -Filter "</span><span class="n">userType</span><span class="w"> </span><span class="nx">eq</span><span class="w"> </span><span class="s1">'Guest'</span><span class="s2">"
+        
+        # Get admin accounts
+        </span><span class="nv">$adminAccounts</span><span class="s2"> = Get-AdminAccounts
+        
+        # Compile report
+        </span><span class="nv">$report</span><span class="s2"> = [PSCustomObject]@{
+            ReportDate = Get-Date
+            UsersWithoutMFA = </span><span class="nv">$usersWithoutMFA</span><span class="s2">.Count
+            RiskyAccounts = </span><span class="nv">$riskyAccounts</span><span class="s2">.Count
+            GuestAccounts = </span><span class="nv">$guestAccounts</span><span class="s2">.Count
+            AdminAccounts = </span><span class="nv">$adminAccounts</span><span class="s2">.Count
+            SecurityScore = Get-TenantSecureScore
+            CompliancePercentage = Calculate-CompliancePercentage
+        }
+        
+        # Export detailed findings
+        </span><span class="nv">$detailedReport</span><span class="s2"> = @()
+        
+        foreach (</span><span class="nv">$user</span><span class="s2"> in </span><span class="nv">$usersWithoutMFA</span><span class="s2">) {
+            </span><span class="nv">$detailedReport</span><span class="s2"> += [PSCustomObject]@{
+                UserPrincipalName = </span><span class="nv">$user</span><span class="s2">.UserPrincipalName
+                DisplayName = </span><span class="nv">$user</span><span class="s2">.DisplayName
+                Finding = "</span><span class="nx">Missing</span><span class="w"> </span><span class="nx">MFA</span><span class="s2">"
+                RiskLevel = "</span><span class="nx">High</span><span class="s2">"
+                RecommendedAction = "</span><span class="nx">Enable</span><span class="w"> </span><span class="nx">MFA</span><span class="s2">"
+            }
+        }
+        
+        # Add other findings
+        # ...
+        
+        # Export to CSV
+        </span><span class="nv">$detailedReport</span><span class="s2"> | Export-Csv -Path </span><span class="nv">$OutputPath</span><span class="s2"> -NoTypeInformation
+        
+        return </span><span class="nv">$report</span><span class="s2">
+    }
+    catch {
+        Write-Log "</span><span class="nx">Failed</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">generate</span><span class="w"> </span><span class="nx">security</span><span class="w"> </span><span class="nx">compliance</span><span class="w"> </span><span class="nx">report:</span><span class="w"> </span><span class="bp">$_</span><span class="s2">" -Level 'Error'
+        throw
+    }
+}
+</span></code></pre></div></div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>PowerShell remains an essential tool for Microsoft 365 automation, providing powerful capabilities for managing and securing your environment. By following these best practices for modular design, secure authentication, error handling, and performance optimization, you can create more reliable and maintainable automation solutions.</p>
+
+<p>In future articles, I’ll dive deeper into specific Microsoft 365 automation scenarios, including Teams governance, Exchange Online management, and SharePoint site provisioning.</p>
+
+<hr />
+
+<p>Do you have questions about PowerShell automation for Microsoft 365? <a href="mailto:ssmanji89@gmail.com">Contact me</a> or share your thoughts in the comments below.</p>
+
+</div>
+
+<div class="article-footer">
+    <div class="article-tags">
+        
+        <span class="article-tag">powershell</span>
+        
+        <span class="article-tag">microsoft-365</span>
+        
+        <span class="article-tag">scripting</span>
+        
+        <span class="article-tag">automation</span>
+        
+        <span class="article-tag">best-practices</span>
+        
+    </div>
+    
+    <div class="article-share">
+        <a href="https://twitter.com/intent/tweet?text=PowerShell+Automation+Best+Practices+for+Microsoft+365&url=https://www.sulemanji.com%2Fdevelopment%2Fmicrosoft%2Fautomation%2F2025%2F02%2F10%2Fpowershell-automation-best-practices.html" target="_blank" class="share-btn">
+            <i class="fab fa-twitter"></i> Share on Twitter
+        </a>
+        
+        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://www.sulemanji.com%2Fdevelopment%2Fmicrosoft%2Fautomation%2F2025%2F02%2F10%2Fpowershell-automation-best-practices.html&title=PowerShell+Automation+Best+Practices+for+Microsoft+365" target="_blank" class="share-btn">
+            <i class="fab fa-linkedin"></i> Share on LinkedIn
+        </a>
+    </div>
+</div>
+
+<div class="related-articles">
+    <h3>Related Articles</h3>
+    
+    <div class="related-articles-grid">
+        
+        
+        <article class="blog-article">
+            <div class="article-content">
+                <div class="article-meta">
+                    <span class="article-date">
+                        <i class="far fa-calendar-alt"></i> March 15, 2025
+                    </span>
+                </div>
+                
+                <h2 class="article-title">
+                    <a href="/development/microsoft/automation/2025/03/15/leveraging-microsoft-graph-api.html">Leveraging Microsoft Graph API for Enterprise Automation</a>
+                </h2>
+                
+                <div class="article-excerpt">
+                    # Leveraging Microsoft Graph API for Enterprise Automation Microsoft Graph API provides a unified programmability model that can be used...
+                </div>
+                
+                <a href="/development/microsoft/automation/2025/03/15/leveraging-microsoft-graph-api.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </article>
+        
+        <article class="blog-article">
+            <div class="article-content">
+                <div class="article-meta">
+                    <span class="article-date">
+                        <i class="far fa-calendar-alt"></i> March 26, 2025
+                    </span>
+                </div>
+                
+                <h2 class="article-title">
+                    <a href="/jekyll/update/2025/03/26/welcome-to-jekyll.html">Welcome to Jekyll!</a>
+                </h2>
+                
+                <div class="article-excerpt">
+                    You’ll find this post in your `_posts` directory. Go ahead and edit it and re-build the site to see your...
+                </div>
+                
+                <a href="/jekyll/update/2025/03/26/welcome-to-jekyll.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </article>
+        
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Syntax highlighting for code blocks
+    if (window.hljs) {
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+    }
+});
+</script>
+
+
+      </section>
+      
+      <footer>
+        <div class="footer-content">
+          <!-- Theme Switch Column -->
+          <div class="footer-info">
+            <!-- Theme Switch -->
+            <div class="theme-switch-wrapper" aria-label="Toggle dark mode">
+              <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" aria-label="Switch between dark and light mode" />
+                <div class="slider round">
+                  <i class="fas fa-moon" aria-hidden="true"></i>
+                  <i class="fas fa-sun" aria-hidden="true"></i>
+                </div>
+              </label>
+              <span class="theme-label">Dark Mode</span>
+            </div>
+          </div>
+          
+          <!-- GitHub Stats Column -->
+          <div class="footer-nav-container">
+            <h3 class="footer-nav-title">GitHub</h3>
+            <div class="footer-stats">
+              <div class="footer-stat">
+                <i class="fab fa-github"></i>
+                <span>15+ Public Repositories</span>
+              </div>
+              <div class="footer-stat">
+                <i class="fas fa-code-branch"></i>
+                <span>500+ Contributions</span>
+              </div>
+              <div class="footer-stat-action">
+                <a href="https://github.com/ssmanji89" class="btn btn-outline btn-sm">View All GitHub Projects</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Connect Column -->
+          <div class="footer-nav-container">
+            <h3 class="footer-nav-title">Connect</h3>
+            <div class="social-links-footer">
+              <a href="https://github.com/ssmanji89" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
+              <a href="https://www.linkedin.com/in/suleman-manji-1a46852a0" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+              <a href="https://www.npmjs.com/~sullyman" aria-label="NPM Profile"><i class="fab fa-npm"></i></a>
+              <a href="mailto:ssmanji89@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Custom JavaScript -->
+<script src="/assets/js/main.js"></script>
+<script src="/assets/js/dark-mode-cleanup.js"></script>
+
+<!-- Custom script to remove dark mode toggle -->
+<script>
+  // Function to remove the specific dark mode toggle shown in screenshot
+  function removeSpecificToggle() {
+    // Look for elements matching the description in the screenshot
+    const possibleToggles = document.querySelectorAll('body > .switchTheme, body > [class*="dark-mode-toggle"], body > div:not(.wrapper) > [class*="moon"], body > div:not(.wrapper) > [class*="sun"]');
+    
+    possibleToggles.forEach(function(element) {
+      const rect = element.getBoundingClientRect();
+      // Check if the element is at the bottom of the page
+      if (rect.bottom > window.innerHeight - 100) {
+        console.log('Removing specific toggle element:', element);
+        element.remove();
+      }
+    });
+    
+    // Specifically target the element in your screenshot
+    const moonSunElements = document.querySelectorAll('body > *:not(.wrapper) .fa-moon, body > *:not(.wrapper) .fa-sun');
+    moonSunElements.forEach(function(element) {
+      const parentElement = element.closest('div');
+      if (parentElement && !parentElement.closest('.theme-switch-wrapper')) {
+        console.log('Removing moon/sun element outside .wrapper:', parentElement);
+        parentElement.remove();
+      }
+    });
+    
+    // Remove any toggle with text "Dark Mode"
+    document.querySelectorAll('body > *').forEach(function(element) {
+      if (element.textContent && element.textContent.trim() === 'Dark Mode') {
+        console.log('Removing element with text "Dark Mode":', element);
+        element.remove();
+      }
+    });
+  }
+  
+  // Run on load and periodically
+  document.addEventListener('DOMContentLoaded', function() {
+    removeSpecificToggle();
+    setInterval(removeSpecificToggle, 1000);
+  });
+</script>
+
+<!-- Accessibility improvements -->
+<script>
+  // Add proper focus styles for accessibility
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fix any potential accessibility issues with tech tags
+    const techTags = document.querySelectorAll('.tech-tag');
+    techTags.forEach(tag => {
+      // Ensure good contrast
+      if (tag.style.backgroundColor === '#f6f8fa' || tag.style.backgroundColor === 'rgb(246, 248, 250)') {
+        tag.style.backgroundColor = '#e1e4e8';
+        tag.style.color = '#24292e';
+      }
+    });
+    
+    // Fix any buttons without accessible names
+    const buttons = document.querySelectorAll('button:not([aria-label]):not([title])');
+    buttons.forEach(button => {
+      if (!button.textContent.trim()) {
+        // Try to determine what the button does from its icon or context
+        if (button.querySelector('.fa-github')) {
+          button.setAttribute('aria-label', 'Visit GitHub Profile');
+        } else if (button.querySelector('.fa-linkedin')) {
+          button.setAttribute('aria-label', 'Visit LinkedIn Profile');
+        } else if (button.closest('nav')) {
+          button.setAttribute('aria-label', 'Navigation button');
+        } else {
+          button.setAttribute('aria-label', 'Button');
+        }
+      }
+    });
+    
+    // Fix contrast issues with links
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+      if (window.getComputedStyle(link).color === 'rgb(88, 96, 105)' || 
+          window.getComputedStyle(link).color === '#586069') {
+        link.style.color = '#0366d6';
+      }
+    });
+  });
+</script>
+      </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+    <script src="/assets/js/main.js"></script>
+    
+    <!-- Remove any extra dark mode toggles with inline script -->
+    <script>
+      // Use MutationObserver to detect and remove any elements added after load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Create an observer instance
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Only process Element nodes
+                  // Check if this is likely a dark mode toggle
+                  if (node.textContent && node.textContent.includes('Dark Mode') || 
+                      node.textContent && node.textContent.includes('Mode') ||
+                      node.innerHTML && (node.innerHTML.includes('moon') || 
+                      node.innerHTML.includes('sun'))) {
+                    
+                    // Make sure it's not our own toggle
+                    if (!node.closest('.theme-switch-wrapper')) {
+                      console.log('Observer removing node:', node);
+                      node.remove();
+                    }
+                  }
+                  
+                  // Check for elements at the bottom of page
+                  if (node.getBoundingClientRect && 
+                      node.getBoundingClientRect().top > (window.innerHeight - 100)) {
+                    if (!node.closest('.wrapper')) {
+                      console.log('Observer removing bottom element:', node);
+                      node.remove();
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        // Start observing the body with the configured parameters
+        observer.observe(document.body, { 
+          childList: true, 
+          subtree: true
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#0366d6">
+    <meta name="color-scheme" content="light dark">
+
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Portfolio Grid Demo | Suleman Manji</title>
+<meta name="generator" content="Jekyll v3.9.5" />
+<meta property="og:title" content="Portfolio Grid Demo" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A demonstration of the responsive portfolio grid system" />
+<meta property="og:description" content="A demonstration of the responsive portfolio grid system" />
+<link rel="canonical" href="https://www.sulemanji.com/portfolio-grid-demo.html" />
+<meta property="og:url" content="https://www.sulemanji.com/portfolio-grid-demo.html" />
+<meta property="og:site_name" content="Suleman Manji" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Portfolio Grid Demo" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","description":"A demonstration of the responsive portfolio grid system","headline":"Portfolio Grid Demo","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"}},"url":"https://www.sulemanji.com/portfolio-grid-demo.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+    <link rel="stylesheet" href="/assets/css/style.css?v=b4a556fdff20cae7c9d98933b4d460eafc871185">
+    <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+    <!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+<!-- Meta tags -->
+<meta name="theme-color" content="#0366d6" id="theme-color-meta">
+<meta name="color-scheme" content="light dark">
+
+<!-- Additional Styles for Dark Mode Consistency -->
+<style>
+  /* Override any conflicting styles for dark mode */
+  @media (prefers-color-scheme: dark) {
+    body:not(.forced-light) {
+      background-color: #0d1117 !important;
+      color: #c9d1d9 !important;
+    }
+  }
+  
+  /* Enhance contrast for accessibility */
+  .tech-tag {
+    background-color: #e1e4e8 !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode .tech-tag {
+    background-color: #30363d !important;
+    color: #e6edf3 !important;
+  }
+  
+  /* Fix any UI elements that might be hard to see in dark mode */
+  body.dark-mode a:not(.btn) {
+    color: #58a6ff;
+  }
+  
+  body.dark-mode .fa-moon {
+    color: #c9d1d9;
+  }
+  
+  /* Force white background in light mode and dark background in dark mode */
+  body:not(.dark-mode) {
+    background-color: #f6f8fa !important;
+    color: #24292e !important;
+  }
+  
+  body.dark-mode {
+    background-color: #0d1117 !important;
+    color: #c9d1d9 !important;
+  }
+  
+  body.dark-mode header, 
+  body.dark-mode section,
+  body.dark-mode p {
+    color: #c9d1d9 !important;
+  }
+  
+  /* Animation to help with theme transitions */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+</style>
+
+<!-- Dark mode script for meta tag -->
+<script>
+  // Update theme-color meta tag based on dark mode preference
+  const updateThemeColorMeta = () => {
+    const isDarkMode = document.body.classList.contains('dark-mode') || 
+                     (localStorage.getItem('theme') === 'dark') ||
+                     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    document.getElementById('theme-color-meta').setAttribute(
+      'content', 
+      isDarkMode ? '#0d1117' : '#0366d6'
+    );
+    
+    // Also update color-scheme meta
+    const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', isDarkMode ? 'dark' : 'light dark');
+    }
+  };
+  
+  // Run once at load
+  document.addEventListener('DOMContentLoaded', function() {
+    updateThemeColorMeta();
+    
+    // Fix for blank dark mode pages - force redraw if needed
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark' && !document.body.classList.contains('dark-mode')) {
+      document.body.classList.add('dark-mode');
+      // Force redraw
+      document.body.style.display = 'none';
+      document.body.offsetHeight; // This line forces a reflow
+      document.body.style.display = '';
+    }
+  });
+  
+  // Update when theme changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColorMeta);
+</script>
+
+<!-- Debug Dark Mode Toggle script (development only - remove in production) -->
+<script src="/assets/js/toggle-finder.js"></script>
+
+<!-- Schema.org for SEO -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "name": "Suleman Manji",
+    "description": "Enterprise Technology Strategy | Cloud Architecture | Process Automation",
+    "url": "https://www.sulemanji.com/portfolio-grid-demo.html",
+    "author": {
+        "@type": "Person",
+        "name": "Suleman Manji",
+        "url": "https://www.sulemanji.com"
+    }
+}
+</script>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1><a href="https://www.sulemanji.com/">Suleman Manji</a></h1>
+
+        
+          <img src="/images/sulemanji-profile.png" alt="Logo" />
+        
+
+        <p>Enterprise Technology Strategy | Cloud Architecture | Process Automation</p>
+
+        <p class="view"><a href="https://github.com/ssmanji89">View My GitHub Profile</a></p>
+        
+        <nav class="main-nav">
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/experience">Experience</a></li>
+            <li><a href="/projects">Projects</a></li>
+            <li><a href="/technical-skills">Skills</a></li>
+            <li><a href="/npm-packages">NPM Packages</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/philosophy">Philosophy</a></li>
+            <li><a href="/business-process-automation">Automation</a></li>
+          </ul>
+        </nav>
+      </header>
+      <section>
+
+      <div class="wrapper">
+  <h1>Portfolio Grid Demo</h1>
+  <p>This page demonstrates the responsive portfolio grid system with various configurations and responsive behaviors.</p>
+  
+  <h2>Standard Portfolio Grid</h2>
+  <div class="portfolio-sections">
+    <div class="section-card">
+      <div class="section-header">
+        <i class="section-icon fas fa-code"></i>
+        <h3 class="section-title">Development</h3>
+      </div>
+      <div class="section-content">
+        <p class="section-description">
+          Full-stack development services including front-end, back-end, and database solutions for modern web applications.
+        </p>
+        <div class="section-footer">
+          <a href="#" class="btn btn-primary">Learn More</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-card">
+      <div class="section-header">
+        <i class="section-icon fas fa-chart-line"></i>
+        <h3 class="section-title">Analytics</h3>
+      </div>
+      <div class="section-content">
+        <p class="section-description">
+          Data analytics and visualization services to help businesses understand and leverage their data for better decision making.
+        </p>
+        <div class="section-footer">
+          <a href="#" class="btn btn-primary">Learn More</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section-card">
+      <div class="section-header">
+        <i class="section-icon fas fa-robot"></i>
+        <h3 class="section-title">Automation</h3>
+      </div>
+      <div class="section-content">
+        <p class="section-description">
+          Business process automation solutions to streamline operations, reduce manual work, and improve efficiency.
+        </p>
+        <div class="section-footer">
+          <a href="#" class="btn btn-primary">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <h2>Two-Column Grid</h2>
+  <div class="portfolio-grid-2">
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project1.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Project One</h3>
+        <p class="portfolio-image-description">
+          A comprehensive business automation solution that streamlined operations for a mid-sized manufacturing company.
+        </p>
+        <div class="portfolio-image-footer">
+          <a href="#" class="btn btn-outline">View Details</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project2.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Project Two</h3>
+        <p class="portfolio-image-description">
+          An e-commerce platform with integrated analytics and payment processing for a retail business.
+        </p>
+        <div class="portfolio-image-footer">
+          <a href="#" class="btn btn-outline">View Details</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <h2>Three-Column Grid</h2>
+  <div class="portfolio-grid-3">
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project3.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Project Three</h3>
+        <p class="portfolio-image-description">
+          A custom CRM solution for a financial services company.
+        </p>
+        <div class="portfolio-image-footer">
+          <a href="#" class="btn btn-outline">View Details</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project4.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Project Four</h3>
+        <p class="portfolio-image-description">
+          A data visualization dashboard for real-time analytics.
+        </p>
+        <div class="portfolio-image-footer">
+          <a href="#" class="btn btn-outline">View Details</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project5.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Project Five</h3>
+        <p class="portfolio-image-description">
+          An inventory management system with barcode scanning.
+        </p>
+        <div class="portfolio-image-footer">
+          <a href="#" class="btn btn-outline">View Details</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <h2>Four-Column Grid</h2>
+  <div class="portfolio-grid-4">
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Service One</h3>
+        <p class="portfolio-image-description">
+          Web Development
+        </p>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Service Two</h3>
+        <p class="portfolio-image-description">
+          Mobile Apps
+        </p>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Service Three</h3>
+        <p class="portfolio-image-description">
+          Data Analytics
+        </p>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Service Four</h3>
+        <p class="portfolio-image-description">
+          Process Automation
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <h2>Masonry-like Grid</h2>
+  <div class="portfolio-masonry">
+    <div class="portfolio-image-card portfolio-item-wide">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project1.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Featured Project</h3>
+        <p class="portfolio-image-description">
+          A large-scale business automation platform used by multiple enterprise clients.
+        </p>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project2.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Standard Project</h3>
+        <p class="portfolio-image-description">
+          A mid-sized implementation for a growing business.
+        </p>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project3.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Standard Project</h3>
+        <p class="portfolio-image-description">
+          Another implementation for a similar client.
+        </p>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card portfolio-item-tall">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project4.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Long-Term Project</h3>
+        <p class="portfolio-image-description">
+          A complex implementation that required multiple phases and extensive customization over a longer period.
+        </p>
+        <p>The project involved various stakeholders and integration with multiple systems across the organization.</p>
+      </div>
+    </div>
+  </div>
+  
+  <h2>Featured Content Grid</h2>
+  <div class="portfolio-featured">
+    <div class="portfolio-image-card portfolio-featured-main">
+      <div class="portfolio-image-header" style="background-image: url('/assets/images/project1.jpg');"></div>
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Primary Featured Project</h3>
+        <p class="portfolio-image-description">
+          The most significant project that showcases skills and impact.
+        </p>
+        <div class="portfolio-image-footer">
+          <a href="#" class="btn btn-primary">View Case Study</a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card portfolio-featured-secondary">
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Secondary Feature</h3>
+        <p class="portfolio-image-description">
+          A supporting project or service.
+        </p>
+      </div>
+    </div>
+    
+    <div class="portfolio-image-card portfolio-featured-secondary">
+      <div class="portfolio-image-content">
+        <h3 class="portfolio-image-title">Another Secondary</h3>
+        <p class="portfolio-image-description">
+          Another supporting element.
+        </p>
+      </div>
+    </div>
+  </div>
+  
+  <h2>Responsive Utilities Demo</h2>
+  <div class="mb-5">
+    <h3>Fluid Typography</h3>
+    <p class="text-fluid-sm">Small fluid text that scales with the viewport</p>
+    <p class="text-fluid-md">Medium fluid text that scales with the viewport</p>
+    <p class="text-fluid-lg">Large fluid text that scales with the viewport</p>
+    <p class="text-fluid-xl">Extra large fluid text that scales with the viewport</p>
+  </div>
+  
+  <div class="mb-5">
+    <h3>Fluid Width Elements</h3>
+    <div class="w-fluid-sm p-3 mb-3" style="background-color: #f0f0f0;">Small fluid width element</div>
+    <div class="w-fluid-md p-3 mb-3" style="background-color: #f0f0f0;">Medium fluid width element</div>
+    <div class="w-fluid-lg p-3 mb-3" style="background-color: #f0f0f0;">Large fluid width element</div>
+  </div>
+  
+  <div class="mb-5">
+    <h3>Responsive Images</h3>
+    <div class="d-flex flex-wrap gap-4">
+      <div class="text-center">
+        <img src="/assets/images/profile.jpg" alt="Profile" class="img-fluid-sm mb-2">
+        <p>Small Fluid Image</p>
+      </div>
+      <div class="text-center">
+        <img src="/assets/images/profile.jpg" alt="Profile" class="img-fluid-md mb-2">
+        <p>Medium Fluid Image</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="mb-5">
+    <h3>Animation Examples</h3>
+    <div class="d-flex flex-wrap gap-4">
+      <div class="fade-in p-4" style="background-color: #f0f0f0;">Fade In</div>
+      <div class="fade-in-up p-4" style="background-color: #f0f0f0;">Fade In Up</div>
+      <div class="slide-up p-4" style="background-color: #f0f0f0;">Slide Up</div>
+      <div class="zoom-in p-4" style="background-color: #f0f0f0;">Zoom In</div>
+    </div>
+    
+    <div class="mt-4">
+      <h4>Staggered Animations</h4>
+      <ul class="stagger-fade-in" style="list-style: none; padding: 0;">
+        <li class="p-3 mb-2" style="background-color: #f0f0f0;">Item 1</li>
+        <li class="p-3 mb-2" style="background-color: #f0f0f0;">Item 2</li>
+        <li class="p-3 mb-2" style="background-color: #f0f0f0;">Item 3</li>
+        <li class="p-3 mb-2" style="background-color: #f0f0f0;">Item 4</li>
+        <li class="p-3 mb-2" style="background-color: #f0f0f0;">Item 5</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+      </section>
+      
+      <footer>
+        <div class="footer-content">
+          <!-- Theme Switch Column -->
+          <div class="footer-info">
+            <!-- Theme Switch -->
+            <div class="theme-switch-wrapper" aria-label="Toggle dark mode">
+              <label class="theme-switch" for="checkbox">
+                <input type="checkbox" id="checkbox" aria-label="Switch between dark and light mode" />
+                <div class="slider round">
+                  <i class="fas fa-moon" aria-hidden="true"></i>
+                  <i class="fas fa-sun" aria-hidden="true"></i>
+                </div>
+              </label>
+              <span class="theme-label">Dark Mode</span>
+            </div>
+          </div>
+          
+          <!-- GitHub Stats Column -->
+          <div class="footer-nav-container">
+            <h3 class="footer-nav-title">GitHub</h3>
+            <div class="footer-stats">
+              <div class="footer-stat">
+                <i class="fab fa-github"></i>
+                <span>15+ Public Repositories</span>
+              </div>
+              <div class="footer-stat">
+                <i class="fas fa-code-branch"></i>
+                <span>500+ Contributions</span>
+              </div>
+              <div class="footer-stat-action">
+                <a href="https://github.com/ssmanji89" class="btn btn-outline btn-sm">View All GitHub Projects</a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Connect Column -->
+          <div class="footer-nav-container">
+            <h3 class="footer-nav-title">Connect</h3>
+            <div class="social-links-footer">
+              <a href="https://github.com/ssmanji89" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
+              <a href="https://www.linkedin.com/in/suleman-manji-1a46852a0" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
+              <a href="https://www.npmjs.com/~sullyman" aria-label="NPM Profile"><i class="fab fa-npm"></i></a>
+              <a href="mailto:ssmanji89@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Custom JavaScript -->
+<script src="/assets/js/main.js"></script>
+<script src="/assets/js/dark-mode-cleanup.js"></script>
+
+<!-- Custom script to remove dark mode toggle -->
+<script>
+  // Function to remove the specific dark mode toggle shown in screenshot
+  function removeSpecificToggle() {
+    // Look for elements matching the description in the screenshot
+    const possibleToggles = document.querySelectorAll('body > .switchTheme, body > [class*="dark-mode-toggle"], body > div:not(.wrapper) > [class*="moon"], body > div:not(.wrapper) > [class*="sun"]');
+    
+    possibleToggles.forEach(function(element) {
+      const rect = element.getBoundingClientRect();
+      // Check if the element is at the bottom of the page
+      if (rect.bottom > window.innerHeight - 100) {
+        console.log('Removing specific toggle element:', element);
+        element.remove();
+      }
+    });
+    
+    // Specifically target the element in your screenshot
+    const moonSunElements = document.querySelectorAll('body > *:not(.wrapper) .fa-moon, body > *:not(.wrapper) .fa-sun');
+    moonSunElements.forEach(function(element) {
+      const parentElement = element.closest('div');
+      if (parentElement && !parentElement.closest('.theme-switch-wrapper')) {
+        console.log('Removing moon/sun element outside .wrapper:', parentElement);
+        parentElement.remove();
+      }
+    });
+    
+    // Remove any toggle with text "Dark Mode"
+    document.querySelectorAll('body > *').forEach(function(element) {
+      if (element.textContent && element.textContent.trim() === 'Dark Mode') {
+        console.log('Removing element with text "Dark Mode":', element);
+        element.remove();
+      }
+    });
+  }
+  
+  // Run on load and periodically
+  document.addEventListener('DOMContentLoaded', function() {
+    removeSpecificToggle();
+    setInterval(removeSpecificToggle, 1000);
+  });
+</script>
+
+<!-- Accessibility improvements -->
+<script>
+  // Add proper focus styles for accessibility
+  document.addEventListener('DOMContentLoaded', function() {
+    // Fix any potential accessibility issues with tech tags
+    const techTags = document.querySelectorAll('.tech-tag');
+    techTags.forEach(tag => {
+      // Ensure good contrast
+      if (tag.style.backgroundColor === '#f6f8fa' || tag.style.backgroundColor === 'rgb(246, 248, 250)') {
+        tag.style.backgroundColor = '#e1e4e8';
+        tag.style.color = '#24292e';
+      }
+    });
+    
+    // Fix any buttons without accessible names
+    const buttons = document.querySelectorAll('button:not([aria-label]):not([title])');
+    buttons.forEach(button => {
+      if (!button.textContent.trim()) {
+        // Try to determine what the button does from its icon or context
+        if (button.querySelector('.fa-github')) {
+          button.setAttribute('aria-label', 'Visit GitHub Profile');
+        } else if (button.querySelector('.fa-linkedin')) {
+          button.setAttribute('aria-label', 'Visit LinkedIn Profile');
+        } else if (button.closest('nav')) {
+          button.setAttribute('aria-label', 'Navigation button');
+        } else {
+          button.setAttribute('aria-label', 'Button');
+        }
+      }
+    });
+    
+    // Fix contrast issues with links
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+      if (window.getComputedStyle(link).color === 'rgb(88, 96, 105)' || 
+          window.getComputedStyle(link).color === '#586069') {
+        link.style.color = '#0366d6';
+      }
+    });
+  });
+</script>
+      </footer>
+    </div>
+    <script src="/assets/js/scale.fix.js"></script>
+    <script src="/assets/js/main.js"></script>
+    
+    <!-- Remove any extra dark mode toggles with inline script -->
+    <script>
+      // Use MutationObserver to detect and remove any elements added after load
+      document.addEventListener('DOMContentLoaded', function() {
+        // Create an observer instance
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.addedNodes.length) {
+              mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) { // Only process Element nodes
+                  // Check if this is likely a dark mode toggle
+                  if (node.textContent && node.textContent.includes('Dark Mode') || 
+                      node.textContent && node.textContent.includes('Mode') ||
+                      node.innerHTML && (node.innerHTML.includes('moon') || 
+                      node.innerHTML.includes('sun'))) {
+                    
+                    // Make sure it's not our own toggle
+                    if (!node.closest('.theme-switch-wrapper')) {
+                      console.log('Observer removing node:', node);
+                      node.remove();
+                    }
+                  }
+                  
+                  // Check for elements at the bottom of page
+                  if (node.getBoundingClientRect && 
+                      node.getBoundingClientRect().top > (window.innerHeight - 100)) {
+                    if (!node.closest('.wrapper')) {
+                      console.log('Observer removing bottom element:', node);
+                      node.remove();
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+        
+        // Start observing the body with the configured parameters
+        observer.observe(document.body, { 
+          childList: true, 
+          subtree: true
+        });
+      });
+    </script>
+  </body>
+</html>

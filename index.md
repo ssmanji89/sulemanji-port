@@ -1,7 +1,7 @@
 ---
 layout: default
-title: Suleman Manji - Enterprise Technology Strategist
-description: Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation.
+title: Suleman Manji - Enterprise Technology Strategist & Problem Solver
+description: Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation. A capable, analytical problem-solver with a hands-on approach, focused on delivering practical, secure, and efficient solutions within collaborative team environments. Keywords: cloud architecture, security engineering, process automation, technical specialist, analytical problem-solving, hands-on technology, Microsoft Azure, Microsoft 365, Power Automate, system administration, data analysis, team collaboration, cybersecurity, identity management, Node.js developer, automation expert.
 ---
 
 ## Enterprise Technology Strategist
@@ -18,13 +18,13 @@ Driving enterprise transformation through strategic cloud adoption, security eng
 ## Core Competencies
 
 ### <i class="fas fa-cloud"></i> Cloud Architecture
-Design and implementation of scalable, secure cloud infrastructure solutions with a focus on Microsoft Azure and Microsoft 365 environments.
+Design and implementation of scalable, secure cloud infrastructure solutions with a focus on practical application within Microsoft Azure and Microsoft 365 environments.
 
 ### <i class="fas fa-shield-alt"></i> Security Engineering
-Comprehensive security frameworks focused on identity governance, privileged access management, and zero-trust architecture.
+Comprehensive security frameworks focused on identity governance, privileged access management, and zero-trust architecture, applying systematic analysis to mitigate risks.
 
 ### <i class="fas fa-cogs"></i> Process Automation
-Development of intelligent workflow solutions using Power Automate and custom integration frameworks to streamline business operations.
+Development of intelligent workflow solutions using Power Automate and custom integration frameworks to streamline business operations through methodical implementation.
 
 ## Specialized Tooling
 
@@ -34,7 +34,7 @@ Development of intelligent workflow solutions using Power Automate and custom in
             <i class="fab fa-npm"></i>
             <h3>NPM Packages</h3>
         </div>
-        <p>Author of JavaScript/Node.js packages with a focus on automation and integration utilities.</p>
+        <p>Author of JavaScript/Node.js packages with a focus on automation and integration utilities, driven by hands-on development.</p>
         <div class="package-links">
             <a href="https://www.npmjs.com/~sullyman" target="_blank" class="package-link">
                 <i class="fab fa-npm"></i> sullyman
@@ -47,7 +47,7 @@ Development of intelligent workflow solutions using Power Automate and custom in
             <i class="fab fa-github"></i>
             <h3>Open Source</h3>
         </div>
-        <p>Contributor to utilities and tools focused on enterprise automation, security, and integration.</p>
+        <p>Contributor to utilities and tools focused on enterprise automation, security, and integration, applying practical problem-solving skills.</p>
         <div class="package-links">
             <a href="https://github.com/ssmanji89" target="_blank" class="package-link">
                 <i class="fab fa-github"></i> GitHub
@@ -62,19 +62,19 @@ Development of intelligent workflow solutions using Power Automate and custom in
     <div class="impact-metric">
         <div class="metric-value">40%</div>
         <div class="metric-label">Cloud Cost Reduction</div>
-        <div class="metric-description">Optimized cloud resource utilization through architecture refinement</div>
+        <div class="metric-description">Optimized cloud resource utilization through architecture refinement and analytical review</div>
     </div>
     
     <div class="impact-metric">
         <div class="metric-value">70+</div>
         <div class="metric-label">Automation Workflows</div>
-        <div class="metric-description">Comprehensive process automation solutions across multiple domains</div>
+        <div class="metric-description">Comprehensive process automation solutions across multiple domains driven by hands-on development</div>
     </div>
     
     <div class="impact-metric">
         <div class="metric-value">88.8%</div>
         <div class="metric-label">Security Posture</div>
-        <div class="metric-description">Elevated Microsoft 365 Secure Score across enterprise environments</div>
+        <div class="metric-description">Elevated Microsoft 365 Secure Score across enterprise environments via systematic improvements</div>
     </div>
 </div>
 
@@ -108,14 +108,17 @@ Development of intelligent workflow solutions using Power Automate and custom in
 
 ## Professional Approach
 
-### Analytical Problem Resolution
-Systematic decomposition of complex technological challenges into actionable components with measurable outcomes.
+### Methodical Problem Resolution
+A **capable problem-solver** adept at systematically decomposing complex technological challenges into actionable, practical components with measurable outcomes. Driven by **analytical** and **hands-on work** to understand and solve concrete problems effectively.
 
-### Modular System Architecture
-Development of adaptable, component-based solutions that enable scalability and future enhancement.
+### Practical System Architecture
+Development of adaptable, component-based solutions leveraging **established methods** and practical insights to enable scalability, reliability, and future enhancement. Focused on **understanding how systems function** to build robust, **conventional** architectures.
 
 ### Data-Driven Optimization
-Leveraging metrics and performance analytics to continuously refine and enhance technological ecosystems.
+Leveraging metrics and performance analytics to continuously refine and enhance technological ecosystems, aligning with strong **analytical interests**.
+
+### Collaborative Contributor
+**Highly team-oriented**, valuing collaborative environments and contributing technical expertise effectively within team structures. Prefers focused contribution over leadership, leveraging a **reserved** yet cooperative style.
 
 ## Portfolio Sections
 
@@ -130,7 +133,7 @@ Leveraging metrics and performance analytics to continuously refine and enhance 
     <div class="portfolio-section-card">
         <i class="fas fa-code"></i>
         <h3>Technical Skills</h3>
-        <p>Detailed technical skills overview with proficiency levels, certifications, and continuous learning focus areas.</p>
+        <p>Detailed technical skills overview highlighting hands-on expertise, certifications, and continuous learning focus areas.</p>
         <a href="/technical-skills" class="btn btn-sm">View Skills</a>
     </div>
     

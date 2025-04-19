@@ -1,7 +1,7 @@
 ---
 layout: default
-title: About Suleman Manji | Enterprise Technology Strategist
-description: Learn about Suleman Manji's background, expertise in cloud architecture, security engineering, and process automation.
+title: About Suleman Manji | Enterprise Technology Strategist & Problem Solver
+description: Learn about Suleman Manji's background, hands-on expertise in cloud architecture, security engineering, and process automation. An analytical and team-oriented problem-solver focused on practical solutions. Keywords: Suleman Manji, about, technology strategist, cloud architecture, security engineering, process automation, problem-solver, analytical, hands-on, team-oriented, technical specialist, Microsoft Azure, Microsoft 365.
 permalink: /about
 ---
 
@@ -15,7 +15,7 @@ permalink: /about
         <div class="profile-content">
             <h2>Suleman Manji</h2>
             <h3>Enterprise Technology Strategist</h3>
-            <p class="lead-text">Technology innovator with expertise in cloud architecture, security engineering, and business process automation.</p>
+            <p class="lead-text">Analytical technology innovator with hands-on expertise in cloud architecture, security engineering, and business process automation. A capable problem-solver focused on practical, impactful solutions.</p>
             <div class="profile-cta">
                 <a href="/assets/SulemanManji_Resume.pdf" class="btn" target="_blank">Download Resume</a>
                 <a href="/experience" class="btn btn-outline">View Experience</a>
@@ -25,9 +25,9 @@ permalink: /about
     
     <div class="about-section animate-on-scroll">
         <h2 class="section-title">Professional Background</h2>
-        <p>I'm an enterprise technology strategist with over a decade of experience designing and implementing transformative technology solutions across diverse organizational environments. Throughout my career, I've focused on creating scalable, secure, and efficient technological ecosystems that drive business objectives while optimizing operational performance.</p>
+        <p>I'm an enterprise technology strategist with over a decade of experience designing and implementing transformative technology solutions. My approach is **hands-on** and **analytical**, focused on systematically solving complex technical challenges. Throughout my career, I've focused on creating scalable, secure, and efficient technological ecosystems that drive business objectives while optimizing operational performance.</p>
         
-        <p>My professional journey has encompassed roles in technology leadership, security architecture, and digital transformation across multiple industries. This diverse background has provided me with a unique perspective on technology implementation and a deep understanding of how technological solutions can address complex business challenges.</p>
+        <p>My professional journey has encompassed roles in technology implementation, security architecture, and digital transformation across multiple industries. This diverse background has provided me with a unique perspective and a deep understanding of how practical technology solutions can address complex business challenges. I thrive on understanding how systems work and applying established methods effectively.</p>
     </div>
     
     <div class="about-section animate-on-scroll">
@@ -38,11 +38,11 @@ permalink: /about
                 <div class="expertise-icon"><i class="fas fa-cloud"></i></div>
                 <h3>Cloud Architecture</h3>
                 <ul>
-                    <li>Microsoft Azure infrastructure design</li>
-                    <li>Microsoft 365 implementation & optimization</li>
+                    <li>Microsoft Azure infrastructure design (Hands-on Implementation)</li>
+                    <li>Microsoft 365 implementation & optimization (Analytical Review)</li>
                     <li>Hybrid cloud integration</li>
-                    <li>Cloud security frameworks</li>
-                    <li>Cost optimization strategies</li>
+                    <li>Cloud security frameworks (Systematic Application)</li>
+                    <li>Cost optimization strategies (Data-Driven)</li>
                 </ul>
             </div>
             
@@ -50,11 +50,11 @@ permalink: /about
                 <div class="expertise-icon"><i class="fas fa-shield-alt"></i></div>
                 <h3>Security Engineering</h3>
                 <ul>
-                    <li>Identity and access management</li>
-                    <li>Privileged access solutions</li>
+                    <li>Identity and access management (Methodical Approach)</li>
+                    <li>Privileged access solutions (Practical Deployment)</li>
                     <li>Zero-trust architecture</li>
-                    <li>Compliance frameworks</li>
-                    <li>Security assessment methodologies</li>
+                    <li>Compliance frameworks (Procedural Adherence)</li>
+                    <li>Security assessment methodologies (Analytical)</li>
                 </ul>
             </div>
             
@@ -62,23 +62,11 @@ permalink: /about
                 <div class="expertise-icon"><i class="fas fa-cogs"></i></div>
                 <h3>Process Automation</h3>
                 <ul>
-                    <li>Microsoft Power Automate workflows</li>
-                    <li>PowerShell automation</li>
-                    <li>API integration frameworks</li>
-                    <li>Business process optimization</li>
-                    <li>Automated reporting solutions</li>
-                </ul>
-            </div>
-            
-            <div class="expertise-item">
-                <div class="expertise-icon"><i class="fas fa-chart-line"></i></div>
-                <h3>Strategic Leadership</h3>
-                <ul>
-                    <li>Technology roadmap development</li>
-                    <li>Digital transformation management</li>
-                    <li>Cross-functional team leadership</li>
-                    <li>Technology investment optimization</li>
-                    <li>Stakeholder engagement</li>
+                    <li>Microsoft Power Automate workflows (Hands-on Development)</li>
+                    <li>PowerShell automation (Practical Scripting)</li>
+                    <li>API integration frameworks (Systematic Integration)</li>
+                    <li>Business process optimization (Analytical)</li>
+                    <li>Automated reporting solutions (Structured Output)</li>
                 </ul>
             </div>
         </div>
@@ -88,7 +76,7 @@ permalink: /about
         <h2 class="section-title">Skills Assessment</h2>
         
         <div class="skills-container">
-            <div class="skill-category">
+             <div class="skill-category">
                 <h3>Cloud Platforms</h3>
                 
                 <div class="skill-item">
@@ -191,7 +179,7 @@ permalink: /about
                 
                 <div class="skill-item">
                     <div class="skill-name">
-                        <span>.NET Development</span>
+                        <span>Node.js / JavaScript</span>
                         <span class="skill-percent">80%</span>
                     </div>
                     <div class="skill-bar">
@@ -203,38 +191,38 @@ permalink: /about
     </div>
     
     <div class="about-section animate-on-scroll">
-        <h2 class="section-title">Professional Values</h2>
+        <h2 class="section-title">Professional Values & Approach</h2>
         
         <div class="values-grid">
             <div class="value-item">
-                <div class="value-icon"><i class="fas fa-lightbulb"></i></div>
-                <h3>Innovation-Driven</h3>
-                <p>Continuously exploring emerging technologies and methodologies to drive transformative solutions.</p>
+                <div class="value-icon"><i class="fas fa-search"></i></div>
+                <h3>Analytical Problem Solving</h3>
+                <p>Systematically analyzing complex issues and leveraging data to find effective, logical solutions.</p>
             </div>
             
             <div class="value-item">
-                <div class="value-icon"><i class="fas fa-handshake"></i></div>
-                <h3>Collaborative Approach</h3>
-                <p>Building strong cross-functional partnerships to ensure technology solutions address comprehensive business needs.</p>
+                <div class="value-icon"><i class="fas fa-tools"></i></div>
+                <h3>Hands-On & Practical</h3>
+                <p>Driven by understanding how systems work and applying practical, established methods to build reliable solutions.</p>
             </div>
-            
+
             <div class="value-item">
-                <div class="value-icon"><i class="fas fa-chart-pie"></i></div>
-                <h3>Results-Focused</h3>
-                <p>Implementing technology with clear measurement frameworks to demonstrate quantifiable business impact.</p>
+                <div class="value-icon"><i class="fas fa-users"></i></div>
+                <h3>Team-Oriented Contributor</h3>
+                <p>Valuing collaborative environments and contributing technical expertise effectively within team settings, preferring focused individual contribution.</p>
             </div>
             
             <div class="value-item">
                 <div class="value-icon"><i class="fas fa-graduation-cap"></i></div>
                 <h3>Continuous Learning</h3>
-                <p>Dedicated to ongoing professional development and knowledge acquisition in rapidly evolving technology domains.</p>
+                <p>Dedicated to ongoing professional development and knowledge acquisition, particularly in technical and analytical domains.</p>
             </div>
         </div>
     </div>
     
     <div class="cta-section animate-on-scroll">
         <h2>Interested in Collaboration?</h2>
-        <p>I'm always open to discussing technology strategy, automation opportunities, or potential project collaborations.</p>
+        <p>I'm always open to discussing technology strategy, automation opportunities, or potential project collaborations, especially those involving hands-on technical challenges.</p>
         <a href="https://github.com/ssmanji89" class="btn" target="_blank">Connect on GitHub</a>
         <a href="https://linkedin.com/in/{{ site.linkedin_username }}" class="btn btn-outline" target="_blank">Connect on LinkedIn</a>
     </div>

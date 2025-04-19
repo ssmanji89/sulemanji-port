@@ -113,4 +113,21 @@ body.dark-mode .timeline-dot {
   border-color: #0d1117;
 }
 
+/* Dark Mode - Experience Page Text Color */
+body.dark-mode .timeline-content {
+  color: #f0f0f0;
+}
+
+body.dark-mode .timeline-description {
+  color: #ddd;
+}
+
+body.dark-mode .timeline-highlights {
+  color: #ddd;
+}
+
+body.dark-mode .timeline-technologies {
+    color: #ddd;
+}
+
 /* Add more dark mode specific overrides here as needed */

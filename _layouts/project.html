@@ -1,8 +1,8 @@
 ---
 layout: default
 ---
-<article class="project">
 
+<article class="project">
   <header class="project-header">
     <h1 class="project-title">{{ page.title | escape }}</h1>
   </header>
@@ -13,7 +13,9 @@ layout: default
 
   {% if page.project_link %}
   <div class="project-link-section">
-    <a href="{{ page.project_link }}" class="button" target="_blank">View Project</a>
+    <a href="{{ page.project_link }}" class="button" target="_blank">
+      <i class="fa fa-external-link"></i> View Project
+    </a>
   </div>
   {% endif %}
 
@@ -27,5 +29,4 @@ layout: default
     </div>
   </div>
   {% endif %}
-
 </article> 

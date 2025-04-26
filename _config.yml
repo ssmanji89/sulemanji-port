@@ -13,12 +13,14 @@ github_username: sulemanji
 linkedin_username: sulemanji
 
 # Build settings
-theme: minima
+# theme: minima
+remote_theme: pages-themes/slate@v0.2.0
 markdown: kramdown
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-remote-theme
 
 # sass
 sass:

@@ -1,0 +1,55 @@
+# Site settings
+title: Suleman Manji
+author:
+  name: Suleman Manji
+  email: sulemanmanji@gmail.com
+description: "Personal blog and portfolio of Suleman Manji."
+url: "https://www.sulemanji.com"
+
+# Social links
+twitter_username: 
+github_username: sulemanji
+linkedin_username: sulemanji
+
+# Build settings
+theme: minima
+markdown: kramdown
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Collections
+collections:
+  projects:
+    output: true
+    permalink: /projects/:path/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      permalink: /blog/:year/:month/:day/:title/
+  - scope:
+      path: ""
+      type: "projects"
+    values:
+      layout: "project"
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .sass-cache/
+  - .jekyll-cache/
+  - .git/
+  - .github/ 

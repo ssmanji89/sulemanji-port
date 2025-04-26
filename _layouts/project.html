@@ -1,0 +1,31 @@
+---
+layout: default
+---
+<article class="project">
+
+  <header class="project-header">
+    <h1 class="project-title">{{ page.title | escape }}</h1>
+  </header>
+
+  <div class="project-content">
+    {{ content }}
+  </div>
+
+  {% if page.project_link %}
+  <div class="project-link-section">
+    <a href="{{ page.project_link }}" class="button" target="_blank">View Project</a>
+  </div>
+  {% endif %}
+
+  {% if page.technologies %}
+  <div class="project-technologies">
+    <h3>Technologies Used:</h3>
+    <div class="project-tech">
+      {% for tech in page.technologies %}
+      <span>{{ tech }}</span>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+</article> 

@@ -1,0 +1,24 @@
+/* Basic CSS file for testing */
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.7;
+  color: #333;
+  background-color: #fcfcfc;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: #2e5c8a;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+a {
+  color: #4a7fb5;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #5c98d1;
+  text-decoration: none;
+} 

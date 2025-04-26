@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: default
 title: About
 permalink: /about/
 ---
@@ -10,51 +10,53 @@ permalink: /about/
 
 ## Professional Background
 
-I'm Suleman Manji, a dedicated professional with a focus on analytical and hands-on work. I leverage my technical understanding and problem-solving abilities to deliver impactful results in structured environments. My approach combines methodical analysis with practical execution, ensuring solutions that are both effective and reliable.
+I'm Suleman Manji, a technically-focused professional specializing in cloud infrastructure, enterprise security, and business process automation. With experience as a Senior Technical Consultant, Integrations Manager, and Systems Administrator, I leverage my technical expertise to deliver impactful results across Microsoft 365, Azure, and enterprise IT environments.
 
-## Natural Tendencies
+## Technical Expertise
 
 <div class="skill-tags">
-  <span class="skill-tag">Analytical Thinker</span>
-  <span class="skill-tag">Highly Team-Oriented</span>
-  <span class="skill-tag">Technically Minded</span>
-  <span class="skill-tag">Detail-Focused</span>
-  <span class="skill-tag">Practical Problem-Solver</span>
+  <span class="skill-tag">Microsoft 365 Governance</span>
+  <span class="skill-tag">Azure Cloud Infrastructure</span>
+  <span class="skill-tag">Enterprise Security</span>
+  <span class="skill-tag">DevOps</span>
+  <span class="skill-tag">Process Automation</span>
+  <span class="skill-tag">PowerShell & .NET</span>
+  <span class="skill-tag">System Integration</span>
 </div>
 
-I thrive in environments that allow me to apply my analytical strengths while working collaboratively with others. As a **capable problem-solver** with a **reserved interpersonal style**, I excel at listening carefully and processing information thoroughly before providing well-considered responses. My technical orientation enables me to understand systems deeply and suggest practical improvements.
+I thrive in technically complex environments that require analytical problem-solving and hands-on implementation. As a **methodical technical professional** with a **structured approach to challenges**, I excel at understanding complex systems, implementing secure solutions, and optimizing technical infrastructure to meet business needs.
 
 <div class="highlight-section">
   <h3>Core Strengths</h3>
   <ul>
-    <li><strong>Systematic Analysis</strong> – I excel at breaking down complex problems into manageable components</li>
-    <li><strong>Technical Aptitude</strong> – I have a natural ability to understand and work with systems and tools</li>
-    <li><strong>Team Collaboration</strong> – Despite my reserved nature, I'm highly team-oriented and value collaborative environments</li>
-    <li><strong>Practical Approach</strong> – I focus on solutions that are pragmatic and implementable</li>
-    <li><strong>Attention to Detail</strong> – My methodical nature helps ensure accuracy and thoroughness</li>
+    <li><strong>Cloud Expertise</strong> – Extensive experience with Microsoft 365, Azure, and modern cloud infrastructure</li>
+    <li><strong>Security Implementation</strong> – Strong background in enterprise security, PAM, and compliance frameworks</li>
+    <li><strong>Process Automation</strong> – Proficient in developing automated workflows with Power Platform and custom solutions</li>
+    <li><strong>Technical Leadership</strong> – Proven ability to provide technical guidance and lead complex implementations</li>
+    <li><strong>Systems Integration</strong> – Skilled at connecting disparate systems for seamless operations</li>
   </ul>
 </div>
 
 ## Professional Interests
 
-My career interests align strongly with **hands-on technical work** and **analytical problem-solving**. I'm particularly drawn to roles that involve:
+My career interests align strongly with **technical implementation** and **cloud architecture**. I'm particularly drawn to roles that involve:
 
-- Solving complex or abstract problems through systematic analysis
-- Understanding how systems, objects, and products function
-- Working methodically and precisely with information
-- Analyzing data and identifying patterns or trends
-- Learning technical details about products or services
+- Developing and implementing secure cloud solutions
+- Optimizing IT infrastructure and processes through automation
+- Solving complex technical challenges with scalable, reliable solutions
+- Implementing enterprise security and governance frameworks
+- Building integrated systems that enhance operational efficiency
 
-## Education & Development
+## Education & Certifications
 
-I'm committed to continuous learning and professional development, with a focus on expanding my technical and analytical capabilities. My educational background includes:
+I'm committed to continuous learning and professional development, with a focus on expanding my technical capabilities in cloud technologies and security. My background includes:
 
 - Bachelor's Degree in Computer Science
-- Technical certifications in relevant fields
-- Ongoing professional development in analytical methodologies
+- Technical certifications in Microsoft technologies
+- Ongoing professional development in cloud security and architecture
 
-## Personal Interests
+## Personal Approach
 
-Outside of my professional work, I enjoy activities that allow me to engage my technical interests in different contexts. This includes exploring new technologies, reading technical literature, and engaging in hands-on projects that challenge my problem-solving abilities.
+I approach technical challenges with a methodical mindset, focusing on understanding systems thoroughly before implementing well-structured solutions. This analytical approach, combined with hands-on technical skills, allows me to deliver reliable results that address both immediate needs and long-term strategic goals.
 
 For more details about my professional experience and projects, please check out my [resume](/resume/) and [portfolio](/projects/). 

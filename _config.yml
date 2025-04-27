@@ -2,28 +2,25 @@
 title: Suleman Manji
 author:
   name: Suleman Manji
-  email: 89.suleman.manji@gmail.com
+  email: sulemanmanji@gmail.com
 description: "Personal blog and portfolio of Suleman Manji."
 url: "https://www.sulemanji.com"
 baseurl: "" # the subpath of your site, e.g. /blog
 
 # Social links
 twitter_username: 
-github_username: ssmanji89
-linkedin_username: suleman-manji-1a46852a0
+github_username: sulemanji
+linkedin_username: sulemanji
 
 # Build settings
 # theme: minima
-remote_theme: pages-themes/leap-day@v0.2.0
+remote_theme: pages-themes/slate@v0.2.0
 markdown: kramdown
 plugins:
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
   - jekyll-remote-theme
-
-# Leap Day Theme settings
-show_downloads: false
 
 # sass
 sass:

@@ -16,123 +16,13 @@
   --hover-shadow: 0 10px 15px rgba(0,0,0,0.15);
 }
 
-// Custom navigation in banner
-.custom-nav {
-  display: inline-block;
-  margin-right: 10px;
-  
-  .nav-link {
-    color: white;
-    text-decoration: none;
-    margin: 0 8px;
-    padding: 6px 10px;
-    border-radius: 4px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    display: inline-block;
-    
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.2);
-      text-decoration: none;
-    }
-  }
-}
-
-// Social links in footer
-footer .social-links {
-  margin-top: 15px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  
-  a {
-    margin: 0 15px;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    color: var(--primary-color);
-    
-    i {
-      margin-right: 5px;
-    }
-    
-    &:hover {
-      color: var(--accent-color);
-      text-decoration: none;
-    }
-  }
-}
-
-// Customize header colors
-header {
-  background: linear-gradient(to bottom, #2e5c8a, #4a7fb5);
-}
-
-#banner {
-  background: #5c98d1;
-}
-
-// Customize link colors
-a {
-  color: var(--secondary-color);
-  transition: color 0.3s ease;
-  
-  &:hover {
-    color: var(--accent-color);
-  }
-}
-
-// Custom styles for projects
-.project-card {
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  padding: 25px;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  background-color: white;
-  margin-bottom: 30px;
-  
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--hover-shadow);
-  }
-  
-  h2 {
-    margin-top: 0;
-    font-size: 1.5rem;
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--light-accent);
-    padding-bottom: 8px;
-    margin-bottom: 15px;
-  }
-  
-  .project-category {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 15px;
-    font-weight: 500;
-  }
-  
-  .project-tech {
-    margin-top: 20px;
-    
-    span {
-      display: inline-block;
-      background-color: var(--light-accent);
-      color: var(--primary-color);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 0.85rem;
-      margin-right: 8px;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-  }
-}
-
 // Customize the slate theme
 .inner {
   max-width: 960px;
+}
+
+#header_wrap {
+  background: linear-gradient(to bottom, #2e5c8a, #4a7fb5);
 }
 
 #footer_wrap {
@@ -208,6 +98,16 @@ h1 {
   font-size: 2.5rem;
   border-bottom: 2px solid var(--light-accent);
   padding-bottom: 0.3em;
+}
+
+a {
+  color: var(--secondary-color);
+  transition: color 0.3s ease;
+  
+  &:hover {
+    color: var(--accent-color);
+    text-decoration: none;
+  }
 }
 
 .site-header {
@@ -292,6 +192,52 @@ h1 {
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
   gap: 35px;
   margin: 40px 0;
+}
+
+.project-card {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 25px;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: white;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+  }
+  
+  h2 {
+    margin-top: 0;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--light-accent);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .project-category {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 15px;
+    font-weight: 500;
+  }
+  
+  .project-tech {
+    margin-top: 20px;
+    
+    span {
+      display: inline-block;
+      background-color: var(--light-accent);
+      color: var(--primary-color);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+  }
 }
 
 // Post styles
@@ -557,20 +503,9 @@ h1 {
   .footer-col {
     flex: 100%;
   }
-  
-  .custom-nav {
-    display: block;
-    text-align: center;
-    margin: 10px 0;
-  }
-  
-  .project-card {
-    margin: 0 10px 20px;
-  }
 }
 
 // Font Awesome icons
 .fa {
-  font-family: 'FontAwesome' !important;
   margin-right: 5px;
 }

@@ -7,27 +7,49 @@
 <meta name="author" content="{{ site.author.name }}">
 <meta name="description" content="{{ site.description }}">
 
-<!-- Additional styles to ensure Font Awesome and other elements work correctly -->
+<!-- Additional styles for Leap Day theme customizations -->
 <style>
   /* Fix for Font Awesome icons */
   .fa {
     font-family: 'FontAwesome' !important;
   }
   
-  /* Custom styles for Leap Day theme */
-  body {
-    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* Basic styling for code blocks */
+  pre, code {
+    font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
+    font-size: 0.9em;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    padding: 0.2em 0.4em;
   }
   
-  /* Ensure adequate spacing between navigation items in mobile view */
+  pre {
+    padding: 16px;
+    overflow: auto;
+  }
+  
+  pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+  
+  /* Custom styling for Leap Day theme */
+  .custom-nav {
+    display: inline-block;
+    margin-right: 20px;
+  }
+  
+  /* Mobile adjustments */
   @media screen and (max-width: 480px) {
-    .custom-nav {
-      width: 100%;
-      text-align: center;
+    .custom-nav .nav-link {
+      padding: 4px 6px;
+      margin: 0 4px;
+      font-size: 0.85em;
     }
     
-    #banner {
-      padding: 10px;
+    footer .social-links {
+      flex-direction: column;
+      align-items: center;
     }
   }
 </style>

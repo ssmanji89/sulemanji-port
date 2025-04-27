@@ -10,7 +10,9 @@ var sectionHeight = function() {
   }
 }
 
-$(window).resize(sectionHeight);
+$(window).resize(function() {
+  sectionHeight();
+});
 
 $(function() {
   $("section h1, section h2, section h3").each(function(){

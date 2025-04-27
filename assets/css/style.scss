@@ -23,6 +23,10 @@ header {
 
 #banner {
   background: var(--accent-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 90px; /* Add space for the GitHub button */
 }
 
 // Custom navigation styles
@@ -76,6 +80,12 @@ footer .social-links {
 #banner .button.fork {
   position: absolute;
   right: 10px;
+  margin-top: 0 !important; /* Override default margin */
+}
+
+// Adjust banner layout for GitHub button
+#banner {
+  position: relative; /* Ensure proper positioning context */
 }
 
 // Customize the left navigation
@@ -461,8 +471,18 @@ nav {
     }
   }
   
+  #banner {
+    flex-direction: column;
+    padding-right: 10px;
+    padding-bottom: 60px; /* Make room for the GitHub button at bottom */
+  }
+  
   #banner .button.fork {
     margin-top: 10px;
+    position: absolute;
+    bottom: 10px;
+    right: 50%;
+    transform: translateX(50%);
   }
 }
 

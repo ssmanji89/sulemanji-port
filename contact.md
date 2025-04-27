@@ -10,10 +10,9 @@ I'm always open to discussing new opportunities, projects, or just connecting wi
 
 ## Contact Information
 
-- **Email**: [sulemanmanji@gmail.com](mailto:sulemanmanji@gmail.com)
-- **Phone**: [281.904.1969](tel:2819041969)
-- **LinkedIn**: [linkedin.com/in/sulemanji](https://linkedin.com/in/sulemanji)
-- **GitHub**: [github.com/sulemanji](https://github.com/sulemanji)
+- **Email**: [sulemanmanji@gmail.com](mailto:89.suleman.manji@gmail.com)
+- **LinkedIn**: [linkedin.com/in/suleman-manji-1a46852a0](https://linkedin.com/in/suleman-manji-1a46852a0)
+- **GitHub**: [github.com/ssmanji89](https://github.com/ssmanji89)
 - **Location**: Houston, TX
 
 ## Connect

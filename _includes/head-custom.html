@@ -7,7 +7,7 @@
 <meta name="author" content="{{ site.author.name }}">
 <meta name="description" content="{{ site.description }}">
 
-<!-- Additional styles to ensure Font Awesome and other elements work correctly -->
+<!-- Additional styles for Leap Day theme customizations -->
 <style>
   /* Fix for Font Awesome icons */
   .fa {
@@ -33,16 +33,23 @@
     padding: 0;
   }
   
-  /* Fix for slate layout on mobile */
+  /* Custom styling for Leap Day theme */
+  .custom-nav {
+    display: inline-block;
+    margin-right: 20px;
+  }
+  
+  /* Mobile adjustments */
   @media screen and (max-width: 480px) {
-    .inner {
-      min-width: 0;
+    .custom-nav .nav-link {
+      padding: 4px 6px;
+      margin: 0 4px;
+      font-size: 0.85em;
     }
     
-    .site-nav .nav-link {
-      margin: 0 8px;
-      padding: 6px 8px;
-      font-size: 0.9em;
+    footer .social-links {
+      flex-direction: column;
+      align-items: center;
     }
   }
 </style>

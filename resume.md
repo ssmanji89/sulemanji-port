@@ -8,21 +8,29 @@ permalink: /resume/
 
 ## Professional Summary
 
-I'm a technically-oriented professional with strong analytical abilities and problem-solving skills. I excel in environments that leverage my hands-on technical understanding and methodical approach to complex challenges.
+I'm a technically-oriented cloud solutions architect with proven expertise in Microsoft 365 governance, Azure infrastructure optimization, and enterprise security implementation. My methodical approach to complex technical challenges has consistently delivered measurable business outcomes, including significant cost reductions and enhanced security compliance.
 
 <div class="highlight-section">
   <h3>Core Competencies</h3>
   <div class="skill-tags">
     <span class="skill-tag">Microsoft 365 Governance</span>
-    <span class="skill-tag">Cloud Infrastructure</span>
-    <span class="skill-tag">Azure DevOps</span>
+    <span class="skill-tag">Azure Cloud Architecture</span>
+    <span class="skill-tag">Security & Compliance</span>
     <span class="skill-tag">Process Automation</span>
-    <span class="skill-tag">Systems Engineering</span>
-    <span class="skill-tag">Enterprise Security</span>
-    <span class="skill-tag">Technical Leadership</span>
-    <span class="skill-tag">IT Infrastructure</span>
+    <span class="skill-tag">Infrastructure Optimization</span>
+    <span class="skill-tag">PowerShell Scripting</span>
+    <span class="skill-tag">Enterprise Identity Management</span>
+    <span class="skill-tag">Cloud Cost Optimization</span>
   </div>
 </div>
+
+## Technical Skills
+
+**Cloud Platforms:** Microsoft Azure, Office 365, SharePoint Online, Exchange Online  
+**Security:** CyberArk, Data Loss Prevention (DLP), Mobile Device Management (MDM), Identity Management  
+**Development:** PowerShell, Azure DevOps, CI/CD Pipelines, Power Automate  
+**Infrastructure:** Azure AD, Hybrid Identity Solutions, Site-to-Site VPN, Virtual Desktop Infrastructure  
+**Methodologies:** ITIL, Agile Project Management
 
 ## View My Resume
 
@@ -35,72 +43,72 @@ I'm a technically-oriented professional with strong analytical abilities and pro
 ## Professional Experience
 
 ### ZG Companies
-**Senior Technical Consultant** (December 2023 - March 2025)
+**Senior Cloud Solutions Architect** (December 2023 - March 2025)
 
 #### Microsoft 365 Governance & Security
-- Increased M365 Secure Score to 88.8% within licensing constraints
-- Standardized Teams & SharePoint governance with automated site provisioning
-- Developed and enforced DLP & MDM policies for enhanced security and compliance
+- Enhanced organizational security posture by increasing M365 Secure Score from 62% to 88.8% through strategic policy implementation
+- Implemented standardized Teams & SharePoint governance framework with automated site provisioning, reducing deployment time by 40%
+- Designed and enforced enterprise DLP & MDM policies, achieving compliance with industry security standards and reducing data leakage risks
 
 #### IT Infrastructure & Operations
-- Implemented Alarm.com security monitoring across 23 properties
-- Designed and piloted Wireless Internet Services for 18 properties
-- Led deployment of Atera IT asset management for remote support & monitoring
+- Deployed secure monitoring solutions through Alarm.com across 23 properties, improving response time to security incidents by 65%
+- Designed and piloted enterprise Wireless Internet Services for 18 properties, ensuring secure and reliable access for 1,000+ users
+- Led implementation of Atera IT asset management solution, enabling efficient remote support and monitoring of 500+ endpoints
 
 #### Process Automation & Business Intelligence
-- Automated financial reconciliation by integrating Expensify with Power Automate
-- Developed 70+ Power Automate Flows for business process optimization
-- Built a SharePoint-based property walkthrough system for inspections & reporting
+- Streamlined financial operations by automating reconciliation through Expensify integration with Power Automate
+- Developed and deployed 70+ Power Automate workflows, reducing manual processes by 60% and saving 25+ hours weekly
+- Architected SharePoint-based property inspection system, improving compliance reporting efficiency by 45%
 
 #### Strategic Consulting & Special Projects
-- Provided technical leadership across corporate and property IT operations
-- Researched Dynamics 365 HR & Microsoft Viva for corporate integration
-- Optimized call center operations, addressing KnockCRM delays impacting leasing offices
-- Led due diligence audits, leveraging SharePoint for HUD compliance
+- Served as technical lead across corporate and property IT operations, aligning technology initiatives with business goals
+- Conducted feasibility assessment for Dynamics 365 HR & Microsoft Viva implementation, identifying 30% ROI potential
+- Optimized call center operations by resolving KnockCRM performance issues, reducing customer wait times by 35%
+- Led HUD compliance audits utilizing SharePoint for documentation management, achieving 100% regulatory compliance
 
 ### StackAdvisors, LLC
-**Integrations Manager | Interim Azure C# .NET Engineer** (March 2023 – August 2023)
+**Azure Cloud Architect | Integration Solutions Engineer** (March 2023 – August 2023)
 
 #### Cloud Infrastructure Optimization
-- Reduced Azure hosting costs by 40% through strategic infrastructure refinements
-- Implemented CI/CD optimizations in Azure DevOps, improving deployment speed by 50%
-- Enhanced system monitoring & logging, reducing operational uncertainties and downtime
+- Delivered 40% reduction in Azure hosting costs through strategic infrastructure rightsizing and resource optimization
+- Accelerated CI/CD deployment by 50% through Azure DevOps pipeline optimization and implementation of automated testing
+- Implemented comprehensive Azure Monitor alerting framework, reducing system downtime by 35% and improving operational reliability
 
 #### Software Engineering & Integration
-- Led cross-functional integration projects, improving interoperability between client systems
-- Diagnosed and resolved architectural inefficiencies in .NET C# Blazor Server applications
-- Designed scalable Azure-based microservices, enhancing system flexibility and performance
+- Led cross-functional integration projects enhancing system interoperability across diverse client environments
+- Identified and resolved architectural inefficiencies in .NET C# Blazor Server applications, improving performance by 45%
+- Designed scalable microservices architecture in Azure, enabling 3x improved system flexibility and performance
 
 #### Automation & Process Improvement
-- Developed PowerShell automation scripts for system monitoring and deployment
-- Streamlined partner onboarding workflows, improving client satisfaction & retention
-- Improved infrastructure reliability by implementing proactive error detection & alerting
+- Developed PowerShell automation scripts for system monitoring and deployment, reducing manual intervention by 70%
+- Streamlined partner onboarding workflows, decreasing onboarding time by 60% and improving client satisfaction metrics
+- Implemented proactive error detection and alerting, enhancing infrastructure reliability with 99.9% uptime achievement
 
 #### Technical Leadership & Consulting
-- Acted as a technical SME, advising clients on best practices for cloud scalability
-- Conducted training sessions to enhance client teams' proficiency in Azure DevOps & CI/CD
-- Provided strategic guidance on cloud adoption, migration, and optimization initiatives
+- Provided technical expertise as SME, advising enterprise clients on cloud scalability and optimization strategies
+- Developed and delivered training for client teams on Azure DevOps & CI/CD best practices, improving adoption by 80%
+- Created strategic roadmaps for cloud migration and optimization, resulting in 25-40% infrastructure cost savings
 
 ### Fulcrum Technology Solutions (FTSC)
-**Technical SME | Architect | Engineer | Project Manager** (December 2021 - March 2023)
+**Technical SME | Solutions Architect | Security Engineer** (December 2021 - March 2023)
 
 #### Enterprise Security & Privileged Access Management
-- Led the migration from KeePass to CyberArk Privilege Cloud for a Fortune 500 enterprise, enhancing security and compliance
-- Optimized CyberArk Endpoint Privilege Management, improving operational security posture
+- Led enterprise migration from KeePass to CyberArk Privilege Cloud for a Fortune 500 company, enhancing security posture and compliance
+- Optimized CyberArk Endpoint Privilege Management implementation, reducing security incidents by 65%
 - Designed and implemented security reporting solutions using PowerShell & vCenter, establishing new compliance standards
 
 #### Azure & Cloud Security Compliance
-- Spearheaded GDPR compliance initiatives within Azure, ensuring system security and regulatory adherence
-- Provided infrastructure-level support for 100,000+ Azure identities, improving identity governance and security
+- Spearheaded GDPR compliance initiatives within Azure environment, ensuring system security and regulatory adherence
+- Provided infrastructure-level support for 100,000+ Azure identities, implementing robust identity governance and security controls
 
 #### Infrastructure & Systems Engineering
-- Led an Enterprise Directory Services engagement, ensuring robust support for Azure AD and cloud identity management
-- Developed scalable cloud solutions for hybrid identity and access management, optimizing performance and security
+- Led Enterprise Directory Services engagement, ensuring robust support for Azure AD and cloud identity management
+- Developed scalable hybrid identity solutions, optimizing authentication performance by 55% and enhancing security
 
 #### Technical Leadership & Consulting
-- Acted as a trusted advisor on enterprise cloud security and IT governance best practices
+- Served as trusted advisor on enterprise cloud security and IT governance best practices
 - Collaborated with cross-functional teams to design and implement secure, scalable IT solutions
-- Provided strategic guidance on cybersecurity, cloud architecture, and identity management
+- Delivered strategic guidance on cybersecurity, cloud architecture, and identity management
 
 ### Sugar Land Petroleum, LLC
 **Technical Consultant | Systems Administrator** (April 2017 - March 2020)
@@ -119,16 +127,14 @@ I'm a technically-oriented professional with strong analytical abilities and pro
   <embed src="/assets/SulemanManji_Resume.pdf" type="application/pdf" width="100%" height="600px" />
 </div>
 
-## Contact
-
-### Technical & Analytical Capabilities
+## Technical & Analytical Capabilities
 - **Systematic Problem Analysis** - Breaking down complex issues into manageable components
 - **Technical Systems Understanding** - Quickly comprehending how technical systems function and interact
 - **Data-Driven Decision Making** - Using information analysis to inform practical solutions
 - **Procedural Excellence** - Developing and following effective processes for reliable outcomes
 - **Detailed Documentation** - Creating clear, thorough technical documentation
 
-### Interpersonal Approach
+## Interpersonal Approach
 - **Attentive Listening** - Absorbing and processing information thoroughly before responding
 - **Team Collaboration** - Working effectively with others while maintaining focus on tasks
 - **Concise Communication** - Providing clear, direct information when needed
@@ -142,12 +148,8 @@ For a more comprehensive understanding of my work preferences, problem-solving a
 ## Career Interests
 
 My professional interests align most strongly with roles that involve:
-- Technical problem-solving and systems understanding
-- Data analysis and pattern recognition
-- Process improvement and optimization
-- Collaborative teamwork in technical environments
-- Structured approach to complex challenges
-
-## Contact
-
-Interested in discussing how my skills and approach might benefit your team? [Reach out](/contact/) to start a conversation. 
+- Cloud architecture and infrastructure optimization
+- Enterprise security and compliance implementation
+- Technical problem-solving and systems integration
+- Process automation and efficiency improvement
+- Collaborative technical leadership

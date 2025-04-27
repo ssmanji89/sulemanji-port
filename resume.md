@@ -123,10 +123,6 @@ I'm a technically-oriented cloud solutions architect with proven expertise in Mi
 - Ensured high availability & uptime for mission-critical business applications and IT systems
 - Implemented corporate security standards, including wireless access policies and compliance measures
 
-<div class="resume-preview">
-  <embed src="/assets/SulemanManji_Resume.pdf" type="application/pdf" width="100%" height="600px" />
-</div>
-
 ## Technical & Analytical Capabilities
 - **Systematic Problem Analysis** - Breaking down complex issues into manageable components
 - **Technical Systems Understanding** - Quickly comprehending how technical systems function and interact
@@ -153,3 +149,9 @@ My professional interests align most strongly with roles that involve:
 - Technical problem-solving and systems integration
 - Process automation and efficiency improvement
 - Collaborative technical leadership
+
+## Full Resume Preview
+
+<div class="resume-preview">
+  <embed src="/assets/SulemanManji_Resume.pdf" type="application/pdf" width="100%" height="600px" />
+</div>

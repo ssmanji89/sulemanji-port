@@ -16,29 +16,24 @@
   --hover-shadow: 0 10px 15px rgba(0,0,0,0.15);
 }
 
-// Customize the slate theme
-.inner {
-  max-width: 960px;
+// Customize the Leap Day theme
+header {
+  background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
 }
 
-#header_wrap {
-  background: linear-gradient(to bottom, #2e5c8a, #4a7fb5);
+#banner {
+  background: var(--accent-color);
 }
 
-#footer_wrap {
-  background: #e8f0f9;
-  color: #333;
-}
-
-// Navigation styles
-.site-nav {
-  margin-top: 20px;
-  text-align: center;
+// Custom navigation styles
+.custom-nav {
+  display: inline-block;
+  margin-right: 20px;
   
   .nav-link {
     color: white;
     text-decoration: none;
-    margin: 0 15px;
+    margin: 0 10px;
     padding: 8px 12px;
     border-radius: 4px;
     font-weight: 500;
@@ -47,13 +42,13 @@
     
     &:hover {
       background-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-2px);
+      text-decoration: none;
     }
   }
 }
 
 // Footer social links
-#footer_wrap .social-links {
+footer .social-links {
   margin-top: 15px;
   display: flex;
   flex-wrap: wrap;
@@ -77,59 +72,37 @@
   }
 }
 
-// Custom styles
-
-// Base styles
-body {
-  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.7;
-  color: var(--dark-text);
-  background-color: #fcfcfc;
+// Make sure fork button doesn't overlap with navigation
+#banner .button.fork {
+  position: absolute;
+  right: 10px;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-top: 1.5em;
-  margin-bottom: 0.5em;
-}
-
-h1 {
-  font-size: 2.5rem;
-  border-bottom: 2px solid var(--light-accent);
-  padding-bottom: 0.3em;
-}
-
-a {
-  color: var(--secondary-color);
-  transition: color 0.3s ease;
-  
-  &:hover {
-    color: var(--accent-color);
-    text-decoration: none;
+// Customize the left navigation
+nav {
+  li {
+    &.tag-h1 a {
+      color: var(--primary-color);
+    }
+    
+    &.tag-h2 a {
+      color: var(--secondary-color);
+    }
+    
+    &.tag-h3 a {
+      color: var(--accent-color);
+      padding-left: 10px;
+      font-size: 0.9em;
+    }
+    
+    &.active a {
+      color: var(--accent-color);
+      font-weight: bold;
+    }
   }
 }
 
-.site-header {
-  border-top: 5px solid var(--primary-color);
-  border-bottom: 1px solid var(--border-color);
-  background-color: white;
-}
-
-.site-title, .site-title:visited {
-  color: var(--primary-color);
-  font-weight: 700;
-}
-
-.site-nav .page-link {
-  color: var(--secondary-color);
-  
-  &:hover {
-    color: var(--accent-color);
-  }
-}
-
-// Profile image styles
+// Profile image styles - preserved from original
 .profile-image {
   width: 180px;
   height: auto;
@@ -153,7 +126,7 @@ a {
   width: 220px;
 }
 
-// Resume page styles
+// Resume page styles - preserved from original
 .resume-download {
   margin: 30px 0;
   text-align: center;
@@ -178,15 +151,7 @@ a {
   }
 }
 
-.resume-preview {
-  margin: 40px 0;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: var(--card-shadow);
-}
-
-// Project card styles
+// Project card styles - preserved from original
 .projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
@@ -484,24 +449,20 @@ a {
 }
 
 // Responsive adjustments
-@media screen and (max-width: 800px) {
-  .profile-image {
-    float: none;
+@media print, screen and (max-width: 480px) {
+  .custom-nav {
     display: block;
-    margin: 0 auto 30px;
-    width: 160px;
+    margin: 5px 0;
+    
+    .nav-link {
+      margin: 0 5px;
+      padding: 6px 8px;
+      font-size: 0.9em;
+    }
   }
   
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  h1 {
-    font-size: 2rem;
-  }
-  
-  .footer-col {
-    flex: 100%;
+  #banner .button.fork {
+    margin-top: 10px;
   }
 }
 

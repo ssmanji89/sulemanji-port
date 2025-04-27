@@ -14,35 +14,20 @@
     font-family: 'FontAwesome' !important;
   }
   
-  /* Basic styling for code blocks */
-  pre, code {
-    font-family: Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal, monospace;
-    font-size: 0.9em;
-    background-color: #f8f8f8;
-    border-radius: 4px;
-    padding: 0.2em 0.4em;
+  /* Custom styles for Leap Day theme */
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   }
   
-  pre {
-    padding: 16px;
-    overflow: auto;
-  }
-  
-  pre code {
-    background-color: transparent;
-    padding: 0;
-  }
-  
-  /* Fix for slate layout on mobile */
+  /* Ensure adequate spacing between navigation items in mobile view */
   @media screen and (max-width: 480px) {
-    .inner {
-      min-width: 0;
+    .custom-nav {
+      width: 100%;
+      text-align: center;
     }
     
-    .site-nav .nav-link {
-      margin: 0 8px;
-      padding: 6px 8px;
-      font-size: 0.9em;
+    #banner {
+      padding: 10px;
     }
   }
 </style>

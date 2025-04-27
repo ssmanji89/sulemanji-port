@@ -1,0 +1,43 @@
+Create a compelling, SEO-friendly Amazon product review blog post with affiliate links for the following product:
+
+Product Title: {{ product_title }}
+Product Description: {{ product_description }}
+Price: {{ product_price }}
+Rating: {{ product_rating }}
+Review Count: {{ product_reviews }}
+Category: {{ product_category }}
+Amazon Affiliate Link: {{ affiliate_link }}
+Related Search Term: {{ search_term }}
+
+Requirements:
+1. Create a catchy, SEO-optimized title that includes the keyword "{{ search_term }}"
+2. Include a front matter section at the beginning of your post (between --- markers)
+3. The front matter should include:
+   - layout: post
+   - title: Your post title
+   - date: Current date in YYYY-MM-DD format
+   - categories: [{{ product_category | lower }}, product-review]
+   - tags: [amazon, {{ search_term | lower }}, product-review]
+   - description: A compelling meta description
+   - keywords: Relevant comma-separated keywords
+
+4. Write 800-1000 words with the following sections:
+   - Introduction (engaging hook about the product)
+   - Product Overview
+   - Key Features and Benefits
+   - How to Use It
+   - Pros and Cons
+   - Comparison with alternatives
+   - Conclusion with clear recommendation
+
+5. Naturally incorporate these elements:
+   - The phrase "{{ search_term }}" at least 3-5 times
+   - At least 2 calls-to-action to check the product on Amazon
+   - Use heading structure with H2 and H3 headings for good SEO
+   - Include a sentence like "As an Amazon Associate, I earn from qualifying purchases."
+
+6. Format your post in Markdown using best practices for readability
+7. Make sure your content has a friendly, helpful tone like a trusted friend giving advice
+8. Don't fabricate features or facts - stick to available information
+
+Your output should be the complete blog post, including the Jekyll front matter and markdown content. 

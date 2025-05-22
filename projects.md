@@ -6,86 +6,88 @@ permalink: /projects/
 
 # Portfolio Projects
 
-Here are key projects that showcase my technical expertise and accomplishments across different roles.
+Here are key projects that showcase my expertise in AI, Automation, and Optimization across different roles.
 
 <div class="projects-grid">
   <div class="project-card">
-    <h2>Microsoft 365 Security Enhancement</h2>
-    <p class="project-category">Category: Cloud Security & Governance</p>
-    <p>Increased Microsoft 365 Secure Score to 88.8% within licensing constraints through implementation of comprehensive security policies, DLP configurations, and MDM controls.</p>
+    <h2>AI-Enhanced Security Monitoring</h2>
+    <p class="project-category">Category: Artificial Intelligence & Security</p>
+    <p>Implemented AI-based threat detection and anomaly identification that reduced security incident response time by 65% while increasing Microsoft 365 Secure Score to 88.8% through intelligent policy optimization.</p>
     <div class="project-tech">
+      <span>AI/ML</span>
       <span>Microsoft 365</span>
-      <span>Security Compliance</span>
-      <span>DLP</span>
-      <span>MDM</span>
+      <span>Security Analytics</span>
+      <span>Automated Response</span>
     </div>
   </div>
 
   <div class="project-card">
-    <h2>Azure Infrastructure Optimization</h2>
-    <p class="project-category">Category: Cloud Infrastructure</p>
-    <p>Reduced Azure hosting costs by 40% through strategic infrastructure refinements while implementing CI/CD optimizations in Azure DevOps that improved deployment speed by 50%.</p>
+    <h2>Intelligent Cloud Infrastructure Optimization</h2>
+    <p class="project-category">Category: AI & Cloud Optimization</p>
+    <p>Developed AI-driven resource allocation system that automatically scaled cloud resources based on usage patterns, reducing Azure hosting costs by 40% while maintaining optimal performance through predictive load balancing.</p>
     <div class="project-tech">
+      <span>AI Forecasting</span>
       <span>Azure</span>
-      <span>CI/CD</span>
-      <span>DevOps</span>
-      <span>.NET</span>
+      <span>Predictive Scaling</span>
+      <span>Cost Optimization</span>
     </div>
   </div>
 
   <div class="project-card">
-    <h2>Enterprise Privileged Access Management</h2>
-    <p class="project-category">Category: Enterprise Security</p>
-    <p>Led migration from KeePass to CyberArk Privilege Cloud for a Fortune 500 enterprise, enhancing security posture and regulatory compliance across the organization.</p>
+    <h2>Automated Privileged Access Management</h2>
+    <p class="project-category">Category: Intelligent Automation</p>
+    <p>Created automated PAM solution with intelligent approval workflows and anomaly detection for a Fortune 500 enterprise, enhancing security posture while reducing administrative overhead by 70% through AI-based risk assessment.</p>
     <div class="project-tech">
       <span>CyberArk</span>
-      <span>PAM</span>
-      <span>Security Compliance</span>
-      <span>PowerShell</span>
+      <span>AI Risk Scoring</span>
+      <span>Workflow Automation</span>
+      <span>Anomaly Detection</span>
     </div>
   </div>
   
   <div class="project-card">
-    <h2>Business Process Automation Platform</h2>
-    <p class="project-category">Category: Process Automation</p>
-    <p>Developed 70+ Power Automate flows for business process optimization and automated financial reconciliation through strategic integration of business systems with Microsoft Power Platform.</p>
+    <h2>AI-Powered Business Process Automation Platform</h2>
+    <p class="project-category">Category: Intelligent Process Automation</p>
+    <p>Architected comprehensive automation platform with machine learning capabilities that intelligently processed documents, automated financial reconciliation, and optimized approval workflows, saving 120+ hours weekly through AI-enhanced routing and processing.</p>
     <div class="project-tech">
-      <span>Power Automate</span>
-      <span>SharePoint</span>
-      <span>System Integration</span>
+      <span>ML Document Processing</span>
+      <span>Intelligent Workflows</span>
+      <span>Predictive Analytics</span>
       <span>Process Optimization</span>
     </div>
   </div>
 </div>
 
-## Detailed Project: Azure & Cloud Infrastructure Implementation
+## Featured Project: AI-Driven Cloud Infrastructure Optimization
 
 <div class="highlight-section">
-  <p>My approach to cloud infrastructure projects follows a methodical framework that leverages my technical expertise:</p>
+  <p>When implementing AI and automation solutions, I follow a structured approach that combines technical expertise with practical business focus:</p>
   
   <ol>
-    <li><strong>Assessment Phase</strong> - Thorough analysis of current infrastructure, security posture, and performance metrics</li>
-    <li><strong>Architecture Planning</strong> - Systematic design of scalable, secure, and cost-effective cloud solutions</li>
-    <li><strong>Security Implementation</strong> - Integration of industry best practices for cloud security and compliance</li>
-    <li><strong>CI/CD Pipeline Development</strong> - Creation of automated deployment workflows for reliable application delivery</li>
-    <li><strong>Monitoring & Optimization</strong> - Implementation of comprehensive monitoring and continuous improvement processes</li>
-    <li><strong>Documentation & Knowledge Transfer</strong> - Creation of detailed technical documentation and team enablement</li>
+    <li><strong>Comprehensive Data Analysis</strong> - Gathering and analyzing system metrics to establish a clear baseline and identify optimization targets</li>
+    <li><strong>Opportunity Identification</strong> - Using data patterns to discover areas where AI and automation can deliver the greatest business impact</li>
+    <li><strong>Solution Architecture</strong> - Designing practical, implementable solutions based on proven technologies and best practices</li>
+    <li><strong>Systematic Implementation</strong> - Deploying changes methodically to minimize disruption and ensure reliable performance</li>
+    <li><strong>Continuous Improvement</strong> - Monitoring outcomes and refining solutions to deliver increasing value over time</li>
+    <li><strong>Results Validation</strong> - Measuring and documenting business impact to demonstrate ROI and inform future optimization</li>
   </ol>
+  
+  <p>This approach enables me to deliver reliable solutions that effectively balance innovation with practical business requirements. By focusing on tangible outcomes rather than theoretical possibilities, I help organizations achieve meaningful improvements in efficiency, cost management, and operational performance.</p>
 </div>
 
 ## Technical Expertise Areas
 
-My project experience extends across various technical domains, including:
+My project experience spans various AI, automation, and optimization domains, including:
 
-- Microsoft 365 Governance & Security
-- Azure Cloud Infrastructure & DevOps
-- Enterprise Security & Privileged Access Management
-- Process Automation & Power Platform Solutions
-- IT Infrastructure & Network Management
-- Software Engineering & System Integration
-- Cloud Security Compliance (GDPR, etc.)
-- Technical Leadership & Strategic Consulting
+- AI-Enhanced Security & Compliance
+- Intelligent Cloud Resource Optimization
+- Machine Learning Operations (MLOps)
+- Natural Language Processing Applications
+- Predictive Analytics & Business Intelligence
+- Intelligent Process Automation
+- AI-Powered DevOps & CI/CD
+- Automated Financial Operations
 
-Each project leverages my core strengths in technical understanding, systematic problem-solving, and practical implementation while ensuring alignment with business objectives and compliance requirements.
+Each project leverages my expertise in artificial intelligence, automation technologies, and optimization methodologies while ensuring alignment with business objectives and delivering quantifiable performance improvements.
 
 Interested in discussing a specific project in more detail? [Contact me](/contact/) to schedule a conversation. 

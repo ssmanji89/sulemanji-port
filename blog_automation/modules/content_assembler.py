@@ -123,9 +123,21 @@ word_count: {blog_post.word_count}
     def _create_product_mention(self, product: Product, position: int) -> str:
         """Create a natural product mention for integration into content."""
         mention_templates = [
-            f"For those looking to dive deeper into this topic, [{product.title}]({product.affiliate_link}) offers comprehensive insights and practical guidance.",
-            f"To implement these concepts effectively, consider exploring [{product.title}]({product.affiliate_link}), which provides detailed methodologies and best practices.",
-            f"A valuable resource for understanding these principles is [{product.title}]({product.affiliate_link}), offering both theoretical foundations and practical applications.",
+            f"""
+> **Recommended Resource:** For those looking to dive deeper into this topic, **[{product.title}]({product.affiliate_link})** offers comprehensive insights and practical guidance. {f"⭐ {product.rating}/5" if product.rating else ""} {f"- {product.price}" if product.price else ""}
+""",
+            f"""
+### 💡 Professional Resource
+
+To implement these concepts effectively, consider exploring **[{product.title}]({product.affiliate_link})**, which provides detailed methodologies and best practices. {f"Rating: {product.rating}/5" if product.rating else ""} {f"| Price: {product.price}" if product.price else ""}
+""",
+            f"""
+---
+
+**📚 Expert Recommendation:** A valuable resource for understanding these principles is **[{product.title}]({product.affiliate_link})**, offering both theoretical foundations and practical applications. {f"({product.rating}⭐)" if product.rating else ""} {f"{product.price}" if product.price else ""}
+
+---
+""",
         ]
         
         template_index = (position - 1) % len(mention_templates)
@@ -133,14 +145,25 @@ word_count: {blog_post.word_count}
     
     def _create_recommendations_section(self, products: List[Product]) -> str:
         """Create a recommendations section for remaining products."""
-        section = "## Recommended Resources\n\n"
-        section += "To further explore the topics discussed in this article, consider these valuable resources:\n\n"
+        section = """
+---
+
+## 📚 Recommended Resources
+
+To further explore the topics discussed in this article, consider these carefully selected resources:
+
+"""
         
         for i, product in enumerate(products, 1):
-            rating_text = f" (Rating: {product.rating}/5)" if product.rating else ""
-            price_text = f" - {product.price}" if product.price else ""
+            rating_display = f" ⭐ {product.rating}/5" if product.rating else ""
+            price_display = f" • {product.price}" if product.price else ""
+            description = f" - {product.description}" if hasattr(product, 'description') and product.description else ""
             
-            section += f"{i}. [{product.title}]({product.affiliate_link}){rating_text}{price_text}\n"
+            section += f"""
+### {i}. [{product.title}]({product.affiliate_link})
+{description}{rating_display}{price_display}
+
+"""
         
         return section    
     def _add_affiliate_disclosure(self, content: str) -> str:

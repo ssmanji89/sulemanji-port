@@ -55,6 +55,7 @@ class Product:
     rating: Optional[float] = None
     review_count: Optional[int] = None
     image_url: Optional[str] = None
+    description: Optional[str] = None
     affiliate_link: str = ""
     
     def __post_init__(self):

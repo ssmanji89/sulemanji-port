@@ -93,3 +93,131 @@
 2025-06-04 19:52:49,366 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-maximizing-cybersecurity-with-bug-bounty-programs.md
 2025-06-04 19:52:50,419 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-maximizing-cybersecurity-with-bug-bounty-programs.md
 2025-06-04 19:52:50,420 - blog_automation.orchestrator - INFO - Workflow completed successfully in 42.50 seconds
+2025-06-04 19:58:29,433 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:58:29,854 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:58:44,388 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:58:44,713 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:58:45,003 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 19:58:45,003 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085125
+2025-06-04 19:58:45,004 - blog_automation.orchestrator - INFO - Using custom topic: Genisys, Terminator
+2025-06-04 19:58:45,004 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Genisys, Terminator
+2025-06-04 19:59:18,632 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:59:18,647 - blog_automation.modules.content_generator - INFO - Generated content: 605 words
+2025-06-04 19:59:23,659 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:59:23,670 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 19:59:23,671 - blog_automation.modules.content_generator - INFO - Content generation completed in 38.67 seconds
+2025-06-04 19:59:23,671 - blog_automation.orchestrator - INFO - Generated blog post: Unleashing AI & Automation: Lessons from Genisys, Terminator (605 words)
+2025-06-04 19:59:23,672 - blog_automation.modules.product_research - INFO - Searching for products related to: Genisys, Terminator
+2025-06-04 19:59:23,672 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-04 19:59:23,672 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-04 19:59:23,672 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Unleashing AI & Automation: Lessons from Genisys, Terminator
+2025-06-04 19:59:23,673 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 19:59:23,673 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-unleashing-ai-automation-lessons-from-genisys-term.md
+2025-06-04 19:59:24,771 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-unleashing-ai-automation-lessons-from-genisys-term.md
+2025-06-04 19:59:24,771 - blog_automation.orchestrator - INFO - Workflow completed successfully in 39.77 seconds
+2025-06-04 20:04:43,675 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:04:44,070 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:04:44,400 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:04:44,400 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085484
+2025-06-04 20:04:44,400 - blog_automation.orchestrator - INFO - Using custom topic: Advanced API Security Testing
+2025-06-04 20:04:44,400 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Advanced API Security Testing
+2025-06-04 20:05:22,318 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:05:22,330 - blog_automation.modules.content_generator - INFO - Generated content: 651 words
+2025-06-04 20:05:26,968 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:05:26,968 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 20:05:26,968 - blog_automation.modules.content_generator - INFO - Content generation completed in 42.57 seconds
+2025-06-04 20:05:26,968 - blog_automation.orchestrator - INFO - Generated blog post: Mastering Advanced API Security Testing Techniques (651 words)
+2025-06-04 20:05:26,969 - blog_automation.modules.product_research - INFO - Searching for products related to: Advanced API Security Testing
+2025-06-04 20:05:26,969 - blog_automation.modules.product_research - ERROR - Error in product research: Product.__init__() got an unexpected keyword argument 'description'
+2025-06-04 20:05:26,969 - blog_automation.orchestrator - WARNING - Product research failed, continuing without products: Product.__init__() got an unexpected keyword argument 'description'
+2025-06-04 20:05:26,969 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Mastering Advanced API Security Testing Techniques
+2025-06-04 20:05:26,969 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 20:05:26,969 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-mastering-advanced-api-security-testing-techniques.md
+2025-06-04 20:05:28,018 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-mastering-advanced-api-security-testing-techniques.md
+2025-06-04 20:05:28,019 - blog_automation.orchestrator - INFO - Workflow completed successfully in 43.62 seconds
+2025-06-04 20:07:09,821 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:07:10,030 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:07:10,340 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:07:10,340 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085630
+2025-06-04 20:07:10,340 - blog_automation.orchestrator - INFO - Using custom topic: Cloud Infrastructure Automation
+2025-06-04 20:07:10,340 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Cloud Infrastructure Automation
+2025-06-04 20:07:55,241 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:07:55,256 - blog_automation.modules.content_generator - INFO - Generated content: 886 words
+2025-06-04 20:07:59,002 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:07:59,006 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 20:07:59,007 - blog_automation.modules.content_generator - INFO - Content generation completed in 48.67 seconds
+2025-06-04 20:07:59,007 - blog_automation.orchestrator - INFO - Generated blog post: Mastering Cloud Infrastructure Automation: A Guide (886 words)
+2025-06-04 20:07:59,007 - blog_automation.modules.product_research - INFO - Searching for products related to: Cloud Infrastructure Automation
+2025-06-04 20:08:00,504 - blog_automation.modules.product_research - INFO - Found 10 products for query: Cloud Infrastructure Automation books
+2025-06-04 20:08:03,734 - blog_automation.modules.product_research - INFO - Found 10 products for query: books Cloud Infrastructure Automation
+2025-06-04 20:08:06,892 - blog_automation.modules.product_research - INFO - Found 10 products for query: Cloud Infrastructure Automation software
+2025-06-04 20:08:08,896 - blog_automation.modules.product_research - INFO - Found 5 relevant products
+2025-06-04 20:08:08,896 - blog_automation.orchestrator - INFO - Found 5 affiliate products
+2025-06-04 20:08:08,914 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Mastering Cloud Infrastructure Automation: A Guide
+2025-06-04 20:08:08,915 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 20:08:08,916 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-mastering-cloud-infrastructure-automation-a-guide.md
+2025-06-04 20:08:10,048 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-mastering-cloud-infrastructure-automation-a-guide.md
+2025-06-04 20:08:10,048 - blog_automation.orchestrator - INFO - Workflow completed successfully in 59.71 seconds
+2025-06-04 20:08:41,887 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:08:42,111 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:10:11,835 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:10:12,213 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:10:12,516 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:10:12,516 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085812
+2025-06-04 20:10:12,516 - blog_automation.orchestrator - INFO - Using custom topic: Microservices Security Best Practices
+2025-06-04 20:10:12,516 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Microservices Security Best Practices
+2025-06-04 20:10:57,180 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:10:57,189 - blog_automation.modules.content_generator - WARNING - Generated content too short: 781 words (attempt 1). Retrying...
+2025-06-04 20:11:12,802 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:11:13,030 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:11:13,336 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:11:13,336 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085873
+2025-06-04 20:11:13,337 - blog_automation.orchestrator - INFO - Using custom topic: Microservices Security Best Practices
+2025-06-04 20:11:13,337 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Microservices Security Best Practices
+2025-06-04 20:12:01,392 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:12:01,411 - blog_automation.modules.content_generator - INFO - Generated content: 929 words
+2025-06-04 20:12:05,280 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:12:05,284 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 20:12:05,285 - blog_automation.modules.content_generator - INFO - Content generation completed in 51.95 seconds
+2025-06-04 20:12:05,285 - blog_automation.orchestrator - INFO - Generated blog post: Securing Microservices: Top Security Best Practices (929 words)
+2025-06-04 20:12:05,286 - blog_automation.modules.product_research - INFO - Searching for products related to: Microservices Security Best Practices
+2025-06-04 20:12:05,286 - blog_automation.modules.product_research - INFO - Found 3 relevant products
+2025-06-04 20:12:05,286 - blog_automation.orchestrator - INFO - Found 3 affiliate products
+2025-06-04 20:12:05,287 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Securing Microservices: Top Security Best Practices
+2025-06-04 20:12:05,288 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 20:12:05,288 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-securing-microservices-top-security-best-practices.md
+2025-06-04 20:12:07,256 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-securing-microservices-top-security-best-practices.md
+2025-06-04 20:12:07,257 - blog_automation.orchestrator - INFO - Workflow completed successfully in 53.92 seconds
+2025-06-04 20:42:10,791 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:42:10,980 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:42:11,308 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:42:11,308 - blog_automation.orchestrator - INFO - Starting daily automation process
+2025-06-04 20:42:11,308 - blog_automation.orchestrator - INFO - Generating post 1 of 1
+2025-06-04 20:42:11,308 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749087731
+2025-06-04 20:42:11,308 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-04 20:42:11,309 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-04 20:42:12,403 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-04 20:42:13,295 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-04 20:42:13,772 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-04 20:42:14,695 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-04 20:42:15,572 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-04 20:42:16,484 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-04 20:42:17,416 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-04 20:42:18,255 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-04 20:42:18,770 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-04 20:42:18,772 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-04 20:42:18,773 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-04 20:42:20,084 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-04 20:42:21,525 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+

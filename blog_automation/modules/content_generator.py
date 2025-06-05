@@ -90,34 +90,49 @@ class ContentGenerator:
             )    
     async def _generate_content(self, request: ContentGenerationRequest) -> Optional[str]:
         """Generate the main blog post content."""
-        try:
-            prompt = self._create_content_prompt(request)
-            
-            response = await self.client.chat.completions.create(
-                model=Config.OPENAI_MODEL,
-                messages=[
-                    {"role": "system", "content": self._get_system_prompt()},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=Config.OPENAI_MAX_TOKENS,
-                temperature=Config.OPENAI_TEMPERATURE
-            )
-            
-            self.api_calls_count += 1
-            content = response.choices[0].message.content
-            
-            # Validate content length
-            word_count = len(content.split())
-            if word_count < Config.MIN_WORD_COUNT:
-                logger.warning(f"Generated content too short: {word_count} words")
-                return None
-            
-            logger.info(f"Generated content: {word_count} words")
-            return content
-            
-        except Exception as e:
-            logger.error(f"Error generating content: {e}")
-            return None
+        max_retries = 2
+        for attempt in range(max_retries + 1):
+            try:
+                prompt = self._create_content_prompt(request)
+                
+                response = await self.client.chat.completions.create(
+                    model=Config.OPENAI_MODEL,
+                    messages=[
+                        {"role": "system", "content": self._get_system_prompt()},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=Config.OPENAI_MAX_TOKENS,
+                    temperature=Config.OPENAI_TEMPERATURE
+                )
+                
+                self.api_calls_count += 1
+                content = response.choices[0].message.content
+                
+                # Validate content length
+                word_count = len(content.split())
+                if word_count < Config.MIN_WORD_COUNT:
+                    if attempt < max_retries:
+                        logger.warning(f"Generated content too short: {word_count} words (attempt {attempt + 1}). Retrying...")
+                        # Add more specific instruction for retry
+                        prompt += f"\n\nIMPORTANT: The previous attempt was only {word_count} words. You MUST generate at least {Config.MIN_WORD_COUNT} words. Expand each section with more detail, examples, and explanations."
+                        continue
+                    else:
+                        logger.error(f"Generated content still too short after {max_retries} retries: {word_count} words")
+                        return None
+                
+                logger.info(f"Generated content: {word_count} words")
+                return content
+                
+            except Exception as e:
+                if attempt < max_retries:
+                    logger.warning(f"Error generating content (attempt {attempt + 1}): {e}. Retrying...")
+                    await asyncio.sleep(2)  # Brief delay before retry
+                    continue
+                else:
+                    logger.error(f"Error generating content after {max_retries} retries: {e}")
+                    return None
+        
+        return None
     
     async def _generate_metadata(self, topic: TrendingTopic, content: str) -> Optional[Dict[str, Any]]:
         """Generate metadata (title, excerpt, tags) for the blog post."""
@@ -164,13 +179,19 @@ Always maintain a professional tone while being engaging and informative."""
         """Create a structured prompt for content generation."""
         return f"""Write a comprehensive technical blog post about: {request.topic.keyword}
 
-REQUIREMENTS:
-- Target length: {request.target_word_count} words
-- Audience: {request.target_audience}
+CRITICAL REQUIREMENTS:
+- MINIMUM {request.target_word_count} words (this is mandatory - do not generate shorter content)
+- Use proper markdown headers (##, ###, ####) - NEVER use numbered lists (1., 2., 3.)
+- Include code blocks, bullet points, and visual formatting elements
+- Use engaging subheadings that break up the content
+- Include practical examples with code snippets where relevant
+- Each major section should be 200-300 words minimum
+
+AUDIENCE & STYLE:
+- Audience: {request.target_audience}  
 - Style: {request.writing_style}
-- Include practical examples and implementation details
-- Structure with clear headings and subheadings
-- Focus on actionable insights and best practices
+- Technical but accessible
+- Authoritative with actionable insights
 
 TOPIC CONTEXT:
 - Main keyword: {request.topic.keyword}
@@ -178,16 +199,45 @@ TOPIC CONTEXT:
 - Trend score: {request.topic.trend_score}
 - Source: {request.topic.source}
 
-CONTENT STRUCTURE:
-1. Introduction (hook + overview)
-2. Background/Context
-3. Main content sections (3-4 sections)
-4. Practical implementation examples
-5. Best practices and recommendations
-6. Future outlook/trends
-7. Conclusion with key takeaways
+REQUIRED STRUCTURE (each section should be substantial):
+## Introduction
+Hook the reader and provide a compelling overview of what they'll learn. Include the business value and why this topic matters today. (200+ words)
 
-Write the complete blog post content now:"""
+## Understanding the Fundamentals  
+Background context and core concepts explained clearly. Define key terms and provide historical context. (250+ words)
+
+## Technical Implementation
+Detailed technical sections with practical examples and code snippets. Include multiple sub-sections with different approaches or techniques. (300+ words)
+
+## Best Practices and Strategies
+Proven approaches, methodologies, and expert recommendations. Include real-world scenarios and lessons learned. (250+ words)
+
+## Advanced Techniques and Tools
+Deep dive into advanced concepts, tools, and methodologies. Include comparisons and technical details. (200+ words)
+
+## Real-World Applications
+Concrete examples of implementation in production environments. Include case studies and success stories. (200+ words)
+
+## Common Pitfalls and Solutions
+Address challenges, troubleshooting, and how to avoid common mistakes. (150+ words)
+
+## Future Trends and Innovations
+Emerging developments and what's coming next in this space. Industry predictions and expert insights. (150+ words)
+
+## Key Takeaways
+Summary of the most important points and actionable insights. Create a bulleted list of main points. (100+ words)
+
+FORMATTING GUIDELINES:
+- Use bullet points with `-` for lists
+- Include code blocks with ```language tags
+- Use **bold** and *italic* for emphasis
+- Add > blockquotes for important insights
+- Include tables where data comparison is helpful
+- Use horizontal rules (---) to separate major sections
+
+IMPORTANT: Ensure your response is AT LEAST {request.target_word_count} words. Do not provide a shorter article - expand each section with detailed explanations, examples, and practical guidance.
+
+Write the complete blog post content now using proper markdown formatting:"""
     
     def _create_metadata_prompt(self, topic: TrendingTopic, content: str) -> str:
         """Create prompt for generating metadata."""

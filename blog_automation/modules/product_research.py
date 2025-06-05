@@ -80,12 +80,19 @@ class ProductResearcher:
             unique_products = self._deduplicate_products(all_products)
             selected_products = self._select_best_products(unique_products, max_products)
             
+            # If we don't have enough products, add fallback products
+            if len(selected_products) < max_products:
+                fallback_products = self._get_fallback_products(topic, max_products - len(selected_products))
+                selected_products.extend(fallback_products)
+            
             logger.info(f"Found {len(selected_products)} relevant products")
-            return selected_products
+            return selected_products[:max_products]
             
         except Exception as e:
             logger.error(f"Error in product research: {e}")
-            return []    
+            # Return fallback products if everything fails
+            return self._get_fallback_products(topic, max_products)
+    
     def _generate_search_queries(self, topic: TrendingTopic) -> List[str]:
         """Generate Amazon search queries based on the topic."""
         queries = []
@@ -237,3 +244,147 @@ class ProductResearcher:
         # Sort by score and return top products
         scored_products.sort(key=lambda x: x[0], reverse=True)
         return [product for _, product in scored_products[:max_products]]
+
+    def _get_fallback_products(self, topic: TrendingTopic, max_products: int) -> List[Product]:
+        """Get fallback products based on the topic."""
+        keyword_lower = topic.keyword.lower()
+        
+        # Define fallback products by category
+        fallback_products = {
+            'ai_ml': [
+                Product(
+                    title="Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow",
+                    asin="1492032646",
+                    price="$59.99",
+                    rating=4.6,
+                    description="Comprehensive guide to machine learning with practical examples"
+                ),
+                Product(
+                    title="Python Machine Learning: Machine Learning and Deep Learning with Python",
+                    asin="1789955750", 
+                    price="$49.99",
+                    rating=4.4,
+                    description="Complete guide to ML implementation in Python"
+                ),
+                Product(
+                    title="AI and Machine Learning for Coders",
+                    asin="1492078190",
+                    price="$44.99", 
+                    rating=4.3,
+                    description="Practical AI development for programmers"
+                ),
+            ],
+            'cybersecurity': [
+                Product(
+                    title="The Web Application Hacker's Handbook",
+                    asin="1118026470",
+                    price="$54.99",
+                    rating=4.5,
+                    description="Comprehensive guide to web application security testing"
+                ),
+                Product(
+                    title="Metasploit: The Penetration Tester's Guide",
+                    asin="159327288X",
+                    price="$49.99",
+                    rating=4.4,
+                    description="Professional penetration testing with Metasploit"
+                ),
+                Product(
+                    title="Bug Bounty Bootcamp",
+                    asin="1718501544",
+                    price="$39.99",
+                    rating=4.6,
+                    description="Learn to find and exploit web vulnerabilities"
+                ),
+            ],
+            'programming': [
+                Product(
+                    title="Clean Code: A Handbook of Agile Software Craftsmanship",
+                    asin="0132350882",
+                    price="$42.99",
+                    rating=4.7,
+                    description="Essential principles for writing maintainable code"
+                ),
+                Product(
+                    title="Design Patterns: Elements of Reusable Object-Oriented Software",
+                    asin="0201633612",
+                    price="$54.99",
+                    rating=4.5,
+                    description="Classic guide to software design patterns"
+                ),
+                Product(
+                    title="System Design Interview – An insider's guide",
+                    asin="1736049119",
+                    price="$35.99",
+                    rating=4.6,
+                    description="Master system design for technical interviews"
+                ),
+            ],
+            'cloud_devops': [
+                Product(
+                    title="AWS Certified Solutions Architect Study Guide",
+                    asin="1119713080",
+                    price="$50.99",
+                    rating=4.5,
+                    description="Complete preparation for AWS certification"
+                ),
+                Product(
+                    title="Kubernetes in Action",
+                    asin="1617293725",
+                    price="$59.99",
+                    rating=4.6,
+                    description="Comprehensive guide to Kubernetes orchestration"
+                ),
+                Product(
+                    title="The DevOps Handbook",
+                    asin="1942788002",
+                    price="$44.99",
+                    rating=4.4,
+                    description="Transform your organization with DevOps practices"
+                ),
+            ],
+            'automation': [
+                Product(
+                    title="Automate the Boring Stuff with Python",
+                    asin="1593279922",
+                    price="$34.99",
+                    rating=4.6,
+                    description="Practical programming for total beginners"
+                ),
+                Product(
+                    title="Learning Python, 5th Edition",
+                    asin="1449355730",
+                    price="$69.99",
+                    rating=4.4,
+                    description="Comprehensive introduction to Python programming"
+                ),
+                Product(
+                    title="Python Tricks: The Book",
+                    asin="1775093301",
+                    price="$29.99",
+                    rating=4.5,
+                    description="Effective Python features and techniques"
+                ),
+            ]
+        }
+        
+        # Determine category based on topic
+        selected_category = 'programming'  # default
+        
+        if any(term in keyword_lower for term in ['ai', 'artificial intelligence', 'machine learning', 'neural', 'deep learning']):
+            selected_category = 'ai_ml'
+        elif any(term in keyword_lower for term in ['security', 'cybersecurity', 'hacking', 'vulnerability', 'bug bounty', 'penetration']):
+            selected_category = 'cybersecurity'
+        elif any(term in keyword_lower for term in ['cloud', 'aws', 'azure', 'kubernetes', 'docker', 'devops']):
+            selected_category = 'cloud_devops'
+        elif any(term in keyword_lower for term in ['automation', 'automate', 'script', 'workflow']):
+            selected_category = 'automation'
+            
+        # Get products from selected category
+        products = fallback_products.get(selected_category, fallback_products['programming'])
+        
+        # Add affiliate links to all products
+        for product in products:
+            product.affiliate_link = f"https://www.amazon.com/dp/{product.asin}?tag={Config.AMAZON_STORE_ID}&linkCode=ogi&th=1&psc=1"
+        
+        return products[:max_products]

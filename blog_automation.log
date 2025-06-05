@@ -1,0 +1,95 @@
+2025-06-02 19:36:20,529 - blog_automation.config - ERROR - Missing required environment variables: REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, GITHUB_TOKEN, GITHUB_REPO
+2025-06-04 19:36:15,946 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:36:16,171 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:36:54,510 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:36:54,728 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:36:55,087 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:36:55,087 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749083815
+2025-06-04 19:36:55,087 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:36:55,087 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:36:55,602 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-04 19:36:55,605 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-06-04 19:36:55,605 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:39:04,465 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:39:04,844 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:39:05,162 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:39:05,162 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749083945
+2025-06-04 19:39:05,163 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET
+2025-06-04 19:39:05,163 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:39:05,163 - blog_automation.orchestrator - ERROR - Workflow failed: Invalid configuration - missing required environment variables
+2025-06-04 19:39:13,953 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET
+2025-06-04 19:39:13,954 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:39:31,986 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:39:32,367 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:39:32,704 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:39:32,704 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749083972
+2025-06-04 19:39:32,704 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET
+2025-06-04 19:39:32,704 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:39:32,704 - blog_automation.orchestrator - ERROR - Workflow failed: Invalid configuration - missing required environment variables
+2025-06-04 19:45:24,990 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:45:25,399 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:45:25,691 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:45:25,691 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084325
+2025-06-04 19:45:25,692 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY
+2025-06-04 19:45:25,692 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:45:25,692 - blog_automation.orchestrator - ERROR - Workflow failed: Invalid configuration - missing required environment variables
+2025-06-04 19:47:18,077 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:47:18,300 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:47:18,615 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:47:18,615 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084438
+2025-06-04 19:47:18,615 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:47:18,615 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:47:18,952 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-04 19:47:18,954 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-06-04 19:47:18,954 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:48:14,612 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:48:14,820 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:48:15,101 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:48:15,101 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084495
+2025-06-04 19:48:15,101 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:48:15,101 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:48:16,800 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-06-04 19:48:16,801 - openai._base_client - INFO - Retrying request to /chat/completions in 0.414323 seconds
+2025-06-04 19:48:17,760 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-06-04 19:48:17,761 - openai._base_client - INFO - Retrying request to /chat/completions in 0.912073 seconds
+2025-06-04 19:48:18,748 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-06-04 19:48:18,751 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2025-06-04 19:48:18,751 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:49:40,284 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:49:40,400 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:49:40,701 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:49:40,702 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084580
+2025-06-04 19:49:40,702 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:49:40,702 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:49:41,037 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-04 19:49:41,039 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-06-04 19:49:41,039 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:50:25,351 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:50:25,594 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:50:25,881 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:50:25,882 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084625
+2025-06-04 19:50:25,882 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:50:25,882 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:51:06,709 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:51:06,727 - blog_automation.modules.content_generator - WARNING - Generated content too short: 628 words
+2025-06-04 19:51:06,727 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:52:07,243 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:52:07,617 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:52:07,920 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 19:52:07,920 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084727
+2025-06-04 19:52:07,921 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:52:07,921 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:52:44,408 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:52:44,427 - blog_automation.modules.content_generator - INFO - Generated content: 650 words
+2025-06-04 19:52:49,362 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:52:49,364 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 19:52:49,364 - blog_automation.modules.content_generator - INFO - Content generation completed in 41.44 seconds
+2025-06-04 19:52:49,364 - blog_automation.orchestrator - INFO - Generated blog post: Maximizing Cybersecurity with Bug Bounty Programs (650 words)
+2025-06-04 19:52:49,365 - blog_automation.modules.product_research - INFO - Searching for products related to: Bug Bounty Programs
+2025-06-04 19:52:49,365 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-04 19:52:49,365 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-04 19:52:49,366 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Maximizing Cybersecurity with Bug Bounty Programs
+2025-06-04 19:52:49,366 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 19:52:49,366 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-maximizing-cybersecurity-with-bug-bounty-programs.md
+2025-06-04 19:52:50,419 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-maximizing-cybersecurity-with-bug-bounty-programs.md
+2025-06-04 19:52:50,420 - blog_automation.orchestrator - INFO - Workflow completed successfully in 42.50 seconds

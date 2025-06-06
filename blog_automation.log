@@ -1,0 +1,1072 @@
+2025-06-02 19:36:20,529 - blog_automation.config - ERROR - Missing required environment variables: REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, GITHUB_TOKEN, GITHUB_REPO
+2025-06-04 19:36:15,946 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:36:16,171 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:36:54,510 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:36:54,728 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:36:55,087 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:36:55,087 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749083815
+2025-06-04 19:36:55,087 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:36:55,087 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:36:55,602 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-04 19:36:55,605 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-06-04 19:36:55,605 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:39:04,465 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:39:04,844 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:39:05,162 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:39:05,162 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749083945
+2025-06-04 19:39:05,163 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET
+2025-06-04 19:39:05,163 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:39:05,163 - blog_automation.orchestrator - ERROR - Workflow failed: Invalid configuration - missing required environment variables
+2025-06-04 19:39:13,953 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET
+2025-06-04 19:39:13,954 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:39:31,986 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:39:32,367 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:39:32,704 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:39:32,704 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749083972
+2025-06-04 19:39:32,704 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY, REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET
+2025-06-04 19:39:32,704 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:39:32,704 - blog_automation.orchestrator - ERROR - Workflow failed: Invalid configuration - missing required environment variables
+2025-06-04 19:45:24,990 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:45:25,399 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:45:25,691 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:45:25,691 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084325
+2025-06-04 19:45:25,692 - blog_automation.config - ERROR - Placeholder values detected for: OPENAI_API_KEY
+2025-06-04 19:45:25,692 - blog_automation.config - ERROR - Please replace placeholder values with your actual API keys
+2025-06-04 19:45:25,692 - blog_automation.orchestrator - ERROR - Workflow failed: Invalid configuration - missing required environment variables
+2025-06-04 19:47:18,077 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:47:18,300 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:47:18,615 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:47:18,615 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084438
+2025-06-04 19:47:18,615 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:47:18,615 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:47:18,952 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-04 19:47:18,954 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-06-04 19:47:18,954 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:48:14,612 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:48:14,820 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:48:15,101 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:48:15,101 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084495
+2025-06-04 19:48:15,101 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:48:15,101 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:48:16,800 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-06-04 19:48:16,801 - openai._base_client - INFO - Retrying request to /chat/completions in 0.414323 seconds
+2025-06-04 19:48:17,760 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-06-04 19:48:17,761 - openai._base_client - INFO - Retrying request to /chat/completions in 0.912073 seconds
+2025-06-04 19:48:18,748 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 429 Too Many Requests"
+2025-06-04 19:48:18,751 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+2025-06-04 19:48:18,751 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:49:40,284 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:49:40,400 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:49:40,701 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:49:40,702 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084580
+2025-06-04 19:49:40,702 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:49:40,702 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:49:41,037 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-04 19:49:41,039 - blog_automation.modules.content_generator - ERROR - Error generating content: Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-06-04 19:49:41,039 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:50:25,351 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:50:25,594 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:50:25,881 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji
+2025-06-04 19:50:25,882 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084625
+2025-06-04 19:50:25,882 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:50:25,882 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:51:06,709 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:51:06,727 - blog_automation.modules.content_generator - WARNING - Generated content too short: 628 words
+2025-06-04 19:51:06,727 - blog_automation.orchestrator - ERROR - Workflow failed: Content generation failed: Failed to generate main content
+2025-06-04 19:52:07,243 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:52:07,617 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:52:07,920 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 19:52:07,920 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749084727
+2025-06-04 19:52:07,921 - blog_automation.orchestrator - INFO - Using custom topic: Bug Bounty Programs
+2025-06-04 19:52:07,921 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Bug Bounty Programs
+2025-06-04 19:52:44,408 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:52:44,427 - blog_automation.modules.content_generator - INFO - Generated content: 650 words
+2025-06-04 19:52:49,362 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:52:49,364 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 19:52:49,364 - blog_automation.modules.content_generator - INFO - Content generation completed in 41.44 seconds
+2025-06-04 19:52:49,364 - blog_automation.orchestrator - INFO - Generated blog post: Maximizing Cybersecurity with Bug Bounty Programs (650 words)
+2025-06-04 19:52:49,365 - blog_automation.modules.product_research - INFO - Searching for products related to: Bug Bounty Programs
+2025-06-04 19:52:49,365 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-04 19:52:49,365 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-04 19:52:49,366 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Maximizing Cybersecurity with Bug Bounty Programs
+2025-06-04 19:52:49,366 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 19:52:49,366 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-maximizing-cybersecurity-with-bug-bounty-programs.md
+2025-06-04 19:52:50,419 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-maximizing-cybersecurity-with-bug-bounty-programs.md
+2025-06-04 19:52:50,420 - blog_automation.orchestrator - INFO - Workflow completed successfully in 42.50 seconds
+2025-06-04 19:58:29,433 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:58:29,854 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:58:44,388 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 19:58:44,713 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 19:58:45,003 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 19:58:45,003 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085125
+2025-06-04 19:58:45,004 - blog_automation.orchestrator - INFO - Using custom topic: Genisys, Terminator
+2025-06-04 19:58:45,004 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Genisys, Terminator
+2025-06-04 19:59:18,632 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:59:18,647 - blog_automation.modules.content_generator - INFO - Generated content: 605 words
+2025-06-04 19:59:23,659 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 19:59:23,670 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 19:59:23,671 - blog_automation.modules.content_generator - INFO - Content generation completed in 38.67 seconds
+2025-06-04 19:59:23,671 - blog_automation.orchestrator - INFO - Generated blog post: Unleashing AI & Automation: Lessons from Genisys, Terminator (605 words)
+2025-06-04 19:59:23,672 - blog_automation.modules.product_research - INFO - Searching for products related to: Genisys, Terminator
+2025-06-04 19:59:23,672 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-04 19:59:23,672 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-04 19:59:23,672 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Unleashing AI & Automation: Lessons from Genisys, Terminator
+2025-06-04 19:59:23,673 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 19:59:23,673 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-unleashing-ai-automation-lessons-from-genisys-term.md
+2025-06-04 19:59:24,771 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-unleashing-ai-automation-lessons-from-genisys-term.md
+2025-06-04 19:59:24,771 - blog_automation.orchestrator - INFO - Workflow completed successfully in 39.77 seconds
+2025-06-04 20:04:43,675 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:04:44,070 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:04:44,400 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:04:44,400 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085484
+2025-06-04 20:04:44,400 - blog_automation.orchestrator - INFO - Using custom topic: Advanced API Security Testing
+2025-06-04 20:04:44,400 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Advanced API Security Testing
+2025-06-04 20:05:22,318 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:05:22,330 - blog_automation.modules.content_generator - INFO - Generated content: 651 words
+2025-06-04 20:05:26,968 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:05:26,968 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 20:05:26,968 - blog_automation.modules.content_generator - INFO - Content generation completed in 42.57 seconds
+2025-06-04 20:05:26,968 - blog_automation.orchestrator - INFO - Generated blog post: Mastering Advanced API Security Testing Techniques (651 words)
+2025-06-04 20:05:26,969 - blog_automation.modules.product_research - INFO - Searching for products related to: Advanced API Security Testing
+2025-06-04 20:05:26,969 - blog_automation.modules.product_research - ERROR - Error in product research: Product.__init__() got an unexpected keyword argument 'description'
+2025-06-04 20:05:26,969 - blog_automation.orchestrator - WARNING - Product research failed, continuing without products: Product.__init__() got an unexpected keyword argument 'description'
+2025-06-04 20:05:26,969 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Mastering Advanced API Security Testing Techniques
+2025-06-04 20:05:26,969 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 20:05:26,969 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-mastering-advanced-api-security-testing-techniques.md
+2025-06-04 20:05:28,018 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-mastering-advanced-api-security-testing-techniques.md
+2025-06-04 20:05:28,019 - blog_automation.orchestrator - INFO - Workflow completed successfully in 43.62 seconds
+2025-06-04 20:07:09,821 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:07:10,030 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:07:10,340 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:07:10,340 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085630
+2025-06-04 20:07:10,340 - blog_automation.orchestrator - INFO - Using custom topic: Cloud Infrastructure Automation
+2025-06-04 20:07:10,340 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Cloud Infrastructure Automation
+2025-06-04 20:07:55,241 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:07:55,256 - blog_automation.modules.content_generator - INFO - Generated content: 886 words
+2025-06-04 20:07:59,002 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:07:59,006 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 20:07:59,007 - blog_automation.modules.content_generator - INFO - Content generation completed in 48.67 seconds
+2025-06-04 20:07:59,007 - blog_automation.orchestrator - INFO - Generated blog post: Mastering Cloud Infrastructure Automation: A Guide (886 words)
+2025-06-04 20:07:59,007 - blog_automation.modules.product_research - INFO - Searching for products related to: Cloud Infrastructure Automation
+2025-06-04 20:08:00,504 - blog_automation.modules.product_research - INFO - Found 10 products for query: Cloud Infrastructure Automation books
+2025-06-04 20:08:03,734 - blog_automation.modules.product_research - INFO - Found 10 products for query: books Cloud Infrastructure Automation
+2025-06-04 20:08:06,892 - blog_automation.modules.product_research - INFO - Found 10 products for query: Cloud Infrastructure Automation software
+2025-06-04 20:08:08,896 - blog_automation.modules.product_research - INFO - Found 5 relevant products
+2025-06-04 20:08:08,896 - blog_automation.orchestrator - INFO - Found 5 affiliate products
+2025-06-04 20:08:08,914 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Mastering Cloud Infrastructure Automation: A Guide
+2025-06-04 20:08:08,915 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 20:08:08,916 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-mastering-cloud-infrastructure-automation-a-guide.md
+2025-06-04 20:08:10,048 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-mastering-cloud-infrastructure-automation-a-guide.md
+2025-06-04 20:08:10,048 - blog_automation.orchestrator - INFO - Workflow completed successfully in 59.71 seconds
+2025-06-04 20:08:41,887 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:08:42,111 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:10:11,835 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:10:12,213 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:10:12,516 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:10:12,516 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085812
+2025-06-04 20:10:12,516 - blog_automation.orchestrator - INFO - Using custom topic: Microservices Security Best Practices
+2025-06-04 20:10:12,516 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Microservices Security Best Practices
+2025-06-04 20:10:57,180 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:10:57,189 - blog_automation.modules.content_generator - WARNING - Generated content too short: 781 words (attempt 1). Retrying...
+2025-06-04 20:11:12,802 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:11:13,030 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:11:13,336 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:11:13,336 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749085873
+2025-06-04 20:11:13,337 - blog_automation.orchestrator - INFO - Using custom topic: Microservices Security Best Practices
+2025-06-04 20:11:13,337 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Microservices Security Best Practices
+2025-06-04 20:12:01,392 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:12:01,411 - blog_automation.modules.content_generator - INFO - Generated content: 929 words
+2025-06-04 20:12:05,280 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-04 20:12:05,284 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-04 20:12:05,285 - blog_automation.modules.content_generator - INFO - Content generation completed in 51.95 seconds
+2025-06-04 20:12:05,285 - blog_automation.orchestrator - INFO - Generated blog post: Securing Microservices: Top Security Best Practices (929 words)
+2025-06-04 20:12:05,286 - blog_automation.modules.product_research - INFO - Searching for products related to: Microservices Security Best Practices
+2025-06-04 20:12:05,286 - blog_automation.modules.product_research - INFO - Found 3 relevant products
+2025-06-04 20:12:05,286 - blog_automation.orchestrator - INFO - Found 3 affiliate products
+2025-06-04 20:12:05,287 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Securing Microservices: Top Security Best Practices
+2025-06-04 20:12:05,288 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-04 20:12:05,288 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-04-securing-microservices-top-security-best-practices.md
+2025-06-04 20:12:07,256 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-04-securing-microservices-top-security-best-practices.md
+2025-06-04 20:12:07,257 - blog_automation.orchestrator - INFO - Workflow completed successfully in 53.92 seconds
+2025-06-04 20:42:10,791 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-04 20:42:10,980 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-04 20:42:11,308 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-04 20:42:11,308 - blog_automation.orchestrator - INFO - Starting daily automation process
+2025-06-04 20:42:11,308 - blog_automation.orchestrator - INFO - Generating post 1 of 1
+2025-06-04 20:42:11,308 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749087731
+2025-06-04 20:42:11,308 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-04 20:42:11,309 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-04 20:42:12,403 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-04 20:42:13,295 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-04 20:42:13,772 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-04 20:42:14,695 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-04 20:42:15,572 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-04 20:42:16,484 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-04 20:42:17,416 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-04 20:42:18,255 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-04 20:42:18,770 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-04 20:42:18,772 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-04 20:42:18,773 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-04 20:42:20,084 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-04 20:42:21,525 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:24:48,594 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 15:24:48,814 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 15:24:49,113 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-06 15:24:49,114 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749241489
+2025-06-06 15:24:49,114 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 15:24:49,115 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:24:50,562 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-06-06 15:24:51,454 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-06 15:24:52,454 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-06-06 15:24:53,372 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-06 15:24:54,307 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-06 15:24:55,237 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-06 15:24:56,120 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-06 15:24:56,949 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-06 15:24:57,755 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-06-06 15:24:57,756 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:24:57,756 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:24:59,011 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:25:00,572 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:25:02,130 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:25:03,624 - blog_automation.modules.trend_discovery - INFO - Retrieved 49 topics from Reddit
+2025-06-06 15:25:03,625 - blog_automation.modules.trend_discovery - INFO - Retrieved 49 topics from Reddit
+2025-06-06 15:25:03,625 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:25:03,625 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics
+2025-06-06 15:25:03,625 - blog_automation.orchestrator - INFO - Selected trending topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen (score: 1.00)
+2025-06-06 15:25:03,626 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 15:25:37,898 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:25:37,906 - blog_automation.modules.content_generator - INFO - Generated content: 916 words
+2025-06-06 15:25:43,907 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:25:43,910 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 15:25:43,910 - blog_automation.modules.content_generator - INFO - Content generation completed in 40.28 seconds
+2025-06-06 15:25:43,910 - blog_automation.orchestrator - INFO - Generated blog post: Palantir's Controversial Standoff with WIRED and Other Journalists (916 words)
+2025-06-06 15:25:43,911 - blog_automation.modules.product_research - INFO - Searching for products related to: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 15:25:45,399 - blog_automation.modules.product_research - INFO - Found 10 products for query: data books
+2025-06-06 15:25:48,700 - blog_automation.modules.product_research - INFO - Found 10 products for query: data tools
+2025-06-06 15:25:50,703 - blog_automation.modules.product_research - INFO - Found 5 relevant products
+2025-06-06 15:25:50,704 - blog_automation.orchestrator - INFO - Found 5 affiliate products
+2025-06-06 15:25:50,721 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Palantir's Controversial Standoff with WIRED and Other Journalists
+2025-06-06 15:25:50,722 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-06 15:25:50,722 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-06-palantirs-controversial-standoff-with-wired-and-ot.md
+2025-06-06 15:25:51,848 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-06-palantirs-controversial-standoff-with-wired-and-ot.md
+2025-06-06 15:25:51,848 - blog_automation.orchestrator - INFO - Workflow completed successfully in 62.73 seconds
+2025-06-06 15:32:58,507 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 15:32:58,735 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 15:32:59,042 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-06 15:32:59,042 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749241979
+2025-06-06 15:32:59,043 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 15:32:59,043 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:33:00,586 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-06-06 15:33:01,445 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-06 15:33:02,368 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-06-06 15:33:03,330 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-06 15:33:04,228 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-06 15:33:05,161 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-06 15:33:06,019 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-06 15:33:06,526 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 15:33:07,493 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-06-06 15:33:07,493 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:33:07,493 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:33:08,760 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:33:10,625 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:33:12,123 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:33:13,753 - blog_automation.modules.trend_discovery - INFO - Retrieved 51 topics from Reddit
+2025-06-06 15:33:13,755 - blog_automation.modules.trend_discovery - INFO - Retrieved 51 topics from Reddit
+2025-06-06 15:33:13,755 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:33:13,755 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics
+2025-06-06 15:33:13,755 - blog_automation.orchestrator - INFO - Selected trending topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen (score: 1.00)
+2025-06-06 15:33:13,755 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 15:33:56,827 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:33:56,839 - blog_automation.modules.content_generator - INFO - Generated content: 818 words
+2025-06-06 15:34:01,695 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:34:01,697 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 15:34:01,697 - blog_automation.modules.content_generator - INFO - Content generation completed in 47.94 seconds
+2025-06-06 15:34:01,697 - blog_automation.orchestrator - INFO - Generated blog post: Palantir's Press Controversy: Threats and Expulsions (818 words)
+2025-06-06 15:34:01,698 - blog_automation.modules.product_research - INFO - Searching for products related to: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 15:34:03,553 - blog_automation.modules.product_research - INFO - Found 10 products for query: data books
+2025-06-06 15:34:23,328 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 15:34:23,656 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 15:34:23,958 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-06 15:34:23,958 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749242063
+2025-06-06 15:34:23,959 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 15:34:23,959 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:34:25,932 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-06-06 15:34:27,469 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-06 15:34:28,825 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-06-06 15:34:30,264 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-06 15:34:31,557 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-06 15:34:32,824 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-06 15:34:34,227 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-06 15:34:35,493 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-06 15:34:36,811 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-06-06 15:34:36,813 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:34:36,813 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:34:38,126 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:34:39,696 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:34:41,144 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:34:42,735 - blog_automation.modules.trend_discovery - INFO - Retrieved 51 topics from Reddit
+2025-06-06 15:34:42,736 - blog_automation.modules.trend_discovery - INFO - Retrieved 51 topics from Reddit
+2025-06-06 15:34:42,736 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:34:42,736 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics
+2025-06-06 15:34:42,737 - blog_automation.orchestrator - INFO - Selected trending topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen (score: 1.00)
+2025-06-06 15:34:42,737 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 15:35:11,107 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:35:11,116 - blog_automation.modules.content_generator - INFO - Generated content: 707 words
+2025-06-06 15:35:17,528 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:35:17,529 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 15:35:17,530 - blog_automation.modules.content_generator - INFO - Content generation completed in 34.79 seconds
+2025-06-06 15:35:17,530 - blog_automation.orchestrator - INFO - Generated blog post: Palantir's Clash with Journalists: A Data Security Debate (707 words)
+2025-06-06 15:35:17,530 - blog_automation.modules.product_research - INFO - Searching for products related to: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 15:35:18,835 - blog_automation.modules.product_research - INFO - Found 10 products for query: data books
+2025-06-06 15:35:21,972 - blog_automation.modules.product_research - INFO - Found 10 products for query: data tools
+2025-06-06 15:35:23,973 - blog_automation.modules.product_research - INFO - Found 5 relevant products
+2025-06-06 15:35:23,974 - blog_automation.orchestrator - INFO - Found 5 affiliate products
+2025-06-06 15:35:23,991 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Palantir's Clash with Journalists: A Data Security Debate
+2025-06-06 15:35:23,992 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-06 15:35:23,992 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-06-palantirs-clash-with-journalists-a-data-security-d.md
+2025-06-06 15:35:25,002 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-06-palantirs-clash-with-journalists-a-data-security-d.md
+2025-06-06 15:35:25,002 - blog_automation.orchestrator - INFO - Workflow completed successfully in 61.04 seconds
+2025-06-06 15:41:21,732 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 15:41:21,936 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 15:41:22,263 - blog_automation.modules.publisher - INFO - Connected to repository: ssmanji89/sulemanji-port
+2025-06-06 15:41:22,263 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749242482
+2025-06-06 15:41:22,263 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 15:41:22,263 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:41:23,473 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 15:41:24,142 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 15:41:24,807 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 15:41:25,407 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 15:41:25,982 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 15:41:26,481 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 15:41:26,910 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 15:41:27,570 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 15:41:28,084 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 15:41:28,085 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:41:28,085 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:41:30,022 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:41:32,069 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:41:33,749 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:41:35,370 - blog_automation.modules.trend_discovery - INFO - Retrieved 53 topics from Reddit
+2025-06-06 15:41:35,371 - blog_automation.modules.trend_discovery - INFO - Retrieved 53 topics from Reddit
+2025-06-06 15:41:35,371 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:41:35,371 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-06 15:41:35,371 - blog_automation.orchestrator - INFO - Selected trending topic: Trump Is Getting Rid of His Tesla (score: 0.99)
+2025-06-06 15:41:35,371 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Trump Is Getting Rid of His Tesla
+2025-06-06 15:42:16,524 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:42:16,534 - blog_automation.modules.content_generator - INFO - Generated content: 776 words
+2025-06-06 15:42:21,340 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 15:42:21,344 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 15:42:21,344 - blog_automation.modules.content_generator - INFO - Content generation completed in 45.97 seconds
+2025-06-06 15:42:21,344 - blog_automation.orchestrator - INFO - Generated blog post: Trump's Tesla Sale: A Deep Dive into the Implications (776 words)
+2025-06-06 15:42:21,345 - blog_automation.modules.product_research - INFO - Searching for products related to: Trump Is Getting Rid of His Tesla
+2025-06-06 15:42:21,346 - blog_automation.modules.product_research - INFO - Found 3 relevant products
+2025-06-06 15:42:21,346 - blog_automation.orchestrator - INFO - Found 3 affiliate products
+2025-06-06 15:42:21,346 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Trump's Tesla Sale: A Deep Dive into the Implications
+2025-06-06 15:42:21,347 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-06 15:42:21,347 - blog_automation.modules.publisher - INFO - Publishing post: 2025-06-06-trumps-tesla-sale-a-deep-dive-into-the-implication.md
+2025-06-06 15:42:22,451 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-06-trumps-tesla-sale-a-deep-dive-into-the-implication.md
+2025-06-06 15:42:22,451 - blog_automation.orchestrator - INFO - Workflow completed successfully in 60.19 seconds
+2025-06-06 15:56:35,961 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 15:56:40,469 - __main__ - INFO - Starting blog post generation...
+2025-06-06 15:56:40,469 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 15:56:40,471 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 15:56:40,831 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 15:56:40,869 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749243400
+2025-06-06 15:56:40,869 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 15:56:40,869 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 15:56:40,870 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:56:42,536 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 15:56:43,085 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 15:56:43,566 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 15:56:43,997 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 15:56:44,616 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 15:56:45,154 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 15:56:45,527 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 15:56:45,990 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 15:56:46,515 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 15:56:46,515 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:56:46,516 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:56:47,982 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:56:50,053 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:56:51,914 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:56:53,716 - blog_automation.modules.trend_discovery - INFO - Retrieved 55 topics from Reddit
+2025-06-06 15:56:53,717 - blog_automation.modules.trend_discovery - INFO - Retrieved 55 topics from Reddit
+2025-06-06 15:56:53,717 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:56:53,717 - blog_automation.modules.trend_discovery - INFO - Discovered 4 trending topics (randomized selection)
+2025-06-06 15:56:53,717 - blog_automation.orchestrator - INFO - Selected trending topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen (score: 1.00)
+2025-06-06 15:56:53,717 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 15:57:16,777 - __main__ - INFO - Starting blog post generation...
+2025-06-06 15:57:16,777 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 15:57:16,778 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 15:57:16,979 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 15:57:17,018 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749243437
+2025-06-06 15:57:17,018 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 15:57:17,018 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 15:57:17,018 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:57:18,647 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 15:57:19,039 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 15:57:19,690 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 15:57:20,292 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 15:57:20,886 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 15:57:21,394 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 15:57:21,899 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 15:57:22,549 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 15:57:23,148 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 15:57:23,150 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:57:23,151 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:57:24,608 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:57:26,566 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:57:28,249 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 15:57:30,090 - blog_automation.modules.trend_discovery - INFO - Retrieved 57 topics from Reddit
+2025-06-06 15:57:30,090 - blog_automation.modules.trend_discovery - INFO - Retrieved 57 topics from Reddit
+2025-06-06 15:57:30,090 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 15:57:30,090 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-06 15:57:30,090 - blog_automation.orchestrator - INFO - Selected trending topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen (score: 1.00)
+2025-06-06 15:57:30,091 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 16:00:59,329 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:00:59,330 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:00:59,330 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:00:59,589 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:00:59,616 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749243659
+2025-06-06 16:00:59,616 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:00:59,616 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:00:59,617 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:01:00,939 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:01:01,583 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:01:02,244 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:01:02,922 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:01:03,388 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:01:03,898 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:01:04,536 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:01:05,227 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:01:05,848 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:01:05,849 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:01:05,851 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:03:03,066 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:03:03,066 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:03:03,067 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:03:03,281 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:03:03,305 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749243783
+2025-06-06 16:03:03,305 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:03:03,305 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:03:03,305 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:03:04,403 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:03:04,952 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:03:05,483 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:03:05,960 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:03:06,503 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:03:06,996 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:03:07,590 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:03:08,144 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:03:08,634 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:03:08,634 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:03:08,634 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:03:10,016 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:03:12,119 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:03:13,847 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:03:15,461 - blog_automation.modules.trend_discovery - INFO - Retrieved 54 topics from Reddit
+2025-06-06 16:03:15,462 - blog_automation.modules.trend_discovery - INFO - Retrieved 54 topics from Reddit
+2025-06-06 16:03:15,462 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:03:15,462 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-06 16:03:15,462 - blog_automation.orchestrator - INFO - Selected trending topic: Apple moves from Java 8 to Swift? (score: 0.25)
+2025-06-06 16:03:15,462 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Apple moves from Java 8 to Swift?
+2025-06-06 16:03:45,300 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:03:45,311 - blog_automation.modules.content_generator - INFO - Generated content: 649 words
+2025-06-06 16:03:49,791 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:03:49,795 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 16:03:49,795 - blog_automation.modules.content_generator - INFO - Content generation completed in 34.33 seconds
+2025-06-06 16:03:49,796 - blog_automation.orchestrator - INFO - Generated blog post: Apple's Transition: Java 8 Out, Swift In (649 words)
+2025-06-06 16:03:49,796 - blog_automation.modules.product_research - INFO - Searching for products related to: Apple moves from Java 8 to Swift?
+2025-06-06 16:03:49,796 - blog_automation.modules.product_research - INFO - Found 3 relevant products
+2025-06-06 16:03:49,796 - blog_automation.orchestrator - INFO - Found 3 affiliate products
+2025-06-06 16:03:49,797 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Apple's Transition: Java 8 Out, Swift In
+2025-06-06 16:03:49,797 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-06 16:03:49,798 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-06-apples-transition-java-8-out-swift-in.md
+2025-06-06 16:03:49,798 - blog_automation.orchestrator - INFO - Workflow completed successfully in 46.49 seconds
+2025-06-06 16:03:49,799 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-06-06 16:03:49,799 - __main__ - INFO - 📁 Output file: _posts/2025-06-06-apples-transition-java-8-out-swift-in.md
+2025-06-06 16:03:49,800 - __main__ - INFO - 📋 Test copy saved to: test_blog_post.md
+2025-06-06 16:04:18,864 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:04:18,865 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:04:18,865 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:04:19,068 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:04:19,137 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749243859
+2025-06-06 16:04:19,137 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:04:19,137 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:04:19,138 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:04:20,403 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:04:20,864 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:04:21,336 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:04:22,046 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:04:22,576 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:04:22,967 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:04:23,557 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:04:23,961 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:04:24,527 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:04:24,529 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:04:24,531 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:04:25,982 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:04:28,022 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:04:29,830 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:04:31,400 - blog_automation.modules.trend_discovery - INFO - Retrieved 58 topics from Reddit
+2025-06-06 16:04:31,403 - blog_automation.modules.trend_discovery - INFO - Retrieved 58 topics from Reddit
+2025-06-06 16:04:31,403 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:04:31,403 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-06 16:04:31,404 - blog_automation.orchestrator - INFO - Selected trending topic: Apple moves from Java 8 to Swift? (score: 0.25)
+2025-06-06 16:04:31,404 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Apple moves from Java 8 to Swift?
+2025-06-06 16:04:56,120 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:04:56,135 - blog_automation.modules.content_generator - INFO - Generated content: 733 words
+2025-06-06 16:05:01,439 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:05:01,442 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 16:05:01,443 - blog_automation.modules.content_generator - INFO - Content generation completed in 30.04 seconds
+2025-06-06 16:05:01,443 - blog_automation.orchestrator - INFO - Generated blog post: Apple's Leap from Java 8 to Swift: A Tech Insider's Perspective (733 words)
+2025-06-06 16:05:01,444 - blog_automation.modules.product_research - INFO - Searching for products related to: Apple moves from Java 8 to Swift?
+2025-06-06 16:05:01,444 - blog_automation.modules.product_research - INFO - Found 3 relevant products
+2025-06-06 16:05:01,444 - blog_automation.orchestrator - INFO - Found 3 affiliate products
+2025-06-06 16:05:01,445 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Apple's Leap from Java 8 to Swift: A Tech Insider's Perspective
+2025-06-06 16:05:01,445 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-06 16:05:01,448 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-06-apples-leap-from-java-8-to-swift-a-tech-insiders-p.md
+2025-06-06 16:05:01,449 - blog_automation.orchestrator - INFO - Workflow completed successfully in 42.31 seconds
+2025-06-06 16:05:01,449 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-06-06 16:05:01,449 - __main__ - INFO - 📁 Output file: _posts/2025-06-06-apples-leap-from-java-8-to-swift-a-tech-insiders-p.md
+2025-06-06 16:11:02,444 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:11:02,444 - __main__ - ERROR - Error generating blog post: type object 'Config' has no attribute 'validate_config'
+2025-06-06 16:11:51,460 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:11:51,461 - __main__ - ERROR - Error generating blog post: type object 'Config' has no attribute 'validate_config'
+2025-06-06 16:12:23,607 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:12:23,608 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:12:23,608 - blog_automation.modules.trend_discovery - ERROR - Failed to setup API clients: type object 'Config' has no attribute 'REDDIT_CLIENT_ID'
+2025-06-06 16:12:23,608 - __main__ - ERROR - Error generating blog post: type object 'Config' has no attribute 'REDDIT_CLIENT_ID'
+2025-06-06 16:14:03,874 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:14:03,874 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:14:03,875 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:14:04,092 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:14:04,092 - __main__ - ERROR - Error generating blog post: type object 'Config' has no attribute 'OPENAI_API_KEY'
+2025-06-06 16:14:47,165 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:14:47,165 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:14:47,166 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:14:47,376 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:14:47,407 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-06 16:14:47,407 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-06 16:14:47,407 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749244487
+2025-06-06 16:14:47,407 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:14:47,407 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:14:47,407 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:14:47,408 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:14:48,810 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:14:49,494 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:14:50,551 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:14:51,394 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:14:51,883 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:14:52,804 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:14:53,934 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:14:54,355 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:14:54,825 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:14:54,826 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:14:54,826 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:14:56,238 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:14:58,221 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:15:00,002 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:15:01,713 - blog_automation.modules.trend_discovery - INFO - Retrieved 56 topics from Reddit
+2025-06-06 16:15:01,714 - blog_automation.modules.trend_discovery - INFO - Retrieved 56 topics from Reddit
+2025-06-06 16:15:01,714 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:15:01,714 - blog_automation.modules.trend_discovery - INFO - Discovered 4 trending topics (randomized selection)
+2025-06-06 16:15:01,714 - blog_automation.orchestrator - INFO - Selected trending topic: AI firms say they can’t respect copyright. These researchers tried. (score: 0.4391400000000001)
+2025-06-06 16:15:01,714 - blog_automation.orchestrator - INFO - Starting content generation for topic: AI firms say they can’t respect copyright. These researchers tried.
+2025-06-06 16:15:01,714 - blog_automation.orchestrator - ERROR - Workflow failed after 14.31 seconds: 'ContentGenerator' object has no attribute 'generate_content'
+2025-06-06 16:15:01,715 - __main__ - ERROR - ❌ Blog post generation failed
+2025-06-06 16:15:01,715 - __main__ - ERROR - Error: 'ContentGenerator' object has no attribute 'generate_content'
+2025-06-06 16:30:23,413 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:30:23,413 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:30:23,543 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:30:24,537 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:30:24,565 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-06 16:30:24,565 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-06 16:30:24,565 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749245424
+2025-06-06 16:30:24,565 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:30:24,565 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:30:24,565 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:30:24,565 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:30:27,033 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:30:28,383 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:30:28,895 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:30:29,971 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:30:30,644 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:30:31,295 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:30:33,126 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:30:33,736 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:30:34,426 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:30:34,427 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:30:34,427 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:30:35,877 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:30:37,899 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:30:39,933 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:30:41,930 - blog_automation.modules.trend_discovery - INFO - Retrieved 58 topics from Reddit
+2025-06-06 16:30:41,931 - blog_automation.modules.trend_discovery - INFO - Retrieved 58 topics from Reddit
+2025-06-06 16:30:41,931 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:30:41,931 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-06 16:30:41,932 - blog_automation.orchestrator - INFO - Selected trending topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen (score: 0.9976)
+2025-06-06 16:30:41,932 - blog_automation.orchestrator - INFO - Starting content generation for topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 16:30:41,932 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Palantir threatened to call police on a WIRED reporter and kicked out other journalists from a recen
+2025-06-06 16:31:04,499 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:31:04,500 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:31:04,500 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:31:04,717 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:31:04,756 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-06 16:31:04,756 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-06 16:31:04,756 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749245464
+2025-06-06 16:31:04,756 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:31:04,756 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:31:04,756 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:31:04,757 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:31:06,557 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:31:07,398 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:31:08,330 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:31:08,988 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:31:09,498 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:31:10,437 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:31:11,506 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:31:12,228 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:31:12,915 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:31:12,916 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:31:12,917 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:31:14,376 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:31:16,770 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:31:18,532 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:31:20,561 - blog_automation.modules.trend_discovery - INFO - Retrieved 59 topics from Reddit
+2025-06-06 16:31:20,563 - blog_automation.modules.trend_discovery - INFO - Retrieved 59 topics from Reddit
+2025-06-06 16:31:20,563 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:31:20,564 - blog_automation.modules.trend_discovery - INFO - Discovered 3 trending topics (randomized selection)
+2025-06-06 16:31:20,564 - blog_automation.orchestrator - INFO - Selected trending topic: Trump Is Getting Rid of His Tesla (score: 0.9916)
+2025-06-06 16:31:20,564 - blog_automation.orchestrator - INFO - Starting content generation for topic: Trump Is Getting Rid of His Tesla
+2025-06-06 16:31:20,564 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Trump Is Getting Rid of His Tesla
+2025-06-06 16:38:31,047 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:38:31,047 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:38:31,048 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:38:31,199 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:38:31,222 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-06 16:38:31,222 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-06 16:38:31,222 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749245911
+2025-06-06 16:38:31,222 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:38:31,222 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:38:31,222 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:38:31,223 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:38:32,462 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:38:33,292 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:38:34,620 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:38:35,304 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:38:36,760 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:38:37,413 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:38:37,983 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:38:38,826 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:38:39,379 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:38:39,381 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:38:39,382 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:38:41,396 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:38:43,409 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:38:45,210 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:38:47,012 - blog_automation.modules.trend_discovery - INFO - Retrieved 58 topics from Reddit
+2025-06-06 16:38:47,012 - blog_automation.modules.trend_discovery - INFO - Retrieved 58 topics from Reddit
+2025-06-06 16:38:47,012 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:38:47,012 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-06 16:38:47,012 - blog_automation.orchestrator - INFO - Selected trending topic: DOGE used flawed AI tool to “munch” Veterans Affairs contracts | Staffer had no medical experience,  (score: 0.46840000000000004)
+2025-06-06 16:38:47,012 - blog_automation.orchestrator - INFO - Starting content generation for topic: DOGE used flawed AI tool to “munch” Veterans Affairs contracts | Staffer had no medical experience, 
+2025-06-06 16:38:47,012 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: DOGE used flawed AI tool to “munch” Veterans Affairs contracts | Staffer had no medical experience, 
+2025-06-06 16:39:16,397 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:39:16,408 - blog_automation.modules.content_generator - INFO - Generated content: 618 words
+2025-06-06 16:39:21,855 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:39:21,858 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 16:39:21,858 - blog_automation.modules.content_generator - INFO - Content generation completed in 34.85 seconds
+2025-06-06 16:39:21,858 - blog_automation.orchestrator - INFO - Generated blog post: DOGE's AI Misstep in Managing VA Contracts (618 words)
+2025-06-06 16:39:21,858 - blog_automation.orchestrator - INFO - Searching for products related to: DOGE used flawed AI tool to “munch” Veterans Affairs contracts | Staffer had no medical experience, 
+2025-06-06 16:39:21,858 - blog_automation.modules.product_research - INFO - Searching for products related to: DOGE used flawed AI tool to “munch” Veterans Affairs contracts | Staffer had no medical experience, 
+2025-06-06 16:39:21,858 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: ai books site:amazon.com
+2025-06-06 16:39:22,010 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=ai+books+site%3Aamazon.com&num=5&safe=active
+2025-06-06 16:39:22,011 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: ai programming books site:amazon.com
+2025-06-06 16:39:22,119 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=ai+programming+books+site%3Aamazon.com&num=5&safe=active
+2025-06-06 16:39:22,122 - blog_automation.modules.product_research - INFO - Google Custom Search found 0 products
+2025-06-06 16:39:22,122 - blog_automation.modules.product_research - INFO - Using fallback Amazon scraping method
+2025-06-06 16:39:22,123 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'ai books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-06 16:39:24,607 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'ai programming books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-06 16:39:29,375 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-06 16:39:29,376 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-06 16:39:29,378 - blog_automation.orchestrator - INFO - Assembling blog post: DOGE's AI Misstep in Managing VA Contracts
+2025-06-06 16:39:29,379 - blog_automation.orchestrator - ERROR - Workflow failed after 58.16 seconds: 'ContentAssembler' object has no attribute 'assemble_post'
+2025-06-06 16:39:29,379 - __main__ - ERROR - ❌ Blog post generation failed
+2025-06-06 16:39:29,380 - __main__ - ERROR - Error: 'ContentAssembler' object has no attribute 'assemble_post'
+2025-06-06 16:40:37,213 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:40:37,213 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:40:37,214 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:40:37,338 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:40:37,361 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-06 16:40:37,361 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-06 16:40:37,361 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749246037
+2025-06-06 16:40:37,361 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:40:37,361 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:40:37,361 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:40:37,361 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:40:38,845 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:40:39,532 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:40:40,079 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:40:40,878 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:40:41,338 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:40:42,712 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:40:43,118 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:40:43,930 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:40:44,440 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:40:44,441 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:40:44,441 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:40:45,946 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:40:48,273 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:40:50,141 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:40:51,978 - blog_automation.modules.trend_discovery - INFO - Retrieved 59 topics from Reddit
+2025-06-06 16:40:51,979 - blog_automation.modules.trend_discovery - INFO - Retrieved 59 topics from Reddit
+2025-06-06 16:40:51,979 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:40:51,979 - blog_automation.modules.trend_discovery - INFO - Discovered 4 trending topics (randomized selection)
+2025-06-06 16:40:51,979 - blog_automation.orchestrator - INFO - Selected trending topic: YouTube is already adding more ads to its latest Premium subscription (score: 0.72364)
+2025-06-06 16:40:51,979 - blog_automation.orchestrator - INFO - Starting content generation for topic: YouTube is already adding more ads to its latest Premium subscription
+2025-06-06 16:40:51,979 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: YouTube is already adding more ads to its latest Premium subscription
+2025-06-06 16:41:22,738 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:41:22,748 - blog_automation.modules.content_generator - WARNING - Generated content length out of range: 578 words (attempt 1). Retrying...
+2025-06-06 16:41:47,702 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:41:47,714 - blog_automation.modules.content_generator - WARNING - Generated content length out of range: 547 words (attempt 2). Retrying...
+2025-06-06 16:42:16,440 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:42:16,447 - blog_automation.modules.content_generator - ERROR - Generated content length out of range after 2 retries: 561 words
+2025-06-06 16:42:16,448 - blog_automation.modules.content_generator - ERROR - Error in generate_content wrapper: Content generation failed: Failed to generate main content
+2025-06-06 16:42:16,448 - blog_automation.orchestrator - ERROR - Workflow failed after 99.09 seconds: Content generation failed: Failed to generate main content
+2025-06-06 16:42:16,448 - __main__ - ERROR - ❌ Blog post generation failed
+2025-06-06 16:42:16,448 - __main__ - ERROR - Error: Content generation failed: Failed to generate main content
+2025-06-06 16:43:12,185 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:43:12,186 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:43:12,186 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:43:13,132 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:43:13,154 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-06 16:43:13,155 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-06 16:43:13,155 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749246193
+2025-06-06 16:43:13,155 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:43:13,155 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:43:13,155 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:43:13,155 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:43:15,050 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:43:15,547 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:43:16,490 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:43:17,595 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:43:18,110 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:43:18,905 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:43:19,581 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:43:20,233 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:43:20,906 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:43:20,907 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:43:20,907 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:43:22,360 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:43:24,302 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:43:25,991 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:43:27,679 - blog_automation.modules.trend_discovery - INFO - Retrieved 59 topics from Reddit
+2025-06-06 16:43:27,684 - blog_automation.modules.trend_discovery - INFO - Retrieved 59 topics from Reddit
+2025-06-06 16:43:27,684 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:43:27,684 - blog_automation.modules.trend_discovery - INFO - Discovered 3 trending topics (randomized selection)
+2025-06-06 16:43:27,684 - blog_automation.orchestrator - INFO - Selected trending topic: Trump Is Getting Rid of His Tesla (score: 0.9916)
+2025-06-06 16:43:27,684 - blog_automation.orchestrator - INFO - Starting content generation for topic: Trump Is Getting Rid of His Tesla
+2025-06-06 16:43:27,684 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Trump Is Getting Rid of His Tesla
+2025-06-06 16:44:08,073 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:44:08,090 - blog_automation.modules.content_generator - INFO - Generated content: 629 words
+2025-06-06 16:44:13,744 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-06 16:44:13,968 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-06 16:44:13,968 - blog_automation.modules.content_generator - INFO - Content generation completed in 46.28 seconds
+2025-06-06 16:44:13,968 - blog_automation.orchestrator - INFO - Generated blog post: Trump's Tesla Exit: An AI and Automation Perspective (629 words)
+2025-06-06 16:44:13,968 - blog_automation.orchestrator - INFO - Searching for products related to: Trump Is Getting Rid of His Tesla
+2025-06-06 16:44:13,968 - blog_automation.modules.product_research - INFO - Searching for products related to: Trump Is Getting Rid of His Tesla
+2025-06-06 16:44:13,969 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: programming books site:amazon.com
+2025-06-06 16:44:14,099 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=programming+books+site%3Aamazon.com&num=5&safe=active
+2025-06-06 16:44:14,100 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: software development books site:amazon.com
+2025-06-06 16:44:14,538 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=software+development+books+site%3Aamazon.com&num=5&safe=active
+2025-06-06 16:44:14,539 - blog_automation.modules.product_research - INFO - Google Custom Search found 0 products
+2025-06-06 16:44:14,539 - blog_automation.modules.product_research - INFO - Using fallback Amazon scraping method
+2025-06-06 16:44:21,652 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'coding books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-06 16:44:26,594 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-06 16:44:26,594 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-06 16:44:26,594 - blog_automation.orchestrator - INFO - Assembling blog post: Trump's Tesla Exit: An AI and Automation Perspective
+2025-06-06 16:44:26,594 - blog_automation.modules.content_assembler - INFO - Assembling blog post: Trump's Tesla Exit: An AI and Automation Perspective
+2025-06-06 16:44:26,594 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-06 16:44:26,594 - blog_automation.orchestrator - INFO - Blog post assembly completed successfully
+2025-06-06 16:44:26,595 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-06-trump's-tesla-exit-an-ai-and-automation-perspectiv.md
+2025-06-06 16:44:26,595 - blog_automation.orchestrator - INFO - Successfully published post: _posts/2025-06-06-trump's-tesla-exit-an-ai-and-automation-perspectiv.md
+2025-06-06 16:44:26,595 - blog_automation.orchestrator - INFO - Workflow completed successfully in 73.44 seconds
+2025-06-06 16:44:26,595 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-06-06 16:44:26,595 - __main__ - INFO - 📁 Output file: _posts/2025-06-06-trump's-tesla-exit-an-ai-and-automation-perspectiv.md
+2025-06-06 16:44:35,982 - __main__ - INFO - Starting blog post generation...
+2025-06-06 16:44:35,982 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:44:35,983 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-06 16:44:36,475 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-06 16:44:36,514 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-06 16:44:36,514 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-06 16:44:36,514 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749246276
+2025-06-06 16:44:36,514 - blog_automation.config - INFO - Configuration validation passed
+2025-06-06 16:44:36,514 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:44:36,514 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-06 16:44:36,515 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:44:38,298 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: The request failed: Google returned a response with code 429
+2025-06-06 16:44:39,105 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-06 16:44:40,032 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: The request failed: Google returned a response with code 429
+2025-06-06 16:44:40,500 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: The request failed: Google returned a response with code 429
+2025-06-06 16:44:42,291 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: The request failed: Google returned a response with code 429
+2025-06-06 16:44:42,722 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: The request failed: Google returned a response with code 429
+2025-06-06 16:44:43,141 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: The request failed: Google returned a response with code 429
+2025-06-06 16:44:43,688 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: The request failed: Google returned a response with code 429
+2025-06-06 16:44:44,349 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: The request failed: Google returned a response with code 429
+2025-06-06 16:44:44,350 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:44:44,350 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:44:46,323 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:44:48,459 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:44:50,677 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-06 16:44:52,539 - blog_automation.modules.trend_discovery - INFO - Retrieved 60 topics from Reddit
+2025-06-06 16:44:52,540 - blog_automation.modules.trend_discovery - INFO - Retrieved 60 topics from Reddit
+2025-06-06 16:44:52,541 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-06 16:44:52,541 - blog_automation.modules.trend_discovery - INFO - Discovered 4 trending topics (randomized selection)
+2025-06-06 16:44:52,541 - blog_automation.orchestrator - INFO - Selected trending topic: Apple moves from Java 8 to Swift? (score: 0.25144)
+2025-06-06 16:44:52,541 - blog_automation.orchestrator - INFO - Starting content generation for topic: Apple moves from Java 8 to Swift?
+2025-06-06 16:44:52,542 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Apple moves from Java 8 to Swift?

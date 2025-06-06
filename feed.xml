@@ -1,4 +1,140 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="https://www.sulemanji.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.sulemanji.com/" rel="alternate" type="text/html" /><updated>2025-06-06T20:36:06+00:00</updated><id>https://www.sulemanji.com/feed.xml</id><title type="html">Suleman Manji</title><subtitle>Enterprise Technology Strategy | Cloud Architecture | Process Automation</subtitle><entry><title type="html">Palantir’s Clash with Journalists: A Data Security Debate</title><link href="https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-clash-with-journalists-a-data-security-d.html" rel="alternate" type="text/html" title="Palantir’s Clash with Journalists: A Data Security Debate" /><published>2025-06-06T15:35:17+00:00</published><updated>2025-06-06T15:35:17+00:00</updated><id>https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-clash-with-journalists-a-data-security-d</id><content type="html" xml:base="https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-clash-with-journalists-a-data-security-d.html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="https://www.sulemanji.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.sulemanji.com/" rel="alternate" type="text/html" /><updated>2025-06-06T20:43:02+00:00</updated><id>https://www.sulemanji.com/feed.xml</id><title type="html">Suleman Manji</title><subtitle>Enterprise Technology Strategy | Cloud Architecture | Process Automation</subtitle><entry><title type="html">Trump’s Tesla Sale: A Deep Dive into the Implications</title><link href="https://www.sulemanji.com/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication.html" rel="alternate" type="text/html" title="Trump’s Tesla Sale: A Deep Dive into the Implications" /><published>2025-06-06T15:42:21+00:00</published><updated>2025-06-06T15:42:21+00:00</updated><id>https://www.sulemanji.com/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication</id><content type="html" xml:base="https://www.sulemanji.com/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication.html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<p>The subject of former President Donald Trump getting rid of his Tesla has sparked quite a bit of interest, especially in the technology and engineering community. This move may seem trivial on the surface, but it has profound implications given the current global push towards electric vehicles (EVs) and renewable energy.</p>
+
+<p>Understanding the technical aspects that may have informed this decision, the implications, and the state of EV technology today is essential for engineering professionals. This blog post aims to unpack these details, offering insights into the rapidly evolving world of EVs, their merits, demerits, and what to expect in the future.</p>
+
+<blockquote>
+  <p><strong>Recommended Resource:</strong> For those looking to dive deeper into this topic, <strong><a href="https://www.amazon.com/dp/0132350882?tag=sghpgs-20&amp;linkCode=ogi&amp;th=1&amp;psc=1">Clean Code: A Handbook of Agile Software Craftsmanship</a></strong> offers comprehensive insights and practical guidance. ⭐ 4.7/5 - $42.99</p>
+</blockquote>
+
+<h2 id="understanding-the-fundamentals">Understanding the Fundamentals</h2>
+<p>Tesla, led by Elon Musk, has revolutionized the automotive industry by spearheading the shift towards electric vehicles. The company’s vehicles run on battery-powered electric motors, which eliminate the need for combustion engines and, consequently, the emission of greenhouse gases.</p>
+
+<h3 id="-professional-resource">💡 Professional Resource</h3>
+
+<table>
+  <tbody>
+    <tr>
+      <td>To implement these concepts effectively, consider exploring <strong><a href="https://www.amazon.com/dp/0201633612?tag=sghpgs-20&amp;linkCode=ogi&amp;th=1&amp;psc=1">Design Patterns: Elements of Reusable Object-Oriented Software</a></strong>, which provides detailed methodologies and best practices. Rating: 4.5/5</td>
+      <td>Price: $54.99</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Tesla cars come with advanced features like autopilot, a robust battery life, and over-the-air updates that improve vehicle performance. However, these features, as innovative as they are, come with their own set of challenges. These include the high cost of the vehicles, range anxiety due to limited battery life, and data privacy concerns raised by the collection and use of user data by Tesla’s systems.</p>
+
+<hr />
+
+<p><strong>📚 Expert Recommendation:</strong> A valuable resource for understanding these principles is <strong><a href="https://www.amazon.com/dp/1736049119?tag=sghpgs-20&amp;linkCode=ogi&amp;th=1&amp;psc=1">System Design Interview – An insider’s guide</a></strong>, offering both theoretical foundations and practical applications. (4.6⭐) $35.99</p>
+
+<hr />
+
+<h2 id="technical-implementation">Technical Implementation</h2>
+<p>Tesla’s electric vehicles operate on a technical framework that is fundamentally different from traditional combustion engines. They leverage technology such as:</p>
+
+<ul>
+  <li>
+    <p><strong>Electric Motors</strong>: Tesla vehicles use AC induction motors that convert electric energy into mechanical energy.</p>
+  </li>
+  <li>
+    <p><strong>Batteries</strong>: These vehicles are powered by lithium-ion batteries, similar to what you’d find in a laptop or mobile device.</p>
+  </li>
+  <li>
+    <p><strong>Software</strong>: Tesla cars are essentially computers on wheels. They come with a sophisticated software system that controls everything from battery management to driver assist systems.</p>
+  </li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Simplified view of a Tesla car's software system
+</span><span class="k">class</span> <span class="nc">TeslaCar</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">battery</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">software</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">battery</span> <span class="o">=</span> <span class="n">battery</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">motor</span> <span class="o">=</span> <span class="n">motor</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">software</span> <span class="o">=</span> <span class="n">software</span>
+
+    <span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">miles</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">battery</span><span class="p">.</span><span class="n">use_energy</span><span class="p">(</span><span class="n">miles</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">motor</span><span class="p">.</span><span class="n">rotate_wheels</span><span class="p">(</span><span class="n">miles</span><span class="p">)</span>
+        <span class="bp">self</span><span class="p">.</span><span class="n">software</span><span class="p">.</span><span class="n">update_navigation</span><span class="p">(</span><span class="n">miles</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="best-practices-and-strategies">Best Practices and Strategies</h2>
+<p>When assessing an electric vehicle, it is essential to consider several factors:</p>
+
+<ul>
+  <li>
+    <p><strong>Cost</strong>: While the initial cost might be higher than traditional cars, remember to factor in the cost savings from fuel and maintenance over the vehicle’s lifetime.</p>
+  </li>
+  <li>
+    <p><strong>Range</strong>: Evaluate your daily driving needs and ensure the vehicle’s range meets those requirements.</p>
+  </li>
+  <li>
+    <p><strong>Charging Infrastructure</strong>: Consider the availability of charging stations in your area or the feasibility of installing a home charger.</p>
+  </li>
+  <li>
+    <p><strong>Data Privacy</strong>: Understand the car’s data collection and usage policy, especially if it comes with advanced features like autopilot.</p>
+  </li>
+</ul>
+
+<h2 id="advanced-techniques-and-tools">Advanced Techniques and Tools</h2>
+<p>Tesla’s electric vehicles use advanced techniques and tools like:</p>
+
+<ul>
+  <li>
+    <p><strong>Autopilot</strong>: This advanced driver-assist system uses cameras, ultrasonic sensors, and radar to provide semi-autonomous driving.</p>
+  </li>
+  <li>
+    <p><strong>Over-the-Air Updates</strong>: These allow Tesla to remotely improve vehicle performance, fix bugs, and add new features.</p>
+  </li>
+  <li>
+    <p><strong>Battery Tech</strong>: Tesla’s batteries have a higher energy density and longer lifespan than most other EV batteries, thanks to the company’s continuous push for innovation.</p>
+  </li>
+</ul>
+
+<h2 id="real-world-applications">Real-World Applications</h2>
+<p>Tesla vehicles are increasingly being adopted across the world. For instance, the city of Los Angeles has incorporated Tesla cars into its police department fleet. Also, Tesla’s Model 3 was the best-selling car in the UK in 2020, not just among electric vehicles but across all categories.</p>
+
+<h2 id="common-pitfalls-and-solutions">Common Pitfalls and Solutions</h2>
+<p>Some common challenges with Tesla vehicles include:</p>
+
+<ul>
+  <li>
+    <p><strong>Limited Charging Infrastructure</strong>: While Tesla has a growing network of Superchargers, access can still be a challenge in some areas. Home charging is a viable solution but requires upfront investment.</p>
+  </li>
+  <li>
+    <p><strong>High Price Point</strong>: Tesla cars are expensive. However, the total cost of ownership can be lower than traditional cars due to savings on fuel and maintenance.</p>
+  </li>
+  <li>
+    <p><strong>Battery Degradation</strong>: Over time, the range of the car can decrease. Tesla has been working on improving battery technology to mitigate this issue.</p>
+  </li>
+</ul>
+
+<h2 id="future-trends-and-innovations">Future Trends and Innovations</h2>
+<p>The future of EVs looks promising with advancements in battery technology, autonomous driving, and vehicle-to-grid technology. Tesla’s Battery Day event highlighted plans for a self-produced, more affordable battery with a longer lifespan.</p>
+
+<h2 id="key-takeaways">Key Takeaways</h2>
+<ul>
+  <li>Tesla’s electric vehicles offer a sustainable alternative to traditional cars.</li>
+  <li>While there are challenges with EV adoption, advancements in technology and infrastructure are rapidly overcoming these.</li>
+  <li>As an engineering professional, understanding these trends can provide insights into the future of the automotive industry.</li>
+</ul>
+
+<h2 id="in-conclusion-trump-getting-rid-of-his-tesla-might-be-more-than-just-a-personal-preference-it-could-be-a-commentary-on-the-state-of-evs-today-and-the-challenges-they-present-even-as-they-pave-the-way-for-a-more-sustainable-future">In conclusion, Trump getting rid of his Tesla might be more than just a personal preference. It could be a commentary on the state of EVs today and the challenges they present, even as they pave the way for a more sustainable future.</h2>
+
+<h2 id="-discussion-source">📰 Discussion Source</h2>
+
+<p>This article was inspired by an active discussion in the <strong>r/technology</strong> community. Join the conversation and share your thoughts:</p>
+
+<p><strong><a href="https://www.reddit.com/r/technology/comments/1l4snpe/trump_is_getting_rid_of_his_tesla/">View Original Reddit Discussion</a></strong></p>
+
+<p>The topic “Trump Is Getting Rid of His Tesla” has generated significant engagement (30321 upvotes) and represents a trending area of interest in the tech community.</p>
+
+<hr />
+
+<hr />
+
+<p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
+
+<hr />]]></content><author><name>Suleman Manji</name></author><category term="Tech Trends" /><category term="Trump" /><category term="Tesla" /><category term="Electric Vehicles" /><category term="Renewable Energy" /><category term="Technology Trends" /><category term="Engineering" /><category term="EV Technology" /><summary type="html"><![CDATA[Explore the technical and global implications of Trump's decision to part ways with his Tesla. A must-read for tech and EV enthusiasts.]]></summary></entry><entry><title type="html">Palantir’s Clash with Journalists: A Data Security Debate</title><link href="https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-clash-with-journalists-a-data-security-d.html" rel="alternate" type="text/html" title="Palantir’s Clash with Journalists: A Data Security Debate" /><published>2025-06-06T15:35:17+00:00</published><updated>2025-06-06T15:35:17+00:00</updated><id>https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-clash-with-journalists-a-data-security-d</id><content type="html" xml:base="https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-clash-with-journalists-a-data-security-d.html"><![CDATA[<h2 id="introduction">Introduction</h2>
 
 <p>In today’s data-driven world, the protection of sensitive information remains a top priority for businesses and individuals alike. The recent incident involving Palantir Technologies, a high-profile data analytics firm, and a WIRED reporter, brings the topic of data security and journalistic freedom into sharp focus. Notably, Palantir threatened to call the police on the reporter, while other journalists were expelled from the event. This incident underscores the need for robust data policies and strategies, as well as the importance of maintaining a balance between security and transparency.</p>
 
@@ -1033,485 +1169,4 @@ The Genisys, Terminator series offers a dramatic portrayal of AI and automation.
 
 <hr />
 
-<p>Have questions or feedback about Microsoft Graph API integration? <a href="mailto:ssmanji89@gmail.com">Contact me</a> or join the discussion in the comments below.</p>]]></content><author><name>Suleman Manji</name></author><category term="development" /><category term="microsoft" /><category term="automation" /><category term="microsoft-graph" /><category term="powershell" /><category term="node-js" /><category term="api" /><category term="automation" /><summary type="html"><![CDATA[Leveraging Microsoft Graph API for Enterprise Automation]]></summary></entry><entry><title type="html">PowerShell Automation Best Practices for Microsoft 365</title><link href="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html" rel="alternate" type="text/html" title="PowerShell Automation Best Practices for Microsoft 365" /><published>2025-02-10T00:00:00+00:00</published><updated>2025-02-10T00:00:00+00:00</updated><id>https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices</id><content type="html" xml:base="https://www.sulemanji.com/development/microsoft/automation/2025/02/10/powershell-automation-best-practices.html"><![CDATA[<h1 id="powershell-automation-best-practices-for-microsoft-365">PowerShell Automation Best Practices for Microsoft 365</h1>
-
-<p>PowerShell has become an indispensable tool for Microsoft 365 administrators and developers, providing powerful capabilities for automating repetitive tasks, managing resources at scale, and implementing complex workflows. However, writing efficient, secure, and maintainable PowerShell scripts requires more than basic scripting knowledge.</p>
-
-<p>In this article, I’ll share best practices and patterns that I’ve developed over years of creating PowerShell automation for enterprise Microsoft 365 environments.</p>
-
-<h2 id="modular-script-design">Modular Script Design</h2>
-
-<p>One of the most important aspects of maintainable PowerShell automation is modular design. Breaking your scripts into reusable functions makes them easier to test, maintain, and share.</p>
-
-<h3 id="function-structure-pattern">Function Structure Pattern</h3>
-
-<p>Follow a consistent structure for your functions:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Verb-Noun</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">,</span><span class="w"> 
-                   </span><span class="n">ValueFromPipeline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">,</span><span class="w">
-                   </span><span class="n">HelpMessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Description of parameter"</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">ValidateNotNullOrEmpty</span><span class="p">()]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$RequiredParam</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$OptionalParam</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"DefaultValue"</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-    
-    </span><span class="kr">begin</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Initialize resources, connect to services</span><span class="w">
-        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Starting Verb-Noun operation"</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    
-    </span><span class="kr">process</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-            </span><span class="c"># Main function logic</span><span class="w">
-            </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Processing </span><span class="nv">$RequiredParam</span><span class="s2">"</span><span class="w">
-            </span><span class="c"># ...</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-        </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
-            </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Error in Verb-Noun: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
-            </span><span class="kr">throw</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    
-    </span><span class="kr">end</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Clean up resources</span><span class="w">
-        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Completed Verb-Noun operation"</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="creating-reusable-modules">Creating Reusable Modules</h3>
-
-<p>Group related functions into modules for easier reuse:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Save as M365Management.psm1</span><span class="w">
-</span><span class="kr">function</span><span class="w"> </span><span class="nf">Connect-M365Services</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">pscredential</span><span class="p">]</span><span class="nv">$Credential</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$ExchangeOnline</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$SharePointOnline</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="o">=</span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$Teams</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-    
-    </span><span class="c"># Connection logic for each service</span><span class="w">
-    </span><span class="c"># ...</span><span class="w">
-</span><span class="p">}</span><span class="w">
-
-</span><span class="kr">function</span><span class="w"> </span><span class="nf">Get-M365UserReport</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="c"># Report generation logic</span><span class="w">
-    </span><span class="c"># ...</span><span class="w">
-</span><span class="p">}</span><span class="w">
-
-</span><span class="c"># Export functions</span><span class="w">
-</span><span class="n">Export-ModuleMember</span><span class="w"> </span><span class="nt">-Function</span><span class="w"> </span><span class="nx">Connect-M365Services</span><span class="p">,</span><span class="w"> </span><span class="nx">Get-M365UserReport</span><span class="w">
-</span></code></pre></div></div>
-
-<h2 id="secure-authentication">Secure Authentication</h2>
-
-<p>Security should be a top priority in your PowerShell scripts, especially when they interact with Microsoft 365 services.</p>
-
-<h3 id="modern-authentication">Modern Authentication</h3>
-
-<p>Always use modern authentication methods instead of basic authentication:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Connect to Exchange Online with modern auth</span><span class="w">
-</span><span class="kr">function</span><span class="w"> </span><span class="nf">Connect-ExchangeOnlineSecure</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="p">()</span><span class="w">
-    
-    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Check for EXO V2 module</span><span class="w">
-        </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">Get-Module</span><span class="w"> </span><span class="nt">-ListAvailable</span><span class="w"> </span><span class="nt">-Name</span><span class="w"> </span><span class="nx">ExchangeOnlineManagement</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w">
-            </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Exchange Online Management module not found. Install using: Install-Module ExchangeOnlineManagement -Force"</span><span class="w">
-            </span><span class="kr">return</span><span class="w"> </span><span class="bp">$false</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-        
-        </span><span class="c"># Import module</span><span class="w">
-        </span><span class="n">Import-Module</span><span class="w"> </span><span class="nx">ExchangeOnlineManagement</span><span class="w">
-        
-        </span><span class="c"># Connect using modern authentication</span><span class="w">
-        </span><span class="n">Connect-ExchangeOnline</span><span class="w"> </span><span class="nt">-ShowProgress</span><span class="w"> </span><span class="bp">$true</span><span class="w">
-        
-        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$true</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Failed to connect to Exchange Online: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
-        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$false</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="handling-credentials-securely">Handling Credentials Securely</h3>
-
-<p>Never hardcode credentials in your scripts:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Bad practice</span><span class="w">
-</span><span class="nv">$username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"admin@contoso.com"</span><span class="w">
-</span><span class="nv">$password</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"PlainTextPassword"</span><span class="w"> 
-</span><span class="nv">$secPassword</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ConvertTo-SecureString</span><span class="w"> </span><span class="nv">$password</span><span class="w"> </span><span class="nt">-AsPlainText</span><span class="w"> </span><span class="nt">-Force</span><span class="w">
-</span><span class="nv">$credential</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nx">System.Management.Automation.PSCredential</span><span class="p">(</span><span class="nv">$username</span><span class="p">,</span><span class="w"> </span><span class="nv">$secPassword</span><span class="p">)</span><span class="w">
-
-</span><span class="c"># Better practice - retrieve from certificate</span><span class="w">
-</span><span class="kr">function</span><span class="w"> </span><span class="nf">Get-CertificateCredential</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$CertificateThumbprint</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$TenantId</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$ApplicationId</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-    
-    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="nv">$certificate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-Item</span><span class="w"> </span><span class="s2">"Cert:\CurrentUser\My\</span><span class="nv">$CertificateThumbprint</span><span class="s2">"</span><span class="w">
-        
-        </span><span class="n">Connect-MgGraph</span><span class="w"> </span><span class="nt">-TenantId</span><span class="w"> </span><span class="nv">$TenantId</span><span class="w"> </span><span class="nt">-ClientId</span><span class="w"> </span><span class="nv">$ApplicationId</span><span class="w"> </span><span class="nt">-Certificate</span><span class="w"> </span><span class="nv">$certificate</span><span class="w">
-        
-        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$true</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Failed to authenticate using certificate: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
-        </span><span class="kr">return</span><span class="w"> </span><span class="bp">$false</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h2 id="error-handling-and-logging">Error Handling and Logging</h2>
-
-<p>Robust error handling and logging are essential for troubleshooting and monitoring your scripts.</p>
-
-<h3 id="structured-error-handling">Structured Error Handling</h3>
-
-<p>Implement structured error handling in all your scripts:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Set-UserLicenses</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$UserPrincipalName</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">[]]</span><span class="nv">$LicenseSkuIds</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-    
-    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Main logic</span><span class="w">
-        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"Assigning licenses to </span><span class="nv">$UserPrincipalName</span><span class="s2">"</span><span class="w">
-        </span><span class="c"># ...</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    </span><span class="kr">catch</span><span class="w"> </span><span class="p">[</span><span class="n">Microsoft.Open.AzureAD16.Client.ApiException</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Handle Azure AD specific errors</span><span class="w">
-        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Azure AD error: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
-        </span><span class="kr">throw</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    </span><span class="kr">catch</span><span class="w"> </span><span class="p">[</span><span class="n">System.Net.WebException</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Handle connectivity issues</span><span class="w">
-        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Network error: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
-        </span><span class="kr">throw</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Handle other errors</span><span class="w">
-        </span><span class="n">Write-Error</span><span class="w"> </span><span class="s2">"Unexpected error: </span><span class="bp">$_</span><span class="s2">"</span><span class="w">
-        </span><span class="kr">throw</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    </span><span class="kr">finally</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Clean up code that always runs</span><span class="w">
-        </span><span class="n">Write-Verbose</span><span class="w"> </span><span class="s2">"License operation completed."</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="comprehensive-logging">Comprehensive Logging</h3>
-
-<p>Implement proper logging that captures important details:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Write-Log</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$Message</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">ValidateSet</span><span class="p">(</span><span class="s1">'Info'</span><span class="p">,</span><span class="s1">'Warning'</span><span class="p">,</span><span class="s1">'Error'</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$Level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">'Info'</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$LogFilePath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\Logs\M365Automation_</span><span class="si">$(</span><span class="n">Get-Date</span><span class="w"> </span><span class="nt">-Format</span><span class="w"> </span><span class="s1">'yyyyMMdd'</span><span class="p">)</span><span class="o">.</span><span class="nf">log</span><span class="s2">"
-    )
-    
-    # Create timestamp
-    </span><span class="nv">$timestamp</span><span class="s2"> = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-    
-    # Format log entry
-    </span><span class="nv">$logEntry</span><span class="s2"> = "</span><span class="p">[</span><span class="nv">$timestamp</span><span class="p">]</span><span class="w"> </span><span class="p">[</span><span class="nv">$Level</span><span class="p">]</span><span class="w"> </span><span class="nv">$Message</span><span class="s2">"
-    
-    # Ensure log directory exists
-    </span><span class="nv">$logDir</span><span class="s2"> = Split-Path -Path </span><span class="nv">$LogFilePath</span><span class="s2"> -Parent
-    if (!(Test-Path -Path </span><span class="nv">$logDir</span><span class="s2">)) {
-        New-Item -Path </span><span class="nv">$logDir</span><span class="s2"> -ItemType Directory -Force | Out-Null
-    }
-    
-    # Write to log file
-    Add-Content -Path </span><span class="nv">$LogFilePath</span><span class="s2"> -Value </span><span class="nv">$logEntry</span><span class="s2">
-    
-    # Output to console with color
-    switch (</span><span class="nv">$Level</span><span class="s2">) {
-        'Info'    { Write-Host </span><span class="nv">$logEntry</span><span class="s2"> -ForegroundColor Cyan }
-        'Warning' { Write-Host </span><span class="nv">$logEntry</span><span class="s2"> -ForegroundColor Yellow }
-        'Error'   { Write-Host </span><span class="nv">$logEntry</span><span class="s2"> -ForegroundColor Red }
-    }
-}
-
-# Usage
-function Update-UserSettings {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = </span><span class="bp">$true</span><span class="s2">)]
-        [string[]]</span><span class="nv">$UserIds</span><span class="s2">
-    )
-    
-    Write-Log "</span><span class="n">Starting</span><span class="w"> </span><span class="nx">batch</span><span class="w"> </span><span class="nx">update</span><span class="w"> </span><span class="nx">for</span><span class="w"> </span><span class="err">$</span><span class="p">(</span><span class="nv">$UserIds</span><span class="o">.</span><span class="nf">Count</span><span class="si">)</span><span class="s2"> users"</span><span class="w">
-    
-    </span><span class="kr">foreach</span><span class="w"> </span><span class="p">(</span><span class="nv">$userId</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nv">$UserIds</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-            </span><span class="c"># Update logic</span><span class="w">
-            </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Processing user </span><span class="nv">$userId</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Info'</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-        </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
-            </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Failed to update user </span><span class="nv">$userId</span><span class="s2">: </span><span class="bp">$_</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Error'</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    
-    </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Batch update completed"</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h2 id="performance-optimization">Performance Optimization</h2>
-
-<p>Optimizing script performance becomes crucial when working with large Microsoft 365 tenants.</p>
-
-<h3 id="batch-processing">Batch Processing</h3>
-
-<p>Process items in batches to improve performance:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Set-BulkUserProperties</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$CsvFilePath</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">int</span><span class="p">]</span><span class="nv">$BatchSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">50</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-    
-    </span><span class="c"># Import CSV</span><span class="w">
-    </span><span class="nv">$users</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Import-Csv</span><span class="w"> </span><span class="nt">-Path</span><span class="w"> </span><span class="nv">$CsvFilePath</span><span class="w">
-    </span><span class="nv">$totalUsers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$users</span><span class="o">.</span><span class="nf">Count</span><span class="w">
-    </span><span class="nv">$processedUsers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w">
-    
-    </span><span class="c"># Process in batches</span><span class="w">
-    </span><span class="kr">for</span><span class="w"> </span><span class="p">(</span><span class="nv">$i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="nv">$i</span><span class="w"> </span><span class="o">-lt</span><span class="w"> </span><span class="nv">$totalUsers</span><span class="p">;</span><span class="w"> </span><span class="nv">$i</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nv">$BatchSize</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="nv">$userBatch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$users</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">Select-Object</span><span class="w"> </span><span class="nt">-Skip</span><span class="w"> </span><span class="nv">$i</span><span class="w"> </span><span class="nt">-First</span><span class="w"> </span><span class="nv">$BatchSize</span><span class="w">
-        
-        </span><span class="c"># Process the batch</span><span class="w">
-        </span><span class="nv">$batchTasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">@()</span><span class="w">
-        </span><span class="kr">foreach</span><span class="w"> </span><span class="p">(</span><span class="nv">$user</span><span class="w"> </span><span class="kr">in</span><span class="w"> </span><span class="nv">$userBatch</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-            </span><span class="nv">$batchTasks</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">Update-UserPropertiesAsync</span><span class="w"> </span><span class="nt">-User</span><span class="w"> </span><span class="nv">$user</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-        
-        </span><span class="c"># Wait for all batch operations to complete</span><span class="w">
-        </span><span class="nv">$results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Wait-Job</span><span class="w"> </span><span class="nt">-Job</span><span class="w"> </span><span class="nv">$batchTasks</span><span class="w">
-        
-        </span><span class="c"># Update progress</span><span class="w">
-        </span><span class="nv">$processedUsers</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="nv">$userBatch</span><span class="o">.</span><span class="nf">Count</span><span class="w">
-        </span><span class="nv">$percentComplete</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">math</span><span class="p">]::</span><span class="n">Round</span><span class="p">((</span><span class="nv">$processedUsers</span><span class="w"> </span><span class="n">/</span><span class="w"> </span><span class="nv">$totalUsers</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w">
-        </span><span class="n">Write-Progress</span><span class="w"> </span><span class="nt">-Activity</span><span class="w"> </span><span class="s2">"Updating User Properties"</span><span class="w"> </span><span class="nt">-Status</span><span class="w"> </span><span class="s2">"</span><span class="nv">$processedUsers</span><span class="s2"> of </span><span class="nv">$totalUsers</span><span class="s2"> users processed"</span><span class="w"> </span><span class="nt">-PercentComplete</span><span class="w"> </span><span class="nv">$percentComplete</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    
-    </span><span class="n">Write-Progress</span><span class="w"> </span><span class="nt">-Activity</span><span class="w"> </span><span class="s2">"Updating User Properties"</span><span class="w"> </span><span class="nt">-Completed</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="parallel-processing">Parallel Processing</h3>
-
-<p>Use parallel processing for independent operations:</p>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Get-AllSiteCollectionSizes</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">int</span><span class="p">]</span><span class="nv">$ThrottleLimit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">5</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-    
-    </span><span class="c"># Connect to SharePoint Online</span><span class="w">
-    </span><span class="n">Connect-PnPOnline</span><span class="w"> </span><span class="nt">-Url</span><span class="w"> </span><span class="s2">"https://contoso-admin.sharepoint.com"</span><span class="w"> </span><span class="nt">-Interactive</span><span class="w">
-    
-    </span><span class="c"># Get all site collections</span><span class="w">
-    </span><span class="nv">$siteCollections</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Get-PnPTenantSite</span><span class="w">
-    
-    </span><span class="c"># Process sites in parallel</span><span class="w">
-    </span><span class="nv">$siteCollections</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">ForEach-Object</span><span class="w"> </span><span class="nt">-ThrottleLimit</span><span class="w"> </span><span class="nv">$ThrottleLimit</span><span class="w"> </span><span class="nt">-Parallel</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="nv">$site</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$_</span><span class="w">
-        
-        </span><span class="c"># Connect to the specific site</span><span class="w">
-        </span><span class="n">Connect-PnPOnline</span><span class="w"> </span><span class="nt">-Url</span><span class="w"> </span><span class="nv">$site</span><span class="o">.</span><span class="nf">Url</span><span class="w"> </span><span class="nt">-Interactive</span><span class="w">
-        
-        </span><span class="c"># Get site size and other properties</span><span class="w">
-        </span><span class="nv">$siteData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">PSCustomObject</span><span class="p">]@{</span><span class="w">
-            </span><span class="nx">Url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$site</span><span class="err">.</span><span class="nx">Url</span><span class="w">
-            </span><span class="nx">Title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$site</span><span class="err">.</span><span class="nx">Title</span><span class="w">
-            </span><span class="nx">StorageUsageMB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">math</span><span class="p">]</span><span class="err">::</span><span class="nx">Round</span><span class="err">(</span><span class="nv">$site</span><span class="err">.</span><span class="nx">StorageUsageCurrent</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="err">)</span><span class="w">
-            </span><span class="nx">LastModified</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$site</span><span class="err">.</span><span class="nx">LastContentModifiedDate</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-        
-        </span><span class="c"># Output the result</span><span class="w">
-        </span><span class="nv">$siteData</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h2 id="automating-microsoft-365-security-tasks">Automating Microsoft 365 Security Tasks</h2>
-
-<p>Security tasks are one of the most common automation scenarios in Microsoft 365 environments.</p>
-
-<h3 id="creating-a-conditional-access-policy">Creating a Conditional Access Policy</h3>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">New-ConditionalAccessPolicy</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$PolicyName</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">[]]</span><span class="nv">$TargetGroups</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$true</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">[]]</span><span class="nv">$TargetApps</span><span class="p">,</span><span class="w">
-        
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">switch</span><span class="p">]</span><span class="nv">$RequireMFA</span><span class="w">
-    </span><span class="p">)</span><span class="w">
-    
-    </span><span class="kr">try</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="c"># Connect to Microsoft Graph (Authentication handled separately)</span><span class="w">
-        
-        </span><span class="c"># Create conditions</span><span class="w">
-        </span><span class="nv">$conditions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessConditionSet</span><span class="w">
-        
-        </span><span class="c"># Add users</span><span class="w">
-        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Users</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessUserCondition</span><span class="w">
-        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Users</span><span class="o">.</span><span class="nf">IncludeGroups</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$TargetGroups</span><span class="w">
-        
-        </span><span class="c"># Add applications</span><span class="w">
-        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Applications</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessApplicationCondition</span><span class="w">
-        </span><span class="nv">$conditions</span><span class="o">.</span><span class="nf">Applications</span><span class="o">.</span><span class="nf">IncludeApplications</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">$TargetApps</span><span class="w">
-        
-        </span><span class="c"># Create grant controls</span><span class="w">
-        </span><span class="nv">$grantControls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">New-Object</span><span class="w"> </span><span class="nt">-TypeName</span><span class="w"> </span><span class="nx">Microsoft.Open.MSGraph.Model.ConditionalAccessGrantControls</span><span class="w">
-        </span><span class="nv">$grantControls</span><span class="o">.</span><span class="nf">Operator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"OR"</span><span class="w">
-        
-        </span><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="nv">$RequireMFA</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w">
-            </span><span class="nv">$grantControls</span><span class="o">.</span><span class="nf">BuiltInControls</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Mfa"</span><span class="w">
-        </span><span class="p">}</span><span class="w">
-        
-        </span><span class="c"># Create new policy</span><span class="w">
-        </span><span class="n">New-AzureADMSConditionalAccessPolicy</span><span class="w"> </span><span class="se">`
-</span><span class="w">            </span><span class="nt">-DisplayName</span><span class="w"> </span><span class="nv">$PolicyName</span><span class="w"> </span><span class="se">`
-</span><span class="w">            </span><span class="nt">-State</span><span class="w"> </span><span class="s2">"Enabled"</span><span class="w"> </span><span class="se">`
-</span><span class="w">            </span><span class="nt">-Conditions</span><span class="w"> </span><span class="nv">$conditions</span><span class="w"> </span><span class="se">`
-</span><span class="w">            </span><span class="nt">-GrantControls</span><span class="w"> </span><span class="nv">$grantControls</span><span class="w">
-        
-        </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Created conditional access policy: </span><span class="nv">$PolicyName</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Info'</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-    </span><span class="kr">catch</span><span class="w"> </span><span class="p">{</span><span class="w">
-        </span><span class="n">Write-Log</span><span class="w"> </span><span class="s2">"Failed to create conditional access policy: </span><span class="bp">$_</span><span class="s2">"</span><span class="w"> </span><span class="nt">-Level</span><span class="w"> </span><span class="s1">'Error'</span><span class="w">
-        </span><span class="kr">throw</span><span class="w">
-    </span><span class="p">}</span><span class="w">
-</span><span class="p">}</span><span class="w">
-</span></code></pre></div></div>
-
-<h3 id="security-report-generation">Security Report Generation</h3>
-
-<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kr">function</span><span class="w"> </span><span class="nf">Get-SecurityComplianceReport</span><span class="w"> </span><span class="p">{</span><span class="w">
-    </span><span class="p">[</span><span class="n">CmdletBinding</span><span class="p">()]</span><span class="w">
-    </span><span class="kr">param</span><span class="w"> </span><span class="p">(</span><span class="w">
-        </span><span class="p">[</span><span class="n">Parameter</span><span class="p">(</span><span class="n">Mandatory</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">$false</span><span class="p">)]</span><span class="w">
-        </span><span class="p">[</span><span class="n">string</span><span class="p">]</span><span class="nv">$OutputPath</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"C:\Reports\SecurityCompliance_</span><span class="si">$(</span><span class="n">Get-Date</span><span class="w"> </span><span class="nt">-Format</span><span class="w"> </span><span class="s1">'yyyyMMdd'</span><span class="p">)</span><span class="o">.</span><span class="nf">csv</span><span class="s2">"
-    )
-    
-    try {
-        # Get users without MFA
-        </span><span class="nv">$usersWithoutMFA</span><span class="s2"> = Get-UsersWithoutMFA
-        
-        # Get accounts with risky sign-ins
-        </span><span class="nv">$riskyAccounts</span><span class="s2"> = Get-RiskySignInAccounts
-        
-        # Get guest accounts
-        </span><span class="nv">$guestAccounts</span><span class="s2"> = Get-AzureADUser -Filter "</span><span class="n">userType</span><span class="w"> </span><span class="nx">eq</span><span class="w"> </span><span class="s1">'Guest'</span><span class="s2">"
-        
-        # Get admin accounts
-        </span><span class="nv">$adminAccounts</span><span class="s2"> = Get-AdminAccounts
-        
-        # Compile report
-        </span><span class="nv">$report</span><span class="s2"> = [PSCustomObject]@{
-            ReportDate = Get-Date
-            UsersWithoutMFA = </span><span class="nv">$usersWithoutMFA</span><span class="s2">.Count
-            RiskyAccounts = </span><span class="nv">$riskyAccounts</span><span class="s2">.Count
-            GuestAccounts = </span><span class="nv">$guestAccounts</span><span class="s2">.Count
-            AdminAccounts = </span><span class="nv">$adminAccounts</span><span class="s2">.Count
-            SecurityScore = Get-TenantSecureScore
-            CompliancePercentage = Calculate-CompliancePercentage
-        }
-        
-        # Export detailed findings
-        </span><span class="nv">$detailedReport</span><span class="s2"> = @()
-        
-        foreach (</span><span class="nv">$user</span><span class="s2"> in </span><span class="nv">$usersWithoutMFA</span><span class="s2">) {
-            </span><span class="nv">$detailedReport</span><span class="s2"> += [PSCustomObject]@{
-                UserPrincipalName = </span><span class="nv">$user</span><span class="s2">.UserPrincipalName
-                DisplayName = </span><span class="nv">$user</span><span class="s2">.DisplayName
-                Finding = "</span><span class="nx">Missing</span><span class="w"> </span><span class="nx">MFA</span><span class="s2">"
-                RiskLevel = "</span><span class="nx">High</span><span class="s2">"
-                RecommendedAction = "</span><span class="nx">Enable</span><span class="w"> </span><span class="nx">MFA</span><span class="s2">"
-            }
-        }
-        
-        # Add other findings
-        # ...
-        
-        # Export to CSV
-        </span><span class="nv">$detailedReport</span><span class="s2"> | Export-Csv -Path </span><span class="nv">$OutputPath</span><span class="s2"> -NoTypeInformation
-        
-        return </span><span class="nv">$report</span><span class="s2">
-    }
-    catch {
-        Write-Log "</span><span class="nx">Failed</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">generate</span><span class="w"> </span><span class="nx">security</span><span class="w"> </span><span class="nx">compliance</span><span class="w"> </span><span class="nx">report:</span><span class="w"> </span><span class="bp">$_</span><span class="s2">" -Level 'Error'
-        throw
-    }
-}
-</span></code></pre></div></div>
-
-<h2 id="conclusion">Conclusion</h2>
-
-<p>PowerShell remains an essential tool for Microsoft 365 automation, providing powerful capabilities for managing and securing your environment. By following these best practices for modular design, secure authentication, error handling, and performance optimization, you can create more reliable and maintainable automation solutions.</p>
-
-<p>In future articles, I’ll dive deeper into specific Microsoft 365 automation scenarios, including Teams governance, Exchange Online management, and SharePoint site provisioning.</p>
-
-<hr />
-
-<p>Do you have questions about PowerShell automation for Microsoft 365? <a href="mailto:ssmanji89@gmail.com">Contact me</a> or share your thoughts in the comments below.</p>]]></content><author><name>Suleman Manji</name></author><category term="development" /><category term="microsoft" /><category term="automation" /><category term="powershell" /><category term="microsoft-365" /><category term="scripting" /><category term="automation" /><category term="best-practices" /><summary type="html"><![CDATA[PowerShell Automation Best Practices for Microsoft 365]]></summary></entry></feed>
+<p>Have questions or feedback about Microsoft Graph API integration? <a href="mailto:ssmanji89@gmail.com">Contact me</a> or join the discussion in the comments below.</p>]]></content><author><name>Suleman Manji</name></author><category term="development" /><category term="microsoft" /><category term="automation" /><category term="microsoft-graph" /><category term="powershell" /><category term="node-js" /><category term="api" /><category term="automation" /><summary type="html"><![CDATA[Leveraging Microsoft Graph API for Enterprise Automation]]></summary></entry></feed>

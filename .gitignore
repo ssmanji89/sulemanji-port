@@ -6,7 +6,8 @@ _site
 # Environment variables and secrets
 .env
 .env.*
-*.env
+!.env.example
+!.env.template
 .env.local
 .env.production
 .env.development

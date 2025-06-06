@@ -14,7 +14,7 @@ import aiohttp
 import praw
 from pytrends.request import TrendReq
 from ..models import TrendingTopic, TrendSource
-from ..config import Config
+from ..config import config
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,9 @@ class TrendDiscovery:
         try:
             # Setup Reddit client
             self.reddit = praw.Reddit(
-                client_id=Config.REDDIT_CLIENT_ID,
-                client_secret=Config.REDDIT_CLIENT_SECRET,
-                user_agent=Config.REDDIT_USER_AGENT
+                client_id=config.get('reddit.client_id'),
+                client_secret=config.get('reddit.client_secret'),
+                user_agent=config.get('reddit.user_agent')
             )
             logger.info("Reddit client initialized successfully")
             

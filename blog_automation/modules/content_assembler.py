@@ -239,3 +239,48 @@ The topic "{source_topic.keyword}" has generated significant engagement ({source
         
         # Limit length
         return slug[:50]
+
+    async def assemble_post(self, blog_content: dict, products: List[Product], selected_topic: dict) -> str:
+        """
+        Assemble a blog post from dictionary content and product list.
+        This method is expected by the orchestrator and converts dict format to BlogPost.
+        
+        Args:
+            blog_content: Dictionary with blog content and metadata
+            products: List of affiliate products
+            selected_topic: Dictionary with topic information
+            
+        Returns:
+            Complete Jekyll markdown content ready for publishing
+        """
+        try:
+            # Convert dictionary to BlogPost object
+            blog_post = BlogPost(
+                title=blog_content['title'],
+                content=blog_content['content'],
+                excerpt=blog_content['excerpt'],
+                category=blog_content['category'],
+                tags=blog_content['tags'],
+                seo_title=blog_content.get('seo_title'),
+                meta_description=blog_content.get('meta_description')
+            )
+            
+            # Convert selected_topic dict to TrendingTopic if needed for source attribution
+            source_topic = None
+            if selected_topic.get('source') and selected_topic.get('url'):
+                source_topic = TrendingTopic(
+                    keyword=selected_topic['title'],
+                    trend_score=selected_topic.get('score', 1.0),
+                    search_volume=selected_topic.get('upvotes', 0),
+                    related_terms=[],
+                    timestamp=datetime.now(),
+                    source=selected_topic['source'],
+                    source_url=selected_topic['url']
+                )
+            
+            # Use the existing assemble_blog_post method
+            return self.assemble_blog_post(blog_post, products, source_topic)
+            
+        except Exception as e:
+            logger.error(f"Error in assemble_post wrapper: {e}")
+            raise

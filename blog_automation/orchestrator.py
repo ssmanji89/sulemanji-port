@@ -9,13 +9,14 @@ import asyncio
 import logging
 import time
 from typing import Optional, Dict, Any
-from .config import Config, setup_logging
+from .config import config, setup_logging
 from .models import ContentGenerationRequest, TrendingTopic
 from .modules.trend_discovery import TrendDiscovery
 from .modules.content_generator import ContentGenerator
 from .modules.product_research import ProductResearcher
 from .modules.content_assembler import ContentAssembler
 from .modules.publisher import GitHubPublisher
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -27,150 +28,189 @@ class BlogAutomationOrchestrator:
         """Initialize the orchestrator with all required components."""
         self.trend_discovery = TrendDiscovery()
         self.content_generator = ContentGenerator()
+        self.product_researcher = ProductResearcher()
         self.content_assembler = ContentAssembler()
         self.publisher = GitHubPublisher()
     
-    async def generate_and_publish_post(self, custom_topic: Optional[TrendingTopic] = None) -> Dict[str, Any]:
+    async def run_workflow(self, num_topics: int = 5) -> Dict[str, Any]:
         """
-        Complete workflow: discover trends, generate content, and publish.
+        Run the complete blog automation workflow
         
         Args:
-            custom_topic: Optional custom topic instead of trend discovery
+            num_topics: Number of trending topics to discover
             
         Returns:
-            Dictionary with workflow results and metrics
+            Dictionary with workflow results
         """
+        workflow_id = f"workflow_{int(time.time())}"
         start_time = time.time()
-        workflow_id = f"workflow_{int(start_time)}"
         
         logger.info(f"Starting blog automation workflow: {workflow_id}")
         
         try:
             # Validate configuration
-            if not Config.validate():
-                raise ValueError("Invalid configuration - missing required environment variables")
+            if not config.validate():
+                raise Exception("Configuration validation failed")
             
-            # Step 1: Discover trending topic (or use custom topic)
-            if custom_topic:
-                selected_topic = custom_topic
-                logger.info(f"Using custom topic: {selected_topic.keyword}")
-            else:
-                topics = await self.trend_discovery.discover_trending_topics(max_topics=5)
-                if not topics:
-                    raise ValueError("No trending topics discovered")
-                
-                selected_topic = topics[0]  # Use the highest-scoring topic
-                logger.info(f"Selected trending topic: {selected_topic.keyword} (score: {selected_topic.final_score:.2f})")
+            # Step 1: Discover trending topics (method name was wrong)
+            logger.info(f"Starting trend discovery for {num_topics} topics")
+            trending_topics = await self.trend_discovery.discover_trending_topics(num_topics)
+            
+            if not trending_topics:
+                raise Exception("No trending topics discovered")
+            
+            # Select the top topic - convert from TrendingTopic to dict format
+            selected_topic_obj = trending_topics[0]
+            selected_topic = {
+                'title': selected_topic_obj.keyword,
+                'description': f"Trending topic: {selected_topic_obj.keyword}",
+                'score': selected_topic_obj.final_score,
+                'source': selected_topic_obj.source,
+                'url': getattr(selected_topic_obj, 'source_url', None),
+                'upvotes': getattr(selected_topic_obj, 'search_volume', 0)
+            }
+            logger.info(f"Selected trending topic: {selected_topic['title']} (score: {selected_topic['score']})")
             
             # Step 2: Generate content
-            generation_request = ContentGenerationRequest(
-                topic=selected_topic,
-                target_word_count=Config.TARGET_WORD_COUNT,
-                include_products=True,
-                max_products=5
+            logger.info(f"Starting content generation for topic: {selected_topic['title']}")
+            blog_content = await self.content_generator.generate_content(selected_topic)
+            logger.info(f"Generated blog post: {blog_content['title']} ({len(blog_content['content'].split())} words)")
+            
+            # Step 3: Research affiliate products (now synchronous)
+            logger.info(f"Searching for products related to: {selected_topic['title']}")
+            products = self.product_researcher.find_relevant_products(
+                selected_topic['title'], 
+                max_products=3
             )
+            logger.info(f"Found {len(products)} affiliate products")
             
-            generation_result = await self.content_generator.generate_blog_post(generation_request)
-            if not generation_result.success:
-                raise ValueError(f"Content generation failed: {generation_result.error_message}")
+            # Step 4: Assemble final blog post
+            logger.info(f"Assembling blog post: {blog_content['title']}")
+            final_post = await self.content_assembler.assemble_post(
+                blog_content, 
+                products, 
+                selected_topic
+            )
+            logger.info("Blog post assembly completed successfully")
             
-            blog_post = generation_result.blog_post
-            logger.info(f"Generated blog post: {blog_post.title} ({blog_post.word_count} words)")
+            # Step 5: Publish
+            # Need to generate filename for the publisher
+            title_slug = blog_content['title'].lower().replace(' ', '-').replace(':', '').replace(',', '').replace('(', '').replace(')', '')[:50]
+            date_str = datetime.now().strftime('%Y-%m-%d')
+            filename = f"{date_str}-{title_slug}.md"
             
-            # Step 3: Research affiliate products
-            products = []
-            try:
-                async with ProductResearcher() as product_researcher:
-                    products = await product_researcher.find_relevant_products(selected_topic, max_products=5)
-                    logger.info(f"Found {len(products)} affiliate products")
-            except Exception as e:
-                logger.warning(f"Product research failed, continuing without products: {e}")
+            publish_result = await self.publisher.publish_post(final_post, filename)
+            if not publish_result.success:
+                raise Exception(f"Publishing failed: {publish_result.error_message}")
             
-            # Step 4: Assemble final content
-            final_content = self.content_assembler.assemble_blog_post(blog_post, products, selected_topic)
-            filename = self.content_assembler.generate_filename(blog_post)
+            published_file = publish_result.file_path
+            logger.info(f"Successfully published post: {published_file}")
             
-            # Step 5: Publish to GitHub
-            publishing_result = await self.publisher.publish_post(final_content, filename)
-            if not publishing_result.success:
-                raise ValueError(f"Publishing failed: {publishing_result.error_message}")
-            
-            # Calculate metrics
-            total_time = time.time() - start_time
+            # Calculate workflow duration
+            duration = time.time() - start_time
             
             result = {
-                "success": True,
-                "workflow_id": workflow_id,
-                "topic": {
-                    "keyword": selected_topic.keyword,
-                    "score": selected_topic.final_score,
-                    "source": selected_topic.source
+                'workflow_id': workflow_id,
+                'success': True,
+                'duration': duration,
+                'topic': selected_topic,
+                'blog_post': {
+                    'title': blog_content['title'],
+                    'word_count': len(blog_content['content'].split()),
+                    'published_file': published_file
                 },
-                "blog_post": {
-                    "title": blog_post.title,
-                    "word_count": blog_post.word_count,
-                    "category": blog_post.category,
-                    "tags": blog_post.tags
-                },
-                "products_found": len(products),
-                "publishing": {
-                    "filename": filename,
-                    "file_path": publishing_result.file_path,
-                    "commit_sha": publishing_result.commit_sha
-                },
-                "metrics": {
-                    "total_time_seconds": total_time,
-                    "content_generation_time": generation_result.generation_time_seconds,
-                    "api_calls_made": generation_result.api_calls_made
-                }
+                'products_found': len(products),
+                'total_topics_discovered': len(trending_topics)
             }
             
-            logger.info(f"Workflow completed successfully in {total_time:.2f} seconds")
+            logger.info(f"Workflow completed successfully in {duration:.2f} seconds")
             return result
             
         except Exception as e:
-            logger.error(f"Workflow failed: {e}")
+            duration = time.time() - start_time
+            logger.error(f"Workflow failed after {duration:.2f} seconds: {e}")
+            
             return {
-                "success": False,
-                "workflow_id": workflow_id,
-                "error": str(e),
-                "total_time_seconds": time.time() - start_time
-            }    
-    async def run_daily_automation(self) -> Dict[str, Any]:
-        """Run the daily automation process with rate limiting."""
-        logger.info("Starting daily automation process")
+                'workflow_id': workflow_id,
+                'success': False,
+                'duration': duration,
+                'error': str(e)
+            }
+    
+    async def run_test_workflow(self, test_topic: str = None) -> Dict[str, Any]:
+        """
+        Run a test workflow with a specific topic
         
-        try:
-            posts_to_generate = Config.POSTS_PER_DAY
-            results = []
+        Args:
+            test_topic: Specific topic to test with
             
-            for i in range(posts_to_generate):
-                logger.info(f"Generating post {i + 1} of {posts_to_generate}")
-                
-                result = await self.generate_and_publish_post()
-                results.append(result)
-                
-                # Rate limiting between posts
-                if i < posts_to_generate - 1:
-                    delay = Config.CONTENT_GENERATION_DELAY * 60  # Convert to seconds
-                    logger.info(f"Waiting {delay} seconds before next post...")
-                    await asyncio.sleep(delay)
-            
-            successful_posts = sum(1 for r in results if r.get("success", False))
-            
-            return {
-                "success": True,
-                "posts_generated": successful_posts,
-                "total_attempted": posts_to_generate,
-                "results": results
+        Returns:
+            Dictionary with test results
+        """
+        if test_topic:
+            # Create a mock trending topic
+            selected_topic = {
+                'title': test_topic,
+                'description': f"Test topic: {test_topic}",
+                'score': 1.0,
+                'source': 'test',
+                'url': None,
+                'upvotes': 0
             }
             
-        except Exception as e:
-            logger.error(f"Daily automation failed: {e}")
-            return {
-                "success": False,
-                "error": str(e)
+            logger.info(f"Running test workflow with topic: {test_topic}")
+            
+            try:
+                # Generate content
+                blog_content = await self.content_generator.generate_content(selected_topic)
+                
+                # Research products (synchronous)
+                products = self.product_researcher.find_relevant_products(test_topic, max_products=3)
+                
+                # Assemble post
+                final_post = await self.content_assembler.assemble_post(
+                    blog_content, 
+                    products, 
+                    selected_topic
+                )
+                
+                # For test, save to a test file instead of publishing
+                test_filename = "test_blog_post.md"
+                with open(test_filename, 'w', encoding='utf-8') as f:
+                    f.write(final_post)
+                
+                return {
+                    'success': True,
+                    'topic': test_topic,
+                    'blog_post': blog_content,
+                    'products_found': len(products),
+                    'test_file': test_filename
+                }
+                
+            except Exception as e:
+                logger.error(f"Test workflow failed: {e}")
+                return {
+                    'success': False,
+                    'error': str(e)
+                }
+        else:
+            # Run normal workflow
+            return await self.run_workflow(num_topics=1)
+    
+    def get_status(self) -> Dict[str, Any]:
+        """Get current system status"""
+        return {
+            'config_valid': config.validate(),
+            'google_custom_search_enabled': config.get('google_custom_search.enabled', False),
+            'amazon_fallback_enabled': config.get('amazon.fallback_to_scraping', True),
+            'components': {
+                'trend_discovery': 'initialized',
+                'content_generator': 'initialized', 
+                'product_researcher': 'initialized',
+                'content_assembler': 'initialized',
+                'publisher': 'initialized'
             }
+        }
 
 
 async def main():
@@ -182,13 +222,13 @@ async def main():
     orchestrator = BlogAutomationOrchestrator()
     
     # Run a single post generation
-    result = await orchestrator.generate_and_publish_post()
+    result = await orchestrator.run_workflow()
     
     if result["success"]:
         print(f"✅ Successfully generated and published: {result['blog_post']['title']}")
         print(f"📊 Word count: {result['blog_post']['word_count']}")
         print(f"🔗 Products found: {result['products_found']}")
-        print(f"⏱️  Total time: {result['metrics']['total_time_seconds']:.2f} seconds")
+        print(f"⏱️  Total time: {result['duration']:.2f} seconds")
     else:
         print(f"❌ Workflow failed: {result['error']}")
 

@@ -8,11 +8,16 @@ with comprehensive error handling and rate limiting.
 import asyncio
 import logging
 import re
+import time
 from typing import List, Optional, Dict, Any
 import aiohttp
 from bs4 import BeautifulSoup
 from ..models import Product, TrendingTopic
-from ..config import Config
+from ..config import config
+import requests
+from urllib.parse import urljoin, urlencode
+import random
+from .google_product_search import GoogleCustomSearch
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +36,18 @@ class ProductResearcher:
             'Connection': 'keep-alive',
             'Upgrade-Insecure-Requests': '1',
         }
+        
+        # Initialize Google Custom Search if enabled
+        self.google_search = None
+        if config.get('google_custom_search.enabled', False):
+            api_key = config.get('google_custom_search.api_key')
+            search_engine_id = config.get('google_custom_search.search_engine_id')
+            
+            if api_key and search_engine_id:
+                self.google_search = GoogleCustomSearch(api_key, search_engine_id)
+                logger.info("Google Custom Search initialized successfully")
+            else:
+                logger.warning("Google Custom Search enabled but credentials missing")
     
     async def __aenter__(self):
         """Async context manager entry."""
@@ -442,6 +459,296 @@ class ProductResearcher:
         
         # Add affiliate links to all products
         for product in products:
-            product.affiliate_link = f"https://www.amazon.com/dp/{product.asin}?tag={Config.AMAZON_STORE_ID}&linkCode=ogi&th=1&psc=1"
+            product.affiliate_link = f"https://www.amazon.com/dp/{product.asin}?tag={config.get('amazon.affiliate_tag', 'sulemanjicoc-20')}&linkCode=ogi&th=1&psc=1"
         
         return products[:max_products]
+
+    def find_relevant_products(self, topic: str, max_products: int = 3) -> List[Dict]:
+        """
+        Find affiliate products relevant to the blog topic
+        
+        Args:
+            topic: Blog topic/title
+            max_products: Maximum number of products to return
+            
+        Returns:
+            List of product dictionaries
+        """
+        logger.info(f"Searching for products related to: {topic}")
+        
+        # Generate search queries from the topic
+        search_queries = self._generate_search_queries(topic)
+        
+        all_products = []
+        
+        # Try Google Custom Search first (if available)
+        if self.google_search:
+            try:
+                for query in search_queries[:2]:  # Limit queries to avoid quota issues
+                    products = self.google_search.search_amazon_products(query, num_results=5)
+                    all_products.extend(products)
+                    
+                    if len(all_products) >= max_products:
+                        break
+                        
+                logger.info(f"Google Custom Search found {len(all_products)} products")
+                
+            except Exception as e:
+                logger.error(f"Google Custom Search failed: {e}")
+                all_products = []
+        
+        # Fallback to scraping if Google Custom Search failed or disabled
+        if len(all_products) < max_products and config.get('amazon.fallback_to_scraping', True):
+            logger.info("Using fallback Amazon scraping method")
+            
+            for query in search_queries:
+                try:
+                    scraped_products = self._search_amazon_scraping(query)
+                    all_products.extend(scraped_products)
+                    
+                    if len(all_products) >= max_products:
+                        break
+                        
+                    # Rate limiting for scraping
+                    time.sleep(random.uniform(1, 3))
+                    
+                except Exception as e:
+                    logger.warning(f"Scraping failed for query '{query}': {e}")
+                    continue
+        
+        # Remove duplicates and limit results
+        unique_products = self._remove_duplicates(all_products)
+        final_products = unique_products[:max_products]
+        
+        logger.info(f"Found {len(final_products)} relevant products")
+        return final_products
+    
+    def _generate_search_queries(self, topic: str) -> List[str]:
+        """Generate relevant search queries from the blog topic"""
+        # Clean up the topic
+        topic_lower = topic.lower()
+        
+        # Extract key terms
+        tech_keywords = [
+            'programming', 'coding', 'software', 'development', 'python', 'javascript',
+            'java', 'swift', 'react', 'node', 'web', 'mobile', 'app', 'api',
+            'database', 'cloud', 'aws', 'azure', 'docker', 'kubernetes',
+            'machine learning', 'ai', 'data science', 'analytics', 'automation',
+            'cybersecurity', 'security', 'devops', 'agile', 'blockchain'
+        ]
+        
+        found_keywords = [kw for kw in tech_keywords if kw in topic_lower]
+        
+        # Generate search queries
+        queries = []
+        
+        if found_keywords:
+            # Use specific keywords found in topic
+            for keyword in found_keywords[:3]:  # Limit to 3 keywords
+                queries.extend([
+                    f"{keyword} books",
+                    f"{keyword} programming books",
+                    f"{keyword} development books"
+                ])
+        else:
+            # Generic tech book searches
+            queries = [
+                "programming books",
+                "software development books", 
+                "coding books",
+                "computer science books"
+            ]
+        
+        # Add topic-based search if it looks searchable
+        if len(topic.split()) <= 6:  # Not too long
+            queries.insert(0, f"{topic} books")
+        
+        return queries[:5]  # Limit total queries
+    
+    def _search_amazon_scraping(self, query: str) -> List[Dict]:
+        """Fallback method: Search Amazon using web scraping"""
+        try:
+            search_url = f"https://www.amazon.com/s"
+            params = {
+                'k': query,
+                'ref': 'sr_nr_n_1',
+                'rh': 'n:283155'  # Books category
+            }
+            
+            headers = {
+                'User-Agent': random.choice(self.headers['User-Agent'].split(',')),
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+            }
+            
+            url = f"{search_url}?{urlencode(params)}"
+            
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            products = []
+            product_containers = soup.find_all('div', {'data-component-type': 's-search-result'})
+            
+            for container in product_containers[:5]:  # Limit to first 5 results
+                product = self._extract_product_from_container(container)
+                if product:
+                    products.append(product)
+            
+            return products
+            
+        except Exception as e:
+            logger.error(f"Amazon scraping failed for query '{query}': {e}")
+            return []
+    
+    def _extract_product_from_container(self, container) -> Optional[Dict]:
+        """Extract product information from Amazon search result container"""
+        try:
+            # Try multiple selectors for title
+            title_selectors = [
+                'h2 a span',
+                'h2 span',
+                '[data-cy="title-recipe-title"]',
+                '.a-size-medium.a-spacing-none.a-color-base.a-text-normal',
+                '.a-size-base-plus',
+                'h2.a-size-mini span'
+            ]
+            
+            title = None
+            title_element = None
+            
+            for selector in title_selectors:
+                title_element = container.select_one(selector)
+                if title_element:
+                    title = title_element.get_text(strip=True)
+                    if title and title != "Unknown Product":
+                        break
+            
+            if not title or title == "Unknown Product":
+                return None
+            
+            # Extract URL
+            link_element = container.select_one('h2 a')
+            if not link_element:
+                return None
+            
+            relative_url = link_element.get('href')
+            if not relative_url:
+                return None
+            
+            full_url = urljoin("https://www.amazon.com", relative_url)
+            
+            # Extract ASIN
+            asin_match = re.search(r'/dp/([A-Z0-9]{10})', full_url)
+            asin = asin_match.group(1) if asin_match else None
+            
+            # Generate affiliate URL
+            affiliate_url = self._generate_affiliate_url(full_url, asin)
+            
+            # Try to extract price
+            price = self._extract_price(container)
+            
+            # Extract rating
+            rating = self._extract_rating(container)
+            
+            return {
+                'title': title,
+                'url': affiliate_url,
+                'original_url': full_url,
+                'price': price,
+                'rating': rating,
+                'asin': asin,
+                'source': 'amazon_scraping'
+            }
+            
+        except Exception as e:
+            logger.warning(f"Error extracting product info: {e}")
+            return None
+    
+    def _extract_price(self, container) -> Optional[str]:
+        """Extract price from product container"""
+        price_selectors = [
+            '.a-price-whole',
+            '.a-price .a-offscreen',
+            '.a-price-range .a-price .a-offscreen',
+            '.a-price-symbol'
+        ]
+        
+        for selector in price_selectors:
+            price_element = container.select_one(selector)
+            if price_element:
+                price_text = price_element.get_text(strip=True)
+                if price_text and '$' in price_text:
+                    return price_text
+        
+        return None
+    
+    def _extract_rating(self, container) -> Optional[str]:
+        """Extract rating from product container"""
+        rating_selectors = [
+            '.a-icon-alt',
+            '.a-icon-row .a-icon-alt'
+        ]
+        
+        for selector in rating_selectors:
+            rating_element = container.select_one(selector)
+            if rating_element:
+                rating_text = rating_element.get_text(strip=True)
+                if 'out of' in rating_text:
+                    return rating_text
+        
+        return None
+    
+    def _generate_affiliate_url(self, original_url: str, asin: str) -> str:
+        """Generate Amazon affiliate URL"""
+        affiliate_tag = config.get('amazon.affiliate_tag', 'sulemanjicoc-20')
+        
+        if asin:
+            # Create clean Amazon URL with affiliate tag
+            return f"https://amazon.com/dp/{asin}?tag={affiliate_tag}"
+        else:
+            # Fallback: add tag to existing URL
+            separator = '&' if '?' in original_url else '?'
+            return f"{original_url}{separator}tag={affiliate_tag}"
+    
+    def _remove_duplicates(self, products: List[Dict]) -> List[Dict]:
+        """Remove duplicate products based on title similarity"""
+        if not products:
+            return []
+        
+        unique_products = []
+        seen_titles = set()
+        
+        for product in products:
+            title = product.get('title', '').lower()
+            
+            # Simple duplicate detection
+            is_duplicate = False
+            for seen_title in seen_titles:
+                if self._titles_similar(title, seen_title):
+                    is_duplicate = True
+                    break
+            
+            if not is_duplicate:
+                unique_products.append(product)
+                seen_titles.add(title)
+        
+        return unique_products
+    
+    def _titles_similar(self, title1: str, title2: str, threshold: float = 0.7) -> bool:
+        """Check if two titles are similar (simple word overlap)"""
+        words1 = set(title1.lower().split())
+        words2 = set(title2.lower().split())
+        
+        if not words1 or not words2:
+            return False
+        
+        intersection = words1.intersection(words2)
+        union = words1.union(words2)
+        
+        similarity = len(intersection) / len(union) if union else 0
+        return similarity >= threshold

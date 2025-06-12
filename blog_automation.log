@@ -1070,3 +1070,154 @@ See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.htm
 2025-06-06 16:44:52,541 - blog_automation.orchestrator - INFO - Selected trending topic: Apple moves from Java 8 to Swift? (score: 0.25144)
 2025-06-06 16:44:52,541 - blog_automation.orchestrator - INFO - Starting content generation for topic: Apple moves from Java 8 to Swift?
 2025-06-06 16:44:52,542 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Apple moves from Java 8 to Swift?
+2025-06-09 16:19:43,570 - __main__ - INFO - Starting blog post generation...
+2025-06-09 16:19:43,570 - blog_automation.config - INFO - Configuration validation passed
+2025-06-09 16:19:43,789 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-09 16:19:44,054 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-09 16:19:44,097 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-09 16:19:44,097 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-09 16:19:44,098 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749503984
+2025-06-09 16:19:44,098 - blog_automation.config - INFO - Configuration validation passed
+2025-06-09 16:19:44,098 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-09 16:19:44,098 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-09 16:19:44,098 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-09 16:19:45,940 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-06-09 16:19:47,070 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-09 16:19:47,978 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-06-09 16:19:49,130 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-09 16:19:50,003 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-09 16:19:51,183 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-09 16:19:52,243 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-09 16:19:53,397 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-09 16:19:54,327 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-06-09 16:19:54,328 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-09 16:19:54,328 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-09 16:19:55,805 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-09 16:19:58,001 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-09 16:19:59,591 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-09 16:20:01,419 - blog_automation.modules.trend_discovery - INFO - Retrieved 63 topics from Reddit
+2025-06-09 16:20:01,422 - blog_automation.modules.trend_discovery - INFO - Retrieved 63 topics from Reddit
+2025-06-09 16:20:01,422 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-09 16:20:01,422 - blog_automation.modules.trend_discovery - INFO - Discovered 4 trending topics (randomized selection)
+2025-06-09 16:20:01,423 - blog_automation.orchestrator - INFO - Selected trending topic: The Dogs of Chernobyl Are Experiencing Rapid Evolution, Study Suggests (score: 0.46156)
+2025-06-09 16:20:01,423 - blog_automation.orchestrator - INFO - Starting content generation for topic: The Dogs of Chernobyl Are Experiencing Rapid Evolution, Study Suggests
+2025-06-09 16:20:01,423 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: The Dogs of Chernobyl Are Experiencing Rapid Evolution, Study Suggests
+2025-06-09 16:20:45,216 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-09 16:20:45,223 - blog_automation.modules.content_generator - INFO - Generated content: 730 words
+2025-06-09 16:20:49,906 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-09 16:20:49,909 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-09 16:20:49,909 - blog_automation.modules.content_generator - INFO - Content generation completed in 48.49 seconds
+2025-06-09 16:20:49,910 - blog_automation.orchestrator - INFO - Generated blog post: The Rapid Evolution of Chernobyl's Canines: A Revealing Study (730 words)
+2025-06-09 16:20:49,910 - blog_automation.orchestrator - INFO - Searching for products related to: The Dogs of Chernobyl Are Experiencing Rapid Evolution, Study Suggests
+2025-06-09 16:20:49,910 - blog_automation.modules.product_research - INFO - Searching for products related to: The Dogs of Chernobyl Are Experiencing Rapid Evolution, Study Suggests
+2025-06-09 16:20:49,910 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: api books site:amazon.com
+2025-06-09 16:20:50,039 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=api+books+site%3Aamazon.com&num=5&safe=active
+2025-06-09 16:20:50,040 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: api programming books site:amazon.com
+2025-06-09 16:20:50,146 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=api+programming+books+site%3Aamazon.com&num=5&safe=active
+2025-06-09 16:20:50,146 - blog_automation.modules.product_research - INFO - Google Custom Search found 0 products
+2025-06-09 16:20:50,146 - blog_automation.modules.product_research - INFO - Using fallback Amazon scraping method
+2025-06-09 16:20:57,091 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'api development books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-09 16:20:59,607 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-09 16:20:59,607 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-09 16:20:59,607 - blog_automation.orchestrator - INFO - Assembling blog post: The Rapid Evolution of Chernobyl's Canines: A Revealing Study
+2025-06-09 16:20:59,607 - blog_automation.modules.content_assembler - INFO - Assembling blog post: The Rapid Evolution of Chernobyl's Canines: A Revealing Study
+2025-06-09 16:20:59,607 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-09 16:20:59,607 - blog_automation.orchestrator - INFO - Blog post assembly completed successfully
+2025-06-09 16:20:59,610 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-09-the-rapid-evolution-of-chernobyl's-canines-a-revea.md
+2025-06-09 16:20:59,610 - blog_automation.orchestrator - INFO - Successfully published post: _posts/2025-06-09-the-rapid-evolution-of-chernobyl's-canines-a-revea.md
+2025-06-09 16:20:59,610 - blog_automation.orchestrator - INFO - Workflow completed successfully in 75.51 seconds
+2025-06-09 16:20:59,610 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-06-09 16:20:59,610 - __main__ - INFO - 📁 Output file: _posts/2025-06-09-the-rapid-evolution-of-chernobyl's-canines-a-revea.md
+2025-06-11 21:09:04,389 - __main__ - INFO - Starting blog post generation...
+2025-06-11 21:09:04,389 - blog_automation.config - INFO - Configuration validation passed
+2025-06-11 21:09:04,566 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-11 21:09:04,908 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-11 21:09:04,949 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-11 21:09:04,949 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-11 21:09:04,949 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749694144
+2025-06-11 21:09:04,949 - blog_automation.config - INFO - Configuration validation passed
+2025-06-11 21:09:04,949 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-11 21:09:04,949 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-11 21:09:04,949 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 21:09:07,577 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-06-11 21:09:08,609 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-11 21:09:09,625 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-06-11 21:09:10,488 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-11 21:09:11,476 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-11 21:09:12,551 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-11 21:09:13,575 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-11 21:09:14,609 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-11 21:09:15,589 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-06-11 21:09:15,589 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-11 21:09:15,589 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 21:09:16,979 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 21:09:18,762 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 21:09:20,459 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 21:09:22,217 - blog_automation.modules.trend_discovery - INFO - Retrieved 63 topics from Reddit
+2025-06-11 21:09:22,217 - blog_automation.modules.trend_discovery - INFO - Retrieved 63 topics from Reddit
+2025-06-11 21:09:22,217 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-11 21:09:22,218 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-11 21:09:22,218 - blog_automation.orchestrator - INFO - Selected trending topic: This A.I. Company Wants to Take Your Job: Mechanize, a San Francisco start-up, is building artificia (score: 0.29856)
+2025-06-11 21:09:22,218 - blog_automation.orchestrator - INFO - Starting content generation for topic: This A.I. Company Wants to Take Your Job: Mechanize, a San Francisco start-up, is building artificia
+2025-06-11 21:09:22,218 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: This A.I. Company Wants to Take Your Job: Mechanize, a San Francisco start-up, is building artificia
+2025-06-11 21:09:46,569 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 21:09:46,576 - blog_automation.modules.content_generator - WARNING - Generated content length out of range: 586 words (attempt 1). Retrying...
+2025-06-11 21:10:11,610 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 21:10:11,613 - blog_automation.modules.content_generator - WARNING - Generated content length out of range: 574 words (attempt 2). Retrying...
+2025-06-11 21:10:41,032 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 21:10:41,042 - blog_automation.modules.content_generator - INFO - Generated content: 684 words
+2025-06-11 21:10:45,111 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 21:10:45,113 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-11 21:10:45,113 - blog_automation.modules.content_generator - INFO - Content generation completed in 82.90 seconds
+2025-06-11 21:10:45,114 - blog_automation.orchestrator - INFO - Generated blog post: A.I. Startup, Mechanize, Aims to Revolutionize Job Landscape (684 words)
+2025-06-11 21:10:45,114 - blog_automation.orchestrator - INFO - Searching for products related to: This A.I. Company Wants to Take Your Job: Mechanize, a San Francisco start-up, is building artificia
+2025-06-11 21:10:45,114 - blog_automation.modules.product_research - INFO - Searching for products related to: This A.I. Company Wants to Take Your Job: Mechanize, a San Francisco start-up, is building artificia
+2025-06-11 21:10:45,114 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: programming books site:amazon.com
+2025-06-11 21:10:45,241 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=programming+books+site%3Aamazon.com&num=5&safe=active
+2025-06-11 21:10:45,241 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: software development books site:amazon.com
+2025-06-11 21:10:45,360 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=software+development+books+site%3Aamazon.com&num=5&safe=active
+2025-06-11 21:10:45,361 - blog_automation.modules.product_research - INFO - Google Custom Search found 0 products
+2025-06-11 21:10:45,361 - blog_automation.modules.product_research - INFO - Using fallback Amazon scraping method
+2025-06-11 21:10:49,061 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'software development books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 21:10:50,293 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'coding books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 21:10:55,484 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-11 21:10:55,484 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-11 21:10:55,485 - blog_automation.orchestrator - INFO - Assembling blog post: A.I. Startup, Mechanize, Aims to Revolutionize Job Landscape
+2025-06-11 21:10:55,485 - blog_automation.modules.content_assembler - INFO - Assembling blog post: A.I. Startup, Mechanize, Aims to Revolutionize Job Landscape
+2025-06-11 21:10:55,485 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-11 21:10:55,485 - blog_automation.orchestrator - INFO - Blog post assembly completed successfully
+2025-06-11 21:10:55,486 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-06-11-a.i.-startup-mechanize-aims-to-revolutionize-job-l.md
+2025-06-11 21:10:55,486 - blog_automation.orchestrator - INFO - Successfully published post: _posts/2025-06-11-a.i.-startup-mechanize-aims-to-revolutionize-job-l.md
+2025-06-11 21:10:55,486 - blog_automation.orchestrator - INFO - Workflow completed successfully in 110.54 seconds
+2025-06-11 21:10:55,486 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-06-11 21:10:55,486 - __main__ - INFO - 📁 Output file: _posts/2025-06-11-a.i.-startup-mechanize-aims-to-revolutionize-job-l.md

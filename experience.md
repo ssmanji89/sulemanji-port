@@ -278,43 +278,6 @@ permalink: /experience
     </div>
 </div>
 
-<div class="certification-section animate-on-scroll mt-5">
-    <h2 class="section-title">Certifications</h2>
-    <p>Demonstrating validated expertise through industry-recognized certifications.</p>
-    <div class="certification-grid">
-        <div class="certification-card">
-            <div class="certification-logo">
-                <i class="fab fa-microsoft"></i>
-            </div>
-            <h4 class="certification-title">Microsoft Certified: Azure Solutions Architect Expert</h4>
-            <p class="certification-date">Valid through 2027</p>
-        </div>
-        
-        <div class="certification-card">
-            <div class="certification-logo">
-                <i class="fab fa-microsoft"></i>
-            </div>
-            <h4 class="certification-title">Microsoft 365 Certified: Enterprise Administrator Expert</h4>
-            <p class="certification-date">Valid through 2026</p>
-        </div>
-        
-        <div class="certification-card">
-            <div class="certification-logo">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h4 class="certification-title">Certified Information Systems Security Professional (CISSP)</h4>
-            <p class="certification-date">Valid through 2025</p>
-        </div>
-        
-        <div class="certification-card">
-            <div class="certification-logo">
-                <i class="fas fa-cloud"></i>
-            </div>
-            <h4 class="certification-title">AWS Certified Solutions Architect</h4>
-            <p class="certification-date">Valid through 2024</p>
-        </div>
-    </div>
-</div>
 
 <div class="experience-cta animate-on-scroll mt-5">
     <a href="/technical-skills" class="btn btn-primary">View Technical Skills</a>

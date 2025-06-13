@@ -106,6 +106,20 @@ class BlogAutomationOrchestrator:
             published_file = publish_result.file_path
             logger.info(f"Successfully published post: {published_file}")
             
+            # Log GitHub workflow details
+            if publish_result.pr_url:
+                logger.info(f"Created Pull Request: {publish_result.pr_url}")
+                logger.info(f"Branch: {publish_result.branch_name}")
+                logger.info(f"Commit SHA: {publish_result.commit_sha}")
+                
+                # Log merge details if merge occurred
+                if publish_result.merge_sha:
+                    logger.info(f"Successfully merged PR using {publish_result.merge_method} method")
+                    logger.info(f"Merge SHA: {publish_result.merge_sha}")
+                    logger.info(f"Merge Status: {publish_result.merge_status}")
+                else:
+                    logger.info(f"PR Status: {publish_result.merge_status}")
+            
             # Calculate workflow duration
             duration = time.time() - start_time
             
@@ -117,7 +131,14 @@ class BlogAutomationOrchestrator:
                 'blog_post': {
                     'title': blog_content['title'],
                     'word_count': len(blog_content['content'].split()),
-                    'published_file': published_file
+                    'published_file': published_file,
+                    'pr_url': publish_result.pr_url,
+                    'pr_number': publish_result.pr_number,
+                    'branch_name': publish_result.branch_name,
+                    'commit_sha': publish_result.commit_sha,
+                    'merge_sha': publish_result.merge_sha,
+                    'merge_status': publish_result.merge_status,
+                    'merge_method': publish_result.merge_method
                 },
                 'products_found': len(products),
                 'total_topics_discovered': len(trending_topics)

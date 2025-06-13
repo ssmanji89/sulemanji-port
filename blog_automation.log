@@ -1221,3 +1221,177 @@ See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.htm
 2025-06-11 21:10:55,486 - blog_automation.orchestrator - INFO - Workflow completed successfully in 110.54 seconds
 2025-06-11 21:10:55,486 - __main__ - INFO - ✅ Blog post generated successfully!
 2025-06-11 21:10:55,486 - __main__ - INFO - 📁 Output file: _posts/2025-06-11-a.i.-startup-mechanize-aims-to-revolutionize-job-l.md
+2025-06-11 22:29:41,345 - __main__ - INFO - Starting blog post generation...
+2025-06-11 22:29:41,345 - blog_automation.config - INFO - Configuration validation passed
+2025-06-11 22:29:41,493 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-11 22:29:41,767 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-11 22:29:41,799 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-11 22:29:41,800 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-11 22:29:42,121 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749698982
+2025-06-11 22:29:42,121 - blog_automation.config - INFO - Configuration validation passed
+2025-06-11 22:29:42,122 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-11 22:29:42,122 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-11 22:29:42,122 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:29:44,884 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-06-11 22:29:49,400 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: The request failed: Google returned a response with code 429
+2025-06-11 22:29:51,402 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-06-11 22:29:52,319 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-11 22:29:53,248 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-11 22:29:54,149 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-11 22:29:55,073 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-11 22:29:55,979 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-11 22:29:56,737 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-06-11 22:29:56,737 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-11 22:29:56,737 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:29:58,403 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:30:00,454 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:30:02,499 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:30:04,346 - blog_automation.modules.trend_discovery - INFO - Retrieved 61 topics from Reddit
+2025-06-11 22:30:04,347 - blog_automation.modules.trend_discovery - INFO - Retrieved 61 topics from Reddit
+2025-06-11 22:30:04,347 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-11 22:30:04,348 - blog_automation.modules.trend_discovery - INFO - Discovered 5 trending topics (randomized selection)
+2025-06-11 22:30:04,348 - blog_automation.orchestrator - INFO - Selected trending topic: ChatGPT gets crushed at chess by a 1 MHz Atari 2600 (score: 0.59914)
+2025-06-11 22:30:04,348 - blog_automation.orchestrator - INFO - Starting content generation for topic: ChatGPT gets crushed at chess by a 1 MHz Atari 2600
+2025-06-11 22:30:04,348 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: ChatGPT gets crushed at chess by a 1 MHz Atari 2600
+2025-06-11 22:30:33,742 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 22:30:33,752 - blog_automation.modules.content_generator - INFO - Generated content: 721 words
+2025-06-11 22:30:37,908 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 22:30:37,912 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-11 22:30:37,912 - blog_automation.modules.content_generator - INFO - Content generation completed in 33.56 seconds
+2025-06-11 22:30:37,912 - blog_automation.orchestrator - INFO - Generated blog post: ChatGPT Checkmated by Atari 2600: AI's Surprising Defeat (721 words)
+2025-06-11 22:30:37,912 - blog_automation.orchestrator - INFO - Searching for products related to: ChatGPT gets crushed at chess by a 1 MHz Atari 2600
+2025-06-11 22:30:37,912 - blog_automation.modules.product_research - INFO - Searching for products related to: ChatGPT gets crushed at chess by a 1 MHz Atari 2600
+2025-06-11 22:30:37,912 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: programming books site:amazon.com
+2025-06-11 22:30:38,026 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=programming+books+site%3Aamazon.com&num=5&safe=active
+2025-06-11 22:30:38,026 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: software development books site:amazon.com
+2025-06-11 22:30:38,135 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=software+development+books+site%3Aamazon.com&num=5&safe=active
+2025-06-11 22:30:38,136 - blog_automation.modules.product_research - INFO - Google Custom Search found 0 products
+2025-06-11 22:30:38,136 - blog_automation.modules.product_research - INFO - Using fallback Amazon scraping method
+2025-06-11 22:30:38,136 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'programming books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 22:30:40,286 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'software development books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 22:30:42,913 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'coding books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 22:30:45,525 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'computer science books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 22:30:48,379 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-11 22:30:48,379 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-11 22:30:48,379 - blog_automation.orchestrator - INFO - Assembling blog post: ChatGPT Checkmated by Atari 2600: AI's Surprising Defeat
+2025-06-11 22:30:48,380 - blog_automation.modules.content_assembler - INFO - Assembling blog post: ChatGPT Checkmated by Atari 2600: AI's Surprising Defeat
+2025-06-11 22:30:48,380 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-11 22:30:48,380 - blog_automation.orchestrator - INFO - Blog post assembly completed successfully
+2025-06-11 22:30:48,432 - blog_automation.modules.publisher - INFO - Created and checked out branch: blog-post-2025-06-11-223048-chatgpt-checkmated-by-atari-26
+2025-06-11 22:30:48,466 - blog_automation.modules.publisher - INFO - Committed post with message: Added ChatGPT Checkmated by Atari 2600: AI's Surprising Defeat
+2025-06-11 22:30:49,275 - blog_automation.modules.publisher - INFO - Successfully pushed branch: blog-post-2025-06-11-223048-chatgpt-checkmated-by-atari-26
+2025-06-11 22:30:50,235 - blog_automation.modules.publisher - INFO - Created Pull Request #1: https://github.com/ssmanji89/sulemanji-port/pull/1
+2025-06-11 22:30:50,236 - blog_automation.modules.publisher - INFO - Successfully published post with full GitHub workflow
+2025-06-11 22:30:50,236 - blog_automation.orchestrator - INFO - Successfully published post: _posts/2025-06-11-chatgpt-checkmated-by-atari-2600-ai's-surprising-d.md
+2025-06-11 22:30:50,236 - blog_automation.orchestrator - INFO - Created Pull Request: https://github.com/ssmanji89/sulemanji-port/pull/1
+2025-06-11 22:30:50,236 - blog_automation.orchestrator - INFO - Branch: blog-post-2025-06-11-223048-chatgpt-checkmated-by-atari-26
+2025-06-11 22:30:50,236 - blog_automation.orchestrator - INFO - Commit SHA: 01b5a0e4c714df14fe2e0866e552db6deb765224
+2025-06-11 22:30:50,236 - blog_automation.orchestrator - INFO - Workflow completed successfully in 68.11 seconds
+2025-06-11 22:30:50,236 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-06-11 22:30:50,236 - __main__ - INFO - 📁 Output file: _posts/2025-06-11-chatgpt-checkmated-by-atari-2600-ai's-surprising-d.md
+2025-06-11 22:30:50,238 - __main__ - INFO - 📋 Test copy saved to: test_blog_post.md
+2025-06-11 22:38:18,850 - __main__ - INFO - Starting blog post generation...
+2025-06-11 22:38:18,850 - blog_automation.config - INFO - Configuration validation passed
+2025-06-11 22:38:18,851 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-11 22:38:19,101 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-11 22:38:19,138 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-11 22:38:19,138 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-11 22:38:19,422 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1749699499
+2025-06-11 22:38:19,422 - blog_automation.config - INFO - Configuration validation passed
+2025-06-11 22:38:19,423 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-06-11 22:38:19,423 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-06-11 22:38:19,424 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:38:21,170 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-06-11 22:38:22,147 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword machine learning: list index out of range
+2025-06-11 22:38:23,148 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-06-11 22:38:24,085 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-06-11 22:38:25,076 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-06-11 22:38:26,010 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-06-11 22:38:27,098 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-06-11 22:38:27,936 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-06-11 22:38:28,873 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-06-11 22:38:28,874 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-11 22:38:28,879 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:38:30,321 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:38:32,511 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:38:34,328 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-06-11 22:38:35,998 - blog_automation.modules.trend_discovery - INFO - Retrieved 61 topics from Reddit
+2025-06-11 22:38:36,000 - blog_automation.modules.trend_discovery - INFO - Retrieved 61 topics from Reddit
+2025-06-11 22:38:36,000 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-06-11 22:38:36,000 - blog_automation.modules.trend_discovery - INFO - Discovered 4 trending topics (randomized selection)
+2025-06-11 22:38:36,000 - blog_automation.orchestrator - INFO - Selected trending topic: The "Stop CSAM" act which could possibly kill encryption is up for a markup tommorow (score: 0.33528)
+2025-06-11 22:38:36,000 - blog_automation.orchestrator - INFO - Starting content generation for topic: The "Stop CSAM" act which could possibly kill encryption is up for a markup tommorow
+2025-06-11 22:38:36,000 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: The "Stop CSAM" act which could possibly kill encryption is up for a markup tommorow
+2025-06-11 22:38:55,694 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 22:38:55,704 - blog_automation.modules.content_generator - INFO - Generated content: 650 words
+2025-06-11 22:38:59,411 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-06-11 22:38:59,415 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-06-11 22:38:59,415 - blog_automation.modules.content_generator - INFO - Content generation completed in 23.41 seconds
+2025-06-11 22:38:59,415 - blog_automation.orchestrator - INFO - Generated blog post: "Stop CSAM Act: The Threat to Encryption" (650 words)
+2025-06-11 22:38:59,415 - blog_automation.orchestrator - INFO - Searching for products related to: The "Stop CSAM" act which could possibly kill encryption is up for a markup tommorow
+2025-06-11 22:38:59,415 - blog_automation.modules.product_research - INFO - Searching for products related to: The "Stop CSAM" act which could possibly kill encryption is up for a markup tommorow
+2025-06-11 22:38:59,415 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: programming books site:amazon.com
+2025-06-11 22:38:59,525 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=programming+books+site%3Aamazon.com&num=5&safe=active
+2025-06-11 22:38:59,525 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: software development books site:amazon.com
+2025-06-11 22:38:59,623 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=software+development+books+site%3Aamazon.com&num=5&safe=active
+2025-06-11 22:38:59,623 - blog_automation.modules.product_research - INFO - Google Custom Search found 0 products
+2025-06-11 22:38:59,623 - blog_automation.modules.product_research - INFO - Using fallback Amazon scraping method
+2025-06-11 22:39:02,624 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'software development books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 22:39:05,175 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'coding books': Invalid leading whitespace, reserved character(s), or return character(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-06-11 22:39:10,301 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-06-11 22:39:10,302 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-06-11 22:39:10,302 - blog_automation.orchestrator - INFO - Assembling blog post: "Stop CSAM Act: The Threat to Encryption"
+2025-06-11 22:39:10,303 - blog_automation.modules.content_assembler - INFO - Assembling blog post: "Stop CSAM Act: The Threat to Encryption"
+2025-06-11 22:39:10,303 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-06-11 22:39:10,303 - blog_automation.orchestrator - INFO - Blog post assembly completed successfully
+2025-06-11 22:39:10,358 - blog_automation.modules.publisher - INFO - Created and checked out branch: blog-post-2025-06-11-223910-stop-csam-act--the-threat-to-e
+2025-06-11 22:39:10,386 - blog_automation.modules.publisher - INFO - Committed post with message: Added Stop CSAM Act: The Threat to Encryption
+2025-06-11 22:39:11,169 - blog_automation.modules.publisher - INFO - Successfully pushed branch: blog-post-2025-06-11-223910-stop-csam-act--the-threat-to-e
+2025-06-11 22:39:12,121 - blog_automation.modules.publisher - INFO - Created Pull Request #2: https://github.com/ssmanji89/sulemanji-port/pull/2
+2025-06-11 22:39:12,122 - blog_automation.modules.publisher - INFO - Auto-merge enabled, attempting to merge PR #2
+2025-06-11 22:39:14,144 - blog_automation.modules.publisher - INFO - Successfully merged PR #2 using squash method
+2025-06-11 22:39:14,372 - blog_automation.modules.publisher - INFO - Deleted local branch: blog-post-2025-06-11-223910-stop-csam-act--the-threat-to-e
+2025-06-11 22:39:15,052 - blog_automation.modules.publisher - INFO - Deleted remote branch: blog-post-2025-06-11-223910-stop-csam-act--the-threat-to-e
+2025-06-11 22:39:15,053 - blog_automation.modules.publisher - INFO - Successfully completed full automation workflow with merge
+2025-06-11 22:39:15,053 - blog_automation.modules.publisher - INFO - Successfully published post with GitHub workflow
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Successfully published post: _posts/2025-06-11-"stop-csam-act-the-threat-to-encryption".md
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Created Pull Request: https://github.com/ssmanji89/sulemanji-port/pull/2
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Branch: blog-post-2025-06-11-223910-stop-csam-act--the-threat-to-e
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Commit SHA: a8174e2418b2a590ca3dd95ce3145a3f7acec37f
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Successfully merged PR using squash method
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Merge SHA: 5766d80ddd32a43d6156e69c0a00283265fb4c0d
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Merge Status: merged
+2025-06-11 22:39:15,053 - blog_automation.orchestrator - INFO - Workflow completed successfully in 55.63 seconds
+2025-06-11 22:39:15,053 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-06-11 22:39:15,053 - __main__ - INFO - 📁 Output file: _posts/2025-06-11-"stop-csam-act-the-threat-to-encryption".md
+2025-06-11 22:39:15,054 - __main__ - ERROR - Error generating blog post: [Errno 2] No such file or directory: '_posts/2025-06-11-"stop-csam-act-the-threat-to-encryption".md'

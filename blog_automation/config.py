@@ -58,6 +58,12 @@ class Config:
                 'site_url': os.getenv('BLOG_SITE_URL', 'https://sulemanji.com')
             },
             
+            # GitHub Publishing Configuration
+            'github_publishing': {
+                'auto_merge_enabled': os.getenv('GITHUB_AUTO_MERGE', 'true').lower() == 'true',
+                'merge_method': os.getenv('GITHUB_MERGE_METHOD', 'squash')
+            },
+            
             # Content Generation
             'content': {
                 'min_words': int(os.getenv('CONTENT_MIN_WORDS', '600')),
@@ -111,6 +117,23 @@ class Config:
             logger.error(f"Missing required configuration: {', '.join(missing_configs)}")
             return False
         
+        # Validate GitHub configuration
+        github_token = os.getenv('GITHUB_TOKEN')
+        github_repo = os.getenv('GITHUB_REPO')
+        
+        if not github_token:
+            logger.error("Missing required GITHUB_TOKEN environment variable")
+            return False
+            
+        if not github_repo:
+            logger.error("Missing required GITHUB_REPO environment variable")
+            return False
+            
+        # Validate GitHub repository format (owner/repo)
+        if not self._validate_github_repo_format(github_repo):
+            logger.error(f"Invalid GITHUB_REPO format: {github_repo}. Expected format: owner/repo")
+            return False
+        
         # Validate Google Custom Search if enabled
         if self.get('google_custom_search.enabled', False):
             if not self.get('google_custom_search.api_key'):
@@ -120,6 +143,12 @@ class Config:
         
         logger.info("Configuration validation passed")
         return True
+    
+    def _validate_github_repo_format(self, repo: str) -> bool:
+        """Validate GitHub repository format (owner/repo)"""
+        import re
+        pattern = r'^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}/[a-zA-Z0-9](?:[a-zA-Z0-9._-]){0,99}$'
+        return bool(re.match(pattern, repo))
     
     def get_all(self) -> Dict[str, Any]:
         """Get all configuration"""

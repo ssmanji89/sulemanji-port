@@ -84,6 +84,16 @@ class Config:
                     'DevOps', 'API development'
                 ],
                 'max_topics': int(os.getenv('MAX_TOPICS', '5'))
+            },
+            
+            # Houston Events Configuration
+            'houston_events': {
+                'enabled': os.getenv('HOUSTON_EVENTS_ENABLED', 'false').lower() == 'true',
+                'sources': os.getenv('HOUSTON_EVENTS_SOURCES', '').split(','),
+                'selenium_headless': os.getenv('SELENIUM_HEADLESS', 'true').lower() == 'true',
+                'duplicate_check_days': int(os.getenv('EVENT_DUPLICATE_CHECK_DAYS', '30')),
+                'min_event_score': float(os.getenv('EVENT_MIN_SCORE', '0.4')),
+                'categories': ['concerts', 'festivals', 'theatre', 'family', 'food', 'sports']
             }
         }
     

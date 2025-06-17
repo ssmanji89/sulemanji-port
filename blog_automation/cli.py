@@ -27,10 +27,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-async def generate_blog_post(save_test: bool = False):
+async def generate_blog_post(save_test: bool = False, content_type: str = "tech"):
     """Generate a new blog post."""
     try:
-        logger.info("Starting blog post generation...")
+        logger.info(f"Starting blog post generation (content type: {content_type})...")
         
         # Validate configuration
         if not config.validate():
@@ -40,8 +40,13 @@ async def generate_blog_post(save_test: bool = False):
         # Initialize orchestrator
         orchestrator = BlogAutomationOrchestrator()
         
-        # Generate content
-        result = await orchestrator.run_workflow()
+        # Generate content based on type
+        if content_type == "events":
+            result = await orchestrator.run_events_workflow()
+        elif content_type == "mixed":
+            result = await orchestrator.run_mixed_workflow()
+        else:
+            result = await orchestrator.run_workflow()
         
         if result.get("success"):
             file_path = result["blog_post"]["published_file"]
@@ -83,6 +88,8 @@ def show_config():
         'blog_output_dir': config_data.get('blog', {}).get('output_dir', 'N/A'),
         'blog_author': config_data.get('blog', {}).get('author', 'N/A'),
         'reddit_user_agent': config_data.get('reddit', {}).get('user_agent', 'N/A'),
+        'houston_events_enabled': config_data.get('houston_events', {}).get('enabled', False),
+        'houston_events_sources': len(config_data.get('houston_events', {}).get('sources', [])),
         'api_keys_configured': bool(config.get('openai.api_key') and config.get('reddit.client_id')),
     }
     
@@ -149,10 +156,12 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python -m blog_automation.cli generate           # Generate a new blog post
-  python -m blog_automation.cli generate --test    # Generate and save test copy
-  python -m blog_automation.cli config             # Show configuration
-  python -m blog_automation.cli status             # Show system status
+  python -m blog_automation.cli generate                           # Generate a new tech blog post
+  python -m blog_automation.cli generate --content-type events     # Generate Houston events post
+  python -m blog_automation.cli generate --content-type mixed      # Generate mixed content post
+  python -m blog_automation.cli generate --test                    # Generate and save test copy
+  python -m blog_automation.cli config                             # Show configuration
+  python -m blog_automation.cli status                             # Show system status
         """
     )
     
@@ -164,6 +173,12 @@ Examples:
         '--test', 
         action='store_true', 
         help='Save a test copy of the generated post'
+    )
+    generate_parser.add_argument(
+        '--content-type',
+        choices=['tech', 'events', 'mixed'],
+        default='tech',
+        help='Type of content to generate (default: tech)'
     )
     
     # Config command
@@ -180,7 +195,7 @@ Examples:
     
     try:
         if args.command == 'generate':
-            success = asyncio.run(generate_blog_post(save_test=args.test))
+            success = asyncio.run(generate_blog_post(save_test=args.test, content_type=args.content_type))
             sys.exit(0 if success else 1)
             
         elif args.command == 'config':

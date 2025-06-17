@@ -8,22 +8,20 @@
     <meta name="color-scheme" content="light dark">
 
 <!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Unleashing AI &amp; Automation: Lessons from Genisys, Terminator | Suleman Manji</title>
+<title>Houston Events Blog Generator | Suleman Manji</title>
 <meta name="generator" content="Jekyll v3.9.5" />
-<meta property="og:title" content="Unleashing AI &amp; Automation: Lessons from Genisys, Terminator" />
-<meta name="author" content="Suleman Anji" />
+<meta property="og:title" content="Houston Events Blog Generator" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Explore how AI and automation, as depicted in Genisys, Terminator, are revolutionizing our world. Discover the reality behind the dystopian portrayal." />
-<meta property="og:description" content="Explore how AI and automation, as depicted in Genisys, Terminator, are revolutionizing our world. Discover the reality behind the dystopian portrayal." />
-<link rel="canonical" href="https://www.sulemanji.com/tech%20trends/2025/06/04/unleashing-ai-automation-lessons-from-genisys-term.html" />
-<meta property="og:url" content="https://www.sulemanji.com/tech%20trends/2025/06/04/unleashing-ai-automation-lessons-from-genisys-term.html" />
+<meta name="description" content="Enterprise Technology Strategy Cloud Architecture Process Automation" />
+<meta property="og:description" content="Enterprise Technology Strategy Cloud Architecture Process Automation" />
+<link rel="canonical" href="https://www.sulemanji.com/HOUSTON_EVENTS_README.html" />
+<meta property="og:url" content="https://www.sulemanji.com/HOUSTON_EVENTS_README.html" />
 <meta property="og:site_name" content="Suleman Manji" />
-<meta property="og:type" content="article" />
-<meta property="article:published_time" content="2025-06-04T19:59:23+00:00" />
+<meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Unleashing AI &amp; Automation: Lessons from Genisys, Terminator" />
+<meta property="twitter:title" content="Houston Events Blog Generator" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Suleman Anji"},"dateModified":"2025-06-04T19:59:23+00:00","datePublished":"2025-06-04T19:59:23+00:00","description":"Explore how AI and automation, as depicted in Genisys, Terminator, are revolutionizing our world. Discover the reality behind the dystopian portrayal.","headline":"Unleashing AI &amp; Automation: Lessons from Genisys, Terminator","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.sulemanji.com/tech%20trends/2025/06/04/unleashing-ai-automation-lessons-from-genisys-term.html"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"},"name":"Suleman Anji"},"url":"https://www.sulemanji.com/tech%20trends/2025/06/04/unleashing-ai-automation-lessons-from-genisys-term.html"}</script>
+{"@context":"https://schema.org","@type":"WebPage","description":"Enterprise Technology Strategy Cloud Architecture Process Automation","headline":"Houston Events Blog Generator","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"}},"url":"https://www.sulemanji.com/HOUSTON_EVENTS_README.html"}</script>
 <!-- End Jekyll SEO tag -->
 
     <link rel="stylesheet" href="/assets/css/style.css?v=95c137291dd9056f5eaa8701671e503c0e4633e1">
@@ -145,7 +143,7 @@
     "@type": "ProfilePage",
     "name": "Suleman Manji",
     "description": "Enterprise Technology Strategy | Cloud Architecture | Process Automation",
-    "url": "https://www.sulemanji.com/tech%20trends/2025/06/04/unleashing-ai-automation-lessons-from-genisys-term.html",
+    "url": "https://www.sulemanji.com/HOUSTON_EVENTS_README.html",
     "author": {
         "@type": "Person",
         "name": "Suleman Manji",
@@ -190,174 +188,302 @@
       </header>
       <section>
 
-      <div class="article-header">
-    <h1>Unleashing AI & Automation: Lessons from Genisys, Terminator</h1>
-    
-    <div class="article-meta">
-        <span class="article-date">
-            <i class="far fa-calendar-alt"></i> June 04, 2025
-        </span>
-        
-        
-        <span class="article-category">Tech Trends</span>
-        
-    </div>
-</div>
+      <h1 id="houston-events-blog-generator">Houston Events Blog Generator</h1>
 
-<div class="article-content-full">
-    <p>Title: Genisys, Terminator: Harnessing the Power of AI and Automation</p>
+<p>This documentation covers the Houston events functionality added to the blog automation system, which scrapes local Houston events and generates engaging blog content about them.</p>
+
+<h2 id="overview">Overview</h2>
+
+<p>The Houston Events system extends the existing blog automation with the ability to:</p>
+
+<ul>
+  <li><strong>Scrape events</strong> from multiple Houston event websites using Selenium</li>
+  <li><strong>Generate engaging content</strong> specifically tailored for event promotion</li>
+  <li><strong>Detect duplicates</strong> to avoid repetitive content</li>
+  <li><strong>Integrate seamlessly</strong> with the existing blog workflow</li>
+</ul>
+
+<h2 id="configuration">Configuration</h2>
+
+<h3 id="environment-variables">Environment Variables</h3>
+
+<p>Add these variables to your <code class="language-plaintext highlighter-rouge">.env</code> file:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Houston Events Configuration</span>
+<span class="nv">HOUSTON_EVENTS_ENABLED</span><span class="o">=</span><span class="nb">true
+</span><span class="nv">HOUSTON_EVENTS_SOURCES</span><span class="o">=</span>https://www.visithoustontexas.com/events/events-this-weekend/,https://www.houcalendar.com/
+<span class="nv">SELENIUM_HEADLESS</span><span class="o">=</span><span class="nb">true
+</span><span class="nv">EVENT_DUPLICATE_CHECK_DAYS</span><span class="o">=</span>30
+<span class="nv">EVENT_MIN_SCORE</span><span class="o">=</span>0.4
+</code></pre></div></div>
+
+<h3 id="configuration-options">Configuration Options</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Variable</th>
+      <th>Description</th>
+      <th>Default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">HOUSTON_EVENTS_ENABLED</code></td>
+      <td>Enable/disable Houston events functionality</td>
+      <td><code class="language-plaintext highlighter-rouge">false</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">HOUSTON_EVENTS_SOURCES</code></td>
+      <td>Comma-separated list of event source URLs</td>
+      <td>Empty</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">SELENIUM_HEADLESS</code></td>
+      <td>Run browser in headless mode</td>
+      <td><code class="language-plaintext highlighter-rouge">true</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">EVENT_DUPLICATE_CHECK_DAYS</code></td>
+      <td>Days to check for duplicate events</td>
+      <td><code class="language-plaintext highlighter-rouge">30</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">EVENT_MIN_SCORE</code></td>
+      <td>Minimum score for events to be considered</td>
+      <td><code class="language-plaintext highlighter-rouge">0.4</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="usage">Usage</h2>
+
+<h3 id="command-line-interface">Command Line Interface</h3>
+
+<p>Generate different types of content using the CLI:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Generate a Houston events blog post</span>
+python <span class="nt">-m</span> blog_automation.cli generate <span class="nt">--content-type</span> events
+
+<span class="c"># Generate mixed content (tech + events)</span>
+python <span class="nt">-m</span> blog_automation.cli generate <span class="nt">--content-type</span> mixed
+
+<span class="c"># Generate regular tech content (default)</span>
+python <span class="nt">-m</span> blog_automation.cli generate <span class="nt">--content-type</span> tech
+</code></pre></div></div>
+
+<h3 id="testing">Testing</h3>
+
+<p>Run the test script to verify functionality:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python test_houston_events.py
+</code></pre></div></div>
+
+<p>This will test:</p>
+<ul>
+  <li>Configuration validation</li>
+  <li>Event scraping from configured sources</li>
+  <li>Content generation for events</li>
+  <li>Duplicate detection system</li>
+</ul>
+
+<h2 id="features">Features</h2>
+
+<h3 id="1-multi-source-event-scraping">1. Multi-Source Event Scraping</h3>
+
+<p>The system scrapes events from multiple Houston event websites:</p>
+
+<ul>
+  <li><strong>Visit Houston Texas</strong> - Official Houston tourism events</li>
+  <li><strong>HouCalendar</strong> - Comprehensive Houston event listings</li>
+  <li><strong>Extensible</strong> - Easy to add new sources</li>
+</ul>
+
+<h3 id="2-smart-event-processing">2. Smart Event Processing</h3>
+
+<ul>
+  <li><strong>Category Detection</strong> - Automatically categorizes events (concerts, festivals, theatre, etc.)</li>
+  <li><strong>Venue Recognition</strong> - Identifies and standardizes venue information</li>
+  <li><strong>Date Parsing</strong> - Handles various date formats intelligently</li>
+  <li><strong>Quality Scoring</strong> - Ranks events based on multiple factors</li>
+</ul>
+
+<h3 id="3-duplicate-prevention">3. Duplicate Prevention</h3>
+
+<ul>
+  <li><strong>Content Analysis</strong> - Scans existing blog posts for similar events</li>
+  <li><strong>Fuzzy Matching</strong> - Uses advanced similarity detection</li>
+  <li><strong>Freshness Tracking</strong> - Monitors venue and category coverage</li>
+  <li><strong>Smart Filtering</strong> - Suggests different content angles for similar events</li>
+</ul>
+
+<h3 id="4-seo-optimized-content">4. SEO-Optimized Content</h3>
+
+<ul>
+  <li><strong>Local Keywords</strong> - Includes Houston-specific terms and locations</li>
+  <li><strong>Schema Markup</strong> - Generates structured data for events</li>
+  <li><strong>Voice Search</strong> - Optimized for conversational queries</li>
+  <li><strong>Local Business</strong> - Mentions nearby Houston landmarks and venues</li>
+</ul>
+
+<h2 id="architecture">Architecture</h2>
+
+<h3 id="core-components">Core Components</h3>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Houston Events System
+├── HoustonEventsScraper     # Web scraping with Selenium
+├── EventContentGenerator    # Event-specific content creation
+├── PostAnalyzer            # Duplicate detection and analysis
+└── Event Data Models       # HoustonEvent, EventTrendingTopic
+</code></pre></div></div>
+
+<h3 id="workflow-integration">Workflow Integration</h3>
+
+<p>The events system integrates with existing workflows:</p>
 
 <ol>
-  <li>
-    <p>Introduction
-Artificial intelligence (AI) and automation are redefining the way we live and work, presenting an unparalleled opportunity for businesses and societies alike. A popular portrayal of AI in popular culture is the Genisys, Terminator series. While the depiction of AI in these films is largely dystopian, the technology’s real-world applications are far from foreboding. In this article, we’ll explore the reality of AI and automation, drawing parallels with the Genisys, Terminator series, and discussing actionable insights for engineering professionals.</p>
-  </li>
-  <li>
-    <p>Background/Context
-The Genisys, Terminator series presents a world controlled by an AI system, Skynet, seeking to annihilate humanity. While this portrayal is far from reality, it does underscore the significance of AI and automation in the contemporary world. From autonomous vehicles to predictive analytics, AI and automation are driving a new era of technological innovation.</p>
-  </li>
-  <li>
-    <p>Main Content Sections</p>
-  </li>
+  <li><strong>Events Workflow</strong> - Pure Houston events content</li>
+  <li><strong>Mixed Workflow</strong> - Combines tech trends with events</li>
+  <li><strong>Standard Workflow</strong> - Original tech-focused content</li>
 </ol>
 
-<p>3.1 The Real-world AI: Far from Skynet
-While Skynet is an intelligent military system that becomes self-aware and turns against its creators, real-world AI systems are designed to operate within specific parameters and perform defined tasks. These systems rely on machine learning algorithms to process data and make decisions. But unlike Skynet, they do not possess consciousness or intent.</p>
+<h3 id="data-flow">Data Flow</h3>
 
-<p>3.2 Automation and Optimization: The Cyberdyne Systems Approach
-In the Terminator series, Cyberdyne Systems is the corporation responsible for creating Skynet. In reality, businesses like Cyberdyne Systems are leveraging automation to optimize processes and enhance efficiency. For instance, robotic process automation (RPA) is being used to automate repetitive tasks, freeing up human workers to focus on more complex, value-added tasks.</p>
+<pre><code class="language-mermaid">graph TD
+    A[Event Sources] --&gt; B[Selenium Scraper]
+    B --&gt; C[Event Processing]
+    C --&gt; D[Duplicate Check]
+    D --&gt; E[Content Generation]
+    E --&gt; F[SEO Enhancement]
+    F --&gt; G[Blog Publication]
+</code></pre>
+
+<h2 id="event-categories">Event Categories</h2>
+
+<p>The system recognizes and optimizes content for these event types:</p>
+
+<ul>
+  <li><strong>Concerts</strong> - Music events and live performances</li>
+  <li><strong>Festivals</strong> - Cultural celebrations and fairs</li>
+  <li><strong>Theatre</strong> - Plays, musicals, and dramatic performances</li>
+  <li><strong>Family</strong> - Kid-friendly and family events</li>
+  <li><strong>Food</strong> - Culinary events and food festivals</li>
+  <li><strong>Sports</strong> - Athletic events and competitions</li>
+</ul>
+
+<h2 id="content-personalization">Content Personalization</h2>
+
+<p>The system adapts writing style based on event type:</p>
+
+<ul>
+  <li><strong>Music Enthusiast</strong> - For concerts and music events</li>
+  <li><strong>Community Connector</strong> - For festivals and cultural events</li>
+  <li><strong>Arts Aficionado</strong> - For theatre and artistic performances</li>
+  <li><strong>Family Guide</strong> - For family-friendly events</li>
+  <li><strong>Foodie Insider</strong> - For culinary experiences</li>
+  <li><strong>Local Explorer</strong> - For general Houston events</li>
+</ul>
+
+<h2 id="technical-requirements">Technical Requirements</h2>
+
+<h3 id="dependencies">Dependencies</h3>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>selenium&gt;<span class="o">=</span>4.15.0
+webdriver-manager&gt;<span class="o">=</span>4.0.0
+python-dateutil&gt;<span class="o">=</span>2.8.0
+fuzzywuzzy&gt;<span class="o">=</span>0.18.0
+python-levenshtein&gt;<span class="o">=</span>0.21.0
+python-frontmatter&gt;<span class="o">=</span>1.0.0
+</code></pre></div></div>
+
+<h3 id="browser-requirements">Browser Requirements</h3>
+
+<ul>
+  <li>Chrome browser (for Selenium WebDriver)</li>
+  <li>Automatic ChromeDriver installation via webdriver-manager</li>
+</ul>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+
+<h3 id="common-issues">Common Issues</h3>
+
+<p><strong>Selenium WebDriver Errors</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># Install/update Chrome browser</span>
+<span class="c"># The system will automatically download the correct ChromeDriver</span>
+</code></pre></div></div>
+
+<p><strong>No Events Found</strong></p>
+<ul>
+  <li>Check that event sources are accessible</li>
+  <li>Verify HOUSTON_EVENTS_ENABLED=true</li>
+  <li>Review Selenium timeout settings</li>
+</ul>
+
+<p><strong>Duplicate Detection Issues</strong></p>
+<ul>
+  <li>Ensure _posts directory exists and contains markdown files</li>
+  <li>Check EVENT_DUPLICATE_CHECK_DAYS value</li>
+  <li>Verify frontmatter parsing</li>
+</ul>
+
+<h3 id="debug-mode">Debug Mode</h3>
+
+<p>Run with debug logging for troubleshooting:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="p">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="p">.</span><span class="n">DEBUG</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="contributing">Contributing</h2>
+
+<h3 id="adding-new-event-sources">Adding New Event Sources</h3>
 
 <ol>
-  <li>Practical Implementation Examples</li>
+  <li>Add the URL to <code class="language-plaintext highlighter-rouge">HOUSTON_EVENTS_SOURCES</code></li>
+  <li>Update <code class="language-plaintext highlighter-rouge">houston_events_scraper.py</code> with source-specific logic</li>
+  <li>Add appropriate selectors for the new site</li>
+  <li>Test with the test script</li>
 </ol>
 
-<p>4.1 AI in Healthcare
-Consider the use of AI in healthcare. Machine learning algorithms can analyze vast amounts of patient data to predict disease progression and recommend personalized treatment plans. This is far from the destructive Skynet, but an application of AI that saves lives and improves healthcare outcomes.</p>
-
-<p>4.2 Automation in Manufacturing
-Taking a cue from Cyberdyne Systems, real-world manufacturers are adopting automation to streamline production processes. For example, automotive manufacturers are using robots to assemble cars with greater accuracy and speed than human workers, leading to increased productivity and reduced costs.</p>
+<h3 id="extending-categories">Extending Categories</h3>
 
 <ol>
-  <li>Best Practices and Recommendations
-Harnessing the power of AI and automation requires a strategic approach. Here are some best practices for engineering professionals:</li>
+  <li>Update the <code class="language-plaintext highlighter-rouge">categories</code> list in configuration</li>
+  <li>Add category keywords in <code class="language-plaintext highlighter-rouge">_determine_category</code> method</li>
+  <li>Update content generation prompts if needed</li>
 </ol>
 
-<p>5.1 Understand the Technology
-Before implementing AI or automation solutions, it’s crucial to understand the technology’s capabilities and limitations. This includes knowledge of machine learning algorithms, data requirements, and potential ethical considerations.</p>
+<h2 id="performance-considerations">Performance Considerations</h2>
 
-<p>5.2 Start with a Pilot Project
-Rather than a large-scale implementation, start with a pilot project. This allows you to test the technology, assess its impact, and make necessary adjustments before scaling up.</p>
+<ul>
+  <li><strong>Rate Limiting</strong> - Built-in delays between source requests</li>
+  <li><strong>Headless Mode</strong> - Runs efficiently without GUI</li>
+  <li><strong>Caching</strong> - Duplicate detection caches recent posts</li>
+  <li><strong>Timeout Handling</strong> - Graceful handling of slow-loading sites</li>
+</ul>
 
-<p>5.3 Collaborate with Experts
-Working with AI and automation experts can provide valuable insights and guidance. This collaboration can help you navigate the complexities of these technologies and ensure successful implementation.</p>
+<h2 id="security">Security</h2>
 
-<ol>
-  <li>
-    <p>Future Outlook/Trends
-The future of AI and automation is promising. As these technologies continue to evolve, they will drive efficiencies, create new opportunities, and transform industries. However, it’s important to remember that the success of these technologies depends on responsible use and robust ethical guidelines.</p>
-  </li>
-  <li>
-    <p>Conclusion with Key Takeaways
-The Genisys, Terminator series offers a dramatic portrayal of AI and automation. But in reality, these technologies are tools that can be harnessed to drive innovation, optimize processes, and create value. For engineering professionals, the key is to understand the technology, start with a pilot project, and collaborate with experts. By doing so, you can leverage the power of AI and automation to drive your business forward.
-—</p>
-  </li>
-</ol>
+<ul>
+  <li><strong>No Personal Data</strong> - Only scrapes public event information</li>
+  <li><strong>Respectful Scraping</strong> - Includes user-agent and delays</li>
+  <li><strong>Error Handling</strong> - Fails gracefully without exposing sensitive data</li>
+</ul>
 
-<p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
+<h2 id="monitoring">Monitoring</h2>
 
-<hr />
+<p>Check system health with:</p>
 
-</div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python <span class="nt">-m</span> blog_automation.cli status
+</code></pre></div></div>
 
-<div class="article-footer">
-    <div class="article-tags">
-        
-        <span class="article-tag">Artificial Intelligence</span>
-        
-        <span class="article-tag">Automation</span>
-        
-        <span class="article-tag">Genisys</span>
-        
-        <span class="article-tag">Terminator</span>
-        
-        <span class="article-tag">Business Technology</span>
-        
-        <span class="article-tag">AI in Pop Culture</span>
-        
-        <span class="article-tag">Technology Insights</span>
-        
-    </div>
-    
-    <div class="article-share">
-        <a href="https://twitter.com/intent/tweet?text=Unleashing+AI+%26+Automation%3A+Lessons+from+Genisys%2C+Terminator&url=https://www.sulemanji.com%2Ftech%2520trends%2F2025%2F06%2F04%2Funleashing-ai-automation-lessons-from-genisys-term.html" target="_blank" class="share-btn">
-            <i class="fab fa-twitter"></i> Share on Twitter
-        </a>
-        
-        <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://www.sulemanji.com%2Ftech%2520trends%2F2025%2F06%2F04%2Funleashing-ai-automation-lessons-from-genisys-term.html&title=Unleashing+AI+%26+Automation%3A+Lessons+from+Genisys%2C+Terminator" target="_blank" class="share-btn">
-            <i class="fab fa-linkedin"></i> Share on LinkedIn
-        </a>
-    </div>
-</div>
-
-<div class="related-articles">
-    <h3>Related Articles</h3>
-    
-    <div class="related-articles-grid">
-        
-        
-        <article class="blog-article">
-            <div class="article-content">
-                <div class="article-meta">
-                    <span class="article-date">
-                        <i class="far fa-calendar-alt"></i> March 26, 2025
-                    </span>
-                </div>
-                
-                <h2 class="article-title">
-                    <a href="/jekyll/update/2025/03/26/welcome-to-jekyll.html">Welcome to Jekyll!</a>
-                </h2>
-                
-                <div class="article-excerpt">
-                    You’ll find this post in your _posts directory. Go ahead and edit it and re-build the site to see your...
-                </div>
-                
-                <a href="/jekyll/update/2025/03/26/welcome-to-jekyll.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </article>
-        
-        <article class="blog-article">
-            <div class="article-content">
-                <div class="article-meta">
-                    <span class="article-date">
-                        <i class="far fa-calendar-alt"></i> June 06, 2025
-                    </span>
-                </div>
-                
-                <h2 class="article-title">
-                    <a href="/tech%20trends/2025/06/06/apples-transition-java-8-out-swift-in.html">Apple's Transition: Java 8 Out, Swift In</a>
-                </h2>
-                
-                <div class="article-excerpt">
-                    # Apple's Big Leap: From Java 8 to Swift In an industry that's constantly evolving and pushing boundaries, one thing's...
-                </div>
-                
-                <a href="/tech%20trends/2025/06/06/apples-transition-java-8-out-swift-in.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
-            </div>
-        </article>
-        
-    </div>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Syntax highlighting for code blocks
-    if (window.hljs) {
-        document.querySelectorAll('pre code').forEach(block => {
-            hljs.highlightBlock(block);
-        });
-    }
-});
-</script>
+<p>This shows:</p>
+<ul>
+  <li>Houston events configuration status</li>
+  <li>Number of configured sources</li>
+  <li>Component initialization status</li>
+  <li>Recent activity logs</li>
+</ul>
 
 
       </section>

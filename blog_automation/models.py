@@ -16,6 +16,14 @@ class TrendSource(Enum):
     REDDIT = "reddit"
     GOOGLE_TRENDS = "google_trends"
     MANUAL = "manual"
+    HOUSTON_EVENTS = "houston_events"
+
+
+class ContentType(Enum):
+    """Types of content that can be generated."""
+    TECH = "tech"
+    EVENTS = "events"
+    MIXED = "mixed"
 
 
 class PostCategory(Enum):
@@ -25,6 +33,21 @@ class PostCategory(Enum):
     OPTIMIZATION = "Optimization"
     EMERGING_TECH = "Emerging Tech"
     TECH_TRENDS = "Tech Trends"
+
+
+@dataclass
+class HoustonEvent:
+    """Represents a Houston event with all relevant information."""
+    title: str
+    description: str
+    date: datetime
+    time: Optional[str] = None
+    venue: Optional[str] = None
+    address: Optional[str] = None
+    category: Optional[str] = None
+    price: Optional[str] = None
+    url: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 @dataclass
@@ -45,6 +68,12 @@ class TrendingTopic:
             # Weighted scoring: trend_score (40%) + normalized search_volume (60%)
             normalized_volume = min(self.search_volume / 10000, 1.0)  # Cap at 10k
             self.final_score = (self.trend_score * 0.4) + (normalized_volume * 0.6)
+
+
+@dataclass
+class EventTrendingTopic(TrendingTopic):
+    """Trending topic specifically for Houston events."""
+    event_data: Optional[HoustonEvent] = None
 
 
 @dataclass
@@ -105,6 +134,7 @@ class ContentGenerationRequest:
     max_products: int = 5
     writing_style: str = "technical_professional"
     target_audience: str = "engineering_professionals"
+    content_type: ContentType = ContentType.TECH
 
 
 @dataclass

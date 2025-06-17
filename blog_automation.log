@@ -1395,3 +1395,108 @@ See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.htm
 2025-06-11 22:39:15,053 - __main__ - INFO - ✅ Blog post generated successfully!
 2025-06-11 22:39:15,053 - __main__ - INFO - 📁 Output file: _posts/2025-06-11-"stop-csam-act-the-threat-to-encryption".md
 2025-06-11 22:39:15,054 - __main__ - ERROR - Error generating blog post: [Errno 2] No such file or directory: '_posts/2025-06-11-"stop-csam-act-the-threat-to-encryption".md'
+2025-06-15 02:38:54,590 - __main__ - INFO - Starting blog post generation (content type: events)...
+2025-06-15 02:38:54,591 - blog_automation.config - INFO - Configuration validation passed
+2025-06-15 02:38:54,718 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-15 02:38:54,881 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-15 02:38:54,973 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-15 02:38:54,973 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-15 02:38:55,250 - blog_automation.orchestrator - INFO - Starting Houston events workflow: events_workflow_1749973135
+2025-06-15 02:38:55,251 - blog_automation.config - INFO - Configuration validation passed
+2025-06-15 02:38:55,251 - blog_automation.orchestrator - INFO - Scraping Houston events from 2 sources
+2025-06-15 02:38:55,251 - blog_automation.modules.houston_events_scraper - INFO - Houston Events Scraper initialized
+2025-06-15 02:38:55,251 - blog_automation.modules.houston_events_scraper - INFO - Starting Houston events scraping for 2 sources
+2025-06-15 02:38:55,251 - WDM - INFO - ====== WebDriver manager ======
+2025-06-15 02:38:55,460 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-06-15 02:38:55,523 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-06-15 02:38:55,589 - WDM - INFO - Driver [/Users/sulemanmanji/.wdm/drivers/chromedriver/mac64/137.0.7151.70/chromedriver-mac-arm64/chromedriver] found in cache
+2025-06-15 02:38:56,582 - blog_automation.modules.houston_events_scraper - INFO - Chrome WebDriver initialized successfully
+2025-06-15 02:38:56,583 - blog_automation.modules.houston_events_scraper - INFO - Scraping Visit Houston: https://www.visithoustontexas.com/events/events-this-weekend/
+2025-06-15 02:39:28,386 - blog_automation.modules.houston_events_scraper - WARNING - Timeout waiting for event elements on Visit Houston
+2025-06-15 02:39:28,388 - blog_automation.modules.houston_events_scraper - INFO - Scraped 0 events from https://www.visithoustontexas.com/events/events-this-weekend/
+2025-06-15 02:39:30,390 - blog_automation.modules.houston_events_scraper - INFO - Scraping HouCalendar: https://www.houcalendar.com/
+2025-06-15 02:39:33,183 - blog_automation.modules.houston_events_scraper - INFO - Found 358 events using selector: [class*='event']
+2025-06-15 02:39:33,215 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:39:33,267 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:39:33,316 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:39:33,342 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:39:33,349 - blog_automation.modules.houston_events_scraper - INFO - Scraped 5 events from https://www.houcalendar.com/
+2025-06-15 02:39:35,350 - blog_automation.modules.houston_events_scraper - INFO - Scraped 1 unique Houston events
+2025-06-15 02:39:35,482 - blog_automation.modules.houston_events_scraper - INFO - WebDriver closed
+2025-06-15 02:39:35,482 - blog_automation.orchestrator - INFO - Found 1 Houston events
+2025-06-15 02:39:35,482 - blog_automation.modules.post_analyzer - INFO - Post analyzer initialized for directory: _posts
+2025-06-15 02:39:35,508 - blog_automation.modules.post_analyzer - ERROR - Error extracting metadata from _posts/2025-06-11-"stop-csam-act-the-threat-to-encryption".md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1
+did not find expected key
+  in "<unicode string>", line 3, column 10
+2025-06-15 02:39:35,562 - blog_automation.modules.post_analyzer - INFO - Scanned 16 existing posts
+2025-06-15 02:39:35,563 - blog_automation.modules.post_analyzer - INFO - Duplicate check for 'Events Search and Views Navigation': False (similarity: 0.32)
+2025-06-15 02:39:35,563 - blog_automation.orchestrator - INFO - Selected event: Events Search and Views Navigation (score: 0.38600000000000007)
+2025-06-15 02:39:35,564 - blog_automation.orchestrator - INFO - Generating event content for: Events Search and Views Navigation
+2025-06-15 02:39:35,571 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-15 02:39:35,571 - blog_automation.modules.event_content_generator - INFO - Event content generator initialized
+2025-06-15 02:39:35,571 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Events Search and Views Navigation
+2025-06-15 02:39:35,863 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-15 02:39:35,866 - blog_automation.modules.content_generator - WARNING - Error generating content (attempt 1): Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}. Retrying...
+2025-06-15 02:39:37,964 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-15 02:39:37,966 - blog_automation.modules.content_generator - WARNING - Error generating content (attempt 2): Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}. Retrying...
+2025-06-15 02:39:40,068 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 401 Unauthorized"
+2025-06-15 02:39:40,069 - blog_automation.modules.content_generator - ERROR - Error generating content after 2 retries: Error code: 401 - {'error': {'message': 'Incorrect API key provided: YGUHIJK0************************************HJBK. You can find your API key at https://platform.openai.com/account/api-keys.', 'type': 'invalid_request_error', 'param': None, 'code': 'invalid_api_key'}}
+2025-06-15 02:39:40,070 - blog_automation.modules.event_content_generator - ERROR - Error in event content generation: Failed to generate main content
+2025-06-15 02:39:40,070 - blog_automation.orchestrator - ERROR - Events workflow failed after 44.82 seconds: Failed to generate main content
+2025-06-15 02:39:40,070 - __main__ - ERROR - ❌ Blog post generation failed
+2025-06-15 02:39:40,070 - __main__ - ERROR - Error: Failed to generate main content
+2025-06-15 02:42:51,649 - __main__ - INFO - Starting blog post generation (content type: events)...
+2025-06-15 02:42:51,650 - blog_automation.config - INFO - Configuration validation passed
+2025-06-15 02:42:51,651 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-06-15 02:42:52,035 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-06-15 02:42:52,129 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-15 02:42:52,129 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-06-15 02:42:52,386 - blog_automation.orchestrator - INFO - Starting Houston events workflow: events_workflow_1749973372
+2025-06-15 02:42:52,387 - blog_automation.config - INFO - Configuration validation passed
+2025-06-15 02:42:52,387 - blog_automation.orchestrator - INFO - Scraping Houston events from 2 sources
+2025-06-15 02:42:52,387 - blog_automation.modules.houston_events_scraper - INFO - Houston Events Scraper initialized
+2025-06-15 02:42:52,387 - blog_automation.modules.houston_events_scraper - INFO - Starting Houston events scraping for 2 sources
+2025-06-15 02:42:52,387 - WDM - INFO - ====== WebDriver manager ======
+2025-06-15 02:42:52,603 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-06-15 02:42:52,670 - WDM - INFO - Get LATEST chromedriver version for google-chrome
+2025-06-15 02:42:52,736 - WDM - INFO - Driver [/Users/sulemanmanji/.wdm/drivers/chromedriver/mac64/137.0.7151.70/chromedriver-mac-arm64/chromedriver] found in cache
+2025-06-15 02:42:53,706 - blog_automation.modules.houston_events_scraper - INFO - Chrome WebDriver initialized successfully
+2025-06-15 02:42:53,706 - blog_automation.modules.houston_events_scraper - INFO - Scraping Visit Houston: https://www.visithoustontexas.com/events/events-this-weekend/
+2025-06-15 02:43:25,509 - blog_automation.modules.houston_events_scraper - WARNING - Timeout waiting for event elements on Visit Houston
+2025-06-15 02:43:25,511 - blog_automation.modules.houston_events_scraper - INFO - Scraped 0 events from https://www.visithoustontexas.com/events/events-this-weekend/
+2025-06-15 02:43:27,513 - blog_automation.modules.houston_events_scraper - INFO - Scraping HouCalendar: https://www.houcalendar.com/
+2025-06-15 02:43:29,049 - blog_automation.modules.houston_events_scraper - INFO - Found 358 events using selector: [class*='event']
+2025-06-15 02:43:29,079 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:43:29,129 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:43:29,178 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:43:29,205 - blog_automation.modules.houston_events_scraper - WARNING - Error parsing date 'Now Now Select date.': String does not contain a date: Now Now Select date.
+2025-06-15 02:43:29,212 - blog_automation.modules.houston_events_scraper - INFO - Scraped 5 events from https://www.houcalendar.com/
+2025-06-15 02:43:31,214 - blog_automation.modules.houston_events_scraper - INFO - Scraped 1 unique Houston events
+2025-06-15 02:43:31,350 - blog_automation.modules.houston_events_scraper - INFO - WebDriver closed
+2025-06-15 02:43:31,350 - blog_automation.orchestrator - INFO - Found 1 Houston events
+2025-06-15 02:43:31,350 - blog_automation.modules.post_analyzer - INFO - Post analyzer initialized for directory: _posts
+2025-06-15 02:43:31,375 - blog_automation.modules.post_analyzer - ERROR - Error extracting metadata from _posts/2025-06-11-"stop-csam-act-the-threat-to-encryption".md: while parsing a block mapping
+  in "<unicode string>", line 2, column 1
+did not find expected key
+  in "<unicode string>", line 3, column 10
+2025-06-15 02:43:31,430 - blog_automation.modules.post_analyzer - INFO - Scanned 16 existing posts
+2025-06-15 02:43:31,433 - blog_automation.modules.post_analyzer - INFO - Duplicate check for 'Events Search and Views Navigation': False (similarity: 0.32)
+2025-06-15 02:43:31,433 - blog_automation.orchestrator - INFO - Selected event: Events Search and Views Navigation (score: 0.38600000000000007)
+2025-06-15 02:43:31,433 - blog_automation.orchestrator - INFO - Generating event content for: Events Search and Views Navigation
+2025-06-15 02:43:31,440 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-06-15 02:43:31,440 - blog_automation.modules.event_content_generator - INFO - Event content generator initialized
+2025-06-15 02:43:31,440 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Events Search and Views Navigation
+2025-06-15 02:43:31,606 - openai._base_client - INFO - Retrying request to /chat/completions in 0.466056 seconds
+2025-06-15 02:43:32,126 - openai._base_client - INFO - Retrying request to /chat/completions in 0.898238 seconds
+2025-06-15 02:43:33,079 - blog_automation.modules.content_generator - WARNING - Error generating content (attempt 1): Connection error.. Retrying...
+2025-06-15 02:43:35,131 - openai._base_client - INFO - Retrying request to /chat/completions in 0.437203 seconds
+2025-06-15 02:43:35,626 - openai._base_client - INFO - Retrying request to /chat/completions in 0.987163 seconds
+2025-06-15 02:43:36,656 - blog_automation.modules.content_generator - WARNING - Error generating content (attempt 2): Connection error.. Retrying...
+2025-06-15 02:43:38,700 - openai._base_client - INFO - Retrying request to /chat/completions in 0.473222 seconds
+2025-06-15 02:43:39,226 - openai._base_client - INFO - Retrying request to /chat/completions in 0.807961 seconds
+2025-06-15 02:43:40,088 - blog_automation.modules.content_generator - ERROR - Error generating content after 2 retries: Connection error.
+2025-06-15 02:43:40,088 - blog_automation.modules.event_content_generator - ERROR - Error in event content generation: Failed to generate main content
+2025-06-15 02:43:40,089 - blog_automation.orchestrator - ERROR - Events workflow failed after 47.70 seconds: Failed to generate main content
+2025-06-15 02:43:40,089 - __main__ - ERROR - ❌ Blog post generation failed
+2025-06-15 02:43:40,089 - __main__ - ERROR - Error: Failed to generate main content

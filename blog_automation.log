@@ -1221,3 +1221,79 @@ See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.htm
 2025-06-11 21:10:55,486 - blog_automation.orchestrator - INFO - Workflow completed successfully in 110.54 seconds
 2025-06-11 21:10:55,486 - __main__ - INFO - ✅ Blog post generated successfully!
 2025-06-11 21:10:55,486 - __main__ - INFO - 📁 Output file: _posts/2025-06-11-a.i.-startup-mechanize-aims-to-revolutionize-job-l.md
+2025-07-01 07:37:45,407 - __main__ - INFO - Starting blog post generation...
+2025-07-01 07:37:45,407 - blog_automation.config - INFO - Configuration validation passed
+2025-07-01 07:37:45,408 - blog_automation.modules.trend_discovery - INFO - Reddit client initialized successfully
+2025-07-01 07:37:45,657 - blog_automation.modules.trend_discovery - INFO - Google Trends client initialized successfully
+2025-07-01 07:37:45,665 - blog_automation.modules.content_generator - INFO - Content generator initialized successfully
+2025-07-01 07:37:45,665 - blog_automation.modules.product_research - INFO - Google Custom Search initialized successfully
+2025-07-01 07:37:45,665 - blog_automation.orchestrator - INFO - Starting blog automation workflow: workflow_1751373465
+2025-07-01 07:37:45,665 - blog_automation.config - INFO - Configuration validation passed
+2025-07-01 07:37:45,665 - blog_automation.orchestrator - INFO - Starting trend discovery for 5 topics
+2025-07-01 07:37:45,665 - blog_automation.modules.trend_discovery - INFO - Starting trend discovery for 5 topics
+2025-07-01 07:37:45,665 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-07-01 07:37:47,516 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword artificial intelligence: list index out of range
+2025-07-01 07:37:48,566 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-07-01 07:37:49,943 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-07-01 07:37:52,480 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword automation: list index out of range
+2025-07-01 07:37:53,789 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cloud computing: list index out of range
+2025-07-01 07:37:55,282 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword cybersecurity: list index out of range
+2025-07-01 07:37:56,630 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword blockchain: list index out of range
+2025-07-01 07:37:57,662 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword data science: list index out of range
+2025-07-01 07:37:58,576 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword DevOps: list index out of range
+2025-07-01 07:37:59,568 - blog_automation.modules.trend_discovery - WARNING - Error processing keyword API development: list index out of range
+2025-07-01 07:37:59,568 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-07-01 07:37:59,568 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-07-01 07:38:01,371 - praw - WARNING - It appears that you are using PRAW in an asynchronous environment.
+It is strongly recommended to use Async PRAW: https://asyncpraw.readthedocs.io.
+See https://praw.readthedocs.io/en/latest/getting_started/multiple_instances.html#discord-bots-and-asynchronous-environments for more info.
+
+2025-07-01 07:38:03,079 - blog_automation.modules.trend_discovery - INFO - Retrieved 66 topics from Reddit
+2025-07-01 07:38:03,080 - blog_automation.modules.trend_discovery - INFO - Retrieved 66 topics from Reddit
+2025-07-01 07:38:03,080 - blog_automation.modules.trend_discovery - INFO - Retrieved 0 topics from Google Trends
+2025-07-01 07:38:03,080 - blog_automation.modules.trend_discovery - INFO - Discovered 3 trending topics (randomized selection)
+2025-07-01 07:38:03,080 - blog_automation.orchestrator - INFO - Selected trending topic: Windows seemingly lost 400 million users in the past three years — official Microsoft statements sho (score: 0.994)
+2025-07-01 07:38:03,080 - blog_automation.orchestrator - INFO - Starting content generation for topic: Windows seemingly lost 400 million users in the past three years — official Microsoft statements sho
+2025-07-01 07:38:03,080 - blog_automation.modules.content_generator - INFO - Starting content generation for topic: Windows seemingly lost 400 million users in the past three years — official Microsoft statements sho
+2025-07-01 07:38:33,814 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-01 07:38:33,822 - blog_automation.modules.content_generator - INFO - Generated content: 687 words
+2025-07-01 07:38:38,787 - httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+2025-07-01 07:38:38,792 - blog_automation.modules.content_generator - INFO - Generated metadata successfully
+2025-07-01 07:38:38,792 - blog_automation.modules.content_generator - INFO - Content generation completed in 35.71 seconds
+2025-07-01 07:38:38,792 - blog_automation.orchestrator - INFO - Generated blog post: The Mystery of 400 Million Vanished Windows Users (687 words)
+2025-07-01 07:38:38,792 - blog_automation.orchestrator - INFO - Searching for products related to: Windows seemingly lost 400 million users in the past three years — official Microsoft statements sho
+2025-07-01 07:38:38,792 - blog_automation.modules.product_research - INFO - Searching for products related to: Windows seemingly lost 400 million users in the past three years — official Microsoft statements sho
+2025-07-01 07:38:38,793 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: programming books site:amazon.com
+2025-07-01 07:38:38,947 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=programming+books+site%3Aamazon.com&num=5&safe=active
+2025-07-01 07:38:38,947 - blog_automation.modules.google_product_search - INFO - Searching Google Custom Search for: software development books site:amazon.com
+2025-07-01 07:38:39,065 - blog_automation.modules.google_product_search - ERROR - Google Custom Search API error: 403 Client Error: Forbidden for url: https://www.googleapis.com/customsearch/v1?key=AIzaSyD_Ns2nCerrj5aZTV3Tq9SVGK6MPBpLNoI&cx=21e7af27cedc940a7&q=software+development+books+site%3Aamazon.com&num=5&safe=active
+2025-07-01 07:38:39,065 - blog_automation.modules.product_research - INFO - Google Custom Search found 0 products
+2025-07-01 07:38:39,065 - blog_automation.modules.product_research - INFO - Using fallback Amazon scraping method
+2025-07-01 07:38:39,226 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'programming books': 503 Server Error: Service Unavailable for url: https://www.amazon.com/s?k=programming+books&ref=sr_nr_n_1&rh=n%3A283155
+2025-07-01 07:38:41,603 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'software development books': 503 Server Error: Service Unavailable for url: https://www.amazon.com/s?k=software+development+books&ref=sr_nr_n_1&rh=n%3A283155
+2025-07-01 07:38:43,326 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'coding books': Invalid leading whitespace, reserved character(s), or returncharacter(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-07-01 07:38:44,868 - blog_automation.modules.product_research - ERROR - Amazon scraping failed for query 'computer science books': Invalid leading whitespace, reserved character(s), or returncharacter(s) in header value: ' like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+2025-07-01 07:38:46,976 - blog_automation.modules.product_research - INFO - Found 0 relevant products
+2025-07-01 07:38:46,976 - blog_automation.orchestrator - INFO - Found 0 affiliate products
+2025-07-01 07:38:46,976 - blog_automation.orchestrator - INFO - Assembling blog post: The Mystery of 400 Million Vanished Windows Users
+2025-07-01 07:38:46,976 - blog_automation.modules.content_assembler - INFO - Assembling blog post: The Mystery of 400 Million Vanished Windows Users
+2025-07-01 07:38:46,976 - blog_automation.modules.content_assembler - INFO - Blog post assembly completed successfully
+2025-07-01 07:38:46,976 - blog_automation.orchestrator - INFO - Blog post assembly completed successfully
+2025-07-01 07:38:46,977 - blog_automation.modules.publisher - INFO - Successfully published post: 2025-07-01-the-mystery-of-400-million-vanished-windows-users.md
+2025-07-01 07:38:46,977 - blog_automation.orchestrator - INFO - Successfully published post: _posts/2025-07-01-the-mystery-of-400-million-vanished-windows-users.md
+2025-07-01 07:38:46,977 - blog_automation.orchestrator - INFO - Workflow completed successfully in 61.31 seconds
+2025-07-01 07:38:46,977 - __main__ - INFO - ✅ Blog post generated successfully!
+2025-07-01 07:38:46,978 - __main__ - INFO - 📁 Output file: _posts/2025-07-01-the-mystery-of-400-million-vanished-windows-users.md
+2025-07-01 07:38:46,978 - __main__ - INFO - 📋 Test copy saved to: test_blog_post.md

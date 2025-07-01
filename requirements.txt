@@ -1,3 +1,12 @@
+<<<<<<< HEAD
+openai>=1.0.0
+python-dotenv
+aiohttp
+praw
+pytrends
+requests
+beautifulsoup4
+=======
 PyGithub==1.59.1
 GitPython==3.1.40
 python-dotenv==1.0.0
@@ -13,3 +22,4 @@ fuzzywuzzy>=0.18.0
 python-levenshtein>=0.21.0
 python-frontmatter>=1.0.0
 beautifulsoup4>=4.12.0 
+>>>>>>> 95c137291dd9056f5eaa8701671e503c0e4633e1

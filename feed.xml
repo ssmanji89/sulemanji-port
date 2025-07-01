@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="https://www.sulemanji.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.sulemanji.com/" rel="alternate" type="text/html" /><updated>2025-06-17T22:33:28+00:00</updated><id>https://www.sulemanji.com/feed.xml</id><title type="html">Suleman Manji</title><subtitle>Enterprise Technology Strategy | Cloud Architecture | Process Automation</subtitle><entry><title type="html"></title><link href="https://www.sulemanji.com/2025/06/17/2025-06-11-stop-csam-act-the-threat-to-encryption.html" rel="alternate" type="text/html" title="" /><published>2025-06-17T22:33:28+00:00</published><updated>2025-06-17T22:33:28+00:00</updated><id>https://www.sulemanji.com/2025/06/17/2025-06-11-%22stop-csam-act-the-threat-to-encryption%22</id><content type="html" xml:base="https://www.sulemanji.com/2025/06/17/2025-06-11-stop-csam-act-the-threat-to-encryption.html"><![CDATA[<p><strong>Encryption at Stake: The Unintended Consequences of the “Stop CSAM” Act</strong></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="https://www.sulemanji.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.sulemanji.com/" rel="alternate" type="text/html" /><updated>2025-07-01T15:26:02+00:00</updated><id>https://www.sulemanji.com/feed.xml</id><title type="html">Suleman Manji</title><subtitle>Enterprise Technology Strategy | Cloud Architecture | Process Automation</subtitle><entry><title type="html"></title><link href="https://www.sulemanji.com/2025/07/01/2025-06-11-stop-csam-act-the-threat-to-encryption.html" rel="alternate" type="text/html" title="" /><published>2025-07-01T15:26:02+00:00</published><updated>2025-07-01T15:26:02+00:00</updated><id>https://www.sulemanji.com/2025/07/01/2025-06-11-%22stop-csam-act-the-threat-to-encryption%22</id><content type="html" xml:base="https://www.sulemanji.com/2025/07/01/2025-06-11-stop-csam-act-the-threat-to-encryption.html"><![CDATA[<p><strong>Encryption at Stake: The Unintended Consequences of the “Stop CSAM” Act</strong></p>
 
 <p>Imagine waking up one day to find out that secure communication is a thing of the past. Private messages, financial transactions, medical records, all susceptible to prying eyes. Sounds like a dystopian sci-fi novel, right? Well, hold onto your hats, folks. The “Stop CSAM” act, which is about to be marked up tomorrow, could turn this chilling scenario into a reality.</p>
 
@@ -52,7 +52,65 @@
 
 <p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
 
-<hr />]]></content><author><name></name></author></entry><entry><title type="html">A.I. Startup, Mechanize, Aims to Revolutionize Job Landscape</title><link href="https://www.sulemanji.com/emerging%20tech/2025/06/11/a.i.-startup-mechanize-aims-to-revolutionize-job-l.html" rel="alternate" type="text/html" title="A.I. Startup, Mechanize, Aims to Revolutionize Job Landscape" /><published>2025-06-11T21:10:55+00:00</published><updated>2025-06-11T21:10:55+00:00</updated><id>https://www.sulemanji.com/emerging%20tech/2025/06/11/a.i.-startup-mechanize-aims-to-revolutionize-job-l</id><content type="html" xml:base="https://www.sulemanji.com/emerging%20tech/2025/06/11/a.i.-startup-mechanize-aims-to-revolutionize-job-l.html"><![CDATA[<h1 id="this-ai-company-wants-to-take-your-job-mechanize-a-san-francisco-startup">This A.I. Company Wants to Take Your Job: Mechanize, a San Francisco Startup</h1>
+<hr />]]></content><author><name></name></author></entry><entry><title type="html">The Mystery of 400 Million Vanished Windows Users</title><link href="https://www.sulemanji.com/emerging%20tech/2025/07/01/the-mystery-of-400-million-vanished-windows-users.html" rel="alternate" type="text/html" title="The Mystery of 400 Million Vanished Windows Users" /><published>2025-07-01T07:38:46+00:00</published><updated>2025-07-01T07:38:46+00:00</updated><id>https://www.sulemanji.com/emerging%20tech/2025/07/01/the-mystery-of-400-million-vanished-windows-users</id><content type="html" xml:base="https://www.sulemanji.com/emerging%20tech/2025/07/01/the-mystery-of-400-million-vanished-windows-users.html"><![CDATA[<h1 id="the-curious-case-of-the-missing-400-million-windows-users">The Curious Case of the Missing 400 Million Windows Users</h1>
+
+<p>Ah, Windows. Love it or hate it, you cannot ignore it. Bill Gates’ gift to the world has been a beloved (or beleaguered, depending on the day) part of our lives. But, did you know Microsoft reported a loss of 400 million users over the past three years? Yeah, you heard it right. That’s like losing the entire population of Egypt and France combined!</p>
+
+<h2 id="the-scenario">The Scenario</h2>
+
+<p>Let’s say you and I are working on an app that’s heavily Windows-dependent. Our user base is primarily Windows users, we’ve optimized our systems to align with Windows updates, and we’re heavily invested in the Microsoft ecosystem. Now, we wake up one day to hear that our user base just shrunk by 400 million. Gulp! Our revenue forecasts are suddenly looking very shaky.</p>
+
+<p>Can we just ignore this and hope for the best? Sure, we could - if we fancy walking the plank. As engineers, it’s our job to figure out what’s going on and adapt. So, let’s get to it.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<p>First, let’s understand the elephant in the room - why did Microsoft lose these users? This might sound like an episode straight out of Sherlock, but I promise, it’s a technical challenge. According to Microsoft, the decline is due to a change in the way they count ‘active devices’. Earlier, they would include devices that had interacted with their services within the last 28 days. Now, they’ve narrowed it down to devices that have interacted within the last 3 days.</p>
+
+<p>Is it a smart move? It’s debatable. But, it’s a stark reminder to us that the tech world is ever evolving and we need to stay on our toes.</p>
+
+<p>So, how do we approach this new scenario? One word - diversification. It’s time we considered expanding our horizons and not relying solely on Windows users.</p>
+
+<h2 id="step-by-step-insights">Step-by-step insights</h2>
+
+<p>Let’s start by analyzing our own user analytics. We need to understand the demographics and tech habits of our user base. Questions like - How frequently do they interact with our app? What devices do they use? What other tech do they engage with? - can provide invaluable insights.</p>
+
+<p>Next, let’s consider diversifying our app to cater to users of other operating systems. Yes, I know learning a new system feels like learning a new language, but hey, you’re talking to a guy who once tried to learn Klingon for a Star Trek convention. Trust me, it’s doable.</p>
+
+<h2 id="common-gotchas">Common Gotchas</h2>
+
+<p>Now, in the heat of the moment, it’s easy to overreact and go all in on diversification. Been there, done that, got the T-shirt. But remember, not all users are equal. You might end up investing a lot of resources for a user base that just doesn’t bring in the same ROI.</p>
+
+<p>Secondly, don’t assume Windows is on its way out. Despite the drop, Windows still has a massive user base. In the immortal words of Mark Twain, reports of its death have been greatly exaggerated.</p>
+
+<h2 id="advanced-considerations">Advanced Considerations</h2>
+
+<p>While diversifying, it’s essential to maintain a balance. Don’t just chase the newest fad. Remember Google Glass? Yeah, not every new tech is a winner. As seasoned pros, we need to predict which tech will stick around and which will vanish faster than my motivation to hit the gym.</p>
+
+<p>Also, consider the scalability of your app on different platforms. Some platforms may not support your app’s functionalities or may require a fair amount of reworking.</p>
+
+<h2 id="wrap-up">Wrap-up</h2>
+
+<p>So, what did we learn from our coffee-fueled discussion? The tech world is ever changing and we need to adapt, but not blindly. User analytics and careful consideration are key. And, most importantly, don’t panic — even though 400 million users sound like a lot, remember there are billions of users out there.</p>
+
+<p>As for Windows, it’s not going anywhere soon. And, who knows, maybe in a few years, we’ll be discussing the miraculous recovery of these 400 million users over another cup of coffee.</p>
+
+<h2 id="the-bottom-line-stay-alert-stay-adaptable-and-stay-caffeinated-until-next-time-happy-coding">The bottom line? Stay alert, stay adaptable, and stay caffeinated. Until next time, happy coding!</h2>
+
+<h2 id="-discussion-source">📰 Discussion Source</h2>
+
+<p>This article was inspired by an active discussion in the <strong>r/technology</strong> community. Join the conversation and share your thoughts:</p>
+
+<p><strong><a href="https://www.reddit.com/r/technology/comments/1lofgad/windows_seemingly_lost_400_million_users_in_the/">View Original Reddit Discussion</a></strong></p>
+
+<p>The topic “Windows seemingly lost 400 million users in the past three years — official Microsoft statements sho” has generated significant engagement (19624 upvotes) and represents a trending area of interest in the tech community.</p>
+
+<hr />
+
+<hr />
+
+<p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
+
+<hr />]]></content><author><name>Suleman Manji</name></author><category term="Emerging Tech" /><category term="Microsoft" /><category term="Windows" /><category term="User Decline" /><category term="Tech Analysis" /><category term="App Development" /><summary type="html"><![CDATA[Uncover the surprising truth behind Microsoft's loss of 400 million Windows users. It's like losing the population of France and Egypt combined!]]></summary></entry><entry><title type="html">A.I. Startup, Mechanize, Aims to Revolutionize Job Landscape</title><link href="https://www.sulemanji.com/emerging%20tech/2025/06/11/a.i.-startup-mechanize-aims-to-revolutionize-job-l.html" rel="alternate" type="text/html" title="A.I. Startup, Mechanize, Aims to Revolutionize Job Landscape" /><published>2025-06-11T21:10:55+00:00</published><updated>2025-06-11T21:10:55+00:00</updated><id>https://www.sulemanji.com/emerging%20tech/2025/06/11/a.i.-startup-mechanize-aims-to-revolutionize-job-l</id><content type="html" xml:base="https://www.sulemanji.com/emerging%20tech/2025/06/11/a.i.-startup-mechanize-aims-to-revolutionize-job-l.html"><![CDATA[<h1 id="this-ai-company-wants-to-take-your-job-mechanize-a-san-francisco-startup">This A.I. Company Wants to Take Your Job: Mechanize, a San Francisco Startup</h1>
 
 <h2 id="1-the-discovery-moment">1. The Discovery Moment</h2>
 
@@ -705,117 +763,4 @@ print(optionalString == nil)
 
 <p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
 
-<hr />]]></content><author><name>Suleman Anji</name></author><category term="Tech Trends" /><category term="Palantir Technologies" /><category term="WIRED" /><category term="Data Security" /><category term="Journalistic Freedom" /><category term="Data Analytics" /><category term="Privacy" /><category term="Tech News" /><summary type="html"><![CDATA[Explore the recent clash between Palantir and a WIRED reporter. Uncover the implications for data security and journalistic freedom.]]></summary></entry><entry><title type="html">Palantir’s Controversial Standoff with WIRED and Other Journalists</title><link href="https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-controversial-standoff-with-wired-and-ot.html" rel="alternate" type="text/html" title="Palantir’s Controversial Standoff with WIRED and Other Journalists" /><published>2025-06-06T15:25:43+00:00</published><updated>2025-06-06T15:25:43+00:00</updated><id>https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-controversial-standoff-with-wired-and-ot</id><content type="html" xml:base="https://www.sulemanji.com/tech%20trends/2025/06/06/palantirs-controversial-standoff-with-wired-and-ot.html"><![CDATA[<h2 id="introduction">Introduction</h2>
-
-<p>In the realm of data science and engineering, few names are as controversial or newsworthy as Palantir Technologies. Recently, Palantir found itself in the headlines once again when it allegedly threatened to call the police on a WIRED reporter and expelled other journalists from a recent event. This event underscores the ongoing struggle between the tech industry, the media, and the public’s right to know about the systems that increasingly shape our world.</p>
-
-<blockquote>
-  <p><strong>Recommended Resource:</strong> For those looking to dive deeper into this topic, <strong><a href="https://www.amazon.com/dp/163774613X?tag=sghpgs-20">Unknown Product</a></strong> offers comprehensive insights and practical guidance. ⭐ 5.0/5 - $22.</p>
-</blockquote>
-
-<p>The incident has stirred up discussions about the role of transparency and accountability in the tech sector, especially in the context of companies dealing with sensitive data. This blog post aims to provide a technical perspective on these issues, digging into the implications for engineers and outlining best practices for balancing innovation, security, and transparency.</p>
-
-<h3 id="-professional-resource">💡 Professional Resource</h3>
-
-<table>
-  <tbody>
-    <tr>
-      <td>To implement these concepts effectively, consider exploring <strong><a href="https://www.amazon.com/dp/1449373321?tag=sghpgs-20">Unknown Product</a></strong>, which provides detailed methodologies and best practices. Rating: 4.8/5</td>
-      <td>Price: $41.</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2 id="understanding-the-fundamentals">Understanding the Fundamentals</h2>
-
-<p>The controversy surrounding Palantir isn’t just about one incident. It’s about the role tech companies play in society, especially those dealing with data, artificial intelligence, and automation. These technologies have the potential to reshape our world, but they also raise crucial questions about privacy, security, and the power of corporations.</p>
-
-<hr />
-
-<p><strong>📚 Expert Recommendation:</strong> A valuable resource for understanding these principles is <strong><a href="https://www.amazon.com/dp/B076MGPQZQ?tag=sghpgs-20">Unknown Product</a></strong>, offering both theoretical foundations and practical applications. (4.8⭐) $49.</p>
-
-<hr />
-
-<p>Palantir, founded in 2003, specializes in big data analytics. At the heart of Palantir’s operations is a suite of software aimed at data integration, search and discovery, knowledge management, and secure collaboration. These tools have been deployed in a wide range of contexts, from counterterrorism efforts to healthcare management.</p>
-
-<blockquote>
-  <p><strong>Recommended Resource:</strong> For those looking to dive deeper into this topic, <strong><a href="https://www.amazon.com/dp/B08J2DN6HC?tag=sghpgs-20">Unknown Product</a></strong> offers comprehensive insights and practical guidance. ⭐ 4.8/5 - $39.</p>
-</blockquote>
-
-<h2 id="technical-implementation">Technical Implementation</h2>
-
-<p>Palantir’s technology stack is built around the concept of integrating, visualizing, and analyzing large datasets. The company’s two main platforms, Palantir Gotham and Palantir Foundry, are designed to handle structured and unstructured data, respectively.</p>
-
-<h3 id="-professional-resource-1">💡 Professional Resource</h3>
-
-<table>
-  <tbody>
-    <tr>
-      <td>To implement these concepts effectively, consider exploring <strong><a href="https://www.amazon.com/dp/B0CQ3SHF3W?tag=sghpgs-20">Unknown Product</a></strong>, which provides detailed methodologies and best practices. Rating: 4.8/5</td>
-      <td>Price: $20.</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Sample code for data integration in Palantir</span>
-<span class="nc">DataIntegration</span> <span class="n">di</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">DataIntegration</span><span class="o">();</span>
-<span class="n">di</span><span class="o">.</span><span class="na">integrateData</span><span class="o">(</span><span class="s">"dataset.csv"</span><span class="o">);</span>
-</code></pre></div></div>
-
-<p>These platforms use a variety of techniques to process and analyze data, including machine learning algorithms, natural language processing, and graph-based analysis. They are designed to be used by non-technical users, but they also offer APIs for developers to integrate with other systems or build custom applications.</p>
-
-<h2 id="best-practices-and-strategies">Best Practices and Strategies</h2>
-
-<p>Given the sensitive nature of the data that companies like Palantir handle, it’s crucial to follow best practices when it comes to security and privacy. These include:</p>
-
-<ul>
-  <li>
-    <p><strong>Data anonymization</strong>: Techniques like tokenization, encryption, and pseudonymization can help protect sensitive data while still allowing for analysis.</p>
-  </li>
-  <li>
-    <p><strong>Access control and auditing</strong>: Implement robust access control mechanisms, and keep detailed logs of who accesses what data and when.</p>
-  </li>
-  <li>
-    <p><strong>Transparency and consent</strong>: Be upfront about what data you’re collecting, why you’re collecting it, and how you’re using it. Obtain informed consent from your users whenever possible.</p>
-  </li>
-</ul>
-
-<h2 id="advanced-techniques-and-tools">Advanced Techniques and Tools</h2>
-
-<p>In the world of big data analytics, there are several advanced techniques and tools that can help to enhance data security and privacy. For instance, differential privacy is a mathematical technique that provides a way to share aggregate information about a dataset while preserving the privacy of individual records.</p>
-
-<p>Another emerging area is federated learning, a machine learning approach that allows for model training on decentralized data. This means the raw data never has to leave its original location, reducing the risk of data leaks or misuse.</p>
-
-<h2 id="real-world-applications">Real-World Applications</h2>
-
-<p>Palantir’s technology has been used in a wide range of applications, from detecting fraud in healthcare to predicting equipment failures in manufacturing. However, it’s perhaps most well-known for its use in law enforcement and intelligence, where it’s been credited with helping to track down Osama bin Laden.</p>
-
-<p>While these applications demonstrate the power of big data analytics, they also raise important ethical and societal questions. For instance, how do we ensure these technologies are used responsibly and don’t lead to abuses of power or violations of privacy?</p>
-
-<h2 id="common-pitfalls-and-solutions">Common Pitfalls and Solutions</h2>
-
-<p>One common pitfall when dealing with big data is failing to properly secure the data, which can lead to breaches and leaks. To mitigate this risk, it’s crucial to implement strong data security measures, including encryption, access control, and regular security audits.</p>
-
-<p>Another challenge is ensuring data privacy while still being able to perform meaningful analysis. Techniques like differential privacy and federated learning can help with this, but they require careful implementation and a deep understanding of the underlying mathematics.</p>
-
-<h2 id="future-trends-and-innovations">Future Trends and Innovations</h2>
-
-<p>As AI and big data continue to evolve, we can expect to see new tools and techniques for ensuring data security and privacy. For instance, homomorphic encryption, a method for performing computations on encrypted data without ever decrypting it, is an area of active research.</p>
-
-<p>On the societal side, we can expect ongoing debates about the role of tech companies in society, the limits of corporate power, and the right to privacy in the digital age. These issues will likely shape the future of the tech industry, and it’s crucial for engineers to stay informed and engaged.</p>
-
-<h2 id="key-takeaways">Key Takeaways</h2>
-
-<ul>
-  <li>The incident with Palantir and the WIRED reporter highlights the complex interplay between technology, transparency, and power.</li>
-  <li>Companies like Palantir play a crucial role in our society, but they also raise important questions about privacy, security, and accountability.</li>
-  <li>Techniques like data anonymization, access control, and auditing are critical for ensuring data security and privacy.</li>
-  <li>Emerging tools and techniques, such as differential privacy and federated learning, offer promising ways to balance privacy and utility in big data analytics.</li>
-  <li>
-    <h2 id="the-future-will-likely-bring-new-technical-innovations-and-societal-debates-in-the-realm-of-data-science-and-ai-making-it-essential-for-engineers-to-stay-informed-and-engaged">The future will likely bring new technical innovations and societal debates in the realm of data science and AI, making it essential for engineers to stay informed and engaged.</h2>
-  </li>
-</ul>
-
-<p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
-
-<hr />]]></content><author><name>Suleman Anji</name></author><category term="Tech Trends" /><category term="Palantir Technologies" /><category term="WIRED" /><category term="Data Science" /><category term="Tech Industry" /><category term="Media Relations" /><category term="Public Transparency" /><category term="Controversy" /><summary type="html"><![CDATA[Palantir Technologies makes headlines again, this time for threatening a WIRED reporter and expelling journalists from an event.]]></summary></entry></feed>
+<hr />]]></content><author><name>Suleman Anji</name></author><category term="Tech Trends" /><category term="Palantir Technologies" /><category term="WIRED" /><category term="Data Security" /><category term="Journalistic Freedom" /><category term="Data Analytics" /><category term="Privacy" /><category term="Tech News" /><summary type="html"><![CDATA[Explore the recent clash between Palantir and a WIRED reporter. Uncover the implications for data security and journalistic freedom.]]></summary></entry></feed>

@@ -12,6 +12,50 @@ permalink: /experience
 
 <div class="timeline animate-on-scroll">
 
+    <!-- Viyu Network Solutions -->
+    <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+            <div class="timeline-date">
+                <span><i class="far fa-calendar-alt"></i> March 2025 - Present</span>
+            </div>
+            <h3 class="timeline-title">Solutions Architect & Automation Engineer</h3>
+            <h4 class="timeline-subtitle">Viyu Network Solutions</h4>
+
+            <p class="timeline-description">
+                Leading enterprise M365 migrations, developing AI-powered MSP toolchains, and building MCP integrations that bridge cloud platforms with IT service delivery.
+            </p>
+
+            <div class="timeline-highlights">
+                <div class="timeline-highlight">
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Enterprise M365 Migrations:</strong> Orchestrated tenant-to-tenant migration for 641 users across 6,543 GB — 122 SharePoint sites, 305 OneDrive accounts, 273 mailboxes, 193 devices across 23 locations using BitTitan, Azure AD Connect, Exchange Hybrid, Intune, and Autopilot.</div>
+                </div>
+                <div class="timeline-highlight">
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>AI-Powered MSP Tooling:</strong> Built MCP servers for M365 (101 tools), ITGlue (31 tools), ConnectWise, and HaloPSA. Developed Claude Code plugin with 31 skills and 7 autonomous agents automating data sync, lifecycle management, and compliance reporting.</div>
+                </div>
+                <div class="timeline-highlight">
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Platform Automation:</strong> Implemented Power Automate flows for Teams recording management with Paylocity HRIS integration, Exchange Hybrid migration tooling, and SharePoint orchestration with PnP provisioning templates.</div>
+                </div>
+                <div class="timeline-highlight">
+                    <i class="fas fa-check-circle"></i>
+                    <div><strong>Migration Platform Development:</strong> Engineered EZMig — a 14-phase SharePoint migration platform with Azure Blob staging, incremental sync, and cross-tenant permission mapping.</div>
+                </div>
+            </div>
+
+            <div class="timeline-technologies">
+                <span class="timeline-tech"><i class="fas fa-robot"></i> MCP / Claude Code</span>
+                <span class="timeline-tech"><i class="fab fa-microsoft"></i> Microsoft 365</span>
+                <span class="timeline-tech"><i class="fas fa-exchange-alt"></i> BitTitan</span>
+                <span class="timeline-tech"><i class="fas fa-laptop"></i> Intune / Autopilot</span>
+                <span class="timeline-tech"><i class="fab fa-python"></i> Python</span>
+                <span class="timeline-tech"><i class="fas fa-terminal"></i> PowerShell</span>
+            </div>
+        </div>
+    </div>
+
     <!-- ZG Companies -->
     <div class="timeline-item">
         <div class="timeline-dot"></div>

@@ -1,55 +1,54 @@
 ---
 layout: default
-title: Suleman Manji - Enterprise Technology Strategist & Problem Solver
-description: Enterprise technology strategist specializing in cloud architecture, security engineering, and process automation. A capable, analytical problem-solver with a hands-on approach, focused on delivering practical, secure, and efficient solutions within collaborative team environments. Keywords: cloud architecture, security engineering, process automation, technical specialist, analytical problem-solving, hands-on technology, Microsoft Azure, Microsoft 365, Power Automate, system administration, data analysis, team collaboration, cybersecurity, identity management, Node.js developer, automation expert.
+title: Suleman Manji - MSP Solutions Architect
+description: MSP Solutions Architect building intelligent MSP toolchains, orchestrating enterprise M365 migrations, and developing AI-powered automation with MCP servers and Claude Code plugins. Keywords: MSP solutions architect, MCP server development, Microsoft 365 migration, AI automation, Claude Code plugins, ITGlue integration, ConnectWise, HaloPSA, enterprise migration, cloud architecture, PowerShell, Python, TypeScript.
 ---
 
-## Enterprise Technology Strategist
+## MSP Solutions Architect
 
-Driving enterprise transformation through strategic cloud adoption, security engineering, and intelligent process automation.
+Building intelligent MSP toolchains, orchestrating enterprise M365 migrations at scale, and developing AI-powered automation that bridges cloud platforms with service delivery.
 
 <div class="cta-buttons">
     <a href="/projects" class="btn">View Projects</a>
     <a href="/technical-skills" class="btn btn-primary">Technical Skills</a>
-    <a href="/npm-packages" class="btn btn-outline">NPM Packages</a>
+    <a href="https://github.com/ssmanji89" class="btn btn-outline" target="_blank">GitHub</a>
     <a href="/experience" class="btn btn-outline">My Experience</a>
 </div>
 
 ## Core Competencies
 
-### <i class="fas fa-cloud"></i> Cloud Architecture
-Design and implementation of scalable, secure cloud infrastructure solutions with a focus on practical application within Microsoft Azure and Microsoft 365 environments.
+### <i class="fas fa-robot"></i> AI-Powered MSP Tooling
+MCP servers and Claude Code plugins bridging M365, ITGlue, ConnectWise, and HaloPSA — 130+ tools and 7 autonomous agents automating data sync, lifecycle management, and compliance reporting.
 
-### <i class="fas fa-shield-alt"></i> Security Engineering
-Comprehensive security frameworks focused on identity governance, privileged access management, and zero-trust architecture, applying systematic analysis to mitigate risks.
+### <i class="fas fa-exchange-alt"></i> Enterprise Migration
+Full-lifecycle tenant-to-tenant M365 migrations at scale — 6,500+ GB, 600+ users, 120+ SharePoint sites, with Exchange Hybrid, Azure AD Connect, Intune, and Autopilot orchestration.
 
-### <i class="fas fa-cogs"></i> Process Automation
-Development of intelligent workflow solutions using Power Automate and custom integration frameworks to streamline business operations through methodical implementation.
+### <i class="fas fa-cogs"></i> Platform Automation
+Power Automate, n8n, Python, and PowerShell workflows driving MSP operational efficiency — from HRIS-driven provisioning to financial reconciliation and Teams recording management.
 
 ## Technology Stack
 
-### Cloud Platforms
-- <i class="fab fa-microsoft"></i> Azure
-- <i class="fas fa-cloud"></i> Microsoft 365
-- <i class="fab fa-aws"></i> AWS
-- <i class="fab fa-docker"></i> Docker
+### AI & MCP
+- <i class="fas fa-robot"></i> Claude Code / MCP Protocol
+- <i class="fas fa-brain"></i> Anthropic API
+- <i class="fas fa-project-diagram"></i> n8n
+- <i class="fas fa-comment-dots"></i> OpenAI
 
-### Security Tools
-- <i class="fas fa-shield-alt"></i> CyberArk
-- <i class="fas fa-user-shield"></i> DLDM
-- <i class="fas fa-lock"></i> Azure AD
-- <i class="fas fa-key"></i> Okta
-- <i class="fas fa-shield-virus"></i> Defender for O365
+### Cloud & Migration
+- <i class="fab fa-microsoft"></i> Microsoft 365
+- <i class="fas fa-cloud"></i> Azure
+- <i class="fab fa-windows"></i> SharePoint / Exchange
+- <i class="fas fa-exchange-alt"></i> BitTitan MigrationWiz
 
-### Automation
-- <i class="fas fa-cogs"></i> Power Automate
-- <i class="fas fa-code"></i> Python
-- <i class="fab fa-node-js"></i> Node.js
-- <i class="fab fa-js"></i> JavaScript
+### MSP Platforms
+- <i class="fas fa-book"></i> ITGlue
+- <i class="fas fa-tools"></i> ConnectWise Manage
+- <i class="fas fa-headset"></i> HaloPSA
+- <i class="fas fa-laptop"></i> Intune / Autopilot
 
 ### Development
-- <i class="fab fa-react"></i> React
-- <i class="fab fa-npm"></i> NPM Packages
-- <i class="fab fa-github"></i> GitHub Actions
+- <i class="fab fa-python"></i> Python
+- <i class="fab fa-js"></i> TypeScript
+- <i class="fas fa-terminal"></i> PowerShell
 - <i class="fab fa-microsoft"></i> Graph API
-- <i class="fab fa-python"></i> Pandas/NumPy
+- <i class="fab fa-react"></i> React

@@ -198,27 +198,27 @@ permalink: /philosophy
             
             <div class="impact-metrics">
                 <div class="impact-metric">
-                    <div class="metric-number">40%</div>
-                    <div class="metric-label">Cloud Cost Reduction</div>
-                    <div class="metric-detail">Through infrastructure optimization and resource right-sizing</div>
+                    <div class="metric-number">6,543 GB</div>
+                    <div class="metric-label">Enterprise Data Migrated</div>
+                    <div class="metric-detail">Tenant-to-tenant M365 migration across 641 users and 23 locations</div>
                 </div>
-                
+
                 <div class="impact-metric">
-                    <div class="metric-number">88.8%</div>
-                    <div class="metric-label">Enhanced Security Posture</div>
-                    <div class="metric-detail">As measured by industry-standard security assessment frameworks</div>
+                    <div class="metric-number">130+</div>
+                    <div class="metric-label">MCP Tools Built</div>
+                    <div class="metric-detail">Spanning M365, ITGlue, ConnectWise, and HaloPSA platforms</div>
                 </div>
-                
+
                 <div class="impact-metric">
                     <div class="metric-number">70+</div>
                     <div class="metric-label">Process Automation Workflows</div>
-                    <div class="metric-detail">Implemented across various operational domains</div>
+                    <div class="metric-detail">Power Automate, Python, and PowerShell across multiple organizations</div>
                 </div>
-                
+
                 <div class="impact-metric">
-                    <div class="metric-number">30%</div>
-                    <div class="metric-label">Operational Efficiency</div>
-                    <div class="metric-detail">Improvement through strategic technology implementation</div>
+                    <div class="metric-number">88.8%</div>
+                    <div class="metric-label">Enhanced Security Posture</div>
+                    <div class="metric-detail">M365 Secure Score through governance and DLP policies</div>
                 </div>
             </div>
         </div>

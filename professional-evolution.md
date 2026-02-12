@@ -9,10 +9,11 @@ permalink: /professional-evolution
 ## Technical Leadership DNA
 
 ### Core Competencies
-- Enterprise Cloud Architecture
-- Security Compliance Engineering
-- Workflow Automation
-- Strategic Technology Integration
+- MCP Server & AI Agent Development
+- Enterprise M365 Migration Architecture
+- MSP Platform Integration & Automation
+- Cloud Architecture & Security Engineering
+- Workflow Automation & Process Optimization
 
 ### Problem-Solving Approach
 - Analytical, methodical problem resolution
@@ -29,6 +30,8 @@ permalink: /professional-evolution
 4. **Comprehensive Error Handling**: Proactive risk mitigation
 
 ### Technological Focus Areas
+- AI-Powered MSP Toolchain Development
+- Enterprise Migration Architecture
 - Cloud Infrastructure Modernization
 - Security Governance
 - Process Automation
@@ -37,17 +40,21 @@ permalink: /professional-evolution
 ## Professional Growth Trajectory
 
 ### Key Transformation Domains
+- MCP Server Development (130+ tools)
+- Tenant-to-Tenant M365 Migration (6,500+ GB)
+- Claude Code Plugin Architecture (31 skills, 7 agents)
+- MSP Platform Unification (ITGlue, ConnectWise, HaloPSA)
 - Azure Cloud Optimization
 - Microsoft 365 Governance
 - Automated Workflow Engineering
-- Enterprise Integration Strategies
 
 ### Impact Metrics
+- 75+ Public Repositories
+- 6,543 GB Enterprise Data Migrated
+- 130+ MCP Tools Built
+- 641 Users Migrated Across 23 Locations
 - 40% Cloud Cost Reduction
 - 70+ Process Automation Workflows
-- Enhanced Security Compliance
-- Scalable System Architecture
 
 [View Experience](/experience)
-[Transformation Strategies](/transformation-strategies)
 [Projects](/projects)

@@ -45,6 +45,56 @@ permalink: /npm-packages
 <h2 class="section-title mt-5 animate-on-scroll">Featured Packages</h2>
 
 <div class="npm-packages animate-on-scroll">
+    <!-- halopsa-workflows-mcp Package -->
+    <div class="npm-package">
+        <h3 class="npm-package-name">
+            <i class="fab fa-npm"></i> halopsa-workflows-mcp
+        </h3>
+        <p class="npm-package-description">
+            Scalable, modular MCP server for integrating HaloPSA workflows with Claude and AI assistants. Featured in MCP Container and Glama registries.
+        </p>
+
+        <div class="npm-package-downloads">
+            <i class="fas fa-star"></i> 4 GitHub stars | Featured in MCP registries
+        </div>
+
+        <div class="npm-package-install">
+            npm install halopsa-workflows-mcp
+        </div>
+
+        <div class="npm-package-example">
+            <div class="code-preview">
+                <pre><code class="language-javascript">// MCP server for HaloPSA integration
+// Provides ticket management, agent workflows,
+// and reporting tools accessible via Claude
+
+// In your Claude Code MCP config:
+{
+  "mcpServers": {
+    "halopsa": {
+      "command": "npx",
+      "args": ["halopsa-workflows-mcp"],
+      "env": {
+        "HALO_API_URL": "https://your-instance.halopsa.com",
+        "HALO_CLIENT_ID": "your-client-id",
+        "HALO_CLIENT_SECRET": "your-secret"
+      }
+    }
+  }
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="npm-package-links">
+            <a href="https://github.com/ssmanji89/halopsa-workflows-mcp" target="_blank" class="btn btn-sm btn-outline">
+                <i class="fab fa-github"></i> GitHub
+            </a>
+            <a href="https://www.npmjs.com/package/halopsa-workflows-mcp" target="_blank" class="btn btn-sm btn-outline">
+                <i class="fab fa-npm"></i> NPM
+            </a>
+        </div>
+    </div>
+
     <!-- m365-utils Package -->
     <div class="npm-package">
         <h3 class="npm-package-name">
@@ -324,9 +374,9 @@ for (const user of usersWithoutMFA) {
         </div>
         
         <div class="roadmap-item">
-            <div class="roadmap-status planned">Planned</div>
+            <div class="roadmap-status planned">Complete</div>
             <h3>AI Integration Framework</h3>
-            <p>Simplified integration layer for OpenAI and Azure Cognitive Services with context management and prompt engineering utilities.</p>
+            <p>MCP servers and Claude Code plugins providing AI-powered access to M365, ITGlue, ConnectWise, and HaloPSA with 130+ tools and autonomous agents.</p>
         </div>
     </div>
 </div>

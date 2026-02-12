@@ -11,6 +11,84 @@ permalink: /technical-skills
 </div>
 
 <div class="technical-skills animate-on-scroll">
+    <!-- MCP & AI Agent Development -->
+    <div class="skill-group">
+        <div class="skill-group-header">
+            <div class="skill-group-icon">
+                <i class="fas fa-robot"></i>
+            </div>
+            <h3>MCP & AI Agent Development</h3>
+        </div>
+        <p>Building MCP servers and Claude Code plugins that bridge enterprise platforms with AI — 130+ tools, 31 skills, and 7 autonomous agents across M365, ITGlue, ConnectWise, and HaloPSA.</p>
+
+        <div class="skill-tags">
+            <span class="skill-tag"><i class="fas fa-robot"></i> MCP Protocol</span>
+            <span class="skill-tag"><i class="fas fa-brain"></i> Claude Code SDK</span>
+            <span class="skill-tag"><i class="fas fa-comment-dots"></i> Anthropic API</span>
+            <span class="skill-tag"><i class="fas fa-cogs"></i> Autonomous Agents</span>
+            <span class="skill-tag"><i class="fas fa-project-diagram"></i> n8n</span>
+        </div>
+
+        <div class="skill-proficiency">
+            <div class="proficiency-bar">
+                <div class="proficiency-level" style="width: 95%"></div>
+            </div>
+            <div class="proficiency-text">Expert</div>
+        </div>
+    </div>
+
+    <!-- Enterprise Migration -->
+    <div class="skill-group">
+        <div class="skill-group-header">
+            <div class="skill-group-icon">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <h3>Enterprise Migration</h3>
+        </div>
+        <p>Full-lifecycle tenant-to-tenant M365 migrations — 6,500+ GB across 600+ users with Exchange Hybrid, Azure AD Connect, Intune, Autopilot, and custom migration tooling.</p>
+
+        <div class="skill-tags">
+            <span class="skill-tag"><i class="fas fa-exchange-alt"></i> BitTitan MigrationWiz</span>
+            <span class="skill-tag"><i class="fab fa-windows"></i> SharePoint Migration API</span>
+            <span class="skill-tag"><i class="fas fa-users-cog"></i> Azure AD Connect</span>
+            <span class="skill-tag"><i class="fas fa-envelope"></i> Exchange Hybrid</span>
+            <span class="skill-tag"><i class="fas fa-laptop"></i> Autopilot / Intune MDM</span>
+        </div>
+
+        <div class="skill-proficiency">
+            <div class="proficiency-bar">
+                <div class="proficiency-level" style="width: 95%"></div>
+            </div>
+            <div class="proficiency-text">Expert</div>
+        </div>
+    </div>
+
+    <!-- MSP Platform Integration -->
+    <div class="skill-group">
+        <div class="skill-group-header">
+            <div class="skill-group-icon">
+                <i class="fas fa-network-wired"></i>
+            </div>
+            <h3>MSP Platform Integration</h3>
+        </div>
+        <p>Integrating and automating across the MSP technology stack — documentation, ticketing, RMM, and network monitoring platforms with API-first approaches.</p>
+
+        <div class="skill-tags">
+            <span class="skill-tag"><i class="fas fa-book"></i> ITGlue</span>
+            <span class="skill-tag"><i class="fas fa-tools"></i> ConnectWise Manage</span>
+            <span class="skill-tag"><i class="fas fa-headset"></i> HaloPSA</span>
+            <span class="skill-tag"><i class="fas fa-wifi"></i> Auvik</span>
+            <span class="skill-tag"><i class="fas fa-server"></i> N-able</span>
+        </div>
+
+        <div class="skill-proficiency">
+            <div class="proficiency-bar">
+                <div class="proficiency-level" style="width: 90%"></div>
+            </div>
+            <div class="proficiency-text">Expert</div>
+        </div>
+    </div>
+
     <!-- Programming Languages -->
     <div class="skill-group">
         <div class="skill-group-header">
@@ -105,6 +183,7 @@ permalink: /technical-skills
             <span class="skill-tag"><i class="fas fa-robot"></i> Azure Logic Apps</span>
             <span class="skill-tag"><i class="fas fa-sitemap"></i> Microsoft Graph API</span>
             <span class="skill-tag"><i class="fab fa-node-js"></i> Node.js Automation</span>
+            <span class="skill-tag"><i class="fas fa-project-diagram"></i> n8n</span>
         </div>
         
         <div class="skill-proficiency">
@@ -201,21 +280,22 @@ permalink: /technical-skills
             </div>
             <h3>AI Integration</h3>
         </div>
-        <p>Leveraging AI services through **practical integration** to enhance applications and automate complex workflows, driven by an interest in **learning technical details**.</p>
-        
+        <p>Building AI-powered automation with Claude, MCP servers, and OpenAI — from autonomous MSP agents to intelligent document processing and natural language administration.</p>
+
         <div class="skill-tags">
-            <span class="skill-tag"><i class="fas fa-robot"></i> OpenAI APIs</span>
+            <span class="skill-tag"><i class="fas fa-robot"></i> Claude / Anthropic API</span>
+            <span class="skill-tag"><i class="fas fa-plug"></i> MCP Protocol</span>
+            <span class="skill-tag"><i class="fas fa-comment-dots"></i> OpenAI APIs</span>
             <span class="skill-tag"><i class="fab fa-microsoft"></i> Azure Cognitive Services</span>
-            <span class="skill-tag"><i class="fas fa-comment-dots"></i> ChatGPT Integration</span>
             <span class="skill-tag"><i class="fas fa-language"></i> NLP</span>
             <span class="skill-tag"><i class="fas fa-file-alt"></i> Document Intelligence</span>
         </div>
-        
+
         <div class="skill-proficiency">
             <div class="proficiency-bar">
-                <div class="proficiency-level" style="width: 88%"></div>
+                <div class="proficiency-level" style="width: 95%"></div>
             </div>
-            <div class="proficiency-text">Advanced</div>
+            <div class="proficiency-text">Expert</div>
         </div>
     </div>
 </div>
@@ -245,33 +325,34 @@ permalink: /technical-skills
                 <i class="fas fa-shield-alt"></i>
             </div>
             <h4 class="certification-title">Certified Information Systems Security Professional (CISSP)</h4>
-            <p class="certification-date">Valid through 2025</p>
+            <p class="certification-date">Earned 2022</p>
         </div>
     </div>
 </div>
 
 <div class="continual-learning animate-on-scroll mt-5">
     <h2 class="section-title">Continual Learning</h2>
-    <p>As technology rapidly evolves, I maintain a consistent learning regimen focused on deepening **technical** and **analytical** understanding:</p>
-    
+    <p>Building at the intersection of AI agent frameworks, enterprise migration architecture, and MSP platform unification:</p>
+
     <div class="learning-areas">
         <div class="learning-area">
             <i class="fas fa-brain"></i>
             <h4>Current Focus Areas</h4>
             <ul>
-                <li>Advanced AI integration patterns for **practical business process automation**</li>
-                <li>Zero-trust security architecture for hybrid cloud environments (**analytical application**)</li>
-                <li>Scalable serverless architectures for enterprise applications (**hands-on implementation**)</li>
+                <li>MCP server development and AI agent orchestration patterns</li>
+                <li>Tenant-to-tenant migration architecture at enterprise scale</li>
+                <li>MSP platform unification through API-first integration</li>
             </ul>
         </div>
-        
+
         <div class="learning-area">
             <i class="fas fa-book"></i>
-            <h4>Recent Learning Projects</h4>
+            <h4>Recent Projects</h4>
             <ul>
-                <li>Developed a GPT-powered documentation generator (**practical tool development**)</li>
-                <li>Implemented CI/CD pipeline for PowerShell module deployment (**structured automation**)</li>
-                <li>Created a custom Microsoft Graph API wrapper (**hands-on integration**)</li>
+                <li>Built MCP servers with 130+ tools spanning M365, ITGlue, ConnectWise, and HaloPSA</li>
+                <li>Developed Claude Code plugin with 31 skills and 7 autonomous agents</li>
+                <li>Engineered EZMig — 14-phase SharePoint migration platform</li>
+                <li>Published halopsa-workflows-mcp on npm</li>
             </ul>
         </div>
     </div>

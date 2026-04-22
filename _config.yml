@@ -100,3 +100,12 @@ exclude:
   - purgecss.js
   - "*.config.js"
   - "package*.json"
+  - blog_automation/
+  - "*.html"
+  - HOUSTON_*
+  - test_*
+  - accessibility-report.html
+  - portfolio-grid-demo.html
+  - example_usage.py
+  - requirements.txt
+  - npm-packages.md

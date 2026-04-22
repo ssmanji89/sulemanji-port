@@ -1,24 +1,141 @@
 title: "Suleman Manji"
-description: "MSP Solutions Architect"
+tagline: "MSP Solutions Architect | AI-Powered Automation | Enterprise Migration"
+description: >-
+  Technical writing on cybersecurity, cloud automation, AI integration, 
+  and enterprise infrastructure. Real-world patterns from managing 50+ 
+  client tenants across M365, ConnectWise, and VMware stacks.
 
-# Use the default GitHub Pages theme
-remote_theme: pages-themes/minimal@v0.2.0
-plugins:
-  - jekyll-remote-theme
+# Chirpy Theme - Remote Theme for GitHub Pages
+remote_theme: cotes2020/jekyll-theme-chirpy@v9.6.2
 
-# Basic settings
+# Site URL settings
 url: "https://www.sulemanji.com"
 baseurl: ""
 
-# Exclude problematic files
+# Language and timezone
+lang: en
+timezone: America/Chicago
+
+# Author/Social configuration
+social:
+  name: Suleman Manji
+  email: [EMAIL]
+  links:
+    - https://github.com/ssmanji89
+    - https://www.linkedin.com/in/suleman-manji-1a46852a0
+
+github:
+  username: ssmanji89
+
+twitter:
+  username: ""
+
+# Avatar (sidebar)
+avatar: "/images/sulemanji-profile.png"
+
+# Theme mode: light, dark, or empty (system default with toggle)
+theme_mode: dark
+
+# Table of Contents - enabled globally
+toc: true
+
+# PWA settings
+pwa:
+  enabled: true
+  cache:
+    enabled: true
+    deny_paths: []
+
+# CDN for static assets
+cdn: "https://chirpy-img.netlify.app"
+
+# Analytics (empty = disabled)
+analytics:
+  google:
+    id: ""
+  goatcounter:
+    id: ""
+
+# Comments (empty provider = disabled)
+comments:
+  provider: ""
+
+# Webmaster verification
+webmaster_verifications:
+  google: ""
+  bing: ""
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+
+kramdown:
+  footnote_backlink: "&#8617;&#xfe0e;"
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: highlight
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+      start_line: 1
+
+sass:
+  style: compressed
+
+# Pagination
+paginate: 10
+
+# Permalink style
+permalink: /posts/:title/
+
+# Defaults for posts and pages
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+      comments: false
+      toc: true
+      permalink: /posts/:title/
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: page
+  - scope:
+      path: "_tabs"
+      type: pages
+    values:
+      layout: page
+
+# Collections (tabs for navigation)
+collections:
+  tabs:
+    output: true
+    permalink: /:title/
+
+# Plugins for GitHub Pages compatibility
+plugins:
+  - jekyll-seo-tag
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-remote-theme
+
+# Exclude from build
 exclude:
   - Gemfile
   - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
   - README.md
-  - "*.html"
-  - blog_automation/
-  - HOUSTON_*
-  - test_*.py
-  - test_*.md
-  - accessibility-report.html
-  - portfolio-grid-demo.html
+  - LICENSE
+  - "*.config.js"
+  - package*.json
+  - purgecss.js
+  - tools/
+  - docs/

@@ -13,8 +13,8 @@
 <meta property="og:title" content="Blog Post" />
 <meta name="author" content="Suleman Manji" />
 <meta property="og:locale" content="en_US" />
-<meta name="description" content="Summary of ConnectWise Automate API Vulnerability (June 10, 2020) On June 10, 2020, ConnectWise disclosed a critical vulnerability within its Automate RMM p…" />
-<meta property="og:description" content="Summary of ConnectWise Automate API Vulnerability (June 10, 2020) On June 10, 2020, ConnectWise disclosed a critical vulnerability within its Automate RMM p…" />
+<meta name="description" content="Summary of ConnectWise Automate Critical API Vulnerability (06/12/2020) A critical security vulnerability (CVSS 7.8) has been identified in the ConnectWise …" />
+<meta property="og:description" content="Summary of ConnectWise Automate Critical API Vulnerability (06/12/2020) A critical security vulnerability (CVSS 7.8) has been identified in the ConnectWise …" />
 <link rel="canonical" href="https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html" />
 <meta property="og:url" content="https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html" />
 <meta property="og:site_name" content="Suleman Manji" />
@@ -23,10 +23,10 @@
 <meta name="twitter:card" content="summary" />
 <meta property="twitter:title" content="Blog Post" />
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Suleman Manji"},"dateModified":"2026-04-22T00:00:00+00:00","datePublished":"2026-04-22T00:00:00+00:00","description":"Summary of ConnectWise Automate API Vulnerability (June 10, 2020) On June 10, 2020, ConnectWise disclosed a critical vulnerability within its Automate RMM p…","headline":"Blog Post","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"},"name":"Suleman Manji"},"url":"https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html"}</script>
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Suleman Manji"},"dateModified":"2026-04-22T00:00:00+00:00","datePublished":"2026-04-22T00:00:00+00:00","description":"Summary of ConnectWise Automate Critical API Vulnerability (06/12/2020) A critical security vulnerability (CVSS 7.8) has been identified in the ConnectWise …","headline":"Blog Post","mainEntityOfPage":{"@type":"WebPage","@id":"https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.sulemanji.com/images/sulemanji-profile.png"},"name":"Suleman Manji"},"url":"https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html"}</script>
 <!-- End Jekyll SEO tag -->
 
-    <link rel="stylesheet" href="/assets/css/style.css?v=a785f86f50cb881ff943eeec68ed332a10c15588">
+    <link rel="stylesheet" href="/assets/css/style.css?v=b38aff9f1139c7ec870e51a41b4985035bcb21a4">
     <!--[if lt IE 9]>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
@@ -227,29 +227,27 @@
 </div>
 
 <div class="article-content-full">
-    <h2 id="summary-of-connectwise-automate-api-vulnerability-june-10-2020">Summary of ConnectWise Automate API Vulnerability (June 10, 2020)</h2>
+    <h2 id="summary-of-connectwise-automate-critical-api-vulnerability-06122020">Summary of ConnectWise Automate Critical API Vulnerability (06/12/2020)</h2>
 
-<p>On June 10, 2020, ConnectWise disclosed a critical vulnerability within its Automate RMM platform’s API, assigned a CVSS score of 7.8 (High). This security flaw presented a significant risk, as a remote authenticated user could exploit a specific API endpoint to execute arbitrary commands or make unauthorized modifications within an individual Automate instance. For MSPs, this type of vulnerability in a core operational tool like an RMM is a top-tier threat, as it could serve as a direct pivot point for threat actors to move laterally across a managed client network, deploy ransomware, or exfiltrate data. Immediate and decisive action was required to mitigate the risk, with remediation paths differing fundamentally between cloud-hosted and on-premise deployments.</p>
+<p>A critical security vulnerability (CVSS 7.8) has been identified in the ConnectWise Automate API, posing a significant risk to MSPs and their clients. The flaw allows a remote authenticated user to execute arbitrary commands or make unauthorized modifications within an Automate instance. This is not a theoretical risk; it is an active, high-priority vulnerability that requires immediate attention due to its potential for system compromise and data breach.</p>
+
+<p>This advisory is highly relevant for all technical operators managing ConnectWise Automate, whether hosted in the cloud or on-premise. The remediation path differs based on deployment model and software version, making precise action critical. Failure to address this promptly could lead to a security incident with direct liability implications for the MSP.</p>
 
 <h3 id="key-insights">Key Insights</h3>
-
 <ul>
-  <li><strong>Severity &amp; Mechanism:</strong> The vulnerability was rated <strong>Critical (Priority 1)</strong> with a CVSS score of 7.8. It allowed a <strong>remote authenticated user</strong> to exploit a specific API, leading to potential command execution and system modification.</li>
-  <li><strong>Differential Remediation:</strong> ConnectWise implemented a two-tiered response. <strong>Cloud partners</strong> received automatic, backend mitigating controls applied by ConnectWise as of the evening of June 10. <strong>On-premise partners</strong> were responsible for manually applying vendor-provided hotfixes.</li>
-  <li><strong>Patch Availability:</strong> Hotfixes were made available for on-premise deployments, specifically for versions 2020.1 through 2020.5, with patches for older versions promised in the coming days. This highlights the importance of maintaining relatively current software versions to ensure timely security coverage.</li>
-  <li><strong>Threat Model:</strong> The prerequisite of an “authenticated user” underscores that compromised administrative or user credentials for the Automate platform could be directly weaponized to exploit this flaw, elevating the importance of credential security and multi-factor authentication (MFA).</li>
+  <li><strong>Severity &amp; Mechanism:</strong> The vulnerability is rated <strong>Critical (Priority 1)</strong> with a CVSS score of 7.8. It enables <strong>authenticated remote command execution</strong> within the Automate environment.</li>
+  <li><strong>Cloud vs. On-Premise Remediation:</strong> ConnectWise has applied initial mitigations for <strong>cloud-hosted partners</strong>. <strong>On-premise partners</strong> must take manual action based on their specific version.</li>
+  <li><strong>Version-Specific Patching:</strong> For on-premise installations, a hotfix is required for versions 2020.1 through 2020.5. Partners on 2019.12 or earlier must implement interim mitigation steps immediately, with a formal patch forthcoming.</li>
 </ul>
 
 <h3 id="actionable-takeaway">Actionable Takeaway</h3>
-
-<p><strong>On-premise Automate administrators must immediately verify that the applicable hotfix for their version (2020.1 to 2020.5) was applied in June 2020.</strong> Review patch histories and system logs from that period. Cloud customers should confirm via historical communications or tickets that their instance was part of the automated mitigation rollout.</p>
+<p><strong>Immediately verify your Automate version and deployment model.</strong> Cloud partners should confirm with ConnectWise that mitigations are applied to their instance. On-premise partners <strong>must apply the specific hotfix linked for their version (2020.5 - 2020.1) and then re-implement the referenced mitigation steps.</strong> Partners on 2019.12 or older must implement the mitigation steps now and watch for the promised patch.</p>
 
 <h3 id="compliance--security-implications">Compliance &amp; Security Implications</h3>
-
 <ul>
-  <li><strong>Critical Security Implication:</strong> This was a direct, high-severity path to <strong>privilege escalation and remote code execution (RCE)</strong> within the RMM environment. Failure to patch on-premise systems would have left MSPs and their clients’ networks grossly exposed to compromise.</li>
-  <li><strong>Compliance Impact:</strong> Unmitigated, this vulnerability would have represented a clear failure to implement critical security patches, potentially violating frameworks like <strong>CMMC, NIST 800-171, HIPAA, or PCI-DSS</strong> that mandate timely remediation of high-severity flaws. MSPs must maintain meticulous records of such patch deployments for audits.</li>
-  <li><strong>Persistent Vigilance Required:</strong> While this specific issue is historical, it serves as a potent reminder. MSPs must have a formal, documented process for <strong>urgently reviewing and applying critical RMM and PSA security patches</strong>, as these systems are high-value targets for attackers.</li>
+  <li><strong>High-Risk Exploit:</strong> This is a command execution vulnerability. Unpatched systems are actively vulnerable to complete compromise, data exfiltration, and ransomware deployment.</li>
+  <li><strong>Regulatory Exposure:</strong> Failure to patch could constitute a violation of cybersecurity frameworks (e.g., NIST, CIS Controls) and data protection regulations (like CCPA or GDPR if client data is accessed), leading to significant legal and financial liability.</li>
+  <li><strong>MSP Liability:</strong> As the managing entity, the MSP bears direct responsibility for applying this patch. An exploit could breach multiple client environments simultaneously, escalating the incident severity.</li>
 </ul>
 
 </div>
@@ -286,19 +284,19 @@
             <div class="article-content">
                 <div class="article-meta">
                     <span class="article-date">
-                        <i class="far fa-calendar-alt"></i> April 22, 2026
+                        <i class="far fa-calendar-alt"></i> June 06, 2025
                     </span>
                 </div>
                 
                 <h2 class="article-title">
-                    <a href="/2026/04/22/2025-06-11-stop-csam-act-the-threat-to-encryption.html"></a>
+                    <a href="/tech%20trends/2025/06/06/palantirs-controversial-standoff-with-wired-and-ot.html">Palantir's Controversial Standoff with WIRED and Other Journalists</a>
                 </h2>
                 
                 <div class="article-excerpt">
-                    **Encryption at Stake: The Unintended Consequences of the "Stop CSAM" Act** Imagine waking up one day to find out that...
+                    Introduction In the realm of data science and engineering, few names are as controversial or newsworthy as Palantir Technologies. Recently,...
                 </div>
                 
-                <a href="/2026/04/22/2025-06-11-stop-csam-act-the-threat-to-encryption.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                <a href="/tech%20trends/2025/06/06/palantirs-controversial-standoff-with-wired-and-ot.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
             </div>
         </article>
         
@@ -311,14 +309,14 @@
                 </div>
                 
                 <h2 class="article-title">
-                    <a href="/tech%20trends/2025/06/06/apples-leap-from-java-8-to-swift-a-tech-insiders-p.html">Apple's Leap from Java 8 to Swift: A Tech Insider's Perspective</a>
+                    <a href="/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication.html">Trump's Tesla Sale: A Deep Dive into the Implications</a>
                 </h2>
                 
                 <div class="article-excerpt">
-                    Apple’s Shift from Java 8 to Swift: An Insider’s Take In my decade-long journey in the tech world, I’ve seen...
+                    Introduction The subject of former President Donald Trump getting rid of his Tesla has sparked quite a bit of interest,...
                 </div>
                 
-                <a href="/tech%20trends/2025/06/06/apples-leap-from-java-8-to-swift-a-tech-insiders-p.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
+                <a href="/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication.html" class="read-more">Read Article <i class="fas fa-arrow-right"></i></a>
             </div>
         </article>
         

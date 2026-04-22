@@ -1,4 +1,4 @@
-# Site Configuration for Chirpy Theme
+# Site Configuration for Chirpy Theme via remote_theme
 # https://github.com/cotes2020/jekyll-theme-chirpy
 
 title: "Suleman Manji"
@@ -6,8 +6,8 @@ tagline: "MSP Solutions Architect | AI-Powered Automation | Enterprise Migration
 description: >-
   MSP Solutions Architect | AI-Powered Automation | Enterprise Migration
 
-# Theme
-theme: jekyll-theme-chirpy
+# Theme via remote_theme gem
+remote_theme: "cotes2020/jekyll-theme-chirpy@v9.6.2"
 
 # Language
 lang: en
@@ -34,29 +34,24 @@ social:
     - "https://www.linkedin.com/in/suleman-manji-1a46852a0"
 
 # Theme settings
-theme_mode: dark  # Options: light, dark, or empty for system default
+theme_mode: dark
 toc: true
 
-# Avatar and logo
+# Avatar
 avatar: "/commons/avatar.jpg"
-logo: "/images/sulemanji-profile.png"
 
-# Analytics (optional)
+# Analytics
 analytics:
   google:
     id: ""
-
-# Verifications
-webmaster_verifications:
-  google: ""
-  bing: ""
 
 # Build settings
 markdown: kramdown
 highlighter: rouge
 
-# Plugins (for local build, GitHub Pages handles these)
+# Plugins
 plugins:
   - jekyll-seo-tag
   - jekyll-feed
   - jekyll-sitemap
+  - jekyll-remote-theme

@@ -37,17 +37,9 @@ jobs:
         run: bundle install
 
       - name: Build with Jekyll
-        run: bundle exec jekyll build --destination ./_site 2>&1 | tee /tmp/jekyll-build.log
+        run: bundle exec jekyll build --destination ./_site
         env:
           JEKYLL_ENV: production
-        continue-on-error: true
-
-      - name: Upload build log
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: jekyll-build-log
-          path: /tmp/jekyll-build.log
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

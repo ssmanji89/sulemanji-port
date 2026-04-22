@@ -16,3 +16,6 @@ gem 'kramdown-parser-gfm', '~> 1.1'
 
 # Syntax highlighting
 gem 'rouge', '~> 4.2'
+
+# Pagination
+gem 'jekyll-paginate', '~> 1.1'

@@ -36,10 +36,11 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
-      - name: Build with Jekyll
-        run: bundle exec jekyll build --destination ./_site
+      - name: Build with Jekyll (verbose)
+        run: bundle exec jekyll build --destination ./_site --verbose --trace
         env:
           JEKYLL_ENV: production
+          RUBYOPT: -W0
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

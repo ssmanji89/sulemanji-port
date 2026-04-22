@@ -6,7 +6,7 @@ description: >-
   client tenants across M365, ConnectWise, and VMware stacks.
 
 # Chirpy Theme - Remote Theme for GitHub Pages
-remote_theme: cotes2020/jekyll-theme-chirpy@v7.5.0
+remote_theme: cotes2020/jekyll-theme-chirpy
 
 # Site URL settings
 url: "https://www.sulemanji.com"

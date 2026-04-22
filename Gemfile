@@ -1,21 +1,12 @@
-source 'https://rubygems.org'
+# frozen_string_literal: true
 
-# Jekyll core
-gem 'jekyll', '~> 4.3'
+source "https://rubygems.org"
 
-# Remote theme support (for GitHub Pages)
-gem 'jekyll-remote-theme', '~> 0.4.3'
+gem "jekyll-theme-chirpy", "~> 7.5"
 
-# SEO and feeds
-gem 'jekyll-seo-tag', '~> 2.8'
-gem 'jekyll-feed', '~> 0.17'
-gem 'jekyll-sitemap', '~> 1.4'
+platforms :windows, :jruby do
+  gem "tzinfo", ">= 1", "< 3"
+  gem "tzinfo-data"
+end
 
-# Markdown rendering
-gem 'kramdown-parser-gfm', '~> 1.1'
-
-# Syntax highlighting
-gem 'rouge', '~> 4.2'
-
-# Pagination
-gem 'jekyll-paginate', '~> 1.1'
+gem "wdm", "~> 0.2.0", :platforms => [:windows]

@@ -1,28 +1,15 @@
-title: "Suleman Manji"
-tagline: "MSP Solutions Architect | AI-Powered Automation | Enterprise Migration"
-description: >-
-  Technical writing on cybersecurity, cloud automation, AI integration, 
-  and enterprise infrastructure. Real-world patterns from managing 50+ 
-  client tenants across M365, ConnectWise, and VMware stacks.
+# Site Configuration
+theme: jekyll-theme-chirpy
 
-# Chirpy Theme - Remote Theme for GitHub Pages
-remote_theme: cotes2020/jekyll-theme-chirpy
-
-# Site URL settings
-url: "https://www.sulemanji.com"
-baseurl: ""
-
-# Language and timezone
 lang: en
 timezone: America/Chicago
 
-# Author/Social configuration
-social:
-  name: Suleman Manji
-  email: [EMAIL]
-  links:
-    - https://github.com/ssmanji89
-    - https://www.linkedin.com/in/suleman-manji-1a46852a0
+title: Suleman Manji
+tagline: MSP Solutions Architect | AI-Powered Automation
+description: Technical writing on cybersecurity, cloud automation, and enterprise infrastructure.
+
+url: "https://www.sulemanji.com"
+baseurl: ""
 
 github:
   username: ssmanji89
@@ -30,44 +17,39 @@ github:
 twitter:
   username: ""
 
-# Avatar (sidebar)
-avatar: "/images/sulemanji-profile.png"
+social:
+  name: Suleman Manji
+  email: [EMAIL]
+  links:
+    - https://github.com/ssmanji89
+    - https://www.linkedin.com/in/suleman-manji-1a46852a0
 
-# Theme mode: light, dark, or empty (system default with toggle)
+webmaster_verifications:
+  google:
+  bing:
+
+analytics:
+  google:
+    id:
+  goatcounter:
+    id:
+
 theme_mode: dark
 
-# Table of Contents - enabled globally
+avatar: /images/sulemanji-profile.png
+
 toc: true
 
-# PWA settings
+comments:
+  provider:
+
 pwa:
   enabled: true
   cache:
     enabled: true
     deny_paths: []
 
-# CDN for static assets
-cdn: "https://chirpy-img.netlify.app"
-
-# Analytics (empty = disabled)
-analytics:
-  google:
-    id: ""
-  goatcounter:
-    id: ""
-
-# Comments (empty provider = disabled)
-comments:
-  provider: ""
-
-# Webmaster verification
-webmaster_verifications:
-  google: ""
-  bing: ""
-
-# Build settings
-markdown: kramdown
-highlighter: rouge
+paginate: 10
 
 kramdown:
   footnote_backlink: "&#8617;&#xfe0e;"
@@ -80,62 +62,41 @@ kramdown:
       line_numbers: true
       start_line: 1
 
-sass:
-  style: compressed
+collections:
+  tabs:
+    output: true
+    sort_by: order
 
-# Pagination
-paginate: 10
-
-# Permalink style
-permalink: /posts/:title/
-
-# Defaults for posts and pages
 defaults:
   - scope:
       path: ""
       type: posts
     values:
       layout: post
-      comments: false
+      comments: true
       toc: true
       permalink: /posts/:title/
   - scope:
-      path: ""
-      type: pages
+      path: _drafts
     values:
-      layout: page
+      comments: false
   - scope:
-      path: "_tabs"
-      type: pages
+      path: ""
+      type: tabs
     values:
       layout: page
+      permalink: /:title/
 
-# Collections (tabs for navigation)
-collections:
-  tabs:
-    output: true
-    permalink: /:title/
+sass:
+  style: compressed
 
-# Plugins for GitHub Pages compatibility
-plugins:
-  - jekyll-seo-tag
-  - jekyll-feed
-  - jekyll-sitemap
-  - jekyll-remote-theme
-
-# Exclude from build
 exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor/bundle/
-  - vendor/cache/
-  - vendor/gems/
-  - vendor/ruby/
+  - "*.gem"
+  - "*.gemspec"
+  - docs
+  - tools
   - README.md
   - LICENSE
-  - "*.config.js"
-  - package*.json
   - purgecss.js
-  - tools/
-  - docs/
+  - "*.config.js"
+  - "package*.json"

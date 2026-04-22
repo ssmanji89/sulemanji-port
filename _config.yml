@@ -1,20 +1,9 @@
 title: "Suleman Manji"
 email: "[EMAIL]"
-description: >-
-  MSP Solutions Architect | AI-Powered Automation | Enterprise Migration
+description: MSP Solutions Architect | AI-Powered Automation | Enterprise Migration
 
-# Theme configuration - Chirpy via remote_theme for GitHub Pages
-remote_theme: "cotes2020/jekyll-theme-chirpy@v9.6.2"
-plugins:
-  - jekyll-seo-tag
-  - jekyll-feed
-  - jekyll-remote-theme
-
-# Theme-specific configurations
-avatar: "/commons/avatar.jpg" # Sidebar avatar. User can change this to match logo if desired.
-logo: "/images/sulemanji-profile.png" # Site header logo.
-show_downloads: false
-google_analytics: # This is deprecated, use analytics.google.id below.
+# Test with minimal theme
+theme: minimal
 
 # Site settings
 domain: "www.sulemanji.com"
@@ -24,143 +13,11 @@ baseurl: ""
 # Social profiles
 github:
   username: "ssmanji89"
-  # twitter: User can set twitter username here if needed
 twitter:
-  username: "" # Placeholder for user's Twitter username
+  username: ""
 social:
-  name: "Suleman Manji" # Your full name
+  name: "Suleman Manji"
   email: "[EMAIL]"
-  fediverse_handle: ""
-  links:
-    - "https://github.com/ssmanji89"
-    - "https://www.linkedin.com/in/suleman-manji-1a46852a0"
-
-# SEO and site metadata (from jekyll-seo-tag)
-tagline: "MSP Solutions Architect | AI-Powered Automation | Enterprise Migration"
-# description is already defined above
-
-webmaster_verifications:
-  google: ""
-  bing: ""
-  alexa: ""
-  yandex: ""
-  baidu: ""
-  facebook: ""
-
-# Web Analytics Settings
-analytics:
-  google:
-    id: "" # Map from legacy google_analytics, or fill in your GA ID
-  goatcounter:
-    id: ""
-  umami:
-    id: ""
-    domain: ""
-  matomo:
-    id: ""
-    domain: ""
-  cloudflare:
-    id: ""
-  fathom:
-    id: ""
-pageviews:
-  provider: ""
-
-# Prefer color scheme setting.
-# Available options: light, dark, or empty (for system default).
-theme_mode: ""
-
-# The CDN endpoint for media resources.
-cdn: "https://chirpy-img.netlify.app"
-
-# The URL of the site-wide social preview image.
-social_preview_image:
-
-# Global switch for TOC in posts.
-toc: true
-
-# Comments section config
-comments:
-  provider: # Options: disqus, utterances, giscus. Leave empty for disabled.
-  # disqus:
-  #   shortname: ""
-  # utterances:
-  #   repo: ""
-  #   issue_term: ""
-  # giscus:
-  #   repo: ""
-  #   repo_id: ""
-  #   category: ""
-  #   category_id: ""
-  #   mapping: ""
-  #   strict: ""
-  #   input_position: ""
-  #   lang: ""
-  #   reactions_enabled: ""
-
-# Self-hosted static assets
-assets:
-  self_host:
-    enabled: false
-    env:
-
-# Progressive Web App (PWA) settings
-pwa:
-  enabled: true
-  cache:
-    enabled: true
-    deny_paths: []
 
 # Build settings
 markdown: kramdown
-sass:
-  style: compressed
-
-# Kramdown configurations for syntax highlighting
-kramdown:
-  footnote_backlink: "&#8617;&#xfe0e;"
-  syntax_highlighter: rouge
-  syntax_highlighter_opts:
-    css_class: highlight
-    span:
-      line_numbers: false
-    block:
-      line_numbers: true
-      start_line: 1
-
-# Collections
-collections:
-  projects:
-    output: true
-    permalink: /projects/:name
-
-# Default front matter
-defaults:
-  -
-    scope:
-      path: ""
-    values:
-      layout: "default"
-
-# Exclude from processing
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor/bundle/
-  - vendor/cache/
-  - vendor/gems/
-  - vendor/ruby/
-  - README.md
-  - LICENSE
-
-# Jekyll Categories and Tags Archives
-# Disabled - Chirpy handles archives differently
-# jekyll-archives:
-#   enabled: [categories, tags]
-#   layouts:
-#     category: category
-#     tag: tag
-#   permalinks:
-#     tag: /tags/:name/
-#     category: /categories/:name/

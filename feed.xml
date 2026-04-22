@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="https://www.sulemanji.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.sulemanji.com/" rel="alternate" type="text/html" /><updated>2026-04-22T22:22:01+00:00</updated><id>https://www.sulemanji.com/feed.xml</id><title type="html">Suleman Manji</title><subtitle>MSP Solutions Architect | AI-Powered Automation | Enterprise Migration</subtitle><entry><title type="html"></title><link href="https://www.sulemanji.com/2026/04/22/2025-06-11-stop-csam-act-the-threat-to-encryption.html" rel="alternate" type="text/html" title="" /><published>2026-04-22T22:22:01+00:00</published><updated>2026-04-22T22:22:01+00:00</updated><id>https://www.sulemanji.com/2026/04/22/2025-06-11-%22stop-csam-act-the-threat-to-encryption%22</id><content type="html" xml:base="https://www.sulemanji.com/2026/04/22/2025-06-11-stop-csam-act-the-threat-to-encryption.html"><![CDATA[<p><strong>Encryption at Stake: The Unintended Consequences of the “Stop CSAM” Act</strong></p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.9.5">Jekyll</generator><link href="https://www.sulemanji.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://www.sulemanji.com/" rel="alternate" type="text/html" /><updated>2026-04-22T22:46:36+00:00</updated><id>https://www.sulemanji.com/feed.xml</id><title type="html">Suleman Manji</title><subtitle>MSP Solutions Architect | AI-Powered Automation | Enterprise Migration</subtitle><entry><title type="html"></title><link href="https://www.sulemanji.com/2026/04/22/2025-06-11-stop-csam-act-the-threat-to-encryption.html" rel="alternate" type="text/html" title="" /><published>2026-04-22T22:46:36+00:00</published><updated>2026-04-22T22:46:36+00:00</updated><id>https://www.sulemanji.com/2026/04/22/2025-06-11-%22stop-csam-act-the-threat-to-encryption%22</id><content type="html" xml:base="https://www.sulemanji.com/2026/04/22/2025-06-11-stop-csam-act-the-threat-to-encryption.html"><![CDATA[<p><strong>Encryption at Stake: The Unintended Consequences of the “Stop CSAM” Act</strong></p>
 
 <p>Imagine waking up one day to find out that secure communication is a thing of the past. Private messages, financial transactions, medical records, all susceptible to prying eyes. Sounds like a dystopian sci-fi novel, right? Well, hold onto your hats, folks. The “Stop CSAM” act, which is about to be marked up tomorrow, could turn this chilling scenario into a reality.</p>
 
@@ -52,7 +52,30 @@
 
 <p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
 
-<hr />]]></content><author><name></name></author></entry><entry><title type="html">Strengthening Authentication with Passkeys: A Technical Summary for MSPs and Immigration Attorneys</title><link href="https://www.sulemanji.com/security/msp/authentication/2026/04/22/strengthening-authentication-with-passkeys.html" rel="alternate" type="text/html" title="Strengthening Authentication with Passkeys: A Technical Summary for MSPs and Immigration Attorneys" /><published>2026-04-22T00:00:00+00:00</published><updated>2026-04-22T00:00:00+00:00</updated><id>https://www.sulemanji.com/security/msp/authentication/2026/04/22/strengthening-authentication-with-passkeys</id><content type="html" xml:base="https://www.sulemanji.com/security/msp/authentication/2026/04/22/strengthening-authentication-with-passkeys.html"><![CDATA[<h2 id="introduction">Introduction</h2>
+<hr />]]></content><author><name></name></author></entry><entry><title type="html">Blog Post</title><link href="https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html" rel="alternate" type="text/html" title="Blog Post" /><published>2026-04-22T00:00:00+00:00</published><updated>2026-04-22T00:00:00+00:00</updated><id>https://www.sulemanji.com/security/msp/2026/04/22/blog-post</id><content type="html" xml:base="https://www.sulemanji.com/security/msp/2026/04/22/blog-post.html"><![CDATA[<h2 id="summary-of-connectwise-automate-api-vulnerability-june-10-2020">Summary of ConnectWise Automate API Vulnerability (June 10, 2020)</h2>
+
+<p>On June 10, 2020, ConnectWise disclosed a critical vulnerability within its Automate RMM platform’s API, assigned a CVSS score of 7.8 (High). This security flaw presented a significant risk, as a remote authenticated user could exploit a specific API endpoint to execute arbitrary commands or make unauthorized modifications within an individual Automate instance. For MSPs, this type of vulnerability in a core operational tool like an RMM is a top-tier threat, as it could serve as a direct pivot point for threat actors to move laterally across a managed client network, deploy ransomware, or exfiltrate data. Immediate and decisive action was required to mitigate the risk, with remediation paths differing fundamentally between cloud-hosted and on-premise deployments.</p>
+
+<h3 id="key-insights">Key Insights</h3>
+
+<ul>
+  <li><strong>Severity &amp; Mechanism:</strong> The vulnerability was rated <strong>Critical (Priority 1)</strong> with a CVSS score of 7.8. It allowed a <strong>remote authenticated user</strong> to exploit a specific API, leading to potential command execution and system modification.</li>
+  <li><strong>Differential Remediation:</strong> ConnectWise implemented a two-tiered response. <strong>Cloud partners</strong> received automatic, backend mitigating controls applied by ConnectWise as of the evening of June 10. <strong>On-premise partners</strong> were responsible for manually applying vendor-provided hotfixes.</li>
+  <li><strong>Patch Availability:</strong> Hotfixes were made available for on-premise deployments, specifically for versions 2020.1 through 2020.5, with patches for older versions promised in the coming days. This highlights the importance of maintaining relatively current software versions to ensure timely security coverage.</li>
+  <li><strong>Threat Model:</strong> The prerequisite of an “authenticated user” underscores that compromised administrative or user credentials for the Automate platform could be directly weaponized to exploit this flaw, elevating the importance of credential security and multi-factor authentication (MFA).</li>
+</ul>
+
+<h3 id="actionable-takeaway">Actionable Takeaway</h3>
+
+<p><strong>On-premise Automate administrators must immediately verify that the applicable hotfix for their version (2020.1 to 2020.5) was applied in June 2020.</strong> Review patch histories and system logs from that period. Cloud customers should confirm via historical communications or tickets that their instance was part of the automated mitigation rollout.</p>
+
+<h3 id="compliance--security-implications">Compliance &amp; Security Implications</h3>
+
+<ul>
+  <li><strong>Critical Security Implication:</strong> This was a direct, high-severity path to <strong>privilege escalation and remote code execution (RCE)</strong> within the RMM environment. Failure to patch on-premise systems would have left MSPs and their clients’ networks grossly exposed to compromise.</li>
+  <li><strong>Compliance Impact:</strong> Unmitigated, this vulnerability would have represented a clear failure to implement critical security patches, potentially violating frameworks like <strong>CMMC, NIST 800-171, HIPAA, or PCI-DSS</strong> that mandate timely remediation of high-severity flaws. MSPs must maintain meticulous records of such patch deployments for audits.</li>
+  <li><strong>Persistent Vigilance Required:</strong> While this specific issue is historical, it serves as a potent reminder. MSPs must have a formal, documented process for <strong>urgently reviewing and applying critical RMM and PSA security patches</strong>, as these systems are high-value targets for attackers.</li>
+</ul>]]></content><author><name>Suleman Manji</name></author><category term="security" /><category term="msp" /><category term="cybersecurity" /><category term="authentication" /><category term="MFA" /><summary type="html"><![CDATA[## Summary of ConnectWise Automate API Vulnerability (June 10, 2020) On June 10, 2020, ConnectWise disclosed a critical vulnerability within its Automate RMM p...]]></summary></entry><entry><title type="html">Strengthening Authentication with Passkeys: A Technical Summary for MSPs and Immigration Attorneys</title><link href="https://www.sulemanji.com/security/msp/authentication/2026/04/22/strengthening-authentication-with-passkeys.html" rel="alternate" type="text/html" title="Strengthening Authentication with Passkeys: A Technical Summary for MSPs and Immigration Attorneys" /><published>2026-04-22T00:00:00+00:00</published><updated>2026-04-22T00:00:00+00:00</updated><id>https://www.sulemanji.com/security/msp/authentication/2026/04/22/strengthening-authentication-with-passkeys</id><content type="html" xml:base="https://www.sulemanji.com/security/msp/authentication/2026/04/22/strengthening-authentication-with-passkeys.html"><![CDATA[<h2 id="introduction">Introduction</h2>
 
 <p>For MSP operators managing client IT infrastructure and immigration attorneys handling sensitive case management systems, authentication security is a critical concern. Traditional passwords and even standard multi-factor authentication (MFA) have proven vulnerable to evolving threats like phishing, AiTM attacks, and MFA fatigue. This CISO playbook from Sophos details their practical, three-attempt journey to implementing passkeys—a phishing-resistant authentication standard built on FIDO2 public key cryptography. The relevance is direct: transitioning to passkeys can significantly reduce credential-based attack vectors for your firm or your clients’ systems, while streamlining user access and reducing help desk overhead.</p>
 
@@ -531,140 +554,4 @@ print(optionalString == nil)
 
 <p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
 
-<hr />]]></content><author><name>Suleman Manji</name></author><category term="Tech Trends" /><category term="Apple" /><category term="Java 8" /><category term="Swift" /><category term="Programming Languages" /><category term="IT Industry" /><category term="Tech Updates" /><summary type="html"><![CDATA[Witness Apple's strategic shift from Java 8 to Swift, a major leap in technological evolution.]]></summary></entry><entry><title type="html">Trump’s Tesla Sale: A Deep Dive into the Implications</title><link href="https://www.sulemanji.com/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication.html" rel="alternate" type="text/html" title="Trump’s Tesla Sale: A Deep Dive into the Implications" /><published>2025-06-06T15:42:21+00:00</published><updated>2025-06-06T15:42:21+00:00</updated><id>https://www.sulemanji.com/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication</id><content type="html" xml:base="https://www.sulemanji.com/tech%20trends/2025/06/06/trumps-tesla-sale-a-deep-dive-into-the-implication.html"><![CDATA[<h2 id="introduction">Introduction</h2>
-<p>The subject of former President Donald Trump getting rid of his Tesla has sparked quite a bit of interest, especially in the technology and engineering community. This move may seem trivial on the surface, but it has profound implications given the current global push towards electric vehicles (EVs) and renewable energy.</p>
-
-<p>Understanding the technical aspects that may have informed this decision, the implications, and the state of EV technology today is essential for engineering professionals. This blog post aims to unpack these details, offering insights into the rapidly evolving world of EVs, their merits, demerits, and what to expect in the future.</p>
-
-<blockquote>
-  <p><strong>Recommended Resource:</strong> For those looking to dive deeper into this topic, <strong><a href="https://www.amazon.com/dp/0132350882?tag=sghpgs-20&amp;linkCode=ogi&amp;th=1&amp;psc=1">Clean Code: A Handbook of Agile Software Craftsmanship</a></strong> offers comprehensive insights and practical guidance. ⭐ 4.7/5 - $42.99</p>
-</blockquote>
-
-<h2 id="understanding-the-fundamentals">Understanding the Fundamentals</h2>
-<p>Tesla, led by Elon Musk, has revolutionized the automotive industry by spearheading the shift towards electric vehicles. The company’s vehicles run on battery-powered electric motors, which eliminate the need for combustion engines and, consequently, the emission of greenhouse gases.</p>
-
-<h3 id="-professional-resource">💡 Professional Resource</h3>
-
-<table>
-  <tbody>
-    <tr>
-      <td>To implement these concepts effectively, consider exploring <strong><a href="https://www.amazon.com/dp/0201633612?tag=sghpgs-20&amp;linkCode=ogi&amp;th=1&amp;psc=1">Design Patterns: Elements of Reusable Object-Oriented Software</a></strong>, which provides detailed methodologies and best practices. Rating: 4.5/5</td>
-      <td>Price: $54.99</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>Tesla cars come with advanced features like autopilot, a robust battery life, and over-the-air updates that improve vehicle performance. However, these features, as innovative as they are, come with their own set of challenges. These include the high cost of the vehicles, range anxiety due to limited battery life, and data privacy concerns raised by the collection and use of user data by Tesla’s systems.</p>
-
-<hr />
-
-<p><strong>📚 Expert Recommendation:</strong> A valuable resource for understanding these principles is <strong><a href="https://www.amazon.com/dp/1736049119?tag=sghpgs-20&amp;linkCode=ogi&amp;th=1&amp;psc=1">System Design Interview – An insider’s guide</a></strong>, offering both theoretical foundations and practical applications. (4.6⭐) $35.99</p>
-
-<hr />
-
-<h2 id="technical-implementation">Technical Implementation</h2>
-<p>Tesla’s electric vehicles operate on a technical framework that is fundamentally different from traditional combustion engines. They leverage technology such as:</p>
-
-<ul>
-  <li>
-    <p><strong>Electric Motors</strong>: Tesla vehicles use AC induction motors that convert electric energy into mechanical energy.</p>
-  </li>
-  <li>
-    <p><strong>Batteries</strong>: These vehicles are powered by lithium-ion batteries, similar to what you’d find in a laptop or mobile device.</p>
-  </li>
-  <li>
-    <p><strong>Software</strong>: Tesla cars are essentially computers on wheels. They come with a sophisticated software system that controls everything from battery management to driver assist systems.</p>
-  </li>
-</ul>
-
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Simplified view of a Tesla car's software system
-</span><span class="k">class</span> <span class="nc">TeslaCar</span><span class="p">:</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">battery</span><span class="p">,</span> <span class="n">motor</span><span class="p">,</span> <span class="n">software</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">battery</span> <span class="o">=</span> <span class="n">battery</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">motor</span> <span class="o">=</span> <span class="n">motor</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">software</span> <span class="o">=</span> <span class="n">software</span>
-
-    <span class="k">def</span> <span class="nf">drive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">miles</span><span class="p">):</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">battery</span><span class="p">.</span><span class="n">use_energy</span><span class="p">(</span><span class="n">miles</span><span class="p">)</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">motor</span><span class="p">.</span><span class="n">rotate_wheels</span><span class="p">(</span><span class="n">miles</span><span class="p">)</span>
-        <span class="bp">self</span><span class="p">.</span><span class="n">software</span><span class="p">.</span><span class="n">update_navigation</span><span class="p">(</span><span class="n">miles</span><span class="p">)</span>
-</code></pre></div></div>
-
-<h2 id="best-practices-and-strategies">Best Practices and Strategies</h2>
-<p>When assessing an electric vehicle, it is essential to consider several factors:</p>
-
-<ul>
-  <li>
-    <p><strong>Cost</strong>: While the initial cost might be higher than traditional cars, remember to factor in the cost savings from fuel and maintenance over the vehicle’s lifetime.</p>
-  </li>
-  <li>
-    <p><strong>Range</strong>: Evaluate your daily driving needs and ensure the vehicle’s range meets those requirements.</p>
-  </li>
-  <li>
-    <p><strong>Charging Infrastructure</strong>: Consider the availability of charging stations in your area or the feasibility of installing a home charger.</p>
-  </li>
-  <li>
-    <p><strong>Data Privacy</strong>: Understand the car’s data collection and usage policy, especially if it comes with advanced features like autopilot.</p>
-  </li>
-</ul>
-
-<h2 id="advanced-techniques-and-tools">Advanced Techniques and Tools</h2>
-<p>Tesla’s electric vehicles use advanced techniques and tools like:</p>
-
-<ul>
-  <li>
-    <p><strong>Autopilot</strong>: This advanced driver-assist system uses cameras, ultrasonic sensors, and radar to provide semi-autonomous driving.</p>
-  </li>
-  <li>
-    <p><strong>Over-the-Air Updates</strong>: These allow Tesla to remotely improve vehicle performance, fix bugs, and add new features.</p>
-  </li>
-  <li>
-    <p><strong>Battery Tech</strong>: Tesla’s batteries have a higher energy density and longer lifespan than most other EV batteries, thanks to the company’s continuous push for innovation.</p>
-  </li>
-</ul>
-
-<h2 id="real-world-applications">Real-World Applications</h2>
-<p>Tesla vehicles are increasingly being adopted across the world. For instance, the city of Los Angeles has incorporated Tesla cars into its police department fleet. Also, Tesla’s Model 3 was the best-selling car in the UK in 2020, not just among electric vehicles but across all categories.</p>
-
-<h2 id="common-pitfalls-and-solutions">Common Pitfalls and Solutions</h2>
-<p>Some common challenges with Tesla vehicles include:</p>
-
-<ul>
-  <li>
-    <p><strong>Limited Charging Infrastructure</strong>: While Tesla has a growing network of Superchargers, access can still be a challenge in some areas. Home charging is a viable solution but requires upfront investment.</p>
-  </li>
-  <li>
-    <p><strong>High Price Point</strong>: Tesla cars are expensive. However, the total cost of ownership can be lower than traditional cars due to savings on fuel and maintenance.</p>
-  </li>
-  <li>
-    <p><strong>Battery Degradation</strong>: Over time, the range of the car can decrease. Tesla has been working on improving battery technology to mitigate this issue.</p>
-  </li>
-</ul>
-
-<h2 id="future-trends-and-innovations">Future Trends and Innovations</h2>
-<p>The future of EVs looks promising with advancements in battery technology, autonomous driving, and vehicle-to-grid technology. Tesla’s Battery Day event highlighted plans for a self-produced, more affordable battery with a longer lifespan.</p>
-
-<h2 id="key-takeaways">Key Takeaways</h2>
-<ul>
-  <li>Tesla’s electric vehicles offer a sustainable alternative to traditional cars.</li>
-  <li>While there are challenges with EV adoption, advancements in technology and infrastructure are rapidly overcoming these.</li>
-  <li>As an engineering professional, understanding these trends can provide insights into the future of the automotive industry.</li>
-</ul>
-
-<h2 id="in-conclusion-trump-getting-rid-of-his-tesla-might-be-more-than-just-a-personal-preference-it-could-be-a-commentary-on-the-state-of-evs-today-and-the-challenges-they-present-even-as-they-pave-the-way-for-a-more-sustainable-future">In conclusion, Trump getting rid of his Tesla might be more than just a personal preference. It could be a commentary on the state of EVs today and the challenges they present, even as they pave the way for a more sustainable future.</h2>
-
-<h2 id="-discussion-source">📰 Discussion Source</h2>
-
-<p>This article was inspired by an active discussion in the <strong>r/technology</strong> community. Join the conversation and share your thoughts:</p>
-
-<p><strong><a href="https://www.reddit.com/r/technology/comments/1l4snpe/trump_is_getting_rid_of_his_tesla/">View Original Reddit Discussion</a></strong></p>
-
-<p>The topic “Trump Is Getting Rid of His Tesla” has generated significant engagement (30321 upvotes) and represents a trending area of interest in the tech community.</p>
-
-<hr />
-
-<hr />
-
-<p><strong>Affiliate Disclosure:</strong> This post contains affiliate links. As an Amazon Associate, I earn from qualifying purchases. This helps support the creation of quality technical content while providing you with valuable resources. Thank you for your support!</p>
-
-<hr />]]></content><author><name>Suleman Manji</name></author><category term="Tech Trends" /><category term="Trump" /><category term="Tesla" /><category term="Electric Vehicles" /><category term="Renewable Energy" /><category term="Technology Trends" /><category term="Engineering" /><category term="EV Technology" /><summary type="html"><![CDATA[Explore the technical and global implications of Trump's decision to part ways with his Tesla. A must-read for tech and EV enthusiasts.]]></summary></entry></feed>
+<hr />]]></content><author><name>Suleman Manji</name></author><category term="Tech Trends" /><category term="Apple" /><category term="Java 8" /><category term="Swift" /><category term="Programming Languages" /><category term="IT Industry" /><category term="Tech Updates" /><summary type="html"><![CDATA[Witness Apple's strategic shift from Java 8 to Swift, a major leap in technological evolution.]]></summary></entry></feed>

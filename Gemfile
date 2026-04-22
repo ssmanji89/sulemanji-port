@@ -1,6 +1,8 @@
 source 'https://rubygems.org'
 
-gem 'github-pages', group: :jekyll_plugins
-gem 'jekyll-remote-theme', group: :jekyll_plugins
-gem 'jekyll-seo-tag', group: :jekyll_plugins
-gem 'jekyll-feed', group: :jekyll_plugins
+# Standard Jekyll (not github-pages restricted gem)
+gem 'jekyll', '~> 4.3'
+gem 'jekyll-remote-theme', '~> 0.4.3'
+gem 'jekyll-seo-tag', '~> 2.8'
+gem 'jekyll-feed', '~> 0.17'
+gem 'jekyll-sitemap', '~> 1.4'

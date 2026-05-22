@@ -1,54 +1,111 @@
+# Site Configuration
+theme: jekyll-theme-chirpy
+
+lang: en
+timezone: America/Chicago
+
 title: Suleman Manji
-email: ssmanji89@gmail.com
-description: MSP Solutions Architect | AI-Powered Automation | Enterprise Migration
+tagline: MSP Solutions Architect | AI-Powered Automation
+description: Technical writing on cybersecurity, cloud automation, and enterprise infrastructure.
 
-# Theme configuration
-theme: jekyll-theme-minimal
-plugins:
-  - jekyll-seo-tag
-  - jekyll-feed
-
-# Theme-specific configurations
-logo: /images/sulemanji-profile.png
-show_downloads: false
-google_analytics: 
-
-# Site settings
-domain: www.sulemanji.com
-url: https://www.sulemanji.com
+url: "https://www.sulemanji.com"
 baseurl: ""
 
-# Social profiles
-github_username: ssmanji89
-linkedin_username: suleman-manji-1a46852a0
+github:
+  username: ssmanji89
 
-# Build settings
-markdown: kramdown
+twitter:
+  username: ""
+
+social:
+  name: Suleman Manji
+  email: [EMAIL]
+  links:
+    - https://github.com/ssmanji89
+    - https://www.linkedin.com/in/suleman-manji-1a46852a0
+
+webmaster_verifications:
+  google:
+  bing:
+
+analytics:
+  google:
+    id:
+  goatcounter:
+    id:
+
+theme_mode: dark
+
+avatar: /images/sulemanji-profile.png
+
+toc: true
+
+comments:
+  provider:
+
+pwa:
+  enabled: true
+  cache:
+    enabled: true
+    deny_paths: []
+
+paginate: 10
+
+kramdown:
+  footnote_backlink: "&#8617;&#xfe0e;"
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    css_class: highlight
+    span:
+      line_numbers: false
+    block:
+      line_numbers: true
+      start_line: 1
+
+collections:
+  tabs:
+    output: true
+    sort_by: order
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+      comments: true
+      toc: true
+      permalink: /posts/:title/
+  - scope:
+      path: _drafts
+    values:
+      comments: false
+  - scope:
+      path: ""
+      type: tabs
+    values:
+      layout: page
+      permalink: /:title/
+
 sass:
   style: compressed
 
-# Collections
-collections:
-  projects:
-    output: true
-    permalink: /projects/:name
-
-# Default front matter
-defaults:
-  -
-    scope:
-      path: ""
-    values:
-      layout: "default"
-
-# Exclude from processing
 exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor/bundle/
-  - vendor/cache/
-  - vendor/gems/
-  - vendor/ruby/
+  - "*.gem"
+  - "*.gemspec"
+  - docs
+  - tools
   - README.md
   - LICENSE
+  - purgecss.js
+  - "*.config.js"
+  - "package*.json"
+  - blog_automation/
+  - "*.html"
+  - HOUSTON_*
+  - test_*
+  - accessibility-report.html
+  - portfolio-grid-demo.html
+  - example_usage.py
+  - requirements.txt
+  - npm-packages.md

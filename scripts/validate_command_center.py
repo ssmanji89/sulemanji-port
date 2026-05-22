@@ -68,11 +68,25 @@ def check_required_files() -> None:
 
 def check_nav() -> None:
     layout = read("_layouts/default.html")
+    nav_match = re.search(
+        r'<nav\b[^>]*class="[^"]*\bmain-nav\b[^"]*"[^>]*>(.*?)</nav>',
+        layout,
+        re.DOTALL,
+    )
+    if not nav_match:
+        fail('missing primary nav block: <nav class="main-nav">')
+
+    nav = nav_match.group(1)
+    labels = []
+    for anchor_label in re.findall(r"<a\b[^>]*>(.*?)</a>", nav, re.DOTALL):
+        label = re.sub(r"<[^>]+>", "", anchor_label)
+        labels.append(" ".join(label.split()))
+
     for label in REQUIRED_NAV_LABELS:
-        if f">{label}<" not in layout:
+        if label not in labels:
             fail(f"missing primary nav label: {label}")
     for label in FORBIDDEN_NAV_LABELS:
-        if f">{label}<" in layout:
+        if label in labels:
             fail(f"old primary nav label still present: {label}")
 
 
@@ -124,6 +138,8 @@ def check_systems_data() -> None:
 def check_source_safety() -> None:
     checked_paths = [
         "_data/systems.yml",
+        "_includes/system-card.html",
+        "_includes/system-lane.html",
         "index.md",
         "about.md",
         "projects.md",

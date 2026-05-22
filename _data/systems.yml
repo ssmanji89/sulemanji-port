@@ -1,0 +1,92 @@
+- id: msp-operations-control-plane
+  display_name: MSP Operations Control Plane
+  category: MSP Operations
+  status: Active
+  summary: Proof-gated workflows for service operations, billing readiness, PSA/RMM actions, and deployment handoffs.
+  problem: MSP work crosses tickets, documentation, billing, deployment state, and human approval gates.
+  system: Operator workflows that turn messy service context into reviewed actions, readiness checks, and durable handoff artifacts.
+  proof: Dry-run output, readiness snapshots, redacted runtime checks, GitHub issue gates, and validation artifacts.
+  stack:
+    - TypeScript
+    - Python
+    - GitHub Projects
+    - ConnectWise
+    - Microsoft Graph
+  links: []
+  visibility: private_internal_do_not_link
+
+- id: financial-agent-paper-runtime
+  display_name: Financial-Agent Paper Runtime
+  category: Financial Agent Systems
+  status: Research / Paper Trading
+  summary: Research infrastructure for paper-trading decisions, risk gates, reconciliation, forecasting, and runtime evidence.
+  problem: Financial-agent systems need explicit safety boundaries, reproducible runs, and evidence before any operator trusts the output.
+  system: Paper-runtime components for decision policy, ledger checks, broker status reads, forecast scoring, and delivery gates.
+  proof: Test suite results, paper-run logs, reconciliation checks, and configuration gates.
+  stack:
+    - Python
+    - TypeScript
+    - Alpaca Paper
+    - Forecasting
+    - Risk Gates
+  links:
+    - label: TradingAgents-FinBots
+      url: https://github.com/ssmanji89/TradingAgents-FinBots
+  visibility: public_summary_only
+
+- id: agent-memory-runtime
+  display_name: Agent Memory and Runtime Infrastructure
+  category: Agent Runtime
+  status: Active
+  summary: Local agent runtime, memory, recall, and skill infrastructure for durable operator context.
+  problem: Agent work loses value when context, decisions, tool state, and evidence disappear between sessions.
+  system: Memory-backed runtime loops with Qdrant/mem0, skills, checkpoints, model health checks, and operator-facing delivery channels.
+  proof: Local validation artifacts, memory status checks, runtime smoke tests, and redacted recall evidence.
+  stack:
+    - Python
+    - Qdrant
+    - mem0
+    - Docker
+    - MCP
+  links:
+    - label: hermes-mem0
+      url: https://github.com/Viyu-Network-Solutions/hermes-mem0
+  visibility: public_summary_only
+
+- id: operator-dashboard-systems
+  display_name: Operator Dashboard Systems
+  category: Operator Interfaces
+  status: Active
+  summary: Dashboard surfaces for technician workflow, account context, QA checks, dispatch signals, and operational review.
+  problem: Operators need compact surfaces that expose current work, context, risk, and next actions without jumping across systems.
+  system: Dashboard panels, QA route checks, dispatch scoring, capacity signals, and integration views for service operations.
+  proof: UAT checklists, route audits, health checks, and redacted service validation.
+  stack:
+    - TypeScript
+    - React
+    - NestJS
+    - ConnectWise
+    - ITGlue
+  links: []
+  visibility: private_internal_do_not_link
+
+- id: mcp-api-toolchain
+  display_name: MCP/API Toolchain
+  category: MCP and API Tooling
+  status: Active
+  summary: MCP servers and API adapters that let AI assistants work with operational platforms through controlled tool boundaries.
+  problem: AI assistants need structured, auditable access to real APIs instead of copied context and one-off scripts.
+  system: MCP/API tooling for Microsoft 365, HaloPSA, n8n, documentation, and workflow automation.
+  proof: Package builds, tool smoke tests, API contract checks, and read/write safety gates.
+  stack:
+    - TypeScript
+    - Node.js
+    - MCP
+    - Microsoft Graph
+    - HaloPSA
+  links:
+    - label: n8n-mcp-tools
+      url: https://github.com/ssmanji89/n8n-mcp-tools
+    - label: halopsa-workflows-mcp
+      url: https://github.com/ssmanji89/halopsa-workflows-mcp
+  visibility: public_repo

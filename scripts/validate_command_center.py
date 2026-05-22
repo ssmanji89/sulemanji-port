@@ -64,7 +64,10 @@ def fail(message: str) -> None:
 
 
 def read(path: str) -> str:
-    return (ROOT / path).read_text(encoding="utf-8")
+    try:
+        return (ROOT / path).read_text(encoding="utf-8")
+    except FileNotFoundError:
+        fail(f"missing required file: {path}")
 
 
 def check_required_files() -> None:
@@ -114,7 +117,10 @@ def check_blog_compatibility() -> None:
 
 def check_systems_data() -> None:
     data_path = ROOT / "_data/systems.yml"
-    systems = yaml.safe_load(data_path.read_text(encoding="utf-8"))
+    try:
+        systems = yaml.safe_load(data_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        fail(f"_data/systems.yml is not valid YAML: {exc}")
     if not isinstance(systems, list):
         fail("_data/systems.yml must be a list")
     if len(systems) < 5:

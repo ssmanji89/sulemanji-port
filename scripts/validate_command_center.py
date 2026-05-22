@@ -15,10 +15,17 @@ REQUIRED_FILES = [
     "_includes/system-lane.html",
     "work-map.md",
     "notes.md",
+    "blog.md",
     "assets/css/components/command-center.css",
 ]
 
-REQUIRED_NAV_LABELS = ["Home", "Work Map", "Projects", "Notes", "About"]
+REQUIRED_NAV_LINKS = {
+    "Home": "/",
+    "Work Map": "/work-map",
+    "Projects": "/projects",
+    "Notes": "/notes",
+    "About": "/about",
+}
 FORBIDDEN_NAV_LABELS = ["Experience", "Skills", "Blog"]
 
 REQUIRED_HOME_PHRASES = [
@@ -77,16 +84,18 @@ def check_nav() -> None:
         fail('missing primary nav block: <nav class="main-nav">')
 
     nav = nav_match.group(1)
-    labels = []
-    for anchor_label in re.findall(r"<a\b[^>]*>(.*?)</a>", nav, re.DOTALL):
+    links = {}
+    for href, anchor_label in re.findall(r'<a\b[^>]*href="([^"]+)"[^>]*>(.*?)</a>', nav, re.DOTALL):
         label = re.sub(r"<[^>]+>", "", anchor_label)
-        labels.append(" ".join(label.split()))
+        links[" ".join(label.split())] = href
 
-    for label in REQUIRED_NAV_LABELS:
-        if label not in labels:
+    for label, href in REQUIRED_NAV_LINKS.items():
+        if label not in links:
             fail(f"missing primary nav label: {label}")
+        if links[label] != href:
+            fail(f"primary nav label {label} points to {links[label]}, expected {href}")
     for label in FORBIDDEN_NAV_LABELS:
-        if label in labels:
+        if label in links:
             fail(f"old primary nav label still present: {label}")
 
 
@@ -95,6 +104,12 @@ def check_homepage() -> None:
     for phrase in REQUIRED_HOME_PHRASES:
         if phrase not in home:
             fail(f"homepage missing required phrase: {phrase}")
+
+
+def check_blog_compatibility() -> None:
+    blog = read("blog.md")
+    if "/notes" not in blog:
+        fail("blog.md must point legacy readers to /notes")
 
 
 def check_systems_data() -> None:
@@ -145,6 +160,7 @@ def check_source_safety() -> None:
         "projects.md",
         "work-map.md",
         "notes.md",
+        "blog.md",
     ]
     for path in checked_paths:
         text = read(path)
@@ -157,6 +173,7 @@ def main() -> None:
     check_required_files()
     check_nav()
     check_homepage()
+    check_blog_compatibility()
     check_systems_data()
     check_source_safety()
     print("PASS: command center validation")

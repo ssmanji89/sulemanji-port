@@ -7,9 +7,19 @@ permalink: /projects
 
 <div class="command-header">
   <p class="command-eyebrow">Projects</p>
-  <h1>Curated systems, not a raw repo dump.</h1>
-  <p class="command-lede">This page highlights public-safe systems that represent the current work. Some systems are linked to public repositories; internal or employer-adjacent systems are summarized without private names or implementation detail.</p>
+  <h1>Systems with operational weight.</h1>
+  <p class="command-lede">This is a public-safe map of what I am actively building: MSP command planes, CWM execution patterns, billing/runtime proof loops, memory-backed agent workflows, and API tooling that works against real platforms.</p>
 </div>
+
+<section class="command-section">
+  <div class="section-kicker">Evidence Basis</div>
+  <h2>Not scraped from a resume.</h2>
+  <div class="proof-grid">
+    <div><strong>Local project surface</strong><span>The current workstation includes the viyu-agents control plane, AlgaPSA/vArida billing lanes, Portainer deployment work, stakeholder renderers, and MSP operational artifacts.</span></div>
+    <div><strong>Work accounting</strong><span>CWM and timesheet artifacts show member 346 time-entry reconciliation, internal development backfill review, and status-gated posting behavior.</span></div>
+    <div><strong>Delivery governance</strong><span>GitHub Project 4, issue hierarchy, control-validate checks, proof comments, and audit-project output are part of the operating model.</span></div>
+  </div>
+</section>
 
 <div class="project-filters">
   <button class="filter-btn active" data-filter="all">All Systems</button>

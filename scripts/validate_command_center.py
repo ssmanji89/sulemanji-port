@@ -29,7 +29,7 @@ REQUIRED_NAV_LINKS = {
 FORBIDDEN_NAV_LABELS = ["Experience", "Skills", "Blog"]
 
 REQUIRED_HOME_PHRASES = [
-    "Proof-Gated AI Operations for MSP Systems",
+    "MSP command planes that survive contact with real work.",
     "Featured Systems",
     "Proof Stream",
     "Operating Principles",
@@ -50,11 +50,11 @@ BANNED_SOURCE_PATTERNS = [
 ]
 
 PUBLIC_SAFE_DISPLAY_NAMES = {
-    "MSP Operations Control Plane",
+    "Viyu MSP Command Plane",
     "Financial-Agent Paper Runtime",
     "Agent Memory and Runtime Infrastructure",
-    "Operator Dashboard Systems",
-    "MCP/API Toolchain",
+    "AlgaPSA and Operator Interfaces",
+    "MCP and Platform API Toolchain",
 }
 
 

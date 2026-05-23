@@ -8,13 +8,23 @@ permalink: /about
 <div class="command-header">
   <p class="command-eyebrow">About</p>
   <h1>Suleman Manji</h1>
-  <p class="command-lede">Sr. Services Engineer at Viyu Network Solutions, working across MSP systems engineering, agentic operations, Microsoft 365, MCP/API tooling, and proof-gated automation.</p>
+  <p class="command-lede">Sr. Services Engineer at Viyu Network Solutions, working across MSP systems engineering, platform automation, Microsoft 365 diagnostics, billing/runtime proof, MCP/API tooling, and memory-backed agent operations.</p>
 </div>
 
 <section class="command-section">
   <h2>Current operating frame</h2>
-  <p>My formal role is services engineering. The broader work is building operator systems: command planes, agent runtimes, memory-backed workflows, and safety gates that help technical teams move from scattered context to verifiable action.</p>
-  <p>I care about the boundary between automation and operational reality: what state was checked, what action is safe, what proof exists, what needs human approval, and what can be resumed cleanly later.</p>
+  <p>My formal role is services engineering. The broader work is building operator systems that span MSP tickets, PSA/RMM data, Microsoft 365, billing platforms, stakeholder deliverables, repo governance, and agent runtime memory.</p>
+  <p>I care about the boundary between automation and operational reality: what live state was checked, what action is safe, what proof exists, what needs human approval, what got posted to the system of record, and what another operator can resume later.</p>
+</section>
+
+<section class="command-section">
+  <h2>What that looks like in practice</h2>
+  <div class="proof-grid">
+    <div><strong>Ticket as control plane</strong><span>CWM tickets become ordered tasks, notes, schedule entries, status gates, and time-entry records rather than loose chat instructions.</span></div>
+    <div><strong>Repo as operating memory</strong><span>GitHub Project 4, issue hierarchy, proof comments, validation commands, and session-harvest maps keep engineering work durable.</span></div>
+    <div><strong>Agent work with guardrails</strong><span>Platform CLIs, generated contracts, Qdrant/mem0 recall, and preview-first write flows make assistant work auditable.</span></div>
+    <div><strong>Stakeholder-ready outputs</strong><span>Technical evidence is converted into decision packets, fillable HTML, XLSX return paths, and verified PPTX decks when the audience is not an operator.</span></div>
+  </div>
 </section>
 
 <section class="command-section">
@@ -32,7 +42,7 @@ permalink: /about
 
 <section class="command-section principles-panel">
   <h2>Safety and publication boundaries</h2>
-  <p>Public writing here abstracts employer and client-adjacent work. It avoids client names, ticket IDs, internal hosts, private repository names, and operational screenshots. Financial-agent material is research and engineering infrastructure only; it is not investment advice or a solicitation.</p>
+  <p>Public writing here abstracts employer and client-adjacent work. It avoids raw ticket notes, internal hosts, private screenshots, secrets, and customer-specific implementation detail. The goal is to show the engineering pattern without turning operational evidence into public leakage. Financial-agent material is research and engineering infrastructure only; it is not investment advice or a solicitation.</p>
 </section>
 
 <section class="command-section">

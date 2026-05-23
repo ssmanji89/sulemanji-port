@@ -14,6 +14,16 @@
     <dt>Proof</dt>
     <dd>{{ system.proof }}</dd>
   </dl>
+  {% if system.evidence and system.evidence.size > 0 %}
+    <div class="system-card__evidence">
+      <strong>Evidence Signals</strong>
+      <ul>
+        {% for item in system.evidence %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
   <div class="system-card__stack" aria-label="Technology stack">
     {% for item in system.stack %}
       <span>{{ item }}</span>

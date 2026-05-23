@@ -22,4 +22,11 @@
       <p>{{ system.summary }}</p>
     </div>
   </div>
+  {% if system.evidence and system.evidence.size > 0 %}
+    <div class="evidence-strip">
+      {% for item in system.evidence %}
+        <span>{{ item }}</span>
+      {% endfor %}
+    </div>
+  {% endif %}
 </section>

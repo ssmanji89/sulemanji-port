@@ -1,0 +1,29 @@
+{% assign system = include.system %}
+<article class="system-card" data-category="{{ system.category | slugify }}">
+  <div class="system-card__meta">
+    <span class="system-card__category">{{ system.category }}</span>
+    <span class="system-card__status">{{ system.status }}</span>
+  </div>
+  <h3 class="system-card__title">{{ system.display_name }}</h3>
+  <p class="system-card__summary">{{ system.summary }}</p>
+  <dl class="system-card__proof">
+    <dt>Problem</dt>
+    <dd>{{ system.problem }}</dd>
+    <dt>System</dt>
+    <dd>{{ system.system }}</dd>
+    <dt>Proof</dt>
+    <dd>{{ system.proof }}</dd>
+  </dl>
+  <div class="system-card__stack" aria-label="Technology stack">
+    {% for item in system.stack %}
+      <span>{{ item }}</span>
+    {% endfor %}
+  </div>
+  {% if system.links and system.links.size > 0 %}
+    <div class="system-card__links">
+      {% for link in system.links %}
+        <a href="{{ link.url }}" target="_blank" rel="noopener">{{ link.label }}</a>
+      {% endfor %}
+    </div>
+  {% endif %}
+</article>

@@ -1,111 +1,110 @@
-# Site Configuration
-theme: jekyll-theme-chirpy
-
-lang: en
-timezone: America/Chicago
-
 title: Suleman Manji
-tagline: MSP Solutions Architect | AI-Powered Automation
-description: Technical writing on cybersecurity, cloud automation, and enterprise infrastructure.
+email: ssmanji89@gmail.com
+description: Proof-gated AI operations, MSP systems engineering, agent runtime infrastructure, and public-safe technical work by Suleman Manji.
 
-url: "https://www.sulemanji.com"
+# Theme configuration
+theme: jekyll-theme-minimal
+plugins:
+  - jekyll-seo-tag
+  - jekyll-feed
+
+# Theme-specific configurations
+logo: /images/sulemanji-profile.png
+show_downloads: false
+google_analytics: 
+
+# Site settings
+domain: www.sulemanji.com
+url: https://www.sulemanji.com
 baseurl: ""
 
-github:
-  username: ssmanji89
+# Social profiles
+github_username: ssmanji89
+linkedin_username: suleman-manji-1a46852a0
 
-twitter:
-  username: ""
-
-social:
-  name: Suleman Manji
-  email: [EMAIL]
-  links:
-    - https://github.com/ssmanji89
-    - https://www.linkedin.com/in/suleman-manji-1a46852a0
-
-webmaster_verifications:
-  google:
-  bing:
-
-analytics:
-  google:
-    id:
-  goatcounter:
-    id:
-
-theme_mode: dark
-
-avatar: /images/sulemanji-profile.png
-
-toc: true
-
-comments:
-  provider:
-
-pwa:
-  enabled: true
-  cache:
-    enabled: true
-    deny_paths: []
-
-paginate: 10
-
-kramdown:
-  footnote_backlink: "&#8617;&#xfe0e;"
-  syntax_highlighter: rouge
-  syntax_highlighter_opts:
-    css_class: highlight
-    span:
-      line_numbers: false
-    block:
-      line_numbers: true
-      start_line: 1
-
-collections:
-  tabs:
-    output: true
-    sort_by: order
-
-defaults:
-  - scope:
-      path: ""
-      type: posts
-    values:
-      layout: post
-      comments: true
-      toc: true
-      permalink: /posts/:title/
-  - scope:
-      path: _drafts
-    values:
-      comments: false
-  - scope:
-      path: ""
-      type: tabs
-    values:
-      layout: page
-      permalink: /:title/
-
+# Build settings
+markdown: kramdown
 sass:
   style: compressed
 
+# Collections
+collections:
+  projects:
+    output: true
+    permalink: /projects/:name
+
+# Default front matter
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: "default"
+
+# Exclude from processing
 exclude:
-  - "*.gem"
-  - "*.gemspec"
-  - docs
-  - tools
+  - docs/
+  - _posts/
+  - assets/css/components/animations.css
+  - assets/css/components/base.css
+  - assets/css/components/blog.css
+  - assets/css/components/buttons.css
+  - assets/css/components/code.css
+  - assets/css/components/darkmode.css
+  - assets/css/components/experience.css
+  - assets/css/components/footer.css
+  - assets/css/components/hero.css
+  - assets/css/components/impact.css
+  - assets/css/components/index.css
+  - assets/css/components/layout.css
+  - assets/css/components/navigation.css
+  - assets/css/components/portfolio.css
+  - assets/css/components/print.css
+  - assets/css/components/projects.css
+  - assets/css/components/responsive.css
+  - assets/css/components/skills.css
+  - assets/css/components/stats.css
+  - assets/css/components/utilities.css
+  - assets/css/custom.css
+  - assets/css/styles.css
+  - assets/js/
+  - assets/personal-assessment-profile.md
+  - blog_automation.log
+  - blog_automation/
+  - example_usage.py
+  - HOUSTON_EVENTS_README.md
+  - HOUSTON_EVENTS_SOURCES.md
+  - accessibility-report.html
+  - bpa-opportunities.md
+  - business-process-automation.md
+  - business-process-transformation.md
+  - claude-prompts.md
+  - experience.md
+  - Gemfile
+  - Gemfile.lock
+  - npm-packages.md
+  - node_modules
+  - personal-assessment.md
+  - philosophy.md
+  - portfolio-grid-demo.html
+  - professional-evolution.md
+  - requirements.txt
+  - resume.md
+  - scripts/
+  - technical-skills.md
+  - test_blog_post.md
+  - test_event_post.md
+  - test_houston_events.py
+  - test_improved_content.py
+  - test_product_debug.py
+  - test_randomization.py
+  - test_visit_houston.py
+  - transformation-impact.md
+  - transformation-projects.md
+  - transformation-strategies.md
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
   - README.md
   - LICENSE
-  - purgecss.js
-  - "*.config.js"
-  - "package*.json"
-  - blog_automation/
-  - "*.html"
-  - HOUSTON_*
-  - test_*
-  - accessibility-report.html
-  - portfolio-grid-demo.html
-  - example_usage.py
-  - requirements.txt
-  - npm-packages.md

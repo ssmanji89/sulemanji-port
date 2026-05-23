@@ -1,0 +1,25 @@
+{% assign system = include.system %}
+<section class="system-lane" id="{{ system.id }}">
+  <div class="system-lane__header">
+    <span class="system-lane__category">{{ system.category }}</span>
+    <h2>{{ system.display_name }}</h2>
+  </div>
+  <div class="system-lane__grid">
+    <div>
+      <h3>Problem Surface</h3>
+      <p>{{ system.problem }}</p>
+    </div>
+    <div>
+      <h3>System Built</h3>
+      <p>{{ system.system }}</p>
+    </div>
+    <div>
+      <h3>Proof Discipline</h3>
+      <p>{{ system.proof }}</p>
+    </div>
+    <div>
+      <h3>Operator Leverage</h3>
+      <p>{{ system.summary }}</p>
+    </div>
+  </div>
+</section>

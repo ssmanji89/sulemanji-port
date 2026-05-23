@@ -2,16 +2,9 @@ title: Suleman Manji
 email: ssmanji89@gmail.com
 description: Proof-gated AI operations, MSP systems engineering, agent runtime infrastructure, and public-safe technical work by Suleman Manji.
 
-# Theme configuration
-theme: jekyll-theme-minimal
 plugins:
   - jekyll-seo-tag
   - jekyll-feed
-
-# Theme-specific configurations
-logo: /images/sulemanji-profile.png
-show_downloads: false
-google_analytics: 
 
 # Site settings
 domain: www.sulemanji.com
@@ -30,7 +23,7 @@ sass:
 # Collections
 collections:
   projects:
-    output: true
+    output: false
     permalink: /projects/:name
 
 # Default front matter

@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'github-pages', group: :jekyll_plugins
-gem 'jekyll-theme-minimal'
+gem 'ffi', '< 1.17'
 
 group :jekyll_plugins do
   gem 'jekyll-seo-tag'

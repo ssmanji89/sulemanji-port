@@ -1,64 +1,83 @@
 ---
 layout: default
 title: AI Tooling Products | Suleman Manji
-description: Downloadable AI tooling documentation and template packs by Suleman Manji.
+description: Downloadable AI tooling worksheets, runbooks, and clean-room templates for operator-grade agent work.
 permalink: /products
 ---
 
 <div class="command-header">
-  <p class="command-eyebrow">Storefront</p>
-  <h1>AI tooling products.</h1>
-  <p class="command-lede">Downloadable documentation and template packs for operators building with agents, MCP, memory, evals, and proof-gated workflows.</p>
+  <p class="command-eyebrow">Storefront / AI Tooling Packs</p>
+  <h1>Operator worksheets for agent work that has to survive real use.</h1>
+  <p class="command-lede">These are small, specific downloadable packs: worksheets, checklists, clean-room examples, and runbooks built from the tooling patterns in this portfolio. They are for people who need to make agent workflows inspectable, repeatable, and safer before they scale them.</p>
 </div>
 
 <section class="command-section">
   <div class="section-kicker">Available Packs</div>
-  <h2>Templates, checklists, and clean-room examples.</h2>
+  <h2>Pick the painful moment you are actually dealing with.</h2>
   <div class="proof-grid">
-    <div>
+<div>
   <strong><a href="/products/mcp-operator-field-manual">MCP Operator Field Manual</a></strong>
-  <span>MCP installation, inspection, auth, transport, and debugging workflows.</span>
-  <a href="https://buy.stripe.com/cNi5kF8Na4IOgFfcT43oA00" class="btn btn-outline">Buy</a>
+  <span>Your MCP server works in one client, disappears in another, and nobody can tell whether the problem is config, transport, auth, schema shape, or tool behavior.</span>
+  <small>9 files in the ZIP / $49 / live Stripe checkout</small>
+  <a href="/products/mcp-operator-field-manual" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/agent-memory-infrastructure-pack">Agent Memory Infrastructure Pack</a></strong>
-  <span>Local memory infrastructure, scoped recall, Qdrant/mem0 setup, and recall auditing.</span>
-  <a href="https://buy.stripe.com/4gMcN74wU8Z474Fg5g3oA01" class="btn btn-outline">Buy</a>
+  <span>Your agent keeps forgetting useful context, retrieving the wrong memory, or writing too much unreviewed state into a vector store.</span>
+  <small>5 files in the ZIP / $79 / live Stripe checkout</small>
+  <a href="/products/agent-memory-infrastructure-pack" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/agent-anti-loop-context-compression-kit">Agent Anti-Loop and Context Compression Kit</a></strong>
-  <span>Detect stuck agent behavior, compress large tool output, and route second-opinion reviews to local models.</span>
-  <a href="https://buy.stripe.com/8x25kFe7u4IOcoZ1am3oA02" class="btn btn-outline">Buy</a>
+  <span>The agent is burning tokens, retrying the same move, or swallowing huge logs without finding the next useful action.</span>
+  <small>5 files in the ZIP / $49 / live Stripe checkout</small>
+  <a href="/products/agent-anti-loop-context-compression-kit" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/agent-evaluation-prompt-regression-pack">Agent Evaluation and Prompt Regression Pack</a></strong>
-  <span>Prompt freezing, run artifacts, eval gates, scoring, and cost tracking for agent workflows.</span>
-  <a href="https://buy.stripe.com/4gM5kF7J65MSdt39GS3oA03" class="btn btn-outline">Buy</a>
+  <span>A prompt or agent workflow looked good yesterday, then a model, dependency, or context change quietly changed behavior.</span>
+  <small>5 files in the ZIP / $99 / live Stripe checkout</small>
+  <a href="/products/agent-evaluation-prompt-regression-pack" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/ai-deliverable-pipeline-kit">AI Deliverable Pipeline Kit</a></strong>
-  <span>Manifest-driven generated deliverables with validation gates and regenerated outputs.</span>
-  <a href="https://buy.stripe.com/eVqbJ31kI2AG88J8CO3oA04" class="btn btn-outline">Buy</a>
+  <span>AI-generated deliverables are scattered across chat, hand-edited after generation, and hard to regenerate or audit.</span>
+  <small>5 files in the ZIP / $129 / live Stripe checkout</small>
+  <a href="/products/ai-deliverable-pipeline-kit" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/local-first-meeting-intelligence-blueprint">Local-First Meeting Intelligence Blueprint</a></strong>
-  <span>Local audio capture, transcription, structured intelligence extraction, semantic search, and approval-gated routing.</span>
-  <a href="https://buy.stripe.com/8x27sN6F2ejo74F6uG3oA05" class="btn btn-outline">Buy</a>
+  <span>Meeting notes, transcripts, action items, and follow-ups are split across tools, with unclear approval before anything gets routed onward.</span>
+  <small>5 files in the ZIP / $49 / live Stripe checkout</small>
+  <a href="/products/local-first-meeting-intelligence-blueprint" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/ai-work-control-plane-playbook">AI Work Control Plane Playbook</a></strong>
-  <span>Issue-led AI work governance with proof artifacts, blockers, handoffs, and memory checkpoints.</span>
-  <a href="https://buy.stripe.com/4gMcN79Re6QWfBb8CO3oA06" class="btn btn-outline">Buy</a>
+  <span>AI work is happening in chat, but status, blockers, evidence, and handoffs are not durable enough for real operations.</span>
+  <small>5 files in the ZIP / $79 / live Stripe checkout</small>
+  <a href="/products/ai-work-control-plane-playbook" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/browser-native-agent-workspace-guide">Browser-Native Agent Workspace Design Guide</a></strong>
-  <span>Browser-layer agent workspace, skill discovery, prompt-budget UI, browser automation, and rollback/admin concepts.</span>
-  <a href="https://buy.stripe.com/6oU3cxd3q1wC1KlaKW3oA07" class="btn btn-outline">Buy</a>
+  <span>Agent workspaces often hide too much state: tools, browser automation, context budget, rollback, and admin actions are hard to inspect.</span>
+  <small>5 files in the ZIP / $49 / live Stripe checkout</small>
+  <a href="/products/browser-native-agent-workspace-guide" class="btn btn-outline">See contents</a>
 </div>
 <div>
   <strong><a href="/products/agent-skill-system-builder-pack">Agent Skill System Builder Pack</a></strong>
-  <span>Skill authoring, trigger rules, progressive disclosure, validation, and packaging.</span>
-  <a href="https://buy.stripe.com/eVq8wR8Na7V0gFf6uG3oA08" class="btn btn-outline">Buy</a>
+  <span>Your agent instructions are growing into a pile of prompts, but there is no trigger model, folder shape, validation checklist, or packaging boundary.</span>
+  <small>5 files in the ZIP / $49 / live Stripe checkout</small>
+  <a href="/products/agent-skill-system-builder-pack" class="btn btn-outline">See contents</a>
 </div>
   </div>
+</section>
+
+<section class="command-section principles-panel">
+  <h2>What all packs have in common</h2>
+  <ul>
+    <li>One-time Stripe checkout.</li>
+    <li>Manual v1 fulfillment with a versioned ZIP artifact.</li>
+    <li>Markdown files you can edit, fork, or convert into your own docs.</li>
+    <li>Clean-room examples, not private implementation dumps.</li>
+  </ul>
 </section>

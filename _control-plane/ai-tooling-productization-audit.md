@@ -3,7 +3,7 @@
 Date: 2026-05-23  
 Control plane: `www.sulemanji.com` local repo control plane  
 Storefront rail: GitHub Pages + Stripe  
-Scope: General AI tooling only. Excludes direct MSP service delivery, Viyu client artifacts, CWM/CWA operational data, and employer-specific implementation details.
+Scope: General AI tooling only. Excludes direct MSP service delivery, private operational artifacts, CWM/CWA operational data, and organization-specific implementation details.
 
 ## Executive Read
 
@@ -19,7 +19,7 @@ The local project history shows active development in multiple AI tooling lanes:
 - `notesTaker`: local-first capture/transcription/intelligence pipeline with hybrid search and routing gates.
 - `space-agent`: browser-native agent workspace, skill discovery, web browsing, memory modules, prompt-budget UI.
 - `finbots26` / `hermes-finbots`: multi-agent pipelines, prompt freezing, IC scoring, evaluation gates, cost logging, sentinels.
-- `viyu-agents`: control-plane governance, generated deliverables, validation gates, content hygiene, proof-backed execution. Use only as abstracted methodology.
+- `local agent tooling repository`: control-plane governance, generated deliverables, validation gates, content hygiene, proof-backed execution. Use only as abstracted methodology.
 - `bodhi-teams`: agent gateway, bot test kit, tool schema validation, provider routing control plane.
 
 ## Candidate Scorecard
@@ -58,7 +58,7 @@ Scores are 1-5. Higher is better except IP risk, where higher means safer to pub
 
 **Do not include**
 
-- Viyu-specific repository paths, client memories, ticket references, internal actor names, or proprietary Hermes runtime config.
+- organization-specific repository paths, client memories, ticket references, internal actor names, or proprietary Hermes runtime config.
 
 **First landing-page promise**
 
@@ -83,7 +83,7 @@ Build a local AI memory layer that survives sessions, supports scoped recall, an
 
 **Do not include**
 
-- Employer MCP servers, MSP vendor adapters, or copied third-party server code unless license and attribution are handled.
+- Organization-specific MCP servers, MSP vendor adapters, or copied third-party server code unless license and attribution are handled.
 
 **First landing-page promise**
 
@@ -141,7 +141,7 @@ Move agent prompts from vibes to versioned, testable artifacts with scoring, fix
 
 **Source evidence**
 
-- `viyu-agents` contains mature manifest-driven generation patterns: interview/input to YAML manifest to HTML/DOCX/XLSX outputs, with validation gates.
+- `local agent tooling repository` contains mature manifest-driven generation patterns: interview/input to YAML manifest to HTML/DOCX/XLSX outputs, with validation gates.
 - Stakeholder briefing work used YAML-rendered HTML plus browser-side XLSX export.
 - SOW generation work demonstrated component-template defects, manifest correction, and validator gates.
 
@@ -156,7 +156,7 @@ Move agent prompts from vibes to versioned, testable artifacts with scoring, fix
 
 **Do not include**
 
-- SOW text, client pricing, Viyu templates, customer names, MSP service details, or internal generated artifacts.
+- SOW text, client pricing, private templates, customer names, MSP service details, or internal generated artifacts.
 
 **First landing-page promise**
 
@@ -179,7 +179,7 @@ Turn AI-assisted deliverables into a controlled pipeline: structured inputs, rep
 
 **Do not include**
 
-- Viyu routing targets, MSP call profiles, customer conversations, or proprietary integrations.
+- private routing targets, MSP call profiles, customer conversations, or proprietary integrations.
 
 **First landing-page promise**
 
@@ -189,7 +189,7 @@ Design a local-first meeting intelligence system where audio stays local, struct
 
 **Source evidence**
 
-- `viyu-agents` and `bodhi-teams` show issue-led execution, proof comments, Project metadata validation, blockers, control-plane validators, content hygiene, and recovery from interrupted sessions.
+- `local agent tooling repository` and `bodhi-teams` show issue-led execution, proof comments, Project metadata validation, blockers, control-plane validators, content hygiene, and recovery from interrupted sessions.
 - Memory includes repeated preference for proof-backed status and durable checkpointing.
 
 **Sellable deliverable**
@@ -203,7 +203,7 @@ Design a local-first meeting intelligence system where audio stays local, struct
 
 **Do not include**
 
-- GitHub Project 4 internal details, Viyu issue content, service ticket data, client names, or employer governance internals.
+- GitHub Project 4 internal details, private issue content, service ticket data, client names, or organization governance internals.
 
 **First landing-page promise**
 
@@ -250,7 +250,7 @@ Design agent workspaces where the agent can inspect, operate, and reshape the br
 
 **Do not include**
 
-- Third-party proprietary skill content, Viyu-specific skills, or direct copies from restricted sources.
+- Third-party proprietary skill content, organization-specific skills, or direct copies from restricted sources.
 
 **First landing-page promise**
 
@@ -259,7 +259,7 @@ Write agent skills that load when needed, avoid token bloat, and give agents rel
 ## Recommended First Publishing Sequence
 
 1. **MCP Operator Field Manual**  
-   Fastest to publish. Strong market demand. Low employer overlap. Low code burden.
+   Fastest to publish. Strong market demand. Low organization overlap. Low code burden.
 
 2. **Agent Memory Infrastructure Pack**  
    Strongest match to local differentiated experience. Needs careful public-safe examples.
@@ -271,7 +271,7 @@ Write agent skills that load when needed, avoid token bloat, and give agents rel
    Strong but needs abstraction away from finance/trading specifics.
 
 5. **AI Deliverable Pipeline Kit**  
-   High-value, but highest sanitization burden because the deepest proof comes from employer/client-adjacent work.
+   High-value, but highest sanitization burden because the deepest proof comes from organization/client-adjacent work.
 
 ## Stripe/GitHub Pages Packaging Model
 

@@ -8,7 +8,7 @@ permalink: /resume
 
 ## Professional Experience Snapshot
 
-### Viyu Network Solutions (July 2025 - Present)
+### current services organization (July 2025 - Present)
 **Solutions Architect & Automation Engineer**
 
 - Orchestrated tenant-to-tenant M365 migration: 641 users, 6,543 GB, 122 SharePoint sites, 305 OneDrive, 273 mailboxes across 23 locations

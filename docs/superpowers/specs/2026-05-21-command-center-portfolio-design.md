@@ -6,19 +6,19 @@ Live site: `https://www.sulemanji.com`
 
 ## Goal
 
-Reposition the live GitHub Pages site from a narrow "MSP Solutions Architect" portfolio into an operator/engineering command center that reflects Suleman Manji's current work across Viyu services engineering, MSP control planes, agentic operations, financial-agent runtimes, MCP/API tooling, and memory-backed local automation.
+Reposition the live GitHub Pages site from a narrow "MSP Solutions Architect" portfolio into an operator/engineering command center that reflects Suleman Manji's current work across services engineering, MSP control planes, agentic operations, financial-agent runtimes, MCP/API tooling, and memory-backed local automation.
 
 The site should make the work easy to scan without exposing client-sensitive details. It should show the systems being built, the operational problems they address, and the proof-oriented engineering style behind them.
 
-This document is internal planning context. Absolute local paths, workspace scans, source repo names, and employer-adjacent evidence in this spec must not be copied directly into public pages, metadata, generated data files, or visible source comments.
+This document is internal planning context. Absolute local paths, workspace scans, source repo names, and organization-adjacent evidence in this spec must not be copied directly into public pages, metadata, generated data files, or visible source comments.
 
 ## Evidence Base
 
 The design is grounded in a git-based scan of `/Users/sully/Documents/GitHub`, with emphasis on recent authored work. The strongest public-safe clusters are:
 
-- `viyu-agents`: proof capture, billing readiness, SPLA and cloud-import paths, AlgaPSA overlays, closure queue gates, ConnectWise safety standards, SOW readiness, Graph and Teams gates, deployment proof, and GitHub control-plane governance.
+- `local-agent-tooling`: proof capture, billing readiness, SPLA and cloud-import paths, AlgaPSA overlays, closure queue gates, ConnectWise safety standards, SOW readiness, Graph and Teams gates, deployment proof, and GitHub control-plane governance.
 - `finbots26`, `hermes-finbots`, and `TradingAgents`: forecasting modules, paper-trading gates, Alpaca adapters, risk gates, reconciliation, scalping signal engines, Telegram delivery, backtest IC scoring, and runtime verification.
-- `hermes-agent` and `hermes-mem0`: mem0/Qdrant memory, local skills, Viyu CLI persistence, LiteRAG/PTRI-style recall, model health, Telegram resilience, and agent runtime packaging.
+- `hermes-agent` and `hermes-mem0`: mem0/Qdrant memory, local skills, organization CLI persistence, LiteRAG/PTRI-style recall, model health, Telegram resilience, and agent runtime packaging.
 - `am-dashboard`, `bodhi-teams`, and managed-services repos: ConnectWise and ITGlue integrations, engineer dashboards, QA route audits, Teams panels, dispatch scoring, capacity thresholds, and Claude-assisted reasoning.
 - MCP/API tooling repos: HaloPSA, n8n, M365/mailbox, Graph, and related toolchain work.
 
@@ -36,7 +36,7 @@ Supporting line:
 
 Supporting identity facets:
 
-- Sr. Services Engineer at Viyu Network Solutions.
+- Sr. Services Engineer at current services organization.
 - MSP systems engineer.
 - Agentic operations engineer.
 - Control-plane governance builder.
@@ -75,7 +75,7 @@ Sections:
    - Headline: "Proof-Gated AI Operations for MSP Systems"
    - Short current-state line.
    - Primary actions: view work map, view featured systems, contact.
-   - Compact metadata chips: Viyu, MSP operations, Microsoft 365, MCP, Qdrant/mem0, financial agents.
+   - Compact metadata chips: current organization, MSP operations, Microsoft 365, MCP, Qdrant/mem0, financial agents.
 
 2. Featured Systems Strip
    - Two or three concrete systems above the fold on mobile and desktop.
@@ -223,7 +223,7 @@ Allowed `visibility` values:
 - `public_summary_only`
 - `private_internal_do_not_link`
 
-Items with `private_internal_do_not_link` may appear only as abstracted systems with no repo URL, no internal name, and no employer/client-specific implementation detail.
+Items with `private_internal_do_not_link` may appear only as abstracted systems with no repo URL, no internal name, and no organization/client-specific implementation detail.
 
 ## Notes
 
@@ -278,10 +278,10 @@ Avoid:
 - Internal infrastructure names.
 - Screenshots or excerpts with sensitive operational data.
 
-Employer boundary:
+Organization boundary:
 
-- Viyu references are descriptive biography only and must not imply Viyu endorsement.
-- Do not use employer logos, internal screenshots, proprietary process detail, customer names, or employer-branded case studies unless explicitly approved.
+- current organization references are descriptive biography only and must not imply current organization endorsement.
+- Do not use organization logos, internal screenshots, proprietary process detail, customer names, or organization-branded case studies unless explicitly approved.
 - Prefer public-safe display names such as "MSP Operations Control Plane" over source labels such as internal repo names.
 
 Financial-agent boundary:
@@ -296,7 +296,7 @@ Redaction rubric for every system, project, note, and case study:
 - Banned nouns: client names, ticket IDs, private repo names, internal hostnames, usernames outside public profiles, vendor/client email addresses, credentials, tenant identifiers, screenshots with operational data.
 - Quantitative claims must be source-backed from public-safe evidence or omitted.
 - Proof examples must be abstracted: "dry-run output," "readiness snapshot," "redacted runtime check," "local validation artifact," "GitHub issue gate," or "test suite result."
-- Employer/client-adjacent work requires manual review before publication.
+- Organization/client-adjacent work requires manual review before publication.
 
 ## Implementation Approach
 

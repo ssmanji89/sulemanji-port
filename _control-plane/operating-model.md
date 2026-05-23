@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This control plane keeps productization work grounded in local evidence while preserving clean boundaries between personal AI tooling products and employer/client-specific work.
+This control plane keeps productization work grounded in local evidence while preserving clean boundaries between personal AI tooling products and organization/client-specific work.
 
 ## Inputs
 
@@ -16,7 +16,7 @@ This control plane keeps productization work grounded in local evidence while pr
 
 - Client names and ticket IDs.
 - ConnectWise/CWA/CWM operational artifacts.
-- Employer-owned templates, pricing, or internal process text.
+- Organization-owned templates, pricing, or internal process text.
 - Credentials, tokens, private endpoints, private runtime paths.
 - Third-party code that cannot be redistributed in a paid package.
 
@@ -39,7 +39,7 @@ Use 1-5 scores:
 - `buyer_clarity`: buyer can understand what they get in one sentence.
 - `maturity`: deliverable can be produced without inventing a new system.
 - `cleanup_effort`: higher score means less cleanup needed.
-- `ip_safety`: higher score means lower legal/employer/license risk.
+- `ip_safety`: higher score means lower legal/organization/license risk.
 
 Promotion rule:
 
@@ -60,7 +60,7 @@ Promotion rule:
 
 - Use category-level descriptions.
 - Say "field-tested patterns" only when the source pattern is local and real.
-- Do not imply official affiliation with Viyu, OpenAI, Anthropic, Stripe, Cloudflare, GitHub, or third-party projects.
+- Do not imply official affiliation with prior organization, OpenAI, Anthropic, Stripe, Cloudflare, GitHub, or third-party projects.
 - Do not sell MSP execution services.
 - Do not promise legal, financial, medical, or security compliance outcomes.
 - Include "templates and documentation, not legal advice" where governance or policy docs are discussed.

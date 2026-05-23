@@ -1,5 +1,5 @@
 - id: msp-operations-control-plane
-  display_name: Viyu MSP Command Plane
+  display_name: MSP Command Plane
   category: MSP Operations
   status: Active
   summary: Eight-platform MSP operations tooling across PSA, RMM, Microsoft 365, documentation, security, remote access, vCloud, and billing workflows.
@@ -7,7 +7,7 @@
   system: A CLI and skill-based command plane that turns live platform state into reviewed actions, CWM task structures, GitHub Project 4 governance, and reusable handoff artifacts.
   proof: CWM ticket-control-plane registers, time-entry reconciliation artifacts, control-validate gates, live runtime checks, and public-safe session-harvest maps.
   evidence:
-    - Eight TypeScript CLI packages and 250+ orchestration skills are represented in the local viyu-agents repo.
+    - Eight TypeScript CLI packages and 250+ orchestration skills are represented in the local local-agent-tooling repo.
     - CWM tickets are treated as execution surfaces with tasks, notes, status, schedules, documents, and time entries reconciled after writes.
     - Internal development effort was reconciled against member 346 time entries, GitHub Project 4, git activity, browser history, and Codex session traces.
   stack:
@@ -51,7 +51,7 @@
   system: Qdrant-backed mem0 recall, checkpoint/replay helpers, session-harvest maps, repo-native skills, and explicit handoff prompts.
   proof: Hermes memory search results, Qdrant checkpoint guidance, session-log harvest artifacts, and validation notes tied back to GitHub control-plane items.
   evidence:
-    - Local mem0 recovered Project 4 and viyu-agents effort history during this portfolio pass.
+    - Local mem0 recovered Project 4 and local-agent-tooling effort history during this portfolio pass.
     - Session harvest maps convert raw Codex logs into skills, docs, CLI gaps, and Project 4 issue graphs.
     - Checkpoint wrappers are used when direct Qdrant writes are unreliable from sandboxed agents.
   stack:
@@ -62,7 +62,7 @@
     - MCP
   links:
     - label: hermes-mem0
-      url: https://github.com/Viyu-Network-Solutions/hermes-mem0
+      url: https://github.com/private-organization/hermes-mem0
   visibility: public_summary_only
 
 - id: operator-dashboard-systems
@@ -95,7 +95,7 @@
   system: Generated CLI contracts, platform-specific fetchers, safety-gated write paths, Graph/CWA/Sophos investigation workflows, and MCP-style tool boundaries.
   proof: CLI contract generation, help-json surfaces, smoke tests, package builds, read/write gates, and public-safe investigation summaries.
   evidence:
-    - The viyu-agents command surface prefers platform CLIs over raw APIs and emits JSON for agent consumption.
+    - The local-agent-tooling command surface prefers platform CLIs over raw APIs and emits JSON for agent consumption.
     - High-risk writes require preview tokens, explicit confirmations, or status-gate handling before execution.
     - Service investigations use Graph, CWA, Sophos, Meraki, CWM, and ticket/time evidence together before closure.
   stack:

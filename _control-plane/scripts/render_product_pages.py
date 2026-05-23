@@ -183,7 +183,7 @@ PRODUCT_COPY = {
         ],
         "not_for": [
             "A proprietary skill marketplace.",
-            "A bundle of private or employer-specific skills.",
+            "A bundle of private or organization-specific skills.",
         ],
     },
 }

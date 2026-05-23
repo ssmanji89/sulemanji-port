@@ -80,7 +80,7 @@ ALLOWED_VISIBILITY = {
 BANNED_SOURCE_PATTERNS = [
     r"\b\d{7}\b",  # ticket-like IDs
     r"@[A-Za-z0-9.-]+\.(?:local|lan|internal)\b",
-    r"\b[A-Za-z0-9._%+-]+@(?!gmail\.com\b|viyu\.net\b|github\.com\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
+    r"\b[A-Za-z0-9._%+-]+@(?!gmail\.com\b|github\.com\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
     r"gh[opsu]_[A-Za-z0-9_]{20,}",
     r"sk-[A-Za-z0-9]{20,}",
 ]
@@ -276,7 +276,7 @@ Create `_data/systems.yml`:
     - MCP
   links:
     - label: hermes-mem0
-      url: https://github.com/Viyu-Network-Solutions/hermes-mem0
+      url: https://github.com/private-organization/hermes-mem0
   visibility: public_summary_only
 
 - id: operator-dashboard-systems
@@ -577,7 +577,7 @@ description: Proof-gated AI operations, MSP systems engineering, agent runtime i
     <a href="mailto:ssmanji89@gmail.com" class="btn btn-outline">Contact</a>
   </div>
   <div class="signal-row" aria-label="Current work signals">
-    <span>Viyu services engineering</span>
+    <span>services engineering</span>
     <span>MSP operations</span>
     <span>Microsoft 365</span>
     <span>MCP</span>
@@ -678,7 +678,7 @@ Keep the existing front matter keys, but update `title` and `description`, then 
 <div class="command-header">
   <p class="command-eyebrow">About</p>
   <h1>Suleman Manji</h1>
-  <p class="command-lede">Sr. Services Engineer at Viyu Network Solutions, working across MSP systems engineering, agentic operations, Microsoft 365, MCP/API tooling, and proof-gated automation.</p>
+  <p class="command-lede">Sr. Services Engineer at current services organization, working across MSP systems engineering, agentic operations, Microsoft 365, MCP/API tooling, and proof-gated automation.</p>
 </div>
 
 <section class="command-section">
@@ -702,7 +702,7 @@ Keep the existing front matter keys, but update `title` and `description`, then 
 
 <section class="command-section principles-panel">
   <h2>Safety and publication boundaries</h2>
-  <p>Public writing here abstracts employer and client-adjacent work. It avoids client names, ticket IDs, internal hosts, private repository names, and operational screenshots. Financial-agent material is research and engineering infrastructure only; it is not investment advice or a solicitation.</p>
+  <p>Public writing here abstracts organization and client-adjacent work. It avoids client names, ticket IDs, internal hosts, private repository names, and operational screenshots. Financial-agent material is research and engineering infrastructure only; it is not investment advice or a solicitation.</p>
 </section>
 
 <section class="command-section">
@@ -724,7 +724,7 @@ Keep front matter, update `title` and `description`, then replace the body with:
 <div class="command-header">
   <p class="command-eyebrow">Projects</p>
   <h1>Curated systems, not a raw repo dump.</h1>
-  <p class="command-lede">This page highlights public-safe systems that represent the current work. Some systems are linked to public repositories; internal or employer-adjacent systems are summarized without private names or implementation detail.</p>
+  <p class="command-lede">This page highlights public-safe systems that represent the current work. Some systems are linked to public repositories; internal or organization-adjacent systems are summarized without private names or implementation detail.</p>
 </div>
 
 <div class="project-filters">
@@ -744,7 +744,7 @@ Keep front matter, update `title` and `description`, then replace the body with:
 
 <section class="command-section principles-panel">
   <h2>Publication boundary</h2>
-  <p>Private and employer-adjacent systems are intentionally abstracted. Links are included only for public repositories or public-safe references.</p>
+  <p>Private and organization-adjacent systems are intentionally abstracted. Links are included only for public repositories or public-safe references.</p>
 </section>
 
 <script>
@@ -1154,7 +1154,7 @@ Spec coverage:
 - Curated allowlist data model: Task 2.
 - Work Map and Projects reuse of curated data: Tasks 3 and 5.
 - Notes migration: Task 3.
-- Employer, financial, and redaction safeguards: Tasks 1, 2, 5, and 7.
+- Organization, financial, and redaction safeguards: Tasks 1, 2, 5, and 7.
 - Validation and publish readiness: Tasks 1 and 7.
 
 Completion scan:

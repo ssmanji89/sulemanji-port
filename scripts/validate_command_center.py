@@ -44,13 +44,13 @@ ALLOWED_VISIBILITY = {
 BANNED_SOURCE_PATTERNS = [
     r"\b\d{7}\b",  # ticket-like IDs
     r"@[A-Za-z0-9.-]+\.(?:local|lan|internal)\b",
-    r"\b[A-Za-z0-9._%+-]+@(?!gmail\.com\b|viyu\.net\b|github\.com\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
+    r"\b[A-Za-z0-9._%+-]+@(?!gmail\.com\b|github\.com\b)[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b",
     r"gh[opsu]_[A-Za-z0-9_]{20,}",
     r"sk-[A-Za-z0-9]{20,}",
 ]
 
 PUBLIC_SAFE_DISPLAY_NAMES = {
-    "Viyu MSP Command Plane",
+    "MSP Command Plane",
     "Financial-Agent Paper Runtime",
     "Agent Memory and Runtime Infrastructure",
     "AlgaPSA and Operator Interfaces",

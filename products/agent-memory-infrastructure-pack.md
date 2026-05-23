@@ -74,7 +74,7 @@ permalink: /products/agent-memory-infrastructure-pack
 <li>A preconfigured private vector database.</li>
 <li>Not included: live runtime paths.</li>
 <li>Not included: client memories.</li>
-<li>Not included: employer-owned secrets.</li>
+<li>Not included: organization-owned secrets.</li>
   </ul>
   <p>This is documentation and templates. It is not legal, financial, medical, security certification, compliance, or managed-service advice.</p>
 </section>

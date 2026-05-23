@@ -15,7 +15,7 @@ permalink: /projects
   <div class="section-kicker">Evidence Basis</div>
   <h2>Not scraped from a resume.</h2>
   <div class="proof-grid">
-    <div><strong>Local project surface</strong><span>The current workstation includes the viyu-agents control plane, AlgaPSA/vArida billing lanes, Portainer deployment work, stakeholder renderers, and MSP operational artifacts.</span></div>
+    <div><strong>Local project surface</strong><span>The current workstation includes the local-agent-tooling control plane, AlgaPSA/vArida billing lanes, Portainer deployment work, stakeholder renderers, and MSP operational artifacts.</span></div>
     <div><strong>Work accounting</strong><span>CWM and timesheet artifacts show member 346 time-entry reconciliation, internal development backfill review, and status-gated posting behavior.</span></div>
     <div><strong>Delivery governance</strong><span>GitHub Project 4, issue hierarchy, control-validate checks, proof comments, and audit-project output are part of the operating model.</span></div>
   </div>
@@ -38,7 +38,7 @@ permalink: /projects
 
 <section class="command-section principles-panel">
   <h2>Publication boundary</h2>
-  <p>Private and employer-adjacent systems are intentionally abstracted. Links are included only for public repositories or public-safe references.</p>
+  <p>Private and organization-adjacent systems are intentionally abstracted. Links are included only for public repositories or public-safe references.</p>
 </section>
 
 <script>

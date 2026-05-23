@@ -29,7 +29,7 @@ candidates:
   - debug workflow
   - tool schema review checklist
   exclude:
-  - employer MCP servers
+  - organization MCP servers
   - MSP vendor adapters
   - customer data
   - copied third-party code without license review
@@ -76,8 +76,8 @@ candidates:
   exclude:
   - live runtime paths
   - client memories
-  - employer-owned secrets
-  - Viyu-specific actor scopes
+  - organization-owned secrets
+  - organization-specific actor scopes
   scores:
     evidence: 5
     buyer_clarity: 5
@@ -189,7 +189,7 @@ candidates:
   status: live
   price_band: $99-$299
   source_repos:
-  - viyu-agents
+  - local agent tooling repository
   public_safe_pattern: Manifest-driven generated deliverables with validation gates
     and regenerated outputs.
   deliverables:
@@ -200,9 +200,9 @@ candidates:
   - example public-safe deliverable
   exclude:
   - client SOW text
-  - Viyu pricing
+  - private pricing
   - customer artifacts
-  - employer templates
+  - organization templates
   scores:
     evidence: 5
     buyer_clarity: 4
@@ -269,7 +269,7 @@ candidates:
   status: live
   price_band: $79-$249
   source_repos:
-  - viyu-agents
+  - local agent tooling repository
   - bodhi-teams
   public_safe_pattern: Issue-led AI work governance with proof artifacts, blockers,
     handoffs, and memory checkpoints.
@@ -284,7 +284,7 @@ candidates:
   - GitHub Project 4 internals
   - service ticket data
   - client names
-  - employer governance details
+  - organization governance details
   scores:
     evidence: 5
     buyer_clarity: 3
@@ -364,7 +364,7 @@ candidates:
   - validation checklist
   - store copy template
   exclude:
-  - Viyu-specific skills
+  - organization-specific skills
   - proprietary third-party skills
   - internal-only tools
   scores:

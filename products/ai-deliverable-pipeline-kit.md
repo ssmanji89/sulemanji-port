@@ -72,7 +72,7 @@ permalink: /products/ai-deliverable-pipeline-kit
     <li>Customer-specific SOWs or private pricing templates.</li>
 <li>A finished renderer application.</li>
 <li>Not included: client SOW text.</li>
-<li>Not included: Viyu pricing.</li>
+<li>Not included: private pricing.</li>
 <li>Not included: customer artifacts.</li>
   </ul>
   <p>This is documentation and templates. It is not legal, financial, medical, security certification, compliance, or managed-service advice.</p>

@@ -71,8 +71,8 @@ permalink: /products/agent-skill-system-builder-pack
   <h2>What this is not.</h2>
   <ul>
     <li>A proprietary skill marketplace.</li>
-<li>A bundle of private or employer-specific skills.</li>
-<li>Not included: Viyu-specific skills.</li>
+<li>A bundle of private or organization-specific skills.</li>
+<li>Not included: organization-specific skills.</li>
 <li>Not included: proprietary third-party skills.</li>
 <li>Not included: internal-only tools.</li>
   </ul>

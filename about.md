@@ -8,7 +8,7 @@ permalink: /about
 <div class="command-header">
   <p class="command-eyebrow">About</p>
   <h1>Suleman Manji</h1>
-  <p class="command-lede">Sr. Services Engineer at Viyu Network Solutions, working across MSP systems engineering, platform automation, Microsoft 365 diagnostics, billing/runtime proof, MCP/API tooling, and memory-backed agent operations.</p>
+  <p class="command-lede">Sr. Services Engineer at current services organization, working across MSP systems engineering, platform automation, Microsoft 365 diagnostics, billing/runtime proof, MCP/API tooling, and memory-backed agent operations.</p>
 </div>
 
 <section class="command-section">
@@ -42,7 +42,7 @@ permalink: /about
 
 <section class="command-section principles-panel">
   <h2>Safety and publication boundaries</h2>
-  <p>Public writing here abstracts employer and client-adjacent work. It avoids raw ticket notes, internal hosts, private screenshots, secrets, and customer-specific implementation detail. The goal is to show the engineering pattern without turning operational evidence into public leakage. Financial-agent material is research and engineering infrastructure only; it is not investment advice or a solicitation.</p>
+  <p>Public writing here abstracts organization and client-adjacent work. It avoids raw ticket notes, internal hosts, private screenshots, secrets, and customer-specific implementation detail. The goal is to show the engineering pattern without turning operational evidence into public leakage. Financial-agent material is research and engineering infrastructure only; it is not investment advice or a solicitation.</p>
 </section>
 
 <section class="command-section">

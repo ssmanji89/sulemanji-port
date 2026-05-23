@@ -14,7 +14,7 @@ permalink: /work-map
 <section class="command-section">
   <div class="section-kicker">Translation Layer</div>
   <h2>Private evidence, public pattern.</h2>
-  <p class="command-lede">Much of the work touches employer systems or client operations, so the public artifact cannot be a raw ticket dump. The useful signal is the repeatable pattern: collect live state, identify the safe action boundary, create a reviewable control plane, execute only when gated, and leave durable proof.</p>
+  <p class="command-lede">Much of the work touches organization systems or client operations, so the public artifact cannot be a raw ticket dump. The useful signal is the repeatable pattern: collect live state, identify the safe action boundary, create a reviewable control plane, execute only when gated, and leave durable proof.</p>
 </section>
 
 {% for system in site.data.systems %}

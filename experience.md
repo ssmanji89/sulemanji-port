@@ -12,7 +12,7 @@ permalink: /experience
 
 <div class="timeline animate-on-scroll">
 
-    <!-- Viyu Network Solutions -->
+    <!-- current services organization -->
     <div class="timeline-item">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
@@ -20,7 +20,7 @@ permalink: /experience
                 <span><i class="far fa-calendar-alt"></i> March 2025 - Present</span>
             </div>
             <h3 class="timeline-title">Solutions Architect & Automation Engineer</h3>
-            <h4 class="timeline-subtitle">Viyu Network Solutions</h4>
+            <h4 class="timeline-subtitle">current services organization</h4>
 
             <p class="timeline-description">
                 Leading enterprise M365 migrations, developing AI-powered MSP toolchains, and building MCP integrations that bridge cloud platforms with IT service delivery.

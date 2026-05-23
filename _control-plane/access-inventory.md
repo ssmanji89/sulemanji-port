@@ -54,7 +54,7 @@ Keys present by surface:
   - `GITHUB_TOKEN`
   - `STRIPE_PUBLISHABLE_KEY`
   - `STRIPE_SECRET_KEY`
-  - `VIYU_TEAMS_WEBHOOK_URL`
+  - `TEAMS_WEBHOOK_URL`
 
 Current interpretation: Stripe access appears available in Hermes env surfaces, and Cloudflare access appears available in the Hermes home env. The product control plane should not copy these values into the public site repo. Use them from Hermes or an operator shell during Stripe setup.
 

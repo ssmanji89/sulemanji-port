@@ -72,7 +72,7 @@ permalink: /products/local-first-meeting-intelligence-blueprint
     <li>A transcription app.</li>
 <li>A promise of legal or compliance sufficiency.</li>
 <li>Not included: call recordings.</li>
-<li>Not included: MSP profiles.</li>
+<li>Not included: private organization profiles.</li>
 <li>Not included: customer routing targets.</li>
   </ul>
   <p>This is documentation and templates. It is not legal, financial, medical, security certification, compliance, or managed-service advice.</p>

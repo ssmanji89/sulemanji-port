@@ -77,7 +77,7 @@ permalink: /products/mcp-operator-field-manual
     <li>Someone looking for a complete MCP framework or SDK course.</li>
 <li>Someone expecting custom implementation or live debugging support.</li>
 <li>Not included: organization MCP servers.</li>
-<li>Not included: MSP vendor adapters.</li>
+<li>Not included: private vendor adapters.</li>
 <li>Not included: customer data.</li>
   </ul>
   <p>This is documentation and templates. It is not legal, financial, medical, security certification, compliance, or managed-service advice.</p>

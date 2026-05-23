@@ -9,6 +9,55 @@ status_terms:
 - build-next
 - hold
 candidates:
+- id: ai-agent-control-plane
+  title: AI Agent Control Plane
+  status: live
+  price_band: $149
+  source_repos:
+  - sulemanji
+  - local agent tooling repository
+  public_safe_pattern: GitHub Projects as a control plane for coordinating AI agents
+    and human reviewers from product idea through Stripe launch readiness.
+  deliverables:
+  - control-plane model
+  - GitHub Projects field schema
+  - agent-human operating loop
+  - product development lifecycle
+  - issue intake template
+  - agent task brief
+  - human review gate
+  - Stripe launch readiness card
+  - agent handoff note
+  - project board views
+  - clean-room examples
+  - ad and legal/IP readiness checklists
+  exclude:
+  - private board data
+  - customer data
+  - organization-specific workflows
+  - custom implementation
+  - legal advice
+  scores:
+    evidence: 5
+    buyer_clarity: 5
+    maturity: 5
+    cleanup_effort: 2
+    ip_safety: 5
+  operationalization:
+    package_source: _control-plane/products/ai-agent-control-plane
+    package_artifact: _control-plane/products/ai-agent-control-plane/releases/v1.0.0/ai-agent-control-plane-v1.0.0.zip
+    package_version: 1.0.0
+    public_page: products/ai-agent-control-plane.md
+    public_page_draft: _control-plane/public-page-drafts/ai-agent-control-plane.md
+    public_page_status: flagship-published
+    stripe_product_id: prod_UZY0qM8Os33GBv
+    stripe_price_id: price_1TaOuMP7HsCzcZI7FKuqIt9x
+    stripe_payment_link_id: plink_1TaOuMP7HsCzcZI7VrphCejK
+    stripe_payment_link: https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09
+    fulfillment_log_template: _control-plane/fulfillment/ai-agent-control-plane-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live Stripe product, price, and payment link created; secret keys
+      remain in private env surfaces
 - id: mcp-operator-field-manual
   title: MCP Operator Field Manual
   status: build-next

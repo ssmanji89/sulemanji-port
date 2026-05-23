@@ -7,13 +7,26 @@ permalink: /products
 
 <div class="command-header">
   <p class="command-eyebrow">Storefront / AI Tooling Packs</p>
-  <h1>Operator worksheets for agent work that has to survive real use.</h1>
-  <p class="command-lede">These are small, specific downloadable packs: worksheets, checklists, clean-room examples, and runbooks built from the tooling patterns in this portfolio. They are for people who need to make agent workflows inspectable, repeatable, and safer before they scale them.</p>
+  <h1>AI Agent Control Plane is the flagship product.</h1>
+  <p class="command-lede">Start here if you are trying to coordinate AI agents and humans through real product development: idea shaping, GitHub issue work, agent dispatch, proof, review gates, launch readiness, and Stripe checkout.</p>
+  <div class="command-actions">
+    <a href="/products/ai-agent-control-plane" class="btn btn-primary">View AI Agent Control Plane</a>
+    <a href="https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09" class="btn btn-outline">Buy for $149</a>
+  </div>
 </div>
 
+<section class="command-section principles-panel">
+  <div class="section-kicker">Primary Offer</div>
+  <h2>AI Agent Control Plane</h2>
+  <p>A GitHub Projects based operating framework for coordinating AI agents and human reviewers from product idea through Stripe launch readiness. Version 1.0.0 includes 16 Markdown files: field schema, operating loop, lifecycle, templates, examples, checklists, and support policy.</p>
+  <div class="command-actions">
+    <a href="/products/ai-agent-control-plane" class="btn btn-primary">See the product</a>
+  </div>
+</section>
+
 <section class="command-section">
-  <div class="section-kicker">Available Packs</div>
-  <h2>Pick the painful moment you are actually dealing with.</h2>
+  <div class="section-kicker">Secondary Packs</div>
+  <h2>These are supporting packs, not the main ad target.</h2>
   <div class="proof-grid">
 <div>
   <strong><a href="/products/mcp-operator-field-manual">MCP Operator Field Manual</a></strong>
@@ -53,9 +66,9 @@ permalink: /products
 </div>
 <div>
   <strong><a href="/products/ai-work-control-plane-playbook">AI Work Control Plane Playbook</a></strong>
-  <span>AI work is happening in chat, but status, blockers, evidence, and handoffs are not durable enough for real operations.</span>
-  <small>5 files in the ZIP / $79 / live Stripe checkout</small>
-  <a href="/products/ai-work-control-plane-playbook" class="btn btn-outline">See contents</a>
+  <span>Older supporting playbook. The flagship offer is now AI Agent Control Plane.</span>
+  <small>Superseded by the 16-file flagship product / $149</small>
+  <a href="/products/ai-agent-control-plane" class="btn btn-outline">View flagship</a>
 </div>
 <div>
   <strong><a href="/products/browser-native-agent-workspace-guide">Browser-Native Agent Workspace Design Guide</a></strong>

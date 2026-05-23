@@ -363,3 +363,25 @@ Update the product register, release manifests, and launch checklist.
 - [x] **Step 3: Validate public page build and private control-plane exclusion**
 
 Expected: Jekyll builds `/products/mcp-operator-field-manual`, the page contains the live Stripe URL, and `_control-plane/` remains excluded.
+
+### Task 14: Post Remaining Product Shelf
+
+**Files:**
+- Create: `products/index.md`
+- Create: `products/*.md`
+- Create: `_control-plane/products/*`
+- Create: `_control-plane/fulfillment/*-manual-fulfillment-log-template.yml`
+- Create: `_control-plane/launch/all-products-launch-checklist.md`
+- Modify: `_control-plane/product-candidates.yml`
+
+- [x] **Step 1: Create live Stripe components for remaining candidates**
+
+Create live Stripe products, prices, and payment links for the remaining eight candidates.
+
+- [x] **Step 2: Generate starter packages and public pages**
+
+Generate v0.1.0 buyer ZIP artifacts, package manifests, public pages, and a `/products` index.
+
+- [x] **Step 3: Validate product shelf**
+
+Expected: all nine candidates have live Stripe links, public pages, ZIP artifacts, fulfillment templates, source-safety scan passes, and production-shaped Jekyll build keeps `_control-plane/` private.

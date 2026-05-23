@@ -1,268 +1,390 @@
-generated_at: "2026-05-23"
-storefront: "www.sulemanji.com"
-payment_rail: "Stripe Payment Links or Checkout"
-public_surface: "GitHub Pages"
-local_control_plane: "_control-plane"
+generated_at: '2026-05-23'
+storefront: www.sulemanji.com
+payment_rail: Stripe Payment Links or Checkout
+public_surface: GitHub Pages
+local_control_plane: _control-plane
 status_terms:
-  - research
-  - draftable
-  - build-next
-  - hold
+- research
+- draftable
+- build-next
+- hold
 candidates:
-  - id: mcp-operator-field-manual
-    title: MCP Operator Field Manual
-    status: build-next
-    price_band: "$39-$129"
-    source_repos:
-      - hermes-agent
-      - n8n-mcp-tools
-      - n8n-workflow-builder
-      - browser-use-mcp-server
-      - agent-toolkit
-    public_safe_pattern: MCP installation, inspection, auth, transport, and debugging workflows.
-    deliverables:
-      - setup guide
-      - transport decision table
-      - client config snippets
-      - auth and secrets checklist
-      - debug workflow
-      - tool schema review checklist
-    exclude:
-      - employer MCP servers
-      - MSP vendor adapters
-      - customer data
-      - copied third-party code without license review
-    scores:
-      evidence: 5
-      buyer_clarity: 4
-      maturity: 4
-      cleanup_effort: 2
-      ip_safety: 4
-    operationalization:
-      package_source: "_control-plane/products/mcp-operator-field-manual"
-      package_artifact: "_control-plane/products/mcp-operator-field-manual/releases/v0.1.0/mcp-operator-field-manual-v0.1.0.zip"
-      package_version: "0.1.0"
-      public_page: "products/mcp-operator-field-manual.md"
-      public_page_draft: "_control-plane/public-page-drafts/mcp-operator-field-manual.md"
-      public_page_status: "local-promoted"
-      stripe_product_id: "prod_UZVk0XUdBoriFI"
-      stripe_price_id: "price_1TaMj6P7HsCzcZI7KVrJfddK"
-      stripe_payment_link_id: "plink_1TaMj7P7HsCzcZI71vZVKNCD"
-      stripe_payment_link: "https://buy.stripe.com/cNi5kF8Na4IOgFfcT43oA00"
-      stripe_setup_runbook: "_control-plane/products/mcp-operator-field-manual/stripe/setup-runbook.md"
-      launch_checklist: "_control-plane/launch/mcp-operator-field-manual-launch-checklist.md"
-      public_promotion_runbook: "_control-plane/products/mcp-operator-field-manual/public/promotion-runbook.md"
-      fulfillment_log_template: "_control-plane/fulfillment/manual-fulfillment-log-template.yml"
-      fulfillment_mode: "manual-v1"
-      access_status: "live stripe product, price, and payment link created; secret keys remain in Hermes env surfaces"
-
-  - id: agent-memory-infrastructure-pack
-    title: Agent Memory Infrastructure Pack
-    status: build-next
-    price_band: "$49-$149"
-    source_repos:
-      - hermes-agent
-      - hermes-mem0
-    public_safe_pattern: Local memory infrastructure, scoped recall, Qdrant/mem0 setup, and recall auditing.
-    deliverables:
-      - memory architecture guide
-      - Qdrant and mem0 setup checklist
-      - write/read scope model
-      - recall audit worksheet
-      - troubleshooting matrix
-      - clean-room config examples
-    exclude:
-      - live runtime paths
-      - client memories
-      - employer-owned secrets
-      - Viyu-specific actor scopes
-    scores:
-      evidence: 5
-      buyer_clarity: 5
-      maturity: 4
-      cleanup_effort: 3
-      ip_safety: 4
-
-  - id: agent-anti-loop-context-compression-kit
-    title: Agent Anti-Loop and Context Compression Kit
-    status: draftable
-    price_band: "$49-$149"
-    source_repos:
-      - claude-optimized
-    source_tools:
-      - distill
-      - RTK
-      - Headroom
-    public_safe_pattern: Detect stuck agent behavior, compress large tool output, and route second-opinion reviews to local models.
-    deliverables:
-      - loop pattern catalog
-      - local critic prompt templates
-      - token savings recipes
-      - command output distillation examples
-      - secret guard checklist
-    exclude:
-      - private local model endpoints
-      - secrets
-      - incompatible plugin code
-    scores:
-      evidence: 4
-      buyer_clarity: 4
-      maturity: 3
-      cleanup_effort: 3
-      ip_safety: 5
-
-  - id: agent-evaluation-prompt-regression-pack
-    title: Agent Evaluation and Prompt Regression Pack
-    status: draftable
-    price_band: "$79-$249"
-    source_repos:
-      - finbots26
-      - hermes-finbots
-    public_safe_pattern: Prompt freezing, run artifacts, eval gates, scoring, and cost tracking for agent workflows.
-    deliverables:
-      - prompt freeze methodology
-      - eval fixture layout
-      - run artifact schema
-      - scoring template
-      - cost and cache report template
-      - regression checklist
-    exclude:
-      - trading logic
-      - brokerage flows
-      - account data
-      - financial advice
-    scores:
-      evidence: 5
-      buyer_clarity: 4
-      maturity: 4
-      cleanup_effort: 4
-      ip_safety: 3
-
-  - id: ai-deliverable-pipeline-kit
-    title: AI Deliverable Pipeline Kit
-    status: draftable
-    price_band: "$99-$299"
-    source_repos:
-      - viyu-agents
-    public_safe_pattern: Manifest-driven generated deliverables with validation gates and regenerated outputs.
-    deliverables:
-      - manifest schema template
-      - renderer architecture guide
-      - validation checklist
-      - generated output contract
-      - example public-safe deliverable
-    exclude:
-      - client SOW text
-      - Viyu pricing
-      - customer artifacts
-      - employer templates
-    scores:
-      evidence: 5
-      buyer_clarity: 4
-      maturity: 4
-      cleanup_effort: 4
-      ip_safety: 2
-
-  - id: local-first-meeting-intelligence-blueprint
-    title: Local-First Meeting Intelligence Blueprint
-    status: research
-    price_band: "$49-$199"
-    source_repos:
-      - notesTaker
-    public_safe_pattern: Local audio capture, transcription, structured intelligence extraction, semantic search, and approval-gated routing.
-    deliverables:
-      - architecture blueprint
-      - capture pipeline checklist
-      - extraction schema
-      - search design notes
-      - approval-gated routing pattern
-    exclude:
-      - call recordings
-      - MSP profiles
-      - customer routing targets
-      - private transcripts
-    scores:
-      evidence: 4
-      buyer_clarity: 4
-      maturity: 3
-      cleanup_effort: 4
-      ip_safety: 3
-
-  - id: ai-work-control-plane-playbook
-    title: AI Work Control Plane Playbook
-    status: draftable
-    price_band: "$79-$249"
-    source_repos:
-      - viyu-agents
-      - bodhi-teams
-    public_safe_pattern: Issue-led AI work governance with proof artifacts, blockers, handoffs, and memory checkpoints.
-    deliverables:
-      - execution ledger model
-      - proof taxonomy
-      - blocker vocabulary
-      - handoff template
-      - public-safety checklist
-      - memory checkpoint recipe
-    exclude:
-      - GitHub Project 4 internals
-      - service ticket data
-      - client names
-      - employer governance details
-    scores:
-      evidence: 5
-      buyer_clarity: 3
-      maturity: 4
-      cleanup_effort: 5
-      ip_safety: 2
-
-  - id: browser-native-agent-workspace-guide
-    title: Browser-Native Agent Workspace Design Guide
-    status: research
-    price_band: "$49-$199"
-    source_repos:
-      - space-agent
-      - browser-use-mcp-server
-    public_safe_pattern: Browser-layer agent workspace, skill discovery, prompt-budget UI, browser automation, and rollback/admin concepts.
-    deliverables:
-      - design guide
-      - runtime boundary map
-      - skill discovery notes
-      - prompt-budget UI pattern
-      - browser automation safety checklist
-    exclude:
-      - third-party branding
-      - copied runtime code
-      - private hosted configs
-    scores:
-      evidence: 4
-      buyer_clarity: 3
-      maturity: 3
-      cleanup_effort: 5
-      ip_safety: 3
-
-  - id: agent-skill-system-builder-pack
-    title: Agent Skill System Builder Pack
-    status: draftable
-    price_band: "$39-$149"
-    source_repos:
-      - hermes-agent
-      - claude-skills
-      - memstack
-    public_safe_pattern: Skill authoring, trigger rules, progressive disclosure, validation, and packaging.
-    deliverables:
-      - skill authoring guide
-      - trigger checklist
-      - folder template
-      - progressive disclosure pattern
-      - validation checklist
-      - store copy template
-    exclude:
-      - Viyu-specific skills
-      - proprietary third-party skills
-      - internal-only tools
-    scores:
-      evidence: 4
-      buyer_clarity: 4
-      maturity: 3
-      cleanup_effort: 3
-      ip_safety: 4
+- id: mcp-operator-field-manual
+  title: MCP Operator Field Manual
+  status: build-next
+  price_band: $39-$129
+  source_repos:
+  - hermes-agent
+  - n8n-mcp-tools
+  - n8n-workflow-builder
+  - browser-use-mcp-server
+  - agent-toolkit
+  public_safe_pattern: MCP installation, inspection, auth, transport, and debugging
+    workflows.
+  deliverables:
+  - setup guide
+  - transport decision table
+  - client config snippets
+  - auth and secrets checklist
+  - debug workflow
+  - tool schema review checklist
+  exclude:
+  - employer MCP servers
+  - MSP vendor adapters
+  - customer data
+  - copied third-party code without license review
+  scores:
+    evidence: 5
+    buyer_clarity: 4
+    maturity: 4
+    cleanup_effort: 2
+    ip_safety: 4
+  operationalization:
+    package_source: _control-plane/products/mcp-operator-field-manual
+    package_artifact: _control-plane/products/mcp-operator-field-manual/releases/v0.1.0/mcp-operator-field-manual-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/mcp-operator-field-manual.md
+    public_page_draft: _control-plane/public-page-drafts/mcp-operator-field-manual.md
+    public_page_status: local-promoted
+    stripe_product_id: prod_UZVk0XUdBoriFI
+    stripe_price_id: price_1TaMj6P7HsCzcZI7KVrJfddK
+    stripe_payment_link_id: plink_1TaMj7P7HsCzcZI71vZVKNCD
+    stripe_payment_link: https://buy.stripe.com/cNi5kF8Na4IOgFfcT43oA00
+    stripe_setup_runbook: _control-plane/products/mcp-operator-field-manual/stripe/setup-runbook.md
+    launch_checklist: _control-plane/launch/mcp-operator-field-manual-launch-checklist.md
+    public_promotion_runbook: _control-plane/products/mcp-operator-field-manual/public/promotion-runbook.md
+    fulfillment_log_template: _control-plane/fulfillment/manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: agent-memory-infrastructure-pack
+  title: Agent Memory Infrastructure Pack
+  status: live
+  price_band: $49-$149
+  source_repos:
+  - hermes-agent
+  - hermes-mem0
+  public_safe_pattern: Local memory infrastructure, scoped recall, Qdrant/mem0 setup,
+    and recall auditing.
+  deliverables:
+  - memory architecture guide
+  - Qdrant and mem0 setup checklist
+  - write/read scope model
+  - recall audit worksheet
+  - troubleshooting matrix
+  - clean-room config examples
+  exclude:
+  - live runtime paths
+  - client memories
+  - employer-owned secrets
+  - Viyu-specific actor scopes
+  scores:
+    evidence: 5
+    buyer_clarity: 5
+    maturity: 4
+    cleanup_effort: 3
+    ip_safety: 4
+  operationalization:
+    package_source: _control-plane/products/agent-memory-infrastructure-pack
+    package_artifact: _control-plane/products/agent-memory-infrastructure-pack/releases/v0.1.0/agent-memory-infrastructure-pack-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/agent-memory-infrastructure-pack.md
+    public_page_draft: _control-plane/public-page-drafts/agent-memory-infrastructure-pack.md
+    public_page_status: published
+    stripe_product_id: prod_UZXLDvruSOULXC
+    stripe_price_id: price_1TaOGRP7HsCzcZI7vvYLsxuE
+    stripe_payment_link_id: plink_1TaOGRP7HsCzcZI7P3XXoMgZ
+    stripe_payment_link: https://buy.stripe.com/4gMcN74wU8Z474Fg5g3oA01
+    fulfillment_log_template: _control-plane/fulfillment/agent-memory-infrastructure-pack-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: agent-anti-loop-context-compression-kit
+  title: Agent Anti-Loop and Context Compression Kit
+  status: live
+  price_band: $49-$149
+  source_repos:
+  - claude-optimized
+  source_tools:
+  - distill
+  - RTK
+  - Headroom
+  public_safe_pattern: Detect stuck agent behavior, compress large tool output, and
+    route second-opinion reviews to local models.
+  deliverables:
+  - loop pattern catalog
+  - local critic prompt templates
+  - token savings recipes
+  - command output distillation examples
+  - secret guard checklist
+  exclude:
+  - private local model endpoints
+  - secrets
+  - incompatible plugin code
+  scores:
+    evidence: 4
+    buyer_clarity: 4
+    maturity: 3
+    cleanup_effort: 3
+    ip_safety: 5
+  operationalization:
+    package_source: _control-plane/products/agent-anti-loop-context-compression-kit
+    package_artifact: _control-plane/products/agent-anti-loop-context-compression-kit/releases/v0.1.0/agent-anti-loop-context-compression-kit-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/agent-anti-loop-context-compression-kit.md
+    public_page_draft: _control-plane/public-page-drafts/agent-anti-loop-context-compression-kit.md
+    public_page_status: published
+    stripe_product_id: prod_UZXLb3JdOuBYYu
+    stripe_price_id: price_1TaOGSP7HsCzcZI7oI8u8Ud4
+    stripe_payment_link_id: plink_1TaOGTP7HsCzcZI7GXmEg6S8
+    stripe_payment_link: https://buy.stripe.com/8x25kFe7u4IOcoZ1am3oA02
+    fulfillment_log_template: _control-plane/fulfillment/agent-anti-loop-context-compression-kit-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: agent-evaluation-prompt-regression-pack
+  title: Agent Evaluation and Prompt Regression Pack
+  status: live
+  price_band: $79-$249
+  source_repos:
+  - finbots26
+  - hermes-finbots
+  public_safe_pattern: Prompt freezing, run artifacts, eval gates, scoring, and cost
+    tracking for agent workflows.
+  deliverables:
+  - prompt freeze methodology
+  - eval fixture layout
+  - run artifact schema
+  - scoring template
+  - cost and cache report template
+  - regression checklist
+  exclude:
+  - trading logic
+  - brokerage flows
+  - account data
+  - financial advice
+  scores:
+    evidence: 5
+    buyer_clarity: 4
+    maturity: 4
+    cleanup_effort: 4
+    ip_safety: 3
+  operationalization:
+    package_source: _control-plane/products/agent-evaluation-prompt-regression-pack
+    package_artifact: _control-plane/products/agent-evaluation-prompt-regression-pack/releases/v0.1.0/agent-evaluation-prompt-regression-pack-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/agent-evaluation-prompt-regression-pack.md
+    public_page_draft: _control-plane/public-page-drafts/agent-evaluation-prompt-regression-pack.md
+    public_page_status: published
+    stripe_product_id: prod_UZXLsS6ZxUP2zr
+    stripe_price_id: price_1TaOGUP7HsCzcZI7l5j8bjwB
+    stripe_payment_link_id: plink_1TaOGVP7HsCzcZI7J37Itn3a
+    stripe_payment_link: https://buy.stripe.com/4gM5kF7J65MSdt39GS3oA03
+    fulfillment_log_template: _control-plane/fulfillment/agent-evaluation-prompt-regression-pack-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: ai-deliverable-pipeline-kit
+  title: AI Deliverable Pipeline Kit
+  status: live
+  price_band: $99-$299
+  source_repos:
+  - viyu-agents
+  public_safe_pattern: Manifest-driven generated deliverables with validation gates
+    and regenerated outputs.
+  deliverables:
+  - manifest schema template
+  - renderer architecture guide
+  - validation checklist
+  - generated output contract
+  - example public-safe deliverable
+  exclude:
+  - client SOW text
+  - Viyu pricing
+  - customer artifacts
+  - employer templates
+  scores:
+    evidence: 5
+    buyer_clarity: 4
+    maturity: 4
+    cleanup_effort: 4
+    ip_safety: 2
+  operationalization:
+    package_source: _control-plane/products/ai-deliverable-pipeline-kit
+    package_artifact: _control-plane/products/ai-deliverable-pipeline-kit/releases/v0.1.0/ai-deliverable-pipeline-kit-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/ai-deliverable-pipeline-kit.md
+    public_page_draft: _control-plane/public-page-drafts/ai-deliverable-pipeline-kit.md
+    public_page_status: published
+    stripe_product_id: prod_UZXL2qyDLX1e3l
+    stripe_price_id: price_1TaOGWP7HsCzcZI7Iw8aJUxl
+    stripe_payment_link_id: plink_1TaOGWP7HsCzcZI7WCr6qeNF
+    stripe_payment_link: https://buy.stripe.com/eVqbJ31kI2AG88J8CO3oA04
+    fulfillment_log_template: _control-plane/fulfillment/ai-deliverable-pipeline-kit-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: local-first-meeting-intelligence-blueprint
+  title: Local-First Meeting Intelligence Blueprint
+  status: live
+  price_band: $49-$199
+  source_repos:
+  - notesTaker
+  public_safe_pattern: Local audio capture, transcription, structured intelligence
+    extraction, semantic search, and approval-gated routing.
+  deliverables:
+  - architecture blueprint
+  - capture pipeline checklist
+  - extraction schema
+  - search design notes
+  - approval-gated routing pattern
+  exclude:
+  - call recordings
+  - MSP profiles
+  - customer routing targets
+  - private transcripts
+  scores:
+    evidence: 4
+    buyer_clarity: 4
+    maturity: 3
+    cleanup_effort: 4
+    ip_safety: 3
+  operationalization:
+    package_source: _control-plane/products/local-first-meeting-intelligence-blueprint
+    package_artifact: _control-plane/products/local-first-meeting-intelligence-blueprint/releases/v0.1.0/local-first-meeting-intelligence-blueprint-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/local-first-meeting-intelligence-blueprint.md
+    public_page_draft: _control-plane/public-page-drafts/local-first-meeting-intelligence-blueprint.md
+    public_page_status: published
+    stripe_product_id: prod_UZXLu1M7Md7Elz
+    stripe_price_id: price_1TaOGXP7HsCzcZI7TlhM29XO
+    stripe_payment_link_id: plink_1TaOGYP7HsCzcZI7qGEzCPco
+    stripe_payment_link: https://buy.stripe.com/8x27sN6F2ejo74F6uG3oA05
+    fulfillment_log_template: _control-plane/fulfillment/local-first-meeting-intelligence-blueprint-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: ai-work-control-plane-playbook
+  title: AI Work Control Plane Playbook
+  status: live
+  price_band: $79-$249
+  source_repos:
+  - viyu-agents
+  - bodhi-teams
+  public_safe_pattern: Issue-led AI work governance with proof artifacts, blockers,
+    handoffs, and memory checkpoints.
+  deliverables:
+  - execution ledger model
+  - proof taxonomy
+  - blocker vocabulary
+  - handoff template
+  - public-safety checklist
+  - memory checkpoint recipe
+  exclude:
+  - GitHub Project 4 internals
+  - service ticket data
+  - client names
+  - employer governance details
+  scores:
+    evidence: 5
+    buyer_clarity: 3
+    maturity: 4
+    cleanup_effort: 5
+    ip_safety: 2
+  operationalization:
+    package_source: _control-plane/products/ai-work-control-plane-playbook
+    package_artifact: _control-plane/products/ai-work-control-plane-playbook/releases/v0.1.0/ai-work-control-plane-playbook-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/ai-work-control-plane-playbook.md
+    public_page_draft: _control-plane/public-page-drafts/ai-work-control-plane-playbook.md
+    public_page_status: published
+    stripe_product_id: prod_UZXLRgmwIsH4np
+    stripe_price_id: price_1TaOGZP7HsCzcZI774UyHh64
+    stripe_payment_link_id: plink_1TaOGZP7HsCzcZI7NoGcRZaU
+    stripe_payment_link: https://buy.stripe.com/4gMcN79Re6QWfBb8CO3oA06
+    fulfillment_log_template: _control-plane/fulfillment/ai-work-control-plane-playbook-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: browser-native-agent-workspace-guide
+  title: Browser-Native Agent Workspace Design Guide
+  status: live
+  price_band: $49-$199
+  source_repos:
+  - space-agent
+  - browser-use-mcp-server
+  public_safe_pattern: Browser-layer agent workspace, skill discovery, prompt-budget
+    UI, browser automation, and rollback/admin concepts.
+  deliverables:
+  - design guide
+  - runtime boundary map
+  - skill discovery notes
+  - prompt-budget UI pattern
+  - browser automation safety checklist
+  exclude:
+  - third-party branding
+  - copied runtime code
+  - private hosted configs
+  scores:
+    evidence: 4
+    buyer_clarity: 3
+    maturity: 3
+    cleanup_effort: 5
+    ip_safety: 3
+  operationalization:
+    package_source: _control-plane/products/browser-native-agent-workspace-guide
+    package_artifact: _control-plane/products/browser-native-agent-workspace-guide/releases/v0.1.0/browser-native-agent-workspace-guide-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/browser-native-agent-workspace-guide.md
+    public_page_draft: _control-plane/public-page-drafts/browser-native-agent-workspace-guide.md
+    public_page_status: published
+    stripe_product_id: prod_UZXLsykum4Uaf7
+    stripe_price_id: price_1TaOGaP7HsCzcZI7GUVdnmua
+    stripe_payment_link_id: plink_1TaOGbP7HsCzcZI7tCgU89CM
+    stripe_payment_link: https://buy.stripe.com/6oU3cxd3q1wC1KlaKW3oA07
+    fulfillment_log_template: _control-plane/fulfillment/browser-native-agent-workspace-guide-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces
+- id: agent-skill-system-builder-pack
+  title: Agent Skill System Builder Pack
+  status: live
+  price_band: $39-$149
+  source_repos:
+  - hermes-agent
+  - claude-skills
+  - memstack
+  public_safe_pattern: Skill authoring, trigger rules, progressive disclosure, validation,
+    and packaging.
+  deliverables:
+  - skill authoring guide
+  - trigger checklist
+  - folder template
+  - progressive disclosure pattern
+  - validation checklist
+  - store copy template
+  exclude:
+  - Viyu-specific skills
+  - proprietary third-party skills
+  - internal-only tools
+  scores:
+    evidence: 4
+    buyer_clarity: 4
+    maturity: 3
+    cleanup_effort: 3
+    ip_safety: 4
+  operationalization:
+    package_source: _control-plane/products/agent-skill-system-builder-pack
+    package_artifact: _control-plane/products/agent-skill-system-builder-pack/releases/v0.1.0/agent-skill-system-builder-pack-v0.1.0.zip
+    package_version: 0.1.0
+    public_page: products/agent-skill-system-builder-pack.md
+    public_page_draft: _control-plane/public-page-drafts/agent-skill-system-builder-pack.md
+    public_page_status: published
+    stripe_product_id: prod_UZXLNi4pM9SoYn
+    stripe_price_id: price_1TaOGcP7HsCzcZI7YFx0QY0e
+    stripe_payment_link_id: plink_1TaOGcP7HsCzcZI712XGR9GF
+    stripe_payment_link: https://buy.stripe.com/eVq8wR8Na7V0gFf6uG3oA08
+    fulfillment_log_template: _control-plane/fulfillment/agent-skill-system-builder-pack-manual-fulfillment-log-template.yml
+    fulfillment_mode: manual-v1
+    access_status: live stripe product, price, and payment link created; secret keys
+      remain in Hermes env surfaces

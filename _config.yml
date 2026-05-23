@@ -36,6 +36,7 @@ defaults:
 
 # Exclude from processing
 exclude:
+  - _control-plane/
   - docs/
   - _posts/
   - assets/css/components/animations.css

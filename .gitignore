@@ -91,6 +91,7 @@ temp/
 # Cache
 .cache/
 *.cache
+vendor/
 
 # Local implementation worktrees
 .worktrees/

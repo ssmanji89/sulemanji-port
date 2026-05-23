@@ -10,8 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PRODUCT_ID = "ai-agent-control-plane"
 PAGE = ROOT / "products" / f"{PRODUCT_ID}.md"
-PACKAGE = ROOT / "_control-plane" / "products" / PRODUCT_ID / "releases" / "v1.0.0" / "package"
-ZIP = ROOT / "_control-plane" / "products" / PRODUCT_ID / "releases" / "v1.0.0" / f"{PRODUCT_ID}-v1.0.0.zip"
+PACKAGE = ROOT / "_control-plane" / "products" / PRODUCT_ID / "releases" / "v1.1.0" / "package"
+ZIP = ROOT / "_control-plane" / "products" / PRODUCT_ID / "releases" / "v1.1.0" / f"{PRODUCT_ID}-v1.1.0.zip"
 
 REQUIRED_PAGE_PHRASES = [
     "AI Agent Control Plane",
@@ -23,12 +23,18 @@ REQUIRED_PAGE_PHRASES = [
     "Stripe",
     "What you can build this week",
     "Inside the product",
+    "Provisioning Kit",
+    "Codex",
+    "Claude",
+    "Cursor",
+    "opencode",
     "Preview",
     "Buy",
 ]
 
 REQUIRED_PACKAGE_FILES = [
     "README.md",
+    "adapters/platform-coverage-guide.md",
     "framework/control-plane-model.md",
     "framework/github-projects-field-schema.md",
     "framework/agent-human-operating-loop.md",
@@ -44,6 +50,11 @@ REQUIRED_PACKAGE_FILES = [
     "checklists/ad-readiness-checklist.md",
     "checklists/legal-ip-safety-checklist.md",
     "policies/support-refund-policy.md",
+    "packages/ai-agent-control-plane-cli/package.json",
+    "packages/ai-agent-control-plane-cli/src/cli.js",
+    "packages/ai-agent-control-plane-cli/src/provisioner.js",
+    "packages/ai-agent-control-plane-cli/test/provisioner.test.js",
+    "dist/ai-agent-control-plane-1.1.0.tgz",
 ]
 
 FORBIDDEN_TERMS = [
@@ -87,9 +98,13 @@ def check_page() -> None:
 def check_package() -> None:
     for relative in REQUIRED_PACKAGE_FILES:
         path = PACKAGE / relative
+        if relative.endswith(".tgz"):
+            if not path.exists():
+                fail(f"missing required file: {path.relative_to(ROOT)}")
+            continue
         text = read(path)
         check_no_forbidden(path, text)
-        if len(text.split()) < 120 and not relative.startswith("policies/"):
+        if relative.endswith(".md") and len(text.split()) < 120 and not relative.startswith("policies/"):
             fail(f"{path.relative_to(ROOT)} is too thin for an advertisable product")
 
 
@@ -102,7 +117,7 @@ def check_zip() -> None:
         if missing:
             fail(f"zip missing files: {', '.join(missing)}")
         for name in names:
-            if not name.endswith(".md"):
+            if not name.endswith((".md", ".js", ".json")):
                 continue
             text = archive.read(name).decode("utf-8")
             for pattern in FORBIDDEN_TERMS:

@@ -6,9 +6,9 @@ permalink: /products/ai-agent-control-plane
 ---
 
 <div class="command-header">
-  <p class="command-eyebrow">Flagship AI Tooling Product / Version 1.0.0 / $149</p>
+  <p class="command-eyebrow">Flagship AI Tooling Product / Version 1.1.0 / $149</p>
   <h1>AI Agent Control Plane</h1>
-  <p class="command-lede">Use GitHub Projects as the shared operating layer where agents and humans develop products in harmony: ideas, agent tasks, human review gates, proof artifacts, launch readiness, and Stripe commercialization in one inspectable workflow.</p>
+  <p class="command-lede">Use GitHub Projects as the shared operating layer where agents and humans develop products in harmony: ideas, agent tasks, human review gates, proof artifacts, launch readiness, Stripe commercialization, and project-local agent setup in one inspectable workflow.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09" class="btn btn-primary">Buy AI Agent Control Plane for $149</a>
     <a href="#inside" class="btn btn-outline">See what is inside</a>
@@ -35,9 +35,10 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section" id="inside">
   <div class="section-kicker">Inside the product</div>
-  <h2>Version 1.0.0 includes 16 Markdown files.</h2>
+  <h2>Version 1.1.0 includes 24 files: framework, templates, examples, and a provisioning CLI.</h2>
   <ul>
     <li><code>README.md</code></li>
+    <li><code>adapters/platform-coverage-guide.md</code></li>
     <li><code>framework/control-plane-model.md</code></li>
     <li><code>framework/github-projects-field-schema.md</code></li>
     <li><code>framework/agent-human-operating-loop.md</code></li>
@@ -53,7 +54,20 @@ permalink: /products/ai-agent-control-plane
     <li><code>checklists/ad-readiness-checklist.md</code></li>
     <li><code>checklists/legal-ip-safety-checklist.md</code></li>
     <li><code>policies/support-refund-policy.md</code></li>
+    <li><code>packages/ai-agent-control-plane-cli/</code></li>
+    <li><code>dist/ai-agent-control-plane-1.1.0.tgz</code></li>
   </ul>
+</section>
+
+<section class="command-section">
+  <div class="section-kicker">Provisioning Kit</div>
+  <h2>Install the control plane into the agent workspace your buyer already uses.</h2>
+  <p>The included local npm package can provision project-local setup files for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent clients. It supports <code>plan</code>, <code>init</code>, and <code>doctor</code> commands and refuses to overwrite existing files unless <code>--force</code> is passed.</p>
+  <div class="proof-grid">
+    <div><strong>Plan</strong><span><code>npx --package "$PWD/dist/ai-agent-control-plane-1.1.0.tgz" ai-agent-control-plane plan --target all</code></span></div>
+    <div><strong>Install</strong><span><code>ai-agent-control-plane init --target codex,claude,copilot</code></span></div>
+    <div><strong>Check</strong><span><code>ai-agent-control-plane doctor</code></span></div>
+  </div>
 </section>
 
 <section class="command-section">
@@ -97,7 +111,7 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section principles-panel">
   <h2>Checkout</h2>
-  <p>One-time Stripe checkout for the version 1.0.0 ZIP. The product is delivered as editable Markdown files so you can copy the framework into your own GitHub Projects workflow.</p>
+  <p>One-time Stripe checkout for the version 1.1.0 ZIP. The product is delivered as editable Markdown files plus a local npm package that can install project-local instructions for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09" class="btn btn-primary">Buy for $149</a>
     <a href="mailto:ssmanji89@gmail.com?subject=AI%20Agent%20Control%20Plane%20question" class="btn btn-outline">Ask before buying</a>

@@ -31,6 +31,10 @@ candidates:
   - project board views
   - clean-room examples
   - ad and legal/IP readiness checklists
+  - platform adapter guide
+  - npx provisioning CLI
+  - Codex, Claude, Cursor, Copilot, opencode, Cline, Windsurf, Aider, Continue,
+    and generic adapter files
   exclude:
   - private board data
   - customer data
@@ -45,8 +49,8 @@ candidates:
     ip_safety: 5
   operationalization:
     package_source: _control-plane/products/ai-agent-control-plane
-    package_artifact: _control-plane/products/ai-agent-control-plane/releases/v1.0.0/ai-agent-control-plane-v1.0.0.zip
-    package_version: 1.0.0
+    package_artifact: _control-plane/products/ai-agent-control-plane/releases/v1.1.0/ai-agent-control-plane-v1.1.0.zip
+    package_version: 1.1.0
     public_page: products/ai-agent-control-plane.md
     public_page_draft: _control-plane/public-page-drafts/ai-agent-control-plane.md
     public_page_status: flagship-published

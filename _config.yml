@@ -44,10 +44,64 @@ defaults:
 # Exclude from processing
 exclude:
   - docs/
+  - _posts/
+  - assets/css/components/animations.css
+  - assets/css/components/base.css
+  - assets/css/components/blog.css
+  - assets/css/components/buttons.css
+  - assets/css/components/code.css
+  - assets/css/components/darkmode.css
+  - assets/css/components/experience.css
+  - assets/css/components/footer.css
+  - assets/css/components/hero.css
+  - assets/css/components/impact.css
+  - assets/css/components/index.css
+  - assets/css/components/layout.css
+  - assets/css/components/navigation.css
+  - assets/css/components/portfolio.css
+  - assets/css/components/print.css
+  - assets/css/components/projects.css
+  - assets/css/components/responsive.css
+  - assets/css/components/skills.css
+  - assets/css/components/stats.css
+  - assets/css/components/utilities.css
+  - assets/css/custom.css
+  - assets/css/styles.css
+  - assets/js/
+  - assets/personal-assessment-profile.md
+  - blog_automation.log
+  - blog_automation/
+  - example_usage.py
+  - HOUSTON_EVENTS_README.md
+  - HOUSTON_EVENTS_SOURCES.md
+  - accessibility-report.html
+  - bpa-opportunities.md
+  - business-process-automation.md
+  - business-process-transformation.md
+  - claude-prompts.md
+  - experience.md
   - Gemfile
   - Gemfile.lock
+  - npm-packages.md
   - node_modules
+  - personal-assessment.md
+  - philosophy.md
+  - portfolio-grid-demo.html
+  - professional-evolution.md
+  - requirements.txt
+  - resume.md
   - scripts/
+  - technical-skills.md
+  - test_blog_post.md
+  - test_event_post.md
+  - test_houston_events.py
+  - test_improved_content.py
+  - test_product_debug.py
+  - test_randomization.py
+  - test_visit_houston.py
+  - transformation-impact.md
+  - transformation-projects.md
+  - transformation-strategies.md
   - vendor/bundle/
   - vendor/cache/
   - vendor/gems/

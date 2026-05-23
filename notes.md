@@ -24,6 +24,6 @@ permalink: /notes
 
 <div class="notes-panel">
   <h2>Archive</h2>
-  <p>Older posts remain available through the legacy blog archive while this page is curated.</p>
+  <p>The older generated blog archive is offline during this cleanup. New writing will be curated here instead of published as a raw generated feed.</p>
   <a href="/blog" class="btn btn-outline">Open legacy blog archive</a>
 </div>

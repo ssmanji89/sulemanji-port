@@ -80,7 +80,7 @@ permalink: /products/ai-deliverable-pipeline-kit
 
 <section class="command-section principles-panel">
   <h2>Checkout and fulfillment</h2>
-  <p>One-time Stripe checkout. Manual v1 fulfillment sends the matching ZIP artifact recorded in the local product manifest.</p>
+  <p>One-time Stripe checkout. Private manual fulfillment sends the matching ZIP artifact recorded in the private product manifest.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/eVqbJ31kI2AG88J8CO3oA04" class="btn btn-primary">Buy for $129</a>
     <a href="mailto:ssmanji89@gmail.com" class="btn btn-outline">Ask before buying</a>

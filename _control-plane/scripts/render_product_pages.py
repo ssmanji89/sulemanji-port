@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import textwrap
 import zipfile
 from pathlib import Path
@@ -202,14 +203,43 @@ PRODUCT_PRICES = {
 }
 
 
+def public_page_inventory(op: dict) -> list[str]:
+    public_page = op.get("public_page")
+    if not public_page:
+        return []
+    page = ROOT / public_page
+    if not page.exists():
+        return []
+    page_text = page.read_text(encoding="utf-8")
+    inside_match = re.search(
+        r'<div class="section-kicker">Inside The ZIP</div>.*?<ul>(.*?)</ul>',
+        page_text,
+        flags=re.DOTALL,
+    )
+    if not inside_match:
+        return []
+    return re.findall(r"<li><code>(.*?)</code></li>", inside_match.group(1))
+
+
 def exact_files(op: dict) -> list[str]:
-    artifact_value = op.get("package_artifact")
-    if not artifact_value:
-        count = int(op.get("advertised_file_count", 0))
-        return [f"private-artifact-file-{index}" for index in range(1, count + 1)]
-    artifact = ROOT / artifact_value
-    with zipfile.ZipFile(artifact) as z:
-        return sorted(name for name in z.namelist() if not name.endswith("/"))
+    artifact_value = op.get("private_package_artifact") or op.get("package_artifact")
+    if artifact_value:
+        artifact = ROOT / artifact_value
+        if artifact.exists():
+            with zipfile.ZipFile(artifact) as z:
+                return sorted(name for name in z.namelist() if not name.endswith("/"))
+    existing_inventory = public_page_inventory(op)
+    if existing_inventory:
+        return existing_inventory
+    count = int(op.get("advertised_file_count", 0))
+    return [f"private-artifact-file-{index}" for index in range(1, count + 1)]
+
+
+def fulfillment_sentence(op: dict) -> str:
+    mode = op.get("fulfillment_mode", "")
+    if mode == "private-hermes-manual-v1":
+        return "One-time Stripe checkout. Private manual fulfillment sends the matching ZIP artifact recorded in the private product manifest."
+    return "One-time Stripe checkout. Manual fulfillment sends the matching ZIP artifact recorded in the product manifest."
 
 
 def render_page(candidate: dict) -> str:
@@ -290,7 +320,7 @@ def render_page(candidate: dict) -> str:
 
     <section class="command-section principles-panel">
       <h2>Checkout and fulfillment</h2>
-      <p>One-time Stripe checkout. Private manual fulfillment sends the matching ZIP artifact recorded in the private product manifest.</p>
+      <p>{fulfillment_sentence(op)}</p>
       <div class="command-actions">
         <a href="{op['stripe_payment_link']}" class="btn btn-primary">Buy for {price}</a>
         <a href="mailto:ssmanji89@gmail.com" class="btn btn-outline">Ask before buying</a>

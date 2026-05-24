@@ -83,7 +83,7 @@ permalink: /products
   <h2>What all packs have in common</h2>
   <ul>
     <li>One-time Stripe checkout.</li>
-    <li>Manual v1 fulfillment with a versioned ZIP artifact.</li>
+    <li>Private manual fulfillment with a versioned ZIP artifact.</li>
     <li>Markdown files you can edit, fork, or convert into your own docs.</li>
     <li>Clean-room examples, not private implementation dumps.</li>
   </ul>

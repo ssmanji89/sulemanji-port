@@ -85,7 +85,7 @@ permalink: /products/mcp-operator-field-manual
 
 <section class="command-section principles-panel">
   <h2>Checkout and fulfillment</h2>
-  <p>One-time Stripe checkout. Manual v1 fulfillment sends the matching ZIP artifact recorded in the local product manifest.</p>
+  <p>One-time Stripe checkout. Private manual fulfillment sends the matching ZIP artifact recorded in the private product manifest.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/cNi5kF8Na4IOgFfcT43oA00" class="btn btn-primary">Buy for $49</a>
     <a href="mailto:ssmanji89@gmail.com" class="btn btn-outline">Ask before buying</a>

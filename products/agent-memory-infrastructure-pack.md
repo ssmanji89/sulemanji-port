@@ -81,7 +81,7 @@ permalink: /products/agent-memory-infrastructure-pack
 
 <section class="command-section principles-panel">
   <h2>Checkout and fulfillment</h2>
-  <p>One-time Stripe checkout. Manual v1 fulfillment sends the matching ZIP artifact recorded in the local product manifest.</p>
+  <p>One-time Stripe checkout. Private manual fulfillment sends the matching ZIP artifact recorded in the private product manifest.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/4gMcN74wU8Z474Fg5g3oA01" class="btn btn-primary">Buy for $79</a>
     <a href="mailto:ssmanji89@gmail.com" class="btn btn-outline">Ask before buying</a>

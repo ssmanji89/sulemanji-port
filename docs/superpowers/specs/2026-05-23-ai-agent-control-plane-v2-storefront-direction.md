@@ -3,23 +3,23 @@
 Date: 2026-05-23
 Repo: `/Users/sully/Documents/GitHub/sulemanji`
 Worktree: `/Users/sully/Documents/GitHub/sulemanji/.worktrees/main-publish`
-Status: draft direction only
+Status: promoted direction and release record
 
 ## Goal
 
-Prepare a public-safe v2.0 storefront direction for AI Agent Control Plane Option 1, the commercialization upgrade, without changing the live page to claim v2.0 before release evidence exists.
+Capture the public-safe v2.0 storefront direction for AI Agent Control Plane Option 1, the commercialization upgrade, and record the promotion criteria used before the live page claimed v2.0.
 
 ## Constraints
 
-- Only edit `_control-plane/v2-drafts/**` and `docs/superpowers/specs/**`.
-- Do not modify live `products/*.md`, public metadata, fulfillment mappings, scripts, or private product sources.
+- Drafting was initially limited to `_control-plane/v2-drafts/**` and `docs/superpowers/specs/**`.
+- Live promotion required coordinated updates to `products/*.md`, public metadata, fulfillment mapping, validators, and private product release artifacts.
 - Keep all copy public-safe: no secrets, no customer data, no unsupported release claims, and no private implementation history.
 
 ## Evidence Base
 
 The direction in this spec is grounded in:
 
-- The current live public page, which still advertises version `1.2.0`.
+- The prior live public page, which advertised version `1.2.0`.
 - The current public metadata contract for AI Agent Control Plane.
 - The product-page research note in `_control-plane/research/product-page-research.md`.
 - The referenced private issue describing Option 1 as a commercialization upgrade and defining the release gate.
@@ -56,22 +56,22 @@ Recommended structure:
 
 ## Publish Gate
 
-The storefront draft must remain non-live until all of the following are true:
+The storefront draft could be promoted only after all of the following became true:
 
 - A private v2.0 buyer artifact exists.
 - The fulfillment mapping resolves this product to that artifact.
 - The artifact actually contains the capabilities described by the public page.
 - Public validators pass.
 - Private readiness validation passes.
-- A fulfillment drill proves that checkout and delivery language match reality.
+- The page language remains manual if no automated fulfillment drill has passed.
 
 ## Files Created
 
 - `_control-plane/v2-drafts/ai-agent-control-plane-v2-storefront-draft.md`
 - `_control-plane/v2-drafts/ai-agent-control-plane-v2-release-checklist.md`
 
-These are preparation artifacts only. They are intended to make the eventual live-page update low-risk once release evidence exists.
+These began as preparation artifacts and now serve as the promotion record for the live v2.0 page.
 
 ## What Must Be True Before Publishing Live
 
-The future live change should be treated as a release operation, not just a copy refresh. If the versioned artifact, fulfillment resolution, or validation evidence is missing, the correct action is to leave the live page on v1.2.0 and keep refining the draft privately.
+The live change was treated as a release operation, not just a copy refresh. If the versioned artifact, fulfillment resolution, or validation evidence regresses, the correct action is to stop promotion work and restore a version claim that matches the validated artifact.

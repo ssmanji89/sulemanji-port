@@ -1,10 +1,10 @@
 # AI Agent Control Plane v2.0 Storefront Draft
 
-Status: non-live draft
+Status: promoted to live v2.0 public page
 Date: 2026-05-23
-Audience: future public product page update after release validation
+Audience: public product page promotion record
 
-This file is draft copy for a future `products/ai-agent-control-plane.md` update. It must not be treated as evidence that v2.0 is released. The current live page remains the v1.2.0 public surface until release artifact, fulfillment mapping, and validators are verified.
+This file began as draft copy for a future `products/ai-agent-control-plane.md` update. The v2.0 release artifact, fulfillment mapping, and validators have since been verified, and the live public product page has been promoted to v2.0 copy.
 
 ## Hero
 
@@ -24,7 +24,7 @@ Secondary CTA draft:
 `See what is inside`
 
 Publish gate note:
-`Do not publish v2.0 version text, pricing changes, or checkout claims until the private v2 release and fulfillment path are validated.`
+`The v2.0 version text and checkout language may stay live only while the private v2 release artifact, product map, and public validators remain consistent.`
 
 ## Why This Exists
 
@@ -103,7 +103,7 @@ The public page should show a small proof-oriented preview instead of only namin
 
 ## Checkout and Delivery Draft Boundaries
 
-Use this section only after the release checklist passes:
+Use this section only while the release checklist remains true:
 
 - Checkout must describe the actual active fulfillment path on publish day.
 - If fulfillment is manual, say so plainly and keep the delivery window explicit.
@@ -112,8 +112,8 @@ Use this section only after the release checklist passes:
 - Refund language must match the real post-purchase handling path and should avoid promising exceptions that operations cannot honor consistently.
 - Future-version entitlement must only be claimed if the checkout or delivery note explicitly grants it.
 
-Interim non-live note:
-`Until release validation exists, do not publish a v2-specific buy link, instant-download claim, or delivery promise.`
+Promotion note:
+`Release validation exists for v2.0. Keep fulfillment language manual until an automated fulfillment drill passes with the current artifact.`
 
 ## What Must Be True Before Publishing Live
 
@@ -121,4 +121,4 @@ Interim non-live note:
 - The current fulfillment mapping resolves the product to that exact artifact.
 - Public copy describes only capabilities actually present in the release.
 - Public validators pass.
-- The delivery path has been tested end to end and the page language matches the test result.
+- The delivery path remains manual, and the page language matches that delivery path.

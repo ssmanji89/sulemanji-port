@@ -6,9 +6,9 @@ permalink: /products/ai-agent-control-plane
 ---
 
 <div class="command-header">
-  <p class="command-eyebrow">Flagship AI Tooling Product / Version 1.2.0 / $149</p>
+  <p class="command-eyebrow">Flagship AI Tooling Product / Version 2.0.0 / $149</p>
   <h1>AI Agent Control Plane</h1>
-  <p class="command-lede">For technical solo builders and small teams already using GitHub and coding agents: use GitHub Projects as the shared operating layer for agent tasks, human review gates, proof artifacts, launch readiness, Stripe commercialization, and project-local agent setup.</p>
+  <p class="command-lede">For technical solo builders and small teams already using GitHub and coding agents: use one control surface to coordinate agent work, human approval gates, release evidence, commercialization readiness, and buyer delivery boundaries.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09" class="btn btn-primary">Buy AI Agent Control Plane for $149</a>
     <a href="#inside" class="btn btn-outline">See what is inside</a>
@@ -46,44 +46,25 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section" id="inside">
   <div class="section-kicker">Inside the product</div>
-  <h2>Version 1.2.0 includes 30 files: framework, templates, manifests, quickstarts, examples, operations handoff, and a provisioning CLI.</h2>
-  <ul>
-    <li><code>README.md</code></li>
-    <li><code>adapters/platform-coverage-guide.md</code></li>
-    <li><code>framework/control-plane-model.md</code></li>
-    <li><code>framework/github-projects-field-schema.md</code></li>
-    <li><code>framework/agent-human-operating-loop.md</code></li>
-    <li><code>framework/product-development-lifecycle.md</code></li>
-    <li><code>quickstart/buyer-30-minute-setup.md</code></li>
-    <li><code>quickstart/github-project-bootstrap.md</code></li>
-    <li><code>manifests/control-plane.manifest.yml</code></li>
-    <li><code>manifests/field-schema.yml</code></li>
-    <li><code>templates/issue-intake-template.md</code></li>
-    <li><code>templates/agent-task-brief.md</code></li>
-    <li><code>templates/human-review-gate.md</code></li>
-    <li><code>templates/stripe-launch-readiness-card.md</code></li>
-    <li><code>templates/agent-handoff-note.md</code></li>
-    <li><code>templates/project-board-views.md</code></li>
-    <li><code>examples/sample-product-control-plane.md</code></li>
-    <li><code>examples/sample-agent-human-week.md</code></li>
-    <li><code>examples/sample-launch-readiness-review.md</code></li>
-    <li><code>operations/fulfillment-handoff.md</code></li>
-    <li><code>checklists/ad-readiness-checklist.md</code></li>
-    <li><code>checklists/legal-ip-safety-checklist.md</code></li>
-    <li><code>policies/support-refund-policy.md</code></li>
-    <li><code>packages/ai-agent-control-plane-cli/</code></li>
-    <li><code>dist/ai-agent-control-plane-1.2.0.tgz</code></li>
-  </ul>
+  <h2>Version 2.0.0 includes 26 files organized around commercialization control, proof gates, durable records, and a lightweight CLI.</h2>
+  <div class="proof-grid">
+    <div><strong>Control Plane Core</strong><span>GitHub issue graph, control-plane issue template, and manifest-driven inspection for release work.</span></div>
+    <div><strong>Human Gates</strong><span>Decision logs and supervision guidance for release readiness, public claims, fulfillment, and refunds.</span></div>
+    <div><strong>Hermes/Telegram Layer</strong><span>Supervised operating pattern for summaries and approvals without autonomous buyer-facing action.</span></div>
+    <div><strong>Commercialization Layer</strong><span>Fulfillment, support, marketing, and finance operations templates for paid product handling.</span></div>
+    <div><strong>Knowledge/Evidence Layer</strong><span>Append-only event ledger and business knowledge base templates for durable operating memory.</span></div>
+    <div><strong>CLI</strong><span><code>status</code>, <code>init</code>, <code>validate</code>, <code>inspect</code>, <code>plan</code>, <code>proof</code>, <code>handoff</code>, and <code>doctor</code>.</span></div>
+  </div>
 </section>
 
 <section class="command-section">
   <div class="section-kicker">Provisioning Kit</div>
   <h2>Install the control plane into the agent workspace your buyer already uses.</h2>
-  <p>The included local npm package can provision project-local setup files for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent clients. It supports <code>plan</code>, <code>init</code>, and <code>doctor</code> commands and refuses to overwrite existing files unless <code>--force</code> is passed.</p>
+  <p>The included local npm package supports JSON-first inspection, validation, planning, proof, handoff, and setup-health checks for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces. It keeps writes dry-run oriented and renders comments before posting.</p>
   <div class="proof-grid">
-    <div><strong>Plan</strong><span><code>npx --package "$PWD/dist/ai-agent-control-plane-1.2.0.tgz" ai-agent-control-plane plan --target all</code></span></div>
-    <div><strong>Install</strong><span><code>ai-agent-control-plane init --target codex,claude,copilot</code></span></div>
-    <div><strong>Check</strong><span><code>ai-agent-control-plane doctor</code></span></div>
+    <div><strong>Inspect</strong><span><code>npx --package "$PWD/dist/ai-agent-control-plane-2.0.0.tgz" agent-control-plane inspect --manifest package.manifest.yml</code></span></div>
+    <div><strong>Plan</strong><span><code>agent-control-plane plan --issue 123 --summary "Prepare release gate"</code></span></div>
+    <div><strong>Check</strong><span><code>agent-control-plane doctor</code></span></div>
   </div>
 </section>
 
@@ -101,7 +82,7 @@ permalink: /products/ai-agent-control-plane
 <section class="command-section">
   <div class="section-kicker">Operating Loop</div>
   <h2>Agents move work. Humans own acceptance.</h2>
-  <p>The package gives you a repeatable loop: shape the work, prepare the agent brief, dispatch the agent, record proof, run a human review gate, harden the artifact, and only then move to launch. The point is not to slow the agent down. The point is to stop agent work from becoming unverifiable product debt.</p>
+  <p>The package gives you a repeatable loop: shape the work, prepare the agent brief, dispatch the agent, record proof, run a human gate, harden the artifact, and only then move to launch, fulfillment, or public claims. The point is not to slow the agent down. The point is to stop agent work from becoming unverifiable product debt or uncontrolled buyer operations.</p>
 </section>
 
 <section class="command-section">
@@ -130,7 +111,7 @@ permalink: /products/ai-agent-control-plane
   <div class="section-kicker">Delivery and support</div>
   <h2>Manual fulfillment, clear scope, and buyer-owned implementation.</h2>
   <ul>
-    <li>Delivery is manual email fulfillment of the current version 1.2.0 ZIP after Stripe payment confirmation.</li>
+    <li>Delivery is manual email fulfillment of the current version 2.0.0 ZIP after Stripe payment confirmation.</li>
     <li>Expected delivery window is one business day while the fulfillment path remains manual.</li>
     <li>Included support covers package access, broken-file replacement, and clarification of the included templates.</li>
     <li>Not included: custom setup, private implementation, third-party platform support, custom GitHub Project administration, or consulting.</li>
@@ -141,7 +122,7 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section principles-panel">
   <h2>Checkout</h2>
-  <p>One-time Stripe checkout for the version 1.2.0 ZIP. Delivery is manual email fulfillment after payment confirmation. The product is delivered as editable Markdown files plus a local npm package that can install project-local instructions for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces.</p>
+  <p>One-time Stripe checkout for the version 2.0.0 ZIP. Delivery is manual email fulfillment after payment confirmation. The product is delivered as editable Markdown files plus a local npm package for inspecting commercialization assets, validating issue records, and rendering plan, proof, and handoff comments for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09" class="btn btn-primary">Buy for $149</a>
     <a href="#ask-before-buying" class="btn btn-outline">Ask before buying</a>

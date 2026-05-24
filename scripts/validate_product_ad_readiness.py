@@ -8,8 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PRODUCT_ID = "ai-agent-control-plane"
-VERSION = "1.2.0"
-FILE_COUNT = "30"
+VERSION = "2.0.0"
+FILE_COUNT = "26"
 PAGE = ROOT / "products" / f"{PRODUCT_ID}.md"
 PUBLIC_METADATA = ROOT / "_control-plane" / "public-product-metadata" / f"{PRODUCT_ID}.yml"
 PRIVATE_ARTIFACT_DIRS = [
@@ -30,6 +30,11 @@ REQUIRED_PAGE_PHRASES = [
     "What you can build this week",
     "Inside the product",
     "Provisioning Kit",
+    "Control Plane Core",
+    "Human Gates",
+    "Hermes/Telegram Layer",
+    "Commercialization Layer",
+    "Knowledge/Evidence Layer",
     "Codex",
     "Claude",
     "Cursor",

@@ -48,18 +48,18 @@ candidates:
     cleanup_effort: 2
     ip_safety: 5
   operationalization:
-    package_source: _control-plane/products/ai-agent-control-plane
-    package_artifact: _control-plane/products/ai-agent-control-plane/releases/v1.1.0/ai-agent-control-plane-v1.1.0.zip
+    private_artifact_repo: ssmanji89/sulemanji-ip-products
+    private_package_source: products/ai-agent-control-plane
+    private_package_artifact: products/ai-agent-control-plane/releases/v1.1.0/ai-agent-control-plane-v1.1.0.zip
     package_version: 1.1.0
+    advertised_file_count: 24
     public_page: products/ai-agent-control-plane.md
-    public_page_draft: _control-plane/public-page-drafts/ai-agent-control-plane.md
     public_page_status: flagship-published
     stripe_product_id: prod_UZY0qM8Os33GBv
     stripe_price_id: price_1TaOuMP7HsCzcZI7FKuqIt9x
     stripe_payment_link_id: plink_1TaOuMP7HsCzcZI7VrphCejK
     stripe_payment_link: https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09
-    fulfillment_log_template: _control-plane/fulfillment/ai-agent-control-plane-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live Stripe product, price, and payment link created; secret keys
       remain in private env surfaces
 - id: mcp-operator-field-manual
@@ -83,7 +83,7 @@ candidates:
   - tool schema review checklist
   exclude:
   - organization MCP servers
-  - MSP vendor adapters
+  - private vendor adapters
   - customer data
   - copied third-party code without license review
   scores:
@@ -293,7 +293,7 @@ candidates:
   - approval-gated routing pattern
   exclude:
   - call recordings
-  - MSP profiles
+  - private organization profiles
   - customer routing targets
   - private transcripts
   scores:
@@ -334,9 +334,9 @@ candidates:
   - public-safety checklist
   - memory checkpoint recipe
   exclude:
-  - GitHub Project 4 internals
-  - service ticket data
-  - client names
+  - private board internals
+  - private work records
+  - private customer identifiers
   - organization governance details
   scores:
     evidence: 5

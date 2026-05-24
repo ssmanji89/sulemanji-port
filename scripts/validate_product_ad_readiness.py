@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import re
 import sys
-import zipfile
 from pathlib import Path
 
 
@@ -30,31 +29,6 @@ REQUIRED_PAGE_PHRASES = [
     "opencode",
     "Preview",
     "Buy",
-]
-
-REQUIRED_PACKAGE_FILES = [
-    "README.md",
-    "adapters/platform-coverage-guide.md",
-    "framework/control-plane-model.md",
-    "framework/github-projects-field-schema.md",
-    "framework/agent-human-operating-loop.md",
-    "framework/product-development-lifecycle.md",
-    "templates/issue-intake-template.md",
-    "templates/agent-task-brief.md",
-    "templates/human-review-gate.md",
-    "templates/stripe-launch-readiness-card.md",
-    "templates/agent-handoff-note.md",
-    "templates/project-board-views.md",
-    "examples/sample-product-control-plane.md",
-    "examples/sample-agent-human-week.md",
-    "checklists/ad-readiness-checklist.md",
-    "checklists/legal-ip-safety-checklist.md",
-    "policies/support-refund-policy.md",
-    "packages/ai-agent-control-plane-cli/package.json",
-    "packages/ai-agent-control-plane-cli/src/cli.js",
-    "packages/ai-agent-control-plane-cli/src/provisioner.js",
-    "packages/ai-agent-control-plane-cli/test/provisioner.test.js",
-    "dist/ai-agent-control-plane-1.1.0.tgz",
 ]
 
 FORBIDDEN_TERMS = [
@@ -95,41 +69,17 @@ def check_page() -> None:
         fail("product page needs at least two primary checkout CTAs")
 
 
-def check_package() -> None:
-    for relative in REQUIRED_PACKAGE_FILES:
-        path = PACKAGE / relative
-        if relative.endswith(".tgz"):
-            if not path.exists():
-                fail(f"missing required file: {path.relative_to(ROOT)}")
-            continue
-        text = read(path)
-        check_no_forbidden(path, text)
-        if relative.endswith(".md") and len(text.split()) < 120 and not relative.startswith("policies/"):
-            fail(f"{path.relative_to(ROOT)} is too thin for an advertisable product")
-
-
-def check_zip() -> None:
-    if not ZIP.exists():
-        fail(f"missing package zip: {ZIP.relative_to(ROOT)}")
-    with zipfile.ZipFile(ZIP) as archive:
-        names = set(archive.namelist())
-        missing = [name for name in REQUIRED_PACKAGE_FILES if name not in names]
-        if missing:
-            fail(f"zip missing files: {', '.join(missing)}")
-        for name in names:
-            if not name.endswith((".md", ".js", ".json")):
-                continue
-            text = archive.read(name).decode("utf-8")
-            for pattern in FORBIDDEN_TERMS:
-                if re.search(pattern, text, flags=re.IGNORECASE):
-                    fail(f"zip file {name} matched forbidden term: {pattern}")
+def check_private_artifacts_absent() -> None:
+    if PACKAGE.exists():
+        fail(f"private package source must not live in public repo: {PACKAGE.relative_to(ROOT)}")
+    if ZIP.exists():
+        fail(f"private package zip must not live in public repo: {ZIP.relative_to(ROOT)}")
 
 
 def main() -> None:
     check_page()
-    check_package()
-    check_zip()
-    print("PASS: AI Agent Control Plane ad-readiness validation")
+    check_private_artifacts_absent()
+    print("PASS: AI Agent Control Plane storefront validation")
 
 
 if __name__ == "__main__":

@@ -298,7 +298,7 @@ def render_page(candidate: dict) -> str:
 def render_index(candidates: list[dict]) -> str:
     flagship = next(c for c in candidates if c["id"] == "ai-agent-control-plane")
     flagship_op = flagship["operationalization"]
-    flagship_files = exact_files(flagship_op)
+    flagship_file_count = flagship_op["advertised_file_count"]
     cards = []
     for c in candidates:
         if c["id"] in CUSTOM_PRODUCT_PAGES:
@@ -334,7 +334,7 @@ permalink: /products
 <section class="command-section principles-panel">
   <div class="section-kicker">Primary Offer</div>
   <h2>AI Agent Control Plane</h2>
-  <p>A GitHub Projects based operating framework for coordinating AI agents and human reviewers from product idea through Stripe launch readiness. Version {flagship_op['package_version']} includes {len(flagship_files)} files: field schema, operating loop, lifecycle, templates, examples, checklists, support policy, platform adapter guide, and a local npm provisioning CLI.</p>
+  <p>A GitHub Projects based operating framework for coordinating AI agents and human reviewers from product idea through Stripe launch readiness. Version {flagship_op['package_version']} includes {flagship_file_count} files: field schema, operating loop, lifecycle, templates, examples, checklists, support policy, platform adapter guide, and a local npm provisioning CLI.</p>
   <div class="command-actions">
     <a href="/products/ai-agent-control-plane" class="btn btn-primary">See the product</a>
   </div>

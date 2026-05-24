@@ -65,12 +65,6 @@ permalink: /products
   <a href="/products/local-first-meeting-intelligence-blueprint" class="btn btn-outline">See contents</a>
 </div>
 <div>
-  <strong><a href="/products/ai-work-control-plane-playbook">AI Work Control Plane Playbook</a></strong>
-  <span>Older supporting playbook. The flagship offer is now AI Agent Control Plane.</span>
-  <small>Superseded by the 16-file flagship product / $149</small>
-  <a href="/products/ai-agent-control-plane" class="btn btn-outline">View flagship</a>
-</div>
-<div>
   <strong><a href="/products/browser-native-agent-workspace-guide">Browser-Native Agent Workspace Design Guide</a></strong>
   <span>Agent workspaces often hide too much state: tools, browser automation, context budget, rollback, and admin actions are hard to inspect.</span>
   <small>5 files in the ZIP / $49 / live Stripe checkout</small>

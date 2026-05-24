@@ -6,7 +6,7 @@ permalink: /products/ai-agent-control-plane
 ---
 
 <div class="command-header">
-  <p class="command-eyebrow">Flagship AI Tooling Product / Version 1.1.0 / $149</p>
+  <p class="command-eyebrow">Flagship AI Tooling Product / Version 1.2.0 / $149</p>
   <h1>AI Agent Control Plane</h1>
   <p class="command-lede">Use GitHub Projects as the shared operating layer where agents and humans develop products in harmony: ideas, agent tasks, human review gates, proof artifacts, launch readiness, Stripe commercialization, and project-local agent setup in one inspectable workflow.</p>
   <div class="command-actions">
@@ -35,7 +35,7 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section" id="inside">
   <div class="section-kicker">Inside the product</div>
-  <h2>Version 1.1.0 includes 24 files: framework, templates, examples, and a provisioning CLI.</h2>
+  <h2>Version 1.2.0 includes 30 files: framework, templates, manifests, quickstarts, examples, operations handoff, and a provisioning CLI.</h2>
   <ul>
     <li><code>README.md</code></li>
     <li><code>adapters/platform-coverage-guide.md</code></li>
@@ -43,6 +43,10 @@ permalink: /products/ai-agent-control-plane
     <li><code>framework/github-projects-field-schema.md</code></li>
     <li><code>framework/agent-human-operating-loop.md</code></li>
     <li><code>framework/product-development-lifecycle.md</code></li>
+    <li><code>quickstart/buyer-30-minute-setup.md</code></li>
+    <li><code>quickstart/github-project-bootstrap.md</code></li>
+    <li><code>manifests/control-plane.manifest.yml</code></li>
+    <li><code>manifests/field-schema.yml</code></li>
     <li><code>templates/issue-intake-template.md</code></li>
     <li><code>templates/agent-task-brief.md</code></li>
     <li><code>templates/human-review-gate.md</code></li>
@@ -51,11 +55,13 @@ permalink: /products/ai-agent-control-plane
     <li><code>templates/project-board-views.md</code></li>
     <li><code>examples/sample-product-control-plane.md</code></li>
     <li><code>examples/sample-agent-human-week.md</code></li>
+    <li><code>examples/sample-launch-readiness-review.md</code></li>
+    <li><code>operations/fulfillment-handoff.md</code></li>
     <li><code>checklists/ad-readiness-checklist.md</code></li>
     <li><code>checklists/legal-ip-safety-checklist.md</code></li>
     <li><code>policies/support-refund-policy.md</code></li>
     <li><code>packages/ai-agent-control-plane-cli/</code></li>
-    <li><code>dist/ai-agent-control-plane-1.1.0.tgz</code></li>
+    <li><code>dist/ai-agent-control-plane-1.2.0.tgz</code></li>
   </ul>
 </section>
 
@@ -64,7 +70,7 @@ permalink: /products/ai-agent-control-plane
   <h2>Install the control plane into the agent workspace your buyer already uses.</h2>
   <p>The included local npm package can provision project-local setup files for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent clients. It supports <code>plan</code>, <code>init</code>, and <code>doctor</code> commands and refuses to overwrite existing files unless <code>--force</code> is passed.</p>
   <div class="proof-grid">
-    <div><strong>Plan</strong><span><code>npx --package "$PWD/dist/ai-agent-control-plane-1.1.0.tgz" ai-agent-control-plane plan --target all</code></span></div>
+    <div><strong>Plan</strong><span><code>npx --package "$PWD/dist/ai-agent-control-plane-1.2.0.tgz" ai-agent-control-plane plan --target all</code></span></div>
     <div><strong>Install</strong><span><code>ai-agent-control-plane init --target codex,claude,copilot</code></span></div>
     <div><strong>Check</strong><span><code>ai-agent-control-plane doctor</code></span></div>
   </div>
@@ -111,7 +117,7 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section principles-panel">
   <h2>Checkout</h2>
-  <p>One-time Stripe checkout for the version 1.1.0 ZIP. The product is delivered as editable Markdown files plus a local npm package that can install project-local instructions for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces.</p>
+  <p>One-time Stripe checkout for the version 1.2.0 ZIP. The product is delivered as editable Markdown files plus a local npm package that can install project-local instructions for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09" class="btn btn-primary">Buy for $149</a>
     <a href="mailto:ssmanji89@gmail.com?subject=AI%20Agent%20Control%20Plane%20question" class="btn btn-outline">Ask before buying</a>

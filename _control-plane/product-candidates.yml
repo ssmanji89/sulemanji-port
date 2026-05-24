@@ -50,9 +50,9 @@ candidates:
   operationalization:
     private_artifact_repo: ssmanji89/sulemanji-ip-products
     private_package_source: products/ai-agent-control-plane
-    private_package_artifact: products/ai-agent-control-plane/releases/v1.1.0/ai-agent-control-plane-v1.1.0.zip
-    package_version: 1.1.0
-    advertised_file_count: 24
+    private_package_artifact: products/ai-agent-control-plane/releases/v1.2.0/ai-agent-control-plane-v1.2.0.zip
+    package_version: 1.2.0
+    advertised_file_count: 30
     public_page: products/ai-agent-control-plane.md
     public_page_status: flagship-published
     stripe_product_id: prod_UZY0qM8Os33GBv

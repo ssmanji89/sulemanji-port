@@ -1,20 +1,19 @@
 # AI Tooling Productization Control Plane
 
-This folder is the local control plane for turning existing AI tooling work into public-safe, Stripe-sellable documentation and deliverable packs for `www.sulemanji.com`.
+This folder is the public-safe metadata control plane for turning existing AI tooling work into Stripe-sellable documentation and deliverable packs for `www.sulemanji.com`.
 
-It is intentionally stored under `_control-plane/` and excluded in `_config.yml` so it does not become a public route during Jekyll builds.
+It is intentionally stored under `_control-plane/` and excluded in `_config.yml` so it does not become a public route during Jekyll builds. Because this repository is public, this directory must not contain buyer ZIPs, package source, fulfillment logs, Stripe result payloads, unpublished product drafts, or private implementation details.
 
 ## Current Artifacts
 
 - `ai-tooling-productization-audit.md` - scored audit of productizable AI tooling patterns from local projects.
-- `product-candidates.yml` - structured candidate register for future automation, site copy, and Stripe product setup.
+- `product-candidates.yml` - public-safe candidate register for site copy and Stripe/public metadata.
 - `operating-model.md` - how to keep the control plane current without leaking organization/client-specific details.
 - `access-inventory.md` - sanitized access inventory for GitHub Pages, Stripe, Cloudflare, and Hermes boundaries.
-- `launch/` - local launch checklists and promotion gates.
-- `fulfillment/` - manual fulfillment logs and templates. Do not record payment card data or secrets.
-- `public-page-drafts/` - unpublished page drafts that can later move into public Jekyll routes.
-- `products/` - local product package sources and fulfillment checklists.
-- `scripts/` - local automation helpers. Scripts must default to dry-run for external systems.
+- `public-product-metadata/` - explicit public metadata contracts for live products.
+- `scripts/` - public-safe rendering helpers. Scripts must not create buyer artifacts in this repository.
+
+Private product artifacts now live in `ssmanji89/sulemanji-ip-products`.
 
 ## Decision Rules
 

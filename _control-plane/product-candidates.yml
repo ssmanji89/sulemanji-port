@@ -93,21 +93,16 @@ candidates:
     cleanup_effort: 2
     ip_safety: 4
   operationalization:
-    package_source: _control-plane/products/mcp-operator-field-manual
-    package_artifact: _control-plane/products/mcp-operator-field-manual/releases/v0.1.0/mcp-operator-field-manual-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/mcp-operator-field-manual
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/mcp-operator-field-manual/releases/v0.1.0/mcp-operator-field-manual-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/mcp-operator-field-manual.md
-    public_page_draft: _control-plane/public-page-drafts/mcp-operator-field-manual.md
     public_page_status: local-promoted
     stripe_product_id: prod_UZVk0XUdBoriFI
     stripe_price_id: price_1TaMj6P7HsCzcZI7KVrJfddK
     stripe_payment_link_id: plink_1TaMj7P7HsCzcZI71vZVKNCD
     stripe_payment_link: https://buy.stripe.com/cNi5kF8Na4IOgFfcT43oA00
-    stripe_setup_runbook: _control-plane/products/mcp-operator-field-manual/stripe/setup-runbook.md
-    launch_checklist: _control-plane/launch/mcp-operator-field-manual-launch-checklist.md
-    public_promotion_runbook: _control-plane/products/mcp-operator-field-manual/public/promotion-runbook.md
-    fulfillment_log_template: _control-plane/fulfillment/manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: agent-memory-infrastructure-pack
@@ -138,18 +133,16 @@ candidates:
     cleanup_effort: 3
     ip_safety: 4
   operationalization:
-    package_source: _control-plane/products/agent-memory-infrastructure-pack
-    package_artifact: _control-plane/products/agent-memory-infrastructure-pack/releases/v0.1.0/agent-memory-infrastructure-pack-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/agent-memory-infrastructure-pack
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/agent-memory-infrastructure-pack/releases/v0.1.0/agent-memory-infrastructure-pack-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/agent-memory-infrastructure-pack.md
-    public_page_draft: _control-plane/public-page-drafts/agent-memory-infrastructure-pack.md
     public_page_status: published
     stripe_product_id: prod_UZXLDvruSOULXC
     stripe_price_id: price_1TaOGRP7HsCzcZI7vvYLsxuE
     stripe_payment_link_id: plink_1TaOGRP7HsCzcZI7P3XXoMgZ
     stripe_payment_link: https://buy.stripe.com/4gMcN74wU8Z474Fg5g3oA01
-    fulfillment_log_template: _control-plane/fulfillment/agent-memory-infrastructure-pack-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: agent-anti-loop-context-compression-kit
@@ -181,18 +174,16 @@ candidates:
     cleanup_effort: 3
     ip_safety: 5
   operationalization:
-    package_source: _control-plane/products/agent-anti-loop-context-compression-kit
-    package_artifact: _control-plane/products/agent-anti-loop-context-compression-kit/releases/v0.1.0/agent-anti-loop-context-compression-kit-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/agent-anti-loop-context-compression-kit
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/agent-anti-loop-context-compression-kit/releases/v0.1.0/agent-anti-loop-context-compression-kit-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/agent-anti-loop-context-compression-kit.md
-    public_page_draft: _control-plane/public-page-drafts/agent-anti-loop-context-compression-kit.md
     public_page_status: published
     stripe_product_id: prod_UZXLb3JdOuBYYu
     stripe_price_id: price_1TaOGSP7HsCzcZI7oI8u8Ud4
     stripe_payment_link_id: plink_1TaOGTP7HsCzcZI7GXmEg6S8
     stripe_payment_link: https://buy.stripe.com/8x25kFe7u4IOcoZ1am3oA02
-    fulfillment_log_template: _control-plane/fulfillment/agent-anti-loop-context-compression-kit-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: agent-evaluation-prompt-regression-pack
@@ -223,18 +214,16 @@ candidates:
     cleanup_effort: 4
     ip_safety: 3
   operationalization:
-    package_source: _control-plane/products/agent-evaluation-prompt-regression-pack
-    package_artifact: _control-plane/products/agent-evaluation-prompt-regression-pack/releases/v0.1.0/agent-evaluation-prompt-regression-pack-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/agent-evaluation-prompt-regression-pack
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/agent-evaluation-prompt-regression-pack/releases/v0.1.0/agent-evaluation-prompt-regression-pack-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/agent-evaluation-prompt-regression-pack.md
-    public_page_draft: _control-plane/public-page-drafts/agent-evaluation-prompt-regression-pack.md
     public_page_status: published
     stripe_product_id: prod_UZXLsS6ZxUP2zr
     stripe_price_id: price_1TaOGUP7HsCzcZI7l5j8bjwB
     stripe_payment_link_id: plink_1TaOGVP7HsCzcZI7J37Itn3a
     stripe_payment_link: https://buy.stripe.com/4gM5kF7J65MSdt39GS3oA03
-    fulfillment_log_template: _control-plane/fulfillment/agent-evaluation-prompt-regression-pack-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: ai-deliverable-pipeline-kit
@@ -263,18 +252,16 @@ candidates:
     cleanup_effort: 4
     ip_safety: 2
   operationalization:
-    package_source: _control-plane/products/ai-deliverable-pipeline-kit
-    package_artifact: _control-plane/products/ai-deliverable-pipeline-kit/releases/v0.1.0/ai-deliverable-pipeline-kit-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/ai-deliverable-pipeline-kit
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/ai-deliverable-pipeline-kit/releases/v0.1.0/ai-deliverable-pipeline-kit-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/ai-deliverable-pipeline-kit.md
-    public_page_draft: _control-plane/public-page-drafts/ai-deliverable-pipeline-kit.md
     public_page_status: published
     stripe_product_id: prod_UZXL2qyDLX1e3l
     stripe_price_id: price_1TaOGWP7HsCzcZI7Iw8aJUxl
     stripe_payment_link_id: plink_1TaOGWP7HsCzcZI7WCr6qeNF
     stripe_payment_link: https://buy.stripe.com/eVqbJ31kI2AG88J8CO3oA04
-    fulfillment_log_template: _control-plane/fulfillment/ai-deliverable-pipeline-kit-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: local-first-meeting-intelligence-blueprint
@@ -303,18 +290,16 @@ candidates:
     cleanup_effort: 4
     ip_safety: 3
   operationalization:
-    package_source: _control-plane/products/local-first-meeting-intelligence-blueprint
-    package_artifact: _control-plane/products/local-first-meeting-intelligence-blueprint/releases/v0.1.0/local-first-meeting-intelligence-blueprint-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/local-first-meeting-intelligence-blueprint
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/local-first-meeting-intelligence-blueprint/releases/v0.1.0/local-first-meeting-intelligence-blueprint-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/local-first-meeting-intelligence-blueprint.md
-    public_page_draft: _control-plane/public-page-drafts/local-first-meeting-intelligence-blueprint.md
     public_page_status: published
     stripe_product_id: prod_UZXLu1M7Md7Elz
     stripe_price_id: price_1TaOGXP7HsCzcZI7TlhM29XO
     stripe_payment_link_id: plink_1TaOGYP7HsCzcZI7qGEzCPco
     stripe_payment_link: https://buy.stripe.com/8x27sN6F2ejo74F6uG3oA05
-    fulfillment_log_template: _control-plane/fulfillment/local-first-meeting-intelligence-blueprint-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: ai-work-control-plane-playbook
@@ -345,18 +330,16 @@ candidates:
     cleanup_effort: 5
     ip_safety: 2
   operationalization:
-    package_source: _control-plane/products/ai-work-control-plane-playbook
-    package_artifact: _control-plane/products/ai-work-control-plane-playbook/releases/v0.1.0/ai-work-control-plane-playbook-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/ai-work-control-plane-playbook
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/ai-work-control-plane-playbook/releases/v0.1.0/ai-work-control-plane-playbook-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/ai-work-control-plane-playbook.md
-    public_page_draft: _control-plane/public-page-drafts/ai-work-control-plane-playbook.md
     public_page_status: published
     stripe_product_id: prod_UZXLRgmwIsH4np
     stripe_price_id: price_1TaOGZP7HsCzcZI774UyHh64
     stripe_payment_link_id: plink_1TaOGZP7HsCzcZI7NoGcRZaU
     stripe_payment_link: https://buy.stripe.com/4gMcN79Re6QWfBb8CO3oA06
-    fulfillment_log_template: _control-plane/fulfillment/ai-work-control-plane-playbook-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: browser-native-agent-workspace-guide
@@ -385,18 +368,16 @@ candidates:
     cleanup_effort: 5
     ip_safety: 3
   operationalization:
-    package_source: _control-plane/products/browser-native-agent-workspace-guide
-    package_artifact: _control-plane/products/browser-native-agent-workspace-guide/releases/v0.1.0/browser-native-agent-workspace-guide-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/browser-native-agent-workspace-guide
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/browser-native-agent-workspace-guide/releases/v0.1.0/browser-native-agent-workspace-guide-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/browser-native-agent-workspace-guide.md
-    public_page_draft: _control-plane/public-page-drafts/browser-native-agent-workspace-guide.md
     public_page_status: published
     stripe_product_id: prod_UZXLsykum4Uaf7
     stripe_price_id: price_1TaOGaP7HsCzcZI7GUVdnmua
     stripe_payment_link_id: plink_1TaOGbP7HsCzcZI7tCgU89CM
     stripe_payment_link: https://buy.stripe.com/6oU3cxd3q1wC1KlaKW3oA07
-    fulfillment_log_template: _control-plane/fulfillment/browser-native-agent-workspace-guide-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces
 - id: agent-skill-system-builder-pack
@@ -427,17 +408,15 @@ candidates:
     cleanup_effort: 3
     ip_safety: 4
   operationalization:
-    package_source: _control-plane/products/agent-skill-system-builder-pack
-    package_artifact: _control-plane/products/agent-skill-system-builder-pack/releases/v0.1.0/agent-skill-system-builder-pack-v0.1.0.zip
+    private_package_source: archived-public-control-plane/2026-05-24/products/agent-skill-system-builder-pack
+    private_package_artifact: archived-public-control-plane/2026-05-24/products/agent-skill-system-builder-pack/releases/v0.1.0/agent-skill-system-builder-pack-v0.1.0.zip
     package_version: 0.1.0
     public_page: products/agent-skill-system-builder-pack.md
-    public_page_draft: _control-plane/public-page-drafts/agent-skill-system-builder-pack.md
     public_page_status: published
     stripe_product_id: prod_UZXLNi4pM9SoYn
     stripe_price_id: price_1TaOGcP7HsCzcZI7YFx0QY0e
     stripe_payment_link_id: plink_1TaOGcP7HsCzcZI712XGR9GF
     stripe_payment_link: https://buy.stripe.com/eVq8wR8Na7V0gFf6uG3oA08
-    fulfillment_log_template: _control-plane/fulfillment/agent-skill-system-builder-pack-manual-fulfillment-log-template.yml
-    fulfillment_mode: manual-v1
+    fulfillment_mode: private-hermes-manual-v1
     access_status: live stripe product, price, and payment link created; secret keys
       remain in Hermes env surfaces

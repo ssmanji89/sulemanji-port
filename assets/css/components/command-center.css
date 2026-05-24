@@ -494,6 +494,43 @@ ul {
   padding: var(--space-4);
 }
 
+.intake-form {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 920px;
+}
+
+.intake-form label {
+  color: var(--ink);
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-bottom: var(--space-1);
+}
+
+.intake-form input,
+.intake-form select,
+.intake-form textarea {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font: inherit;
+  min-height: 44px;
+  padding: 0.75rem;
+  width: 100%;
+}
+
+.intake-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.intake-form__wide {
+  grid-column: 1 / -1;
+}
+
 .proof-grid strong,
 .audience-grid strong {
   display: block;
@@ -579,7 +616,8 @@ ul {
   .lane-summary-grid,
   .proof-grid,
   .audience-grid,
-  .system-lane__grid {
+  .system-lane__grid,
+  .intake-form {
     grid-template-columns: 1fr;
   }
 }

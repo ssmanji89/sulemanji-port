@@ -1,0 +1,30 @@
+id: ai-agent-control-plane
+title: AI Agent Control Plane
+version: 1.2.0
+price_usd: 149
+public_page: https://www.sulemanji.com/products/ai-agent-control-plane
+stripe_payment_link: https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09
+public_control_plane:
+  repository: ssmanji89/sulemanji-port
+  issue_labels:
+    - question
+    - ai-agent-control-plane
+    - buyer-inquiry
+  issue_template: ai-agent-control-plane-question.md
+public_artifact_summary:
+  file_count: 30
+  includes:
+    - framework
+    - templates
+    - manifests
+    - quickstarts
+    - examples
+    - fulfillment handoff
+    - provisioning CLI
+private_artifact_source:
+  repository: ssmanji89/sulemanji-ip-products
+  release_path: products/ai-agent-control-plane/releases/v1.2.0
+public_boundaries:
+  - Static storefront and public metadata only.
+  - Buyer artifacts stay private until paid fulfillment.
+  - Public issues must not include secrets, customer data, private repository content, or sensitive operational history.

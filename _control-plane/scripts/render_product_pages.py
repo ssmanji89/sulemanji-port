@@ -203,7 +203,11 @@ PRODUCT_PRICES = {
 
 
 def exact_files(op: dict) -> list[str]:
-    artifact = ROOT / op["package_artifact"]
+    artifact_value = op.get("package_artifact")
+    if not artifact_value:
+        count = int(op.get("advertised_file_count", 0))
+        return [f"private-artifact-file-{index}" for index in range(1, count + 1)]
+    artifact = ROOT / artifact_value
     with zipfile.ZipFile(artifact) as z:
         return sorted(name for name in z.namelist() if not name.endswith("/"))
 
@@ -286,7 +290,7 @@ def render_page(candidate: dict) -> str:
 
     <section class="command-section principles-panel">
       <h2>Checkout and fulfillment</h2>
-      <p>One-time Stripe checkout. Manual v1 fulfillment sends the matching ZIP artifact recorded in the local product manifest.</p>
+      <p>One-time Stripe checkout. Private manual fulfillment sends the matching ZIP artifact recorded in the private product manifest.</p>
       <div class="command-actions">
         <a href="{op['stripe_payment_link']}" class="btn btn-primary">Buy for {price}</a>
         <a href="mailto:ssmanji89@gmail.com" class="btn btn-outline">Ask before buying</a>
@@ -352,7 +356,7 @@ permalink: /products
   <h2>What all packs have in common</h2>
   <ul>
     <li>One-time Stripe checkout.</li>
-    <li>Manual v1 fulfillment with a versioned ZIP artifact.</li>
+    <li>Private manual fulfillment with a versioned ZIP artifact.</li>
     <li>Markdown files you can edit, fork, or convert into your own docs.</li>
     <li>Clean-room examples, not private implementation dumps.</li>
   </ul>
@@ -368,8 +372,10 @@ for candidate in data["candidates"]:
     page = ROOT / candidate["operationalization"]["public_page"]
     content = render_page(candidate)
     page.write_text(content, encoding="utf-8")
-    draft = ROOT / candidate["operationalization"]["public_page_draft"]
-    draft.parent.mkdir(parents=True, exist_ok=True)
-    draft.write_text(content, encoding="utf-8")
+    draft_path = candidate["operationalization"].get("public_page_draft")
+    if draft_path:
+        draft = ROOT / draft_path
+        draft.parent.mkdir(parents=True, exist_ok=True)
+        draft.write_text(content, encoding="utf-8")
 (ROOT / "products/index.md").write_text(render_index(data["candidates"]), encoding="utf-8")
 print("PASS: rendered richer product pages")

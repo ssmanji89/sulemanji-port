@@ -11,6 +11,9 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -20,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -36,13 +39,19 @@ jobs:
       - name: Install dependencies
         run: bundle install
 
+      - name: Validate command center
+        run: python3 scripts/validate_command_center.py
+
+      - name: Validate product storefront
+        run: python3 scripts/validate_product_ad_readiness.py
+
       - name: Build with Jekyll
         run: bundle exec jekyll build --destination ./_site
         env:
           JEKYLL_ENV: production
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./_site
 

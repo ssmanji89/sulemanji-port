@@ -8,9 +8,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PRODUCT_ID = "ai-agent-control-plane"
+VERSION = "1.2.0"
+FILE_COUNT = "30"
 PAGE = ROOT / "products" / f"{PRODUCT_ID}.md"
-PACKAGE = ROOT / "_control-plane" / "products" / PRODUCT_ID / "releases" / "v1.1.0" / "package"
-ZIP = ROOT / "_control-plane" / "products" / PRODUCT_ID / "releases" / "v1.1.0" / f"{PRODUCT_ID}-v1.1.0.zip"
+PUBLIC_METADATA = ROOT / "_control-plane" / "public-product-metadata" / f"{PRODUCT_ID}.yml"
+PRIVATE_ARTIFACT_DIRS = [
+    ROOT / "_control-plane" / "products",
+    ROOT / "_control-plane" / "fulfillment",
+    ROOT / "_control-plane" / "public-page-drafts",
+    ROOT / "_control-plane" / "launch",
+]
 
 REQUIRED_PAGE_PHRASES = [
     "AI Agent Control Plane",
@@ -29,6 +36,20 @@ REQUIRED_PAGE_PHRASES = [
     "opencode",
     "Preview",
     "Buy",
+    "Ask before buying",
+    "Open GitHub issue",
+    "buyer-inquiry",
+    "manual email fulfillment",
+    "one business day",
+    "Refund requests within seven days",
+    "Future versions may be sold separately",
+    "Technical requirements",
+    "Node and npm",
+    "Buyer role",
+    "Current GitHub workflow",
+    f"Version {VERSION}",
+    f"{FILE_COUNT} files",
+    f"ai-agent-control-plane-{VERSION}.tgz",
 ]
 
 FORBIDDEN_TERMS = [
@@ -69,15 +90,30 @@ def check_page() -> None:
         fail("product page needs at least two primary checkout CTAs")
 
 
+def check_public_metadata() -> None:
+    text = read(PUBLIC_METADATA)
+    check_no_forbidden(PUBLIC_METADATA, text)
+    required = [
+        f"version: {VERSION}",
+        f"file_count: {FILE_COUNT}",
+        "repository: ssmanji89/sulemanji-ip-products",
+        "issue_template: ai-agent-control-plane-question.md",
+        "Buyer artifacts stay private",
+    ]
+    for phrase in required:
+        if phrase not in text:
+            fail(f"public metadata missing phrase: {phrase}")
+
+
 def check_private_artifacts_absent() -> None:
-    if PACKAGE.exists():
-        fail(f"private package source must not live in public repo: {PACKAGE.relative_to(ROOT)}")
-    if ZIP.exists():
-        fail(f"private package zip must not live in public repo: {ZIP.relative_to(ROOT)}")
+    for path in PRIVATE_ARTIFACT_DIRS:
+        if path.exists():
+            fail(f"private artifact directory must not live in public repo: {path.relative_to(ROOT)}")
 
 
 def main() -> None:
     check_page()
+    check_public_metadata()
     check_private_artifacts_absent()
     print("PASS: AI Agent Control Plane storefront validation")
 

@@ -23,6 +23,17 @@ permalink: /products/ai-agent-control-plane
 </section>
 
 <section class="command-section principles-panel">
+  <div class="section-kicker">Buyer signal</div>
+  <h2>Use this when agent work is moving faster than your review trail.</h2>
+  <ul>
+    <li>You need each agent batch to say what changed, what proof exists, what is still blocked, and what a human must decide next.</li>
+    <li>You want launch, fulfillment, support, and marketing gates visible in the same issue graph as implementation work.</li>
+    <li>You are tired of losing decisions in chat history, local notes, and one-off status reports after the agent session ends.</li>
+    <li>You want a lightweight operating layer before adopting a larger platform or wiring agents into sensitive production actions.</li>
+  </ul>
+</section>
+
+<section class="command-section principles-panel">
   <div class="section-kicker">Technical requirements</div>
   <h2>You should be comfortable running this in an existing repository.</h2>
   <ul>

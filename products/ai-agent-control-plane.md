@@ -57,7 +57,7 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section" id="inside">
   <div class="section-kicker">Inside the product</div>
-  <h2>Version 2.0.0 includes 26 files organized around commercialization control, proof gates, durable records, and a lightweight CLI.</h2>
+  <h2>Version 2.0.0 includes 27 files organized around buyer setup, commercialization control, proof gates, durable records, and a lightweight CLI.</h2>
   <div class="proof-grid">
     <div><strong>Control Plane Core</strong><span>GitHub issue graph, control-plane issue template, and manifest-driven inspection for release work.</span></div>
     <div><strong>Human Gates</strong><span>Decision logs and supervision guidance for release readiness, public claims, fulfillment, and refunds.</span></div>
@@ -71,10 +71,11 @@ permalink: /products/ai-agent-control-plane
 <section class="command-section">
   <div class="section-kicker">Provisioning Kit</div>
   <h2>Install the control plane into the agent workspace your buyer already uses.</h2>
-  <p>The included local npm package supports JSON-first inspection, validation, planning, proof, handoff, and setup-health checks for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces. It keeps writes dry-run oriented and renders comments before posting.</p>
+  <p>The included local npm package supports JSON-first inspection, project-local setup, validation, planning, proof, handoff, and setup-health checks for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces. It can preview setup with dry-run, refuses overwrite unless forced, and renders comments before posting.</p>
   <div class="proof-grid">
     <div><strong>Inspect</strong><span><code>npx --package "$PWD/dist/ai-agent-control-plane-2.0.0.tgz" agent-control-plane inspect --manifest package.manifest.yml</code></span></div>
     <div><strong>Plan</strong><span><code>agent-control-plane plan --issue 123 --summary "Prepare release gate"</code></span></div>
+    <div><strong>Setup</strong><span><code>agent-control-plane init --target codex,copilot,generic</code></span></div>
     <div><strong>Check</strong><span><code>agent-control-plane doctor</code></span></div>
   </div>
 </section>
@@ -133,7 +134,7 @@ permalink: /products/ai-agent-control-plane
 
 <section class="command-section principles-panel">
   <h2>Checkout</h2>
-  <p>One-time Stripe checkout for the version 2.0.0 ZIP. Delivery is manual email fulfillment after payment confirmation. The product is delivered as editable Markdown files plus a local npm package for inspecting commercialization assets, validating issue records, and rendering plan, proof, and handoff comments for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces.</p>
+  <p>One-time Stripe checkout for the version 2.0.0 ZIP. Delivery is manual email fulfillment after payment confirmation. The product is delivered as editable Markdown files plus a local npm package for buyer setup, inspecting commercialization assets, validating issue records, and rendering plan, proof, and handoff comments for Codex, Claude, Cursor, GitHub Copilot, opencode, Cline, Windsurf, Aider, Continue, and generic agent workspaces.</p>
   <div class="command-actions">
     <a href="https://buy.stripe.com/dRm5kF5AY1wCbkV2eq3oA09" class="btn btn-primary">Buy for $149</a>
     <a href="#ask-before-buying" class="btn btn-outline">Ask before buying</a>

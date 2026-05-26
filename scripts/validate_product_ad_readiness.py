@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PRODUCT_ID = "ai-agent-control-plane"
 VERSION = "2.0.0"
-FILE_COUNT = "26"
+FILE_COUNT = "27"
 PAGE = ROOT / "products" / f"{PRODUCT_ID}.md"
 PUBLIC_METADATA = ROOT / "_control-plane" / "public-product-metadata" / f"{PRODUCT_ID}.yml"
 PRIVATE_ARTIFACT_DIRS = [

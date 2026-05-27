@@ -23,7 +23,16 @@ permalink: /notes
 </div>
 
 <div class="notes-panel">
+  <h2>AI Agent Control Plane notes</h2>
+  <ul>
+    <li><a href="/notes/the-missing-operating-lifecycle-for-autonomous-agent-work">The missing operating lifecycle for autonomous agent work</a></li>
+    <li><a href="/notes/why-every-business-process-needs-authority-proof-and-handoff-before-agents-act">Why every business process needs authority, proof, and handoff before agents act</a></li>
+    <li><a href="/notes/from-one-off-ai-tasks-to-repeatable-autonomous-operations">From one-off AI tasks to repeatable autonomous operations</a></li>
+  </ul>
+</div>
+
+<div class="notes-panel">
   <h2>Archive</h2>
-  <p>The older generated blog archive is offline during this cleanup. New writing will be curated here instead of published as a raw generated feed.</p>
+  <p>The older generated blog archive is offline during this cleanup. Curated writing now lives here instead of being published as a raw generated feed.</p>
   <a href="/blog" class="btn btn-outline">Open legacy blog archive</a>
 </div>

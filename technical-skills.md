@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Technical Skills | Suleman Manji | Hands-On Problem Solver
-description: A comprehensive overview of Suleman Manji's technical skills, highlighting a hands-on, analytical approach across programming languages, cloud platforms, security, automation, and data analysis. Keywords: technical skills, hands-on skills, analytical skills, problem-solving, programming, cloud computing, cybersecurity, process automation, data analysis, Microsoft Azure, Microsoft 365, PowerShell, Python, Node.js, JavaScript, IT skills.
+description: "A comprehensive overview of Suleman Manji's technical skills, highlighting a hands-on, analytical approach across programming languages, cloud platforms, security, automation, and data analysis. Keywords: technical skills, hands-on skills, analytical skills, problem-solving, programming, cloud computing, cybersecurity, process automation, data analysis, Microsoft Azure, Microsoft 365, PowerShell, Python, Node.js, JavaScript, IT skills."
 permalink: /technical-skills
 ---
 

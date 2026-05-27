@@ -1,8 +1,9 @@
 ---
 layout: default
 title: Projects Portfolio | Suleman Manji | Hands-On Solutions
-description: Explore Suleman Manji's portfolio of technology projects, showcasing a hands-on, analytical approach to cloud architecture, automation, AI integration, and security solutions. Keywords: project portfolio, hands-on projects, analytical solutions, technology projects, AI, automation, cloud integration, security, finance technology, problem-solving.
+description: "Explore Suleman Manji's portfolio of technology projects, showcasing a hands-on, analytical approach to cloud architecture, automation, AI integration, and security solutions. Keywords: project portfolio, hands-on projects, analytical solutions, technology projects, AI, automation, cloud integration, security, finance technology, problem-solving."
 permalink: /projects
+published: false
 ---
 
 <div class="projects-header animate-on-scroll">

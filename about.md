@@ -1,8 +1,9 @@
 ---
 layout: default
 title: About Suleman Manji | MSP Solutions Architect
-description: Learn about Suleman Manji's background as an MSP Solutions Architect specializing in AI-powered automation, enterprise M365 migrations, and MCP server development. Keywords: Suleman Manji, about, MSP solutions architect, MCP development, enterprise migration, AI automation, Microsoft 365, Claude Code, ITGlue, ConnectWise, HaloPSA.
+description: "Learn about Suleman Manji's background as an MSP Solutions Architect specializing in AI-powered automation, enterprise M365 migrations, and MCP server development. Keywords: Suleman Manji, about, MSP solutions architect, MCP development, enterprise migration, AI automation, Microsoft 365, Claude Code, ITGlue, ConnectWise, HaloPSA."
 permalink: /about
+published: false
 ---
 
 <div class="about-header animate-on-scroll">

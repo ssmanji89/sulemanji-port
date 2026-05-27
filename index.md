@@ -1,54 +1,83 @@
 ---
-layout: default
-title: Suleman Manji - MSP Solutions Architect
-description: MSP Solutions Architect building intelligent MSP toolchains, orchestrating enterprise M365 migrations, and developing AI-powered automation with MCP servers and Claude Code plugins. Keywords: MSP solutions architect, MCP server development, Microsoft 365 migration, AI automation, Claude Code plugins, ITGlue integration, ConnectWise, HaloPSA, enterprise migration, cloud architecture, PowerShell, Python, TypeScript.
+layout: page
+title: Proof-Gated AI Operations for MSP Systems
+description: "Command-center portfolio for Suleman Manji: MSP systems engineering, agent runtime infrastructure, financial-agent research, Microsoft 365 diagnostics, and proof-gated automation."
 ---
 
-## MSP Solutions Architect
+<section class="command-hero">
+  <p class="command-eyebrow">Command Center</p>
+  <h1>Proof-Gated AI Operations for MSP Systems</h1>
+  <p class="command-lede">I build command planes, agent runtimes, and memory-backed automation loops that turn MSP work into safer, verifiable operator workflows.</p>
+  <div class="command-actions">
+    <a href="/work-map/" class="btn btn-primary">View Work Map</a>
+    <a href="/projects/" class="btn btn-outline">Featured Systems</a>
+    <a href="https://github.com/ssmanji89" class="btn btn-outline" target="_blank" rel="noopener">GitHub</a>
+  </div>
+  <div class="signal-row" aria-label="Current operating lanes">
+    <span>Viyu Network Solutions</span>
+    <span>MSP operations</span>
+    <span>Microsoft 365</span>
+    <span>MCP tooling</span>
+    <span>Qdrant/mem0</span>
+    <span>Financial agents</span>
+  </div>
+</section>
 
-Building intelligent MSP toolchains, orchestrating enterprise M365 migrations at scale, and developing AI-powered automation that bridges cloud platforms with service delivery.
+<section class="command-section">
+  <p class="section-kicker">Featured Systems</p>
+  <h2>Current build lanes</h2>
+  <div class="systems-grid systems-grid--featured">
+    {% assign featured = site.data.systems | slice: 0, 3 %}
+    {% for system in featured %}
+      {% include system-card.html system=system %}
+    {% endfor %}
+  </div>
+</section>
 
-<div class="cta-buttons">
-    <a href="/projects" class="btn">View Projects</a>
-    <a href="/technical-skills" class="btn btn-primary">Technical Skills</a>
-    <a href="https://github.com/ssmanji89" class="btn btn-outline" target="_blank">GitHub</a>
-    <a href="/experience" class="btn btn-outline">My Experience</a>
-</div>
+<section class="command-section">
+  <p class="section-kicker">Active Systems Lanes</p>
+  <h2>What the work is converging into</h2>
+  <div class="lane-summary-grid">
+    {% for system in site.data.systems %}
+      <a class="lane-summary" href="/work-map/#{{ system.id }}">
+        <span>{{ system.category }}</span>
+        <strong>{{ system.display_name }}</strong>
+        <small>{{ system.summary }}</small>
+      </a>
+    {% endfor %}
+  </div>
+</section>
 
-## Core Competencies
+<section class="command-section">
+  <p class="section-kicker">Proof Stream</p>
+  <h2>Proof Stream</h2>
+  <div class="proof-grid">
+    <div><strong>Dry-run gates</strong><span>Review output before write operations, migrations, ticket updates, or billing state changes.</span></div>
+    <div><strong>Runtime verification</strong><span>Build checks, smoke tests, status reads, and health probes before completion claims.</span></div>
+    <div><strong>Audit trails</strong><span>GitHub issues, project states, handoff files, and public-safe validation artifacts.</span></div>
+    <div><strong>Safety holds</strong><span>Separate proof from action when access, resource boundaries, or client-sensitive context is unclear.</span></div>
+  </div>
+</section>
 
-### <i class="fas fa-robot"></i> AI-Powered MSP Tooling
-MCP servers and Claude Code plugins bridging M365, ITGlue, ConnectWise, and HaloPSA — 130+ tools and 7 autonomous agents automating data sync, lifecycle management, and compliance reporting.
+<section class="command-section">
+  <p class="section-kicker">Audience Routes</p>
+  <h2>Useful ways into the work</h2>
+  <div class="audience-grid">
+    <div><strong>MSP leaders</strong><span>Operational leverage, safer automation, proof capture, and handoff discipline.</span></div>
+    <div><strong>Engineering peers</strong><span>Runtime boundaries, MCP/API contracts, memory infrastructure, and verification patterns.</span></div>
+    <div><strong>Hiring teams</strong><span>Scope, stack, operating style, and evidence-backed delivery across real systems.</span></div>
+    <div><strong>Agent collaborators</strong><span>Tooling, memory, skills, checkpoints, and workflow patterns for operator-in-the-loop systems.</span></div>
+  </div>
+</section>
 
-### <i class="fas fa-exchange-alt"></i> Enterprise Migration
-Full-lifecycle tenant-to-tenant M365 migrations at scale — 6,500+ GB, 600+ users, 120+ SharePoint sites, with Exchange Hybrid, Azure AD Connect, Intune, and Autopilot orchestration.
-
-### <i class="fas fa-cogs"></i> Platform Automation
-Power Automate, n8n, Python, and PowerShell workflows driving MSP operational efficiency — from HRIS-driven provisioning to financial reconciliation and Teams recording management.
-
-## Technology Stack
-
-### AI & MCP
-- <i class="fas fa-robot"></i> Claude Code / MCP Protocol
-- <i class="fas fa-brain"></i> Anthropic API
-- <i class="fas fa-project-diagram"></i> n8n
-- <i class="fas fa-comment-dots"></i> OpenAI
-
-### Cloud & Migration
-- <i class="fab fa-microsoft"></i> Microsoft 365
-- <i class="fas fa-cloud"></i> Azure
-- <i class="fab fa-windows"></i> SharePoint / Exchange
-- <i class="fas fa-exchange-alt"></i> BitTitan MigrationWiz
-
-### MSP Platforms
-- <i class="fas fa-book"></i> ITGlue
-- <i class="fas fa-tools"></i> ConnectWise Manage
-- <i class="fas fa-headset"></i> HaloPSA
-- <i class="fas fa-laptop"></i> Intune / Autopilot
-
-### Development
-- <i class="fab fa-python"></i> Python
-- <i class="fab fa-js"></i> TypeScript
-- <i class="fas fa-terminal"></i> PowerShell
-- <i class="fab fa-microsoft"></i> Graph API
-- <i class="fab fa-react"></i> React
+<section class="command-section principles-panel">
+  <p class="section-kicker">Operating Principles</p>
+  <h2>Operating Principles</h2>
+  <ul>
+    <li>Live evidence before claims.</li>
+    <li>Safety gates before writes.</li>
+    <li>Durable handoffs over chat-only status.</li>
+    <li>Public-safe abstraction of client work.</li>
+    <li>Automation with operator accountability.</li>
+  </ul>
+</section>

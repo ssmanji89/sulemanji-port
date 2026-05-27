@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Professional Experience | Suleman Manji | Hands-On Technologist
-description: Explore Suleman Manji's professional history, detailing a hands-on, analytical approach to enterprise technology strategy, cloud architecture, security engineering, and process automation. Keywords: professional experience, career history, technology strategist, cloud architect, security engineer, process automation, hands-on experience, analytical problem-solving, team collaboration, Microsoft Azure, Microsoft 365, PowerShell.
+description: "Explore Suleman Manji's professional history, detailing a hands-on, analytical approach to enterprise technology strategy, cloud architecture, security engineering, and process automation. Keywords: professional experience, career history, technology strategist, cloud architect, security engineer, process automation, hands-on experience, analytical problem-solving, team collaboration, Microsoft Azure, Microsoft 365, PowerShell."
 permalink: /experience
 ---
 

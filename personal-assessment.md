@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Personal Assessment Profile | Suleman Manji
-description: Detailed personal assessment profile for Suleman Manji, outlining cognitive abilities, natural tendencies (reserved, excitable, candid, spontaneous, conventional), work drivers (hands-on, analytical), problem-solving capabilities, and teamwork style. Keywords: personal assessment, work style, cognitive ability, behavioral tendencies, hands-on work, analytical work, problem-solving, teamwork, reserved, team-oriented, technical specialist.
+description: "Detailed personal assessment profile for Suleman Manji, outlining cognitive abilities, natural tendencies (reserved, excitable, candid, spontaneous, conventional), work drivers (hands-on, analytical), problem-solving capabilities, and teamwork style. Keywords: personal assessment, work style, cognitive ability, behavioral tendencies, hands-on work, analytical work, problem-solving, teamwork, reserved, team-oriented, technical specialist."
 permalink: /personal-assessment
 ---
 

@@ -1,13 +1,13 @@
 ---
 layout: post
-title: ""Stop CSAM Act: The Threat to Encryption""
-excerpt: ""Is secure communication about to become extinct? Explore the potential impact of the 'Stop CSAM' Act on encryption.""
+title: "Stop CSAM Act: The Threat to Encryption"
+excerpt: "Is secure communication about to become extinct? Explore the potential impact of the 'Stop CSAM' Act on encryption."
 categories: [Emerging Tech]
 tags: ["Stop CSAM Act", "Encryption", "Privacy", "Security", "Digital Rights", "Legislation", "Tech Policy"]
 author: "Suleman Manji"
 date: 2025-06-11 22:39:10 
-seo_title: ""Potential Impact of Stop CSAM Act on Encryption""
-meta_description: ""Unravel the implications of the 'Stop CSAM' Act set for markup tomorrow. Could it end secure digital communication as we know it?""
+seo_title: "Potential Impact of Stop CSAM Act on Encryption"
+meta_description: "Unravel the implications of the 'Stop CSAM' Act set for markup tomorrow. Could it end secure digital communication as we know it?"
 word_count: 650
 ---
 

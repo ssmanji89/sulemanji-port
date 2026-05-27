@@ -5,8 +5,8 @@ lang: en
 timezone: America/Chicago
 
 title: Suleman Manji
-tagline: MSP Solutions Architect | AI-Powered Automation
-description: Technical writing on cybersecurity, cloud automation, and enterprise infrastructure.
+tagline: Proof-Gated AI Operations for MSP Systems
+description: Proof-gated AI operations, MSP systems engineering, agent runtime infrastructure, and public-safe technical work by Suleman Manji.
 
 url: "https://www.sulemanji.com"
 baseurl: ""
@@ -48,8 +48,6 @@ pwa:
   cache:
     enabled: true
     deny_paths: []
-
-paginate: 10
 
 kramdown:
   footnote_backlink: "&#8617;&#xfe0e;"
@@ -100,8 +98,8 @@ exclude:
   - purgecss.js
   - "*.config.js"
   - "package*.json"
+  - assets/404.html
   - blog_automation/
-  - "*.html"
   - HOUSTON_*
   - test_*
   - accessibility-report.html
@@ -109,3 +107,4 @@ exclude:
   - example_usage.py
   - requirements.txt
   - npm-packages.md
+  - scripts/

@@ -28,6 +28,12 @@ permalink: /notes
     <li><a href="/notes/the-missing-operating-lifecycle-for-autonomous-agent-work">The missing operating lifecycle for autonomous agent work</a></li>
     <li><a href="/notes/why-every-business-process-needs-authority-proof-and-handoff-before-agents-act">Why every business process needs authority, proof, and handoff before agents act</a></li>
     <li><a href="/notes/from-one-off-ai-tasks-to-repeatable-autonomous-operations">From one-off AI tasks to repeatable autonomous operations</a></li>
+    <li><a href="/notes/review-artifacts-beat-agent-status-updates">Review artifacts beat agent status updates</a></li>
+    <li><a href="/notes/stop-triggers-are-the-control-plane-for-agent-autonomy">Stop triggers are the control plane for agent autonomy</a></li>
+    <li><a href="/notes/durable-memory-is-an-operational-control-for-agents">Durable memory is an operational control for agents</a></li>
+    <li><a href="/notes/public-action-gates-for-agent-led-growth">Public-action gates for agent-led growth</a></li>
+    <li><a href="/notes/commerce-boundaries-before-agent-fulfillment-and-support">Commerce boundaries before agent fulfillment and support</a></li>
+    <li><a href="/notes/small-teams-need-control-planes-before-enterprise-ai-governance">Small teams need control planes before enterprise AI governance</a></li>
   </ul>
 </div>
 

@@ -47,9 +47,6 @@ permalink: /philosophy
             </div>
         </div>
         
-        <div class="philosophy-image">
-            <img src="/images/strategic-integration.jpg" alt="Strategic Technology Integration">
-        </div>
     </div>
 </div>
 
@@ -204,8 +201,8 @@ permalink: /philosophy
                 </div>
 
                 <div class="impact-metric">
-                    <div class="metric-number">130+</div>
-                    <div class="metric-label">MCP Tools Built</div>
+                    <div class="metric-number">100+</div>
+                    <div class="metric-label">MCP/CLI Tools (approx.)</div>
                     <div class="metric-detail">Spanning M365, ITGlue, ConnectWise, and HaloPSA platforms</div>
                 </div>
 
@@ -232,8 +229,4 @@ permalink: /philosophy
         <a href="/experience" class="btn">View Experience</a>
         <a href="/projects" class="btn btn-outline">Explore Projects</a>
     </div>
-</div>
-
-<div class="dark-mode-toggle">
-    <i class="fas fa-moon"></i>
 </div>

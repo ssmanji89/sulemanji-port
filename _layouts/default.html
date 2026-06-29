@@ -4,63 +4,86 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0366d6">
+    <meta name="theme-color" content="#0b0e14">
     <meta name="color-scheme" content="light dark">
-
 {% seo %}
-    <link rel="stylesheet" href="{{ "/assets/css/style.css?v=" | append: site.github.build_revision | relative_url }}">
-    <!--[if lt IE 9]>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
     {% include head-custom.html %}
-
-    <!-- Highlight.js for code syntax highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
   </head>
   <body>
-    <div class="wrapper">
-      <header>
-        <h1><a href="{{ "/" | absolute_url }}">{{ site.title | default: site.github.repository_name }}</a></h1>
-
-        {% if site.logo %}
-          <img src="{{site.logo | relative_url}}" alt="Logo" />
-        {% endif %}
-
-        <p>{{ site.description | default: site.github.project_tagline }}</p>
-
-        <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
-        
-        <nav class="main-nav" aria-label="Primary">
-          <ul>
-            {% for item in site.data.navigation %}
-              <li><a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
-            {% endfor %}
-          </ul>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="{{ "/" | relative_url }}">
+          {% if site.logo %}<img src="{{ site.logo | relative_url }}" alt="">{% endif %}
+          <span>{{ site.title }}</span>
+        </a>
+        <div class="nav-right">
+          <nav aria-label="Primary">
+            <ul class="nav-links" id="nav-links">
+              {% for item in site.data.navigation %}
+                <li><a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+              {% endfor %}
+            </ul>
+          </nav>
           <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
             <i class="fas fa-moon icon-light" aria-hidden="true"></i><i class="fas fa-sun icon-dark" aria-hidden="true"></i>
           </button>
-        </nav>
-      </header>
-      <section>
+          <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
+        </div>
+      </div>
+    </header>
 
-      {{ content }}
+    {% if page.hero_title %}
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-text reveal">
+          {% if page.hero_eyebrow %}<p class="eyebrow">{{ page.hero_eyebrow }}</p>{% endif %}
+          <h1>{{ page.hero_title }}</h1>
+          <p class="lede">{{ page.hero_lede }}</p>
+          {% if page.hero_ctas %}
+          <div class="cta-buttons">
+            {% for cta in page.hero_ctas %}
+              <a href="{{ cta.url }}" class="btn {{ cta.style }}"{% if cta.external %} target="_blank" rel="noopener"{% endif %}>{{ cta.label }}</a>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if page.hero_signals %}
+          <div class="signal-row">
+            {% for s in page.hero_signals %}<span>{{ s }}</span>{% endfor %}
+          </div>
+          {% endif %}
+        </div>
+        {% if site.logo %}<img class="hero-avatar reveal" src="{{ site.logo | relative_url }}" alt="Suleman Manji">{% endif %}
+      </div>
+    </section>
+    {% endif %}
 
+    <main class="container">
+      <section class="page{% unless page.hero_title %} has-no-hero{% endunless %}">
+        {{ content }}
       </section>
-      
-      <footer>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
         <div class="site-social">
-          <a href="https://github.com/ssmanji89" aria-label="GitHub"><i class="fab fa-github"></i></a>
+          <a href="https://github.com/{{ site.github_username }}" aria-label="GitHub"><i class="fab fa-github"></i></a>
           <a href="https://www.linkedin.com/in/{{ site.linkedin_username }}" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
           <a href="mailto:{{ site.email }}" aria-label="Email"><i class="fas fa-envelope"></i></a>
         </div>
-        <p class="footer-tagline">Currently engineering at <a href="https://www.viyu.net" target="_blank" rel="noopener">Viyu Network Solutions</a>.</p>
-        {% include footer-custom.html %}
-      </footer>
-    </div>
-    <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
-    <script src="{{ "/assets/js/main.js" | relative_url }}"></script>
-    
+        <p class="footer-tagline">© {{ site.title }} · Currently engineering at <a href="https://www.viyu.net" target="_blank" rel="noopener">Viyu Network Solutions</a></p>
+      </div>
+    </footer>
+
     <script src="{{ "/assets/js/theme-toggle.js" | relative_url }}"></script>
+    <script>
+      (function () {
+        var t = document.querySelector('.nav-toggle'), l = document.getElementById('nav-links');
+        if (t && l) t.addEventListener('click', function () {
+          var open = l.classList.toggle('open');
+          t.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+      })();
+    </script>
   </body>
 </html>

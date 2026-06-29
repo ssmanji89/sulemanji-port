@@ -1,49 +1,66 @@
-/* Theme tokens — light is default, dark via [data-theme="dark"] on <html> */
+/* ===== Design tokens — light is default, dark via [data-theme="dark"] ===== */
 :root {
   --bg: #ffffff;
-  --bg-alt: #f6f8fa;
+  --bg-alt: #f4f6fb;
   --surface: #ffffff;
-  --border: #d0d7de;
-  --text: #1f2328;
-  --text-muted: #57606a;
-  --link: #0969da;
-  --link-hover: #0a4ea3;
-  --accent: #0969da;
-  --code-bg: #f6f8fa;
-  --shadow: 0 1px 3px rgba(27,31,36,0.12);
+  --surface-2: #f8fafc;
+  --border: #e4e8f0;
+  --border-strong: #d0d7e2;
+  --text: #1a1f29;
+  --text-muted: #5a6473;
+  --link: #4f46e5;
+  --link-hover: #4338ca;
+  --accent: #4f46e5;
+  --accent-2: #7c3aed;
+  --accent-soft: rgba(79, 70, 229, 0.10);
+  --code-bg: #f4f6fb;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+  --shadow-md: 0 4px 16px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.05);
+  --shadow-lg: 0 12px 36px rgba(16, 24, 40, 0.12);
+  --hero-glow: radial-gradient(60% 120% at 20% 0%, rgba(124, 58, 237, 0.12), transparent 60%),
+               radial-gradient(50% 100% at 90% 10%, rgba(79, 70, 229, 0.10), transparent 60%);
+  --radius: 14px;
+  --radius-sm: 9px;
+  --maxw: 1080px;
 }
 html[data-theme="dark"] {
-  --bg: #0d1117;
-  --bg-alt: #161b22;
-  --surface: #161b22;
-  --border: #30363d;
-  --text: #e6edf3;
-  --text-muted: #9da7b3;
-  --link: #58a6ff;
-  --link-hover: #79c0ff;
-  --accent: #58a6ff;
-  --code-bg: #161b22;
-  --shadow: 0 1px 3px rgba(1,4,9,0.6);
+  --bg: #0b0e14;
+  --bg-alt: #11151d;
+  --surface: #141925;
+  --surface-2: #1a2030;
+  --border: #232a39;
+  --border-strong: #2e3850;
+  --text: #e8edf6;
+  --text-muted: #9aa6ba;
+  --link: #a5b4fc;
+  --link-hover: #c4ccff;
+  --accent: #818cf8;
+  --accent-2: #a78bfa;
+  --accent-soft: rgba(129, 140, 248, 0.14);
+  --code-bg: #1a2030;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.55);
+  --hero-glow: radial-gradient(60% 120% at 20% 0%, rgba(167, 139, 250, 0.18), transparent 60%),
+               radial-gradient(50% 100% at 90% 10%, rgba(129, 140, 248, 0.15), transparent 60%);
 }
-html, body { background-color: var(--bg); color: var(--text); }
-body { transition: background-color 0.2s ease, color 0.2s ease; }
-a { color: var(--link); }
-a:hover { color: var(--link-hover); }
-section, header, footer { color: var(--text); }
-code, pre { background-color: var(--code-bg); }
 
-/* Header theme toggle button */
+/* Theme toggle button (top bar) */
 .theme-toggle {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 6px;
-  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-size: 0.95rem;
-  line-height: 1;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease;
 }
-.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.theme-toggle:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
 .theme-toggle .icon-dark { display: none; }
 html[data-theme="dark"] .theme-toggle .icon-light { display: none; }
 html[data-theme="dark"] .theme-toggle .icon-dark { display: inline; }

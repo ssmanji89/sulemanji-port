@@ -1,54 +1,36 @@
 ---
 layout: default
-title: Suleman Manji - MSP Solutions Architect
-description: MSP Solutions Architect building intelligent MSP toolchains, orchestrating enterprise M365 migrations, and developing AI-powered automation with MCP servers and Claude Code plugins. Keywords: MSP solutions architect, MCP server development, Microsoft 365 migration, AI automation, Claude Code plugins, ITGlue integration, ConnectWise, HaloPSA, enterprise migration, cloud architecture, PowerShell, Python, TypeScript.
+title: Suleman Manji
+description: Engineer and builder in Houston — MSP automation, AI agent tooling, and the occasional math problem.
 ---
 
-## MSP Solutions Architect
+# Suleman Manji
 
-Building intelligent MSP toolchains, orchestrating enterprise M365 migrations at scale, and developing AI-powered automation that bridges cloud platforms with service delivery.
+Engineer and builder in Houston. I build automation — the kind that turns messy IT operations into something safe to run, and the kind I write on weekends for markets, math, and curiosity.
+
+By day I architect Microsoft 365 migrations and AI-agent tooling for managed-service operations. The rest of the time I'm usually building a bot for something.
 
 <div class="cta-buttons">
-    <a href="/projects" class="btn">View Projects</a>
-    <a href="/technical-skills" class="btn btn-primary">Technical Skills</a>
-    <a href="https://github.com/ssmanji89" class="btn btn-outline" target="_blank">GitHub</a>
-    <a href="/experience" class="btn btn-outline">My Experience</a>
+    <a href="/about" class="btn btn-primary">About Me</a>
+    <a href="/projects" class="btn">Projects</a>
+    <a href="/beyond" class="btn btn-outline">Beyond Work</a>
+    <a href="https://github.com/ssmanji89" class="btn btn-outline" target="_blank" rel="noopener">GitHub</a>
 </div>
 
-## Core Competencies
+## What I do
 
-### <i class="fas fa-robot"></i> AI-Powered MSP Tooling
-MCP servers and Claude Code plugins bridging M365, ITGlue, ConnectWise, and HaloPSA — 130+ tools and 7 autonomous agents automating data sync, lifecycle management, and compliance reporting.
+### <i class="fas fa-robot"></i> AI & agent tooling
+MCP servers and Claude Code tooling that connect enterprise platforms to AI — roughly 100+ tools across Microsoft 365, ITGlue, ConnectWise, and HaloPSA, plus autonomous agents for operational workflows.
 
-### <i class="fas fa-exchange-alt"></i> Enterprise Migration
-Full-lifecycle tenant-to-tenant M365 migrations at scale — 6,500+ GB, 600+ users, 120+ SharePoint sites, with Exchange Hybrid, Azure AD Connect, Intune, and Autopilot orchestration.
+### <i class="fas fa-exchange-alt"></i> Enterprise migration & automation
+Full-lifecycle Microsoft 365 migrations at scale (one project: 6,543 GB, 641 users, 23 locations) and the PowerShell / Python / Power Automate plumbing that keeps operations running.
 
-### <i class="fas fa-cogs"></i> Platform Automation
-Power Automate, n8n, Python, and PowerShell workflows driving MSP operational efficiency — from HRIS-driven provisioning to financial reconciliation and Teams recording management.
+### <i class="fas fa-flask"></i> Building for its own sake
+It started in 2021 with a Python trading bot. Since then: algorithmic markets, lottery probability, a DNA-analysis pipeline, and a research platform aimed at an unsolved number-theory problem.
 
-## Technology Stack
+## Where to go next
 
-### AI & MCP
-- <i class="fas fa-robot"></i> Claude Code / MCP Protocol
-- <i class="fas fa-brain"></i> Anthropic API
-- <i class="fas fa-project-diagram"></i> n8n
-- <i class="fas fa-comment-dots"></i> OpenAI
-
-### Cloud & Migration
-- <i class="fab fa-microsoft"></i> Microsoft 365
-- <i class="fas fa-cloud"></i> Azure
-- <i class="fab fa-windows"></i> SharePoint / Exchange
-- <i class="fas fa-exchange-alt"></i> BitTitan MigrationWiz
-
-### MSP Platforms
-- <i class="fas fa-book"></i> ITGlue
-- <i class="fas fa-tools"></i> ConnectWise Manage
-- <i class="fas fa-headset"></i> HaloPSA
-- <i class="fas fa-laptop"></i> Intune / Autopilot
-
-### Development
-- <i class="fab fa-python"></i> Python
-- <i class="fab fa-js"></i> TypeScript
-- <i class="fas fa-terminal"></i> PowerShell
-- <i class="fab fa-microsoft"></i> Graph API
-- <i class="fab fa-react"></i> React
+- **[About](/about)** — how I got here, from a trading bot to migration architecture.
+- **[Projects](/projects)** — the work, public and abstracted.
+- **[Beyond Work](/beyond)** — markets, math, and the things I build for fun.
+- **[Experience](/experience)** — the professional timeline.

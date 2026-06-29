@@ -16,6 +16,7 @@ baseurl: ""
 
 github_username: ssmanji89
 linkedin_username: suleman-manji-1a46852a0
+repository: ssmanji89/sulemanji-port
 
 markdown: kramdown
 sass:

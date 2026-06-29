@@ -33,15 +33,15 @@
 
         <p class="view"><a href="{{ site.github.owner_url }}">View My GitHub Profile</a></p>
         
-        <nav class="main-nav">
+        <nav class="main-nav" aria-label="Primary">
           <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/experience">Experience</a></li>
-            <li><a href="/projects">Projects</a></li>
-            <li><a href="/technical-skills">Skills</a></li>
-            <li><a href="/blog">Blog</a></li>
+            {% for item in site.data.navigation %}
+              <li><a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+            {% endfor %}
           </ul>
+          <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+            <i class="fas fa-moon icon-light" aria-hidden="true"></i><i class="fas fa-sun icon-dark" aria-hidden="true"></i>
+          </button>
         </nav>
       </header>
       <section>
@@ -52,20 +52,8 @@
       
       <footer>
         <div class="footer-content">
-          <!-- Theme Switch Column -->
-          <div class="footer-info">
-            <!-- Theme Switch -->
-            <div class="theme-switch-wrapper" aria-label="Toggle dark mode">
-              <label class="theme-switch" for="checkbox">
-                <input type="checkbox" id="checkbox" aria-label="Switch between dark and light mode" />
-                <div class="slider round">
-                  <i class="fas fa-moon" aria-hidden="true"></i>
-                  <i class="fas fa-sun" aria-hidden="true"></i>
-                </div>
-              </label>
-              <span class="theme-label">Dark Mode</span>
-            </div>
-          </div>
+          <!-- Theme Switch Column (toggle moved to header) -->
+          <div class="footer-info"></div>
           
           <!-- GitHub Stats Column -->
           <div class="footer-nav-container">
@@ -73,11 +61,11 @@
             <div class="footer-stats">
               <div class="footer-stat">
                 <i class="fab fa-github"></i>
-                <span>75+ Public Repositories</span>
+                <span>Public + private work across many repos</span>
               </div>
               <div class="footer-stat">
                 <i class="fas fa-code-branch"></i>
-                <span>130+ MCP Tools Built</span>
+                <span>100+ MCP/CLI tools (approx.)</span>
               </div>
               <div class="footer-stat-action">
                 <a href="https://github.com/ssmanji89" class="btn btn-outline btn-sm">View All GitHub Projects</a>
@@ -104,49 +92,6 @@
     <script src="{{ "/assets/js/scale.fix.js" | relative_url }}"></script>
     <script src="{{ "/assets/js/main.js" | relative_url }}"></script>
     
-    <!-- Remove any extra dark mode toggles with inline script -->
-    <script>
-      // Use MutationObserver to detect and remove any elements added after load
-      document.addEventListener('DOMContentLoaded', function() {
-        // Create an observer instance
-        const observer = new MutationObserver(function(mutations) {
-          mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length) {
-              mutation.addedNodes.forEach(function(node) {
-                if (node.nodeType === 1) { // Only process Element nodes
-                  // Check if this is likely a dark mode toggle
-                  if (node.textContent && node.textContent.includes('Dark Mode') || 
-                      node.textContent && node.textContent.includes('Mode') ||
-                      node.innerHTML && (node.innerHTML.includes('moon') || 
-                      node.innerHTML.includes('sun'))) {
-                    
-                    // Make sure it's not our own toggle
-                    if (!node.closest('.theme-switch-wrapper')) {
-                      console.log('Observer removing node:', node);
-                      node.remove();
-                    }
-                  }
-                  
-                  // Check for elements at the bottom of page
-                  if (node.getBoundingClientRect && 
-                      node.getBoundingClientRect().top > (window.innerHeight - 100)) {
-                    if (!node.closest('.wrapper')) {
-                      console.log('Observer removing bottom element:', node);
-                      node.remove();
-                    }
-                  }
-                }
-              });
-            }
-          });
-        });
-        
-        // Start observing the body with the configured parameters
-        observer.observe(document.body, { 
-          childList: true, 
-          subtree: true
-        });
-      });
-    </script>
+    <script src="{{ "/assets/js/theme-toggle.js" | relative_url }}"></script>
   </body>
 </html>

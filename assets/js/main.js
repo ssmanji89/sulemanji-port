@@ -56,70 +56,11 @@ function initScrollAnimations() {
 }
 
 /**
- * Initialize dark mode toggle functionality
+ * Theming is handled by /assets/js/theme-toggle.js and the no-FOUC
+ * script in head-custom.html via the data-theme attribute. This stub
+ * remains only so any legacy call site stays a harmless no-op.
  */
-function initDarkModeToggle() {
-  const darkModeToggle = document.getElementById('checkbox');
-  const themeLabel = document.querySelector('.theme-label');
-  const darkModeButtons = document.querySelectorAll('.dark-mode-toggle');
-  
-  // Check for saved theme preference or respect OS preference
-  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-  const storedTheme = localStorage.getItem('theme');
-  
-  function setTheme(isDark) {
-    if (isDark) {
-      document.body.classList.add('dark-mode');
-      if (darkModeToggle) {
-        darkModeToggle.checked = true;
-      }
-      if (themeLabel) {
-        themeLabel.textContent = 'Light Mode';
-      }
-    } else {
-      document.body.classList.remove('dark-mode');
-      if (darkModeToggle) {
-        darkModeToggle.checked = false;
-      }
-      if (themeLabel) {
-        themeLabel.textContent = 'Dark Mode';
-      }
-    }
-  }
-  
-  // Set initial theme
-  if (storedTheme === 'dark' || (!storedTheme && prefersDarkScheme.matches)) {
-    setTheme(true);
-  } else {
-    setTheme(false);
-  }
-  
-  // Add event listener for theme toggle
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener('change', function() {
-      setTheme(this.checked);
-      localStorage.setItem('theme', this.checked ? 'dark' : 'light');
-    });
-  }
-  
-  // Add standalone dark mode toggle buttons
-  if (darkModeButtons.length > 0) {
-    darkModeButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        const isDarkMode = document.body.classList.contains('dark-mode');
-        setTheme(!isDarkMode);
-        localStorage.setItem('theme', !isDarkMode ? 'dark' : 'light');
-      });
-    });
-  }
-  
-  // Listen for OS theme changes
-  prefersDarkScheme.addEventListener('change', e => {
-    if (!localStorage.getItem('theme')) {
-      setTheme(e.matches);
-    }
-  });
-}
+function initDarkModeToggle() {}
 
 /**
  * Initialize project filtering functionality

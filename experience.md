@@ -242,7 +242,7 @@ permalink: /experience
             <h4 class="timeline-subtitle">ERGOS Technology Partners</h4>
             
             <p class="timeline-description">
-                Progressed through roles from internship to Senior Automation Architect, focusing on NOC management, automation, service delivery optimization, and technical consulting.
+                Where it started in tech. Progressed from intern to Senior Automation Architect across NOC management, service delivery optimization, and technical consulting &mdash; and where the automation instinct first took hold. Among the early wins: a reproducible &ldquo;New User Device Onboarding&rdquo; playbook for secure, repeatable provisioning, built before the industry had the SOAR vocabulary for it.
             </p>
             
             <div class="timeline-highlights">

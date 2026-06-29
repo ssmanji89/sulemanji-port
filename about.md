@@ -17,7 +17,7 @@ Over 2022–2023 that same instinct turned professional. The trading scripts bec
 
 ## The professional track
 
-The career started earlier and ran in parallel. I studied Management Information Systems at the University of Houston (C.T. Bauer College of Business) and joined ERGOS Technology Partners in 2011 while still a student, working in NOC automation. From there: multi-site infrastructure, enterprise security and Azure architecture, Microsoft 365 governance, and — since July 2025 — Solutions Architect & Automation Engineer at Viyu Network Solutions, leading M365 migrations and building AI-powered MSP toolchains.
+The career started earlier and ran in parallel — and it began long before the first line of code. My first real job was behind the counter at a brake shop; the jump from *brakes to bytes* came soon after. I studied Management Information Systems at the University of Houston (C.T. Bauer College of Business) and joined ERGOS Technology Partners in 2011 while still a student, working in NOC automation — where the automation instinct first took hold (including an early, reproducible device-onboarding playbook). From there: multi-site infrastructure, enterprise security and Azure architecture, Microsoft 365 governance, and — since July 2025 — Solutions Architect & Automation Engineer at Viyu Network Solutions, leading M365 migrations and building AI-powered MSP toolchains.
 
 A few numbers from along the way: a 6,543 GB tenant-to-tenant migration across 641 users; roughly 100+ MCP/CLI tools spanning M365, ITGlue, ConnectWise, and HaloPSA; 70+ automation workflows; and a Microsoft 365 Secure Score raised to 88.8%.
 

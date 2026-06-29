@@ -1,0 +1,230 @@
+/**
+ * Footer styles for sulemanji.com
+ * Footer elements and layout
+ */
+
+footer {
+  margin-top: 60px;
+  padding: 40px 0;
+  background-color: #0d1117;
+  color: #8b949e;
+  border-top: 1px solid #30363d;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  margin-bottom: 30px;
+  justify-content: space-between;
+}
+
+.footer-info {
+  flex: 1;
+  min-width: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.copyright {
+  margin-bottom: 20px;
+  color: #8b949e;
+  font-size: 0.85rem;
+}
+
+/* Theme Switch - Simplified */
+.theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #161b22;
+  padding: 8px 12px;
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.theme-switch {
+  display: inline-block;
+  height: 24px;
+  position: relative;
+  width: 48px;
+}
+
+.theme-switch input {
+  display: none;
+}
+
+.slider {
+  background-color: #30363d;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  background-color: #8b949e;
+  bottom: 3px;
+  content: "";
+  height: 18px;
+  left: 4px;
+  position: absolute;
+  transition: .4s;
+  width: 18px;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #0366d6;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+  background-color: white;
+}
+
+.slider .fa-moon {
+  color: #c9d1d9;
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  font-size: 0.8rem;
+  transition: opacity 0.2s;
+  opacity: 0;
+}
+
+.slider .fa-sun {
+  color: #e3b341;
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  font-size: 0.8rem;
+  transition: opacity 0.2s;
+  opacity: 1;
+}
+
+input:checked + .slider .fa-moon {
+  opacity: 1;
+}
+
+input:checked + .slider .fa-sun {
+  opacity: 0;
+}
+
+.theme-label {
+  margin-left: 10px;
+  font-size: 0.9rem;
+  color: #8b949e;
+}
+
+/* GitHub Stats */
+.footer-nav-container {
+  flex: 1;
+  min-width: 220px;
+  max-width: 300px;
+}
+
+.footer-nav-title {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 15px;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.footer-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.footer-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #8b949e;
+  font-size: 0.9rem;
+  padding: 5px 0;
+}
+
+.footer-stat i {
+  font-size: 1.1rem;
+  color: #58a6ff;
+  min-width: 20px;
+  text-align: center;
+}
+
+.footer-stat-action {
+  margin-top: 15px;
+}
+
+/* Social Links */
+.social-links-footer {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.social-links-footer a {
+  color: #8b949e;
+  font-size: 1.5rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #161b22;
+}
+
+.social-links-footer a:hover {
+  color: white;
+  background-color: #21262d;
+  transform: translateY(-3px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Expanded footer sections */
+.footer-resources {
+  flex: 1;
+  min-width: 220px;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 8px;
+}
+
+.footer-links a {
+  color: #8b949e;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.footer-links a:hover {
+  color: #c9d1d9;
+}
+
+.footer-links a i {
+  margin-right: 8px;
+  font-size: 0.9rem;
+  color: #58a6ff;
+}
+
+/* Dark mode footer is already dark */

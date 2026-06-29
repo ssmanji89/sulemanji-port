@@ -13,9 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
     {% include head-custom.html %}
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    
+
     <!-- Highlight.js for code syntax highlighting -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.6.0/highlight.min.js"></script>
@@ -51,41 +49,12 @@
       </section>
       
       <footer>
-        <div class="footer-content">
-          <!-- Theme Switch Column (toggle moved to header) -->
-          <div class="footer-info"></div>
-          
-          <!-- GitHub Stats Column -->
-          <div class="footer-nav-container">
-            <h3 class="footer-nav-title">GitHub</h3>
-            <div class="footer-stats">
-              <div class="footer-stat">
-                <i class="fab fa-github"></i>
-                <span>Public + private work across many repos</span>
-              </div>
-              <div class="footer-stat">
-                <i class="fas fa-code-branch"></i>
-                <span>100+ MCP/CLI tools (approx.)</span>
-              </div>
-              <div class="footer-stat-action">
-                <a href="https://github.com/ssmanji89" class="btn btn-outline btn-sm">View All GitHub Projects</a>
-              </div>
-            </div>
-          </div>
-
-          <!-- Connect Column -->
-          <div class="footer-nav-container">
-            <h3 class="footer-nav-title">Connect</h3>
-            <div class="social-links-footer">
-              <a href="https://github.com/ssmanji89" aria-label="GitHub Profile"><i class="fab fa-github"></i></a>
-              <a href="https://www.linkedin.com/in/{{ site.linkedin_username }}" aria-label="LinkedIn Profile"><i class="fab fa-linkedin"></i></a>
-              <a href="https://www.npmjs.com/~sullyman" aria-label="NPM Profile"><i class="fab fa-npm"></i></a>
-              <a href="mailto:{{ site.email }}" aria-label="Email"><i class="fas fa-envelope"></i></a>
-            </div>
-            <p class="footer-tagline" style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.7;">Currently engineering at <a href="https://www.viyu.net" target="_blank" style="color: inherit; text-decoration: underline;">Viyu Network Solutions</a></p>
-          </div>
+        <div class="site-social">
+          <a href="https://github.com/ssmanji89" aria-label="GitHub"><i class="fab fa-github"></i></a>
+          <a href="https://www.linkedin.com/in/{{ site.linkedin_username }}" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+          <a href="mailto:{{ site.email }}" aria-label="Email"><i class="fas fa-envelope"></i></a>
         </div>
-        
+        <p class="footer-tagline">Currently engineering at <a href="https://www.viyu.net" target="_blank" rel="noopener">Viyu Network Solutions</a>.</p>
         {% include footer-custom.html %}
       </footer>
     </div>

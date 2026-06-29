@@ -324,7 +324,7 @@ permalink: /experience
 
 
 <div class="experience-cta animate-on-scroll mt-5">
-    <a href="/technical-skills" class="btn btn-primary">View Technical Skills</a>
+    <a href="/resume" class="btn btn-primary">View Resume</a>
     <a href="/projects" class="btn btn-outline">Explore Projects</a>
 </div>
 

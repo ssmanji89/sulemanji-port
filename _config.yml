@@ -1,54 +1,40 @@
 title: Suleman Manji
 email: ssmanji89@gmail.com
-description: MSP Solutions Architect | AI-Powered Automation | Enterprise Migration
+description: Engineer and builder in Houston — MSP automation, AI agent tooling, and the occasional math problem.
 
-# Theme configuration
 theme: jekyll-theme-minimal
 plugins:
   - jekyll-seo-tag
   - jekyll-feed
 
-# Theme-specific configurations
 logo: /images/sulemanji-profile.png
 show_downloads: false
-google_analytics: 
 
-# Site settings
 domain: www.sulemanji.com
 url: https://www.sulemanji.com
 baseurl: ""
 
-# Social profiles
 github_username: ssmanji89
 linkedin_username: suleman-manji-1a46852a0
 
-# Build settings
 markdown: kramdown
 sass:
   style: compressed
 
-# Collections
-collections:
-  projects:
-    output: true
-    permalink: /projects/:name
-
-# Default front matter
 defaults:
-  -
-    scope:
+  - scope:
       path: ""
     values:
       layout: "default"
 
-# Exclude from processing
 exclude:
   - Gemfile
   - Gemfile.lock
   - node_modules
-  - vendor/bundle/
-  - vendor/cache/
-  - vendor/gems/
-  - vendor/ruby/
+  - vendor/
+  - docs/
   - README.md
   - LICENSE
+  - blog_automation/
+  - "*.py"
+  - requirements.txt

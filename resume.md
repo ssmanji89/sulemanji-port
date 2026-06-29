@@ -12,8 +12,8 @@ permalink: /resume
 **Solutions Architect & Automation Engineer**
 
 - Orchestrated tenant-to-tenant M365 migration: 641 users, 6,543 GB, 122 SharePoint sites, 305 OneDrive, 273 mailboxes across 23 locations
-- Built 130+ MCP tools across M365 (101), ITGlue (31), ConnectWise, and HaloPSA
-- Developed Claude Code plugin with 31 skills and 7 autonomous agents (est. 10-15 hrs/week savings)
+- Built MCP/CLI tooling across M365 (101 tools), ITGlue (31 tools), ConnectWise, and HaloPSA (~130 total)
+- Developed Claude Code plugin with 31 skills and 7 autonomous agents, with meaningful weekly time savings
 - Engineered EZMig — 14-phase SharePoint migration platform with Azure Blob staging and incremental sync
 - Published halopsa-workflows-mcp on npm; featured in MCP registries
 
@@ -49,3 +49,9 @@ permalink: /resume
 
 [View Full Experience](/experience)
 [View Projects](/projects)
+
+## Contact
+
+- Email: [ssmanji89@gmail.com](mailto:ssmanji89@gmail.com)
+- GitHub: [github.com/ssmanji89](https://github.com/ssmanji89)
+- LinkedIn: [suleman-manji](https://www.linkedin.com/in/suleman-manji-1a46852a0)

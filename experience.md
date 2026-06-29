@@ -17,7 +17,7 @@ permalink: /experience
         <div class="timeline-dot"></div>
         <div class="timeline-content">
             <div class="timeline-date">
-                <span><i class="far fa-calendar-alt"></i> March 2025 - Present</span>
+                <span><i class="far fa-calendar-alt"></i> July 2025 - Present</span>
             </div>
             <h3 class="timeline-title">Solutions Architect & Automation Engineer</h3>
             <h4 class="timeline-subtitle">Viyu Network Solutions</h4>

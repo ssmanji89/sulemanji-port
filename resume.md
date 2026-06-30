@@ -4,9 +4,11 @@ title: Professional Resume
 permalink: /resume
 ---
 
-# Professional Resume
+# Resume
 
-## Professional Experience Snapshot
+The one-page version. The [Experience](/experience) page has the full fifteen-year timeline with detail; the [Story](/story) has the rest.
+
+## Recent experience
 
 ### Viyu Network Solutions (July 2025 - Present)
 **Solutions Architect & Automation Engineer**

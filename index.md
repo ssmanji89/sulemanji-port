@@ -31,39 +31,39 @@ hero_signals:
 
 <div class="card-grid" markdown="0">
   <div class="card">
+    <span class="card-icon"><i class="fas fa-diagram-project"></i></span>
+    <h3>MSP automation platforms</h3>
+    <p>The deepest work: an eight-platform operations engine wiring Microsoft 365, ConnectWise, ITGlue, ScreenConnect, Sophos and more into one toolchain — plus a multi-tenant Teams ticketing system and AI ticket triage. Production systems, not demos.</p>
+  </div>
+  <div class="card">
     <span class="card-icon"><i class="fas fa-robot"></i></span>
-    <h3>AI &amp; agent tooling</h3>
-    <p>MCP servers and Claude Code tooling that connect enterprise platforms to AI — roughly 100+ tools across Microsoft 365, ITGlue, ConnectWise, and HaloPSA, plus autonomous agents for operational workflows.</p>
+    <h3>AI &amp; agent infrastructure</h3>
+    <p>MCP servers (a few public, on npm), a Claude Code plugin with autonomous agents, and the memory/runtime plumbing underneath. I was forking the first agent frameworks in 2023, before it was a category.</p>
   </div>
   <div class="card">
-    <span class="card-icon"><i class="fas fa-exchange-alt"></i></span>
-    <h3>Enterprise migration &amp; automation</h3>
-    <p>Full-lifecycle Microsoft 365 migrations at scale (one project: 6,543 GB, 641 users, 23 locations) and the PowerShell / Python / Power Automate plumbing that keeps operations running.</p>
-  </div>
-  <div class="card">
-    <span class="card-icon"><i class="fas fa-flask"></i></span>
-    <h3>Building for its own sake</h3>
-    <p>It started in 2021 with a Python trading bot. Since then: algorithmic markets, lottery probability, a DNA-analysis pipeline, and a research platform aimed at an unsolved number-theory problem.</p>
+    <span class="card-icon"><i class="fas fa-cloud-arrow-up"></i></span>
+    <h3>Enterprise M365 &amp; security</h3>
+    <p>Tenant-to-tenant migrations at scale (one: 6,543 GB, 641 users), CyberArk PAM rollouts, ransomware recovery, GDPR Azure migrations — fifteen years of making messy environments safe to operate.</p>
   </div>
 </div>
 
 ## Where to go next
 
 <div class="card-grid" markdown="0">
-  <a class="card" href="/about">
-    <h3>About →</h3>
-    <p>How I got here — from a Robinhood trading bot to migration architecture.</p>
+  <a class="card" href="/story">
+    <h3>Story →</h3>
+    <p>The long version — brake shop to NOC to AI agents, and the why underneath it.</p>
   </a>
   <a class="card" href="/projects">
     <h3>Projects →</h3>
-    <p>The work, public and abstracted — MCP servers, MSP automation, experiments.</p>
-  </a>
-  <a class="card" href="/beyond">
-    <h3>Beyond Work →</h3>
-    <p>Markets, mathematics, genealogy, and the things I build for fun.</p>
+    <p>The real range: MSP platforms, finance agents, MCP infrastructure, and the odd experiments.</p>
   </a>
   <a class="card" href="/experience">
     <h3>Experience →</h3>
-    <p>The professional timeline, from NOC automation to AI-powered MSP tooling.</p>
+    <p>Fifteen years, in detail — ERGOS, energy, security consulting, real estate, Viyu.</p>
+  </a>
+  <a class="card" href="/beyond">
+    <h3>Beyond Work →</h3>
+    <p>Markets, mathematics, genealogy, dream engineering, and the things I build for fun.</p>
   </a>
 </div>

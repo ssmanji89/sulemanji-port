@@ -1,34 +1,28 @@
 ---
 layout: default
 title: About | Suleman Manji
-description: Suleman Manji — engineer and builder in Houston. From a 2021 trading bot to enterprise migration architecture and AI agent tooling.
+description: Suleman Manji — a Houston-based solutions architect and automation engineer who builds the connective tissue between service platforms, infrastructure, and AI.
 permalink: /about
 ---
 
 # About
 
-I'm an engineer and builder based in Houston. My work splits into two halves that are really the same instinct: automate the thing.
+I'm a solutions architect and automation engineer in Houston. For about fifteen years I've worked the seam between IT operations and the systems that make them less manual — managed services, Microsoft 365 at enterprise scale, security and identity, and lately the AI tooling that ties all of it together.
 
-## The maker origin
-
-My public building life started on January 12, 2021, with a repository called `botStuff` — a Python bot that traded stocks through Robinhood. That handle stuck. It became a personal lab brand across dozens of projects: trading bots, a crypto high-frequency experiment, machine-learning side quests, lottery-probability tools, dashboards. The through-line is consistent — I like pointing automation at a problem and seeing what holds.
-
-Over 2022–2023 that same instinct turned professional. The trading scripts became PowerShell automation, HaloPSA and Microsoft Graph integrations, cloud and security tooling. By 2025–2026 it had become AI-agent and MCP work. Hobby and profession converged.
-
-## The professional track
-
-The career started earlier and ran in parallel — and it began long before the first line of code. My first real job was behind the counter at a brake shop; the jump from *brakes to bytes* came soon after. I studied Management Information Systems at the University of Houston (C.T. Bauer College of Business) and joined ERGOS Technology Partners in 2011 while still a student, working in NOC automation — where the automation instinct first took hold (including an early, reproducible device-onboarding playbook). From there: multi-site infrastructure, enterprise security and Azure architecture, Microsoft 365 governance, and — since July 2025 — Solutions Architect & Automation Engineer at Viyu Network Solutions, leading M365 migrations and building AI-powered MSP toolchains.
-
-A few numbers from along the way: a 6,543 GB tenant-to-tenant migration across 641 users; roughly 100+ MCP/CLI tools spanning M365, ITGlue, ConnectWise, and HaloPSA; 70+ automation workflows; and a Microsoft 365 Secure Score raised to 88.8%.
+The shortest accurate description of what I do: I find a repetitive or fragile process and replace it with something that holds. That's been true since I scripted device onboarding as an intern, and it's true now that the same instinct shows up as MCP servers and autonomous agents.
 
 ## How I work
 
-I'm reserved by default and let the work speak — I'd rather show a working system than pitch one. I think in systems, prefer to build rather than advise, and I'm happiest contributing depth to a team rather than running one. I lead with what works and why, not with what's trendy.
+I'm reserved by default, and I'd rather show a working system than pitch one — the demo is the argument. I think in systems and prefer to build rather than advise. I'm happiest contributing real depth to a team instead of running it. And I lead with what works and why, not with whatever's trending; if I name a technology, there's a specific problem behind it.
 
-Outside work I'm in Houston with my partner, usually building something — see [Beyond Work](/beyond).
+The same disposition runs through the personal projects. A trading bot, a DNA-analysis pipeline, a number-theory research platform — different subjects, identical reflex: build the infrastructure, instrument it, and see what the system actually does under load.
 
-<div class="cta-buttons">
-    <a href="/experience" class="btn">Experience</a>
+## The throughline
+
+It started behind a brake-shop counter and ran through a five-year automation apprenticeship at a Houston MSP, a decade of security and cloud consulting, and a hobby that quietly became the profession. If you want the full version — the brake shop, the burnout, the bots, the why — it's on the **[Story](/story)** page.
+
+<div class="cta-buttons" markdown="0">
+    <a href="/story" class="btn btn-primary">Read the full story</a>
+    <a href="/experience" class="btn btn-outline">Experience</a>
     <a href="/projects" class="btn btn-outline">Projects</a>
-    <a href="/resume" class="btn btn-outline">Resume</a>
 </div>

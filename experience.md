@@ -7,7 +7,7 @@ permalink: /experience
 
 <div class="experience-header animate-on-scroll">
     <h1 class="section-title">Professional Experience</h1>
-    <p class="section-subtitle">A timeline of my professional journey, highlighting a practical, hands-on approach to enterprise technology.</p>
+    <p class="section-subtitle">Fifteen years, one job description: find the manual, fragile, or broken part of an operation and make it hold. The <a href="/story">story</a> has the why; this is the what.</p>
 </div>
 
 <div class="timeline animate-on-scroll">
@@ -67,7 +67,7 @@ permalink: /experience
             <h4 class="timeline-subtitle">ZG Companies</h4>
             
             <p class="timeline-description">
-                Provided technical leadership and implemented solutions across Microsoft 365 governance, IT infrastructure, process automation, and strategic projects.
+                Broad and operational: I locked down a real-estate group's Microsoft 365, then automated the parts of running a property portfolio nobody wants to do by hand &mdash; reconciliation, inspections, payroll, reporting.
             </p>
             
             <div class="timeline-highlights">
@@ -111,7 +111,7 @@ permalink: /experience
             <h4 class="timeline-subtitle">StackAdvisors, LLC</h4>
             
             <p class="timeline-description">
-                Focused on cloud infrastructure optimization, software engineering, automation, and technical leadership for client systems.
+                A short, intense interim stint on the engineering side of the wall &mdash; cutting cloud spend, building real CI/CD, and chasing down why a .NET Blazor app kept throwing 500s until it stopped.
             </p>
             
             <div class="timeline-highlights">
@@ -155,7 +155,7 @@ permalink: /experience
             <h4 class="timeline-subtitle">Fulcrum Technology Solutions (FTSC)</h4>
             
             <p class="timeline-description">
-                Led initiatives in enterprise security, privileged access management, Azure compliance, infrastructure engineering, and technical consulting.
+                The security-and-architecture hired gun across a run of client engagements &mdash; privileged access, a ransomware recovery, and compliance-driven Azure migrations for healthcare, energy, and Fortune 500 environments.
             </p>
             
             <div class="timeline-highlights">
@@ -199,7 +199,7 @@ permalink: /experience
             <h4 class="timeline-subtitle">Sugar Land Petroleum, LLC</h4>
             
             <p class="timeline-description">
-                Managed IT infrastructure, network security, cloud administration, application support, and provided technical leadership across multiple sites.
+                Client-side at a multi-site energy company &mdash; stabilizing aging infrastructure, standing up disaster recovery that didn't exist yet, and digitizing the paperwork that was eating people's days.
             </p>
             
             <div class="timeline-highlights">

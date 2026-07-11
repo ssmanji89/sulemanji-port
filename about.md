@@ -1,13 +1,13 @@
 ---
 layout: default
 title: About | Suleman Manji
-description: Suleman Manji — a Houston-based solutions architect and automation engineer who builds the connective tissue between service platforms, infrastructure, and AI.
+description: Suleman Manji — a Houston-based Sr. Services Engineer who often acts as a solutions architect and automation engineer across service platforms, infrastructure, and AI-assisted workflow tooling.
 permalink: /about
 ---
 
 # About
 
-I'm a solutions architect and automation engineer in Houston. For about fifteen years I've worked the seam between IT operations and the systems that make them less manual — managed services, Microsoft 365 at enterprise scale, security and identity, and lately the AI tooling that ties all of it together.
+I work as a Sr. Services Engineer in Houston, often acting as a solutions architect and automation engineer. For about fifteen years I've worked the seam between IT operations and the systems that make them less manual — managed services, Microsoft 365 at enterprise scale, security and identity, and lately the AI-assisted workflow tooling that ties messy service work together.
 
 The shortest accurate description of what I do: I find a repetitive or fragile process and replace it with something that holds. That's been true since I scripted device onboarding as an intern, and it's true now that the same instinct shows up as MCP servers and autonomous agents.
 

@@ -19,39 +19,39 @@ permalink: /experience
             <div class="timeline-date">
                 <span><i class="far fa-calendar-alt"></i> July 2025 - Present</span>
             </div>
-            <h3 class="timeline-title">Solutions Architect & Automation Engineer</h3>
+            <h3 class="timeline-title">Sr. Services Engineer</h3>
             <h4 class="timeline-subtitle">Viyu Network Solutions</h4>
 
             <p class="timeline-description">
-                Leading enterprise M365 migrations, developing AI-powered MSP toolchains, and building MCP integrations that bridge cloud platforms with IT service delivery.
+                Currently acting as a solutions architect and automation engineer across Microsoft 365 migration work, professional-services scoping, service-delivery automation, operational reporting, and governed AI-assisted internal workflows.
             </p>
 
             <div class="timeline-highlights">
                 <div class="timeline-highlight">
                     <i class="fas fa-check-circle"></i>
-                    <div><strong>Enterprise M365 Migrations:</strong> Orchestrated tenant-to-tenant migration for 641 users across 6,543 GB — 122 SharePoint sites, 305 OneDrive accounts, 273 mailboxes, 193 devices across 23 locations using BitTitan, Azure AD Connect, Exchange Hybrid, Intune, and Autopilot.</div>
+                    <div><strong>Migration & Operations Support:</strong> Helped turn large Microsoft 365 migration work into safer, more verifiable processes with clearer tracking, evidence, and execution checkpoints across users, SharePoint, OneDrive, mailboxes, and devices.</div>
                 </div>
                 <div class="timeline-highlight">
                     <i class="fas fa-check-circle"></i>
-                    <div><strong>AI-Powered MSP Tooling:</strong> Built MCP servers for M365 (101 tools), ITGlue (31 tools), ConnectWise, and HaloPSA. Developed Claude Code plugin with 31 skills and 7 autonomous agents automating data sync, lifecycle management, and compliance reporting.</div>
+                    <div><strong>Service Delivery Automation:</strong> Built internal tooling that makes recurring service work more repeatable: intake, documentation, SOW support, project-discovery handoffs, reporting, and review gates.</div>
                 </div>
                 <div class="timeline-highlight">
                     <i class="fas fa-check-circle"></i>
-                    <div><strong>Platform Automation:</strong> Implemented Power Automate flows for Teams recording management with Paylocity HRIS integration, Exchange Hybrid migration tooling, and SharePoint orchestration with PnP provisioning templates.</div>
+                    <div><strong>Operational Review Artifacts:</strong> Developed workflows that turn tickets, notes, agreements, usage data, and operational evidence into review-ready packets for account, project, invoice-review, PBR/QBR, and service-delivery conversations.</div>
                 </div>
                 <div class="timeline-highlight">
                     <i class="fas fa-check-circle"></i>
-                    <div><strong>Migration Platform Development:</strong> Engineered EZMig — a 14-phase SharePoint migration platform with Azure Blob staging, incremental sync, and cross-tenant permission mapping.</div>
+                    <div><strong>Governed AI-Assisted Workflows:</strong> Designed AI-assisted operations patterns around scoped actions, human review, evidence trails, and preview-before-write gates instead of uncontrolled automation.</div>
                 </div>
             </div>
 
             <div class="timeline-technologies">
-                <span class="timeline-tech"><i class="fas fa-robot"></i> MCP / Claude Code</span>
-                <span class="timeline-tech"><i class="fab fa-microsoft"></i> Microsoft 365</span>
-                <span class="timeline-tech"><i class="fas fa-exchange-alt"></i> BitTitan</span>
-                <span class="timeline-tech"><i class="fas fa-laptop"></i> Intune / Autopilot</span>
-                <span class="timeline-tech"><i class="fab fa-python"></i> Python</span>
-                <span class="timeline-tech"><i class="fas fa-terminal"></i> PowerShell</span>
+                <span class="timeline-tech"><i class="fab fa-microsoft"></i> Microsoft 365 migration</span>
+                <span class="timeline-tech"><i class="fas fa-diagram-project"></i> Service delivery automation</span>
+                <span class="timeline-tech"><i class="fas fa-file-signature"></i> SOW / PBR support</span>
+                <span class="timeline-tech"><i class="fas fa-clipboard-check"></i> Review gates</span>
+                <span class="timeline-tech"><i class="fas fa-chart-line"></i> Operational reporting</span>
+                <span class="timeline-tech"><i class="fas fa-user-check"></i> Governed AI workflows</span>
             </div>
         </div>
     </div>

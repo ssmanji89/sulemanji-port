@@ -11,12 +11,12 @@ The one-page version. The [Experience](/experience) page has the full fifteen-ye
 ## Recent experience
 
 ### Viyu Network Solutions (July 2025 - Present)
-**Solutions Architect & Automation Engineer**
+**Sr. Services Engineer; acting as Solutions Architect & Automation Engineer**
 
-- Orchestrated tenant-to-tenant M365 migration: 641 users, 6,543 GB, 122 SharePoint sites, 305 OneDrive, 273 mailboxes across 23 locations
-- Built MCP/CLI tooling across M365 (101 tools), ITGlue (31 tools), ConnectWise, and HaloPSA (~130 total)
-- Developed Claude Code plugin with 31 skills and 7 autonomous agents, with meaningful weekly time savings
-- Engineered EZMig — 14-phase SharePoint migration platform with Azure Blob staging and incremental sync
+- Helped support large Microsoft 365 migration work across users, SharePoint, OneDrive, mailboxes, devices, and operational checkpoints
+- Built internal tooling for professional-services scoping, SOW support, project discovery, documentation handoffs, and review gates
+- Developed PBR/QBR, invoice-review, operational reporting, and evidence-packet workflows for service-delivery conversations
+- Designed governed AI-assisted workflow patterns with human review, scoped actions, and preview-before-write controls
 - Published halopsa-workflows-mcp on npm; featured in MCP registries
 
 ### ZG Companies (December 2023 - March 2025)
@@ -35,8 +35,8 @@ The one-page version. The [Experience](/experience) page has the full fifteen-ye
 ## Automation Highlights
 
 ### AI-Powered Toolchains
-- MCP servers bridging M365, ITGlue, ConnectWise, HaloPSA with Claude AI
-- Autonomous agents for data sync, lifecycle management, compliance reporting
+- AI-assisted workflow tooling for service platforms, reporting, and operational review
+- Governed workflow patterns for scoped actions, evidence trails, and human review
 - n8n workflow automation for MSP operational efficiency
 
 ### Workflow Optimization
@@ -45,9 +45,9 @@ The one-page version. The [Experience](/experience) page has the full fifteen-ye
 - Custom TypeScript and PowerShell automation (40+ scripts per engagement)
 
 ### Enterprise Migration Tooling
-- EZMig: 14-phase SharePoint migration platform
-- BitTitan MigrationWiz orchestration at scale
-- Exchange Hybrid and Azure AD Connect automation
+- Microsoft 365 migration planning, tracking, and evidence support
+- Migration orchestration and operational checkpoint design
+- Exchange Hybrid and identity automation
 
 [View Full Experience](/experience)
 [View Projects](/projects)

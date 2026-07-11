@@ -1,10 +1,10 @@
 ---
 layout: default
 title: Suleman Manji
-description: Engineer and builder in Houston — MSP automation, AI agent tooling, and the occasional math problem.
+description: Engineer and builder in Houston — service-delivery automation, AI-assisted workflow tooling, and the occasional math problem.
 hero_eyebrow: Engineer · Builder · Houston
 hero_title: 'I build automation — for work, and for the fun of it.'
-hero_lede: "By day I architect Microsoft 365 migrations and AI-agent tooling for managed-service operations. The rest of the time, I'm usually building a bot for something."
+hero_lede: "By day I help architect Microsoft 365 migration work, service-delivery automation, and AI-assisted operational workflows. The rest of the time, I'm usually building a bot for something."
 hero_ctas:
   - label: About me
     url: /about
@@ -32,8 +32,8 @@ hero_signals:
 <div class="card-grid" markdown="0">
   <div class="card">
     <span class="card-icon"><i class="fas fa-diagram-project"></i></span>
-    <h3>MSP automation platforms</h3>
-    <p>The deepest work: an eight-platform operations engine wiring Microsoft 365, ConnectWise, ITGlue, ScreenConnect, Sophos and more into one toolchain — plus a multi-tenant Teams ticketing system and AI ticket triage. Production systems, not demos.</p>
+    <h3>Service-delivery automation</h3>
+    <p>The deepest work: turning recurring service operations into scoped, reviewable workflows for SOW support, project discovery, PBR/QBR preparation, invoice-review, operational evidence, and human approval gates. Production systems, not demos.</p>
   </div>
   <div class="card">
     <span class="card-icon"><i class="fas fa-robot"></i></span>
@@ -43,7 +43,7 @@ hero_signals:
   <div class="card">
     <span class="card-icon"><i class="fas fa-cloud-arrow-up"></i></span>
     <h3>Enterprise M365 &amp; security</h3>
-    <p>Tenant-to-tenant migrations at scale (one: 6,543 GB, 641 users), CyberArk PAM rollouts, ransomware recovery, GDPR Azure migrations — fifteen years of making messy environments safe to operate.</p>
+    <p>Microsoft 365 migration and security work, CyberArk PAM rollouts, ransomware recovery, GDPR Azure migrations — fifteen years of making messy environments safer to operate.</p>
   </div>
 </div>
 
@@ -56,7 +56,7 @@ hero_signals:
   </a>
   <a class="card" href="/projects">
     <h3>Projects →</h3>
-    <p>The real range: MSP platforms, finance agents, MCP infrastructure, and the odd experiments.</p>
+    <p>The real range: service-delivery automation, finance agents, MCP infrastructure, and the odd experiments.</p>
   </a>
   <a class="card" href="/experience">
     <h3>Experience →</h3>

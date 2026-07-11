@@ -52,7 +52,9 @@ The trading work is the clearest example of how far the instinct runs. What star
 
 ## Now
 
-Since July 2025 I've been a Solutions Architect and Automation Engineer at Viyu Network Solutions, and the two halves of my career finally do the same work. The biggest recent project was a tenant-to-tenant Microsoft 365 migration — 641 users, 6,543 GB, 122 SharePoint sites, all of it — which I largely turned into tooling so it could be done safely and verified instead of crossed-fingers. The rest of the time I build the connective tissue between service platforms and AI: roughly a hundred-plus MCP and CLI tools spanning Microsoft 365, ITGlue, ConnectWise, and HaloPSA, a Claude Code plugin with autonomous agents for the repetitive operational work, and a multi-tenant Teams ticketing platform with its own per-customer isolation. A couple of the smaller MCP servers are public and on npm.
+Since July 2025 I've been a Sr. Services Engineer at Viyu Network Solutions, acting as a solutions architect and automation engineer. The work sits where my career usually lands: Microsoft 365 migration work, professional-services scoping, SOW and project-discovery tooling, PBR/QBR and invoice-review support, operational evidence, approval gates, and AI-assisted workflows that need to be useful without becoming reckless.
+
+The important pattern is not a specific internal system. It is taking work that depends on memory, chat threads, tickets, spreadsheets, and heroic follow-up, then turning it into something structured enough to scope, review, verify, and hand off.
 
 ## What I'm actually chasing
 

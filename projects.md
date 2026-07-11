@@ -50,8 +50,8 @@ The substrate everything else runs on — and where I started early.
 
 <div class="card-grid" markdown="0">
   <div class="card">
-    <h3>hermes <span class="proj-meta">· private</span></h3>
-    <p>A white-labeled agent platform: the viyu CLIs, a graph-RAG knowledge base over Microsoft support docs, a five-persona adversarial "council" for hard decisions, and a production Docker stack. Token-compression tooling cuts CLI output by 60–90%.</p>
+    <h3>Governed agent infrastructure <span class="proj-meta">· private</span></h3>
+    <p>Private AI infrastructure for governed service-delivery automation: reviewable retrieval, decision support, evidence-backed recommendations, preview-before-write workflows, and clear approval points before client-impacting changes are made.</p>
   </div>
   <div class="card">
     <h3><a href="https://github.com/ssmanji89/postgres-mcp-tools">postgres-mcp-tools</a> <span class="proj-meta">· public · npm</span></h3>

@@ -32,6 +32,51 @@ The refreshed Viyu repo shows substantial work around:
 Public copy should draw from those broad themes, not from internal names,
 platform inventories, or architecture details.
 
+## Design Mechanics
+
+### Architecture
+
+This is a content-only calibration of the existing Jekyll portfolio. It should
+not introduce new layouts, CSS, navigation systems, dependencies, or new
+dynamic behavior. The work consists of rewriting public Markdown/HTML content
+and adding a small verification script that encodes the public-positioning
+constraints.
+
+### Components
+
+- Public content pages: `index.md`, `about.md`, `projects.md`,
+  `experience.md`, `resume.md`, and `story.md`.
+- Planning artifacts: this spec and the follow-on implementation plan under
+  `docs/superpowers/`.
+- Verification script: a stdlib-only script under `scripts/` that checks public
+  pages for forbidden terms and required safe-positioning phrases.
+
+### Data Flow
+
+The content flow is static:
+
+1. Markdown/front matter is edited in the public content pages.
+2. Jekyll renders those files into `_site/`.
+3. Verification scans source pages and generated output for forbidden public
+   terms.
+
+No user data, credentials, APIs, or runtime data flow are involved.
+
+### Error Handling
+
+The verifier should fail closed. If a public page contains a forbidden term or
+misses a required positioning phrase, it should print the file and issue, then
+exit non-zero. If the Jekyll build fails, implementation is not complete.
+
+### Testing
+
+Testing is content verification rather than unit testing:
+
+- Run the positioning verifier against public source pages.
+- Run `bundle exec jekyll build`.
+- Scan generated `_site` output for the forbidden public terms.
+- Confirm `CNAME` remains `www.sulemanji.com`.
+
 ## Goals
 
 - Remove public mentions of `bodhi-teams`, `Bodhi`, `Commissions console`,
@@ -44,6 +89,23 @@ platform inventories, or architecture details.
   and review-gate tooling as broad process achievements.
 - Avoid leaking internal IP, client names, implementation details, tool counts,
   or sensitive system topology.
+
+## Approved Approach
+
+Use process-led Viyu positioning.
+
+This approach keeps Viyu visible as credible current work, but describes it by
+achievements and operating patterns instead of private product names or
+technology inventory. The public site should make the reader understand the
+shape of the work: messy service operations are turned into scoped, reviewable,
+evidence-backed workflows with human approval gates.
+
+Rejected alternatives:
+
+- Minimal redaction: too likely to leave uneven copy and technology-heavy
+  private details in place.
+- Fully abstract Viyu: safest, but too weak as portfolio evidence and less
+  useful for supporting the AI Workflow Clinic offer.
 
 ## Non-Goals
 

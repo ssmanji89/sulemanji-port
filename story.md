@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Story | Suleman Manji
-description: The long version — how Suleman Manji went from a brake-shop counter in Houston to building AI agent platforms for managed-service operations.
+description: The long version — how Suleman Manji went from a brake-shop counter in Houston to building service-delivery systems for managed operations.
 permalink: /story
 hero_eyebrow: The long version
 hero_title: From brakes to bytes.

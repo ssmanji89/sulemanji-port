@@ -57,6 +57,7 @@ Create `scripts/verify_viyu_positioning.py`:
 ```python
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 import sys
 
 
@@ -84,6 +85,10 @@ FORBIDDEN = [
     "typed adapter",
     "viyu-agents apis",
     "viyu-agents",
+]
+
+FORBIDDEN_PATTERNS = [
+    re.compile(r"\bcommissions?\b", re.IGNORECASE),
 ]
 
 REQUIRED_BY_FILE = {
@@ -147,6 +152,11 @@ def main():
         for forbidden in FORBIDDEN:
             if forbidden in lowered:
                 failures.append(f"{path.name} contains forbidden public term: {forbidden}")
+        for forbidden_pattern in FORBIDDEN_PATTERNS:
+            if forbidden_pattern.search(text):
+                failures.append(
+                    f"{path.name} contains forbidden public pattern: {forbidden_pattern.pattern}"
+                )
 
         for required in REQUIRED_BY_FILE.get(path.name, []):
             if required not in text:
@@ -421,7 +431,7 @@ Expected: command exits `0`.
 Run:
 
 ```bash
-if rg -i "bodhi|commissions console|commission console|commission dashboard|commission operations|earned/paid/owed|eight-platform|eight TypeScript CLIs|per-customer isolation|Docker container|typed adapter|viyu-agents APIs|viyu-agents" _site/index.html _site/about.html _site/projects.html _site/experience.html _site/resume.html _site/story.html; then
+if rg -i "bodhi|\\bcommissions?\\b|commissions console|commission console|commission dashboard|commission operations|earned/paid/owed|eight-platform|eight TypeScript CLIs|per-customer isolation|Docker container|typed adapter|viyu-agents APIs|viyu-agents" _site/index.html _site/about.html _site/projects.html _site/experience.html _site/resume.html _site/story.html; then
   echo "Forbidden public positioning found"
   exit 1
 else

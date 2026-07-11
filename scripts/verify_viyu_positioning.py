@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import re
 import sys
 
 
@@ -27,6 +28,10 @@ FORBIDDEN = [
     "typed adapter",
     "viyu-agents apis",
     "viyu-agents",
+]
+
+FORBIDDEN_PATTERNS = [
+    re.compile(r"\bcommissions?\b", re.IGNORECASE),
 ]
 
 REQUIRED_BY_FILE = {
@@ -90,6 +95,11 @@ def main():
         for forbidden in FORBIDDEN:
             if forbidden in lowered:
                 failures.append(f"{path.name} contains forbidden public term: {forbidden}")
+        for forbidden_pattern in FORBIDDEN_PATTERNS:
+            if forbidden_pattern.search(text):
+                failures.append(
+                    f"{path.name} contains forbidden public pattern: {forbidden_pattern.pattern}"
+                )
 
         for required in REQUIRED_BY_FILE.get(path.name, []):
             if required not in text:

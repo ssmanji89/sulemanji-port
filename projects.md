@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Projects | Suleman Manji
-description: The real range of Suleman Manji's work — MSP automation platforms, AI agent and MCP infrastructure, autonomous finance systems, and a pile of experiments.
+description: The real range of Suleman Manji's work — service-delivery automation, process-led AI systems, Microsoft 365 and cloud tools, autonomous finance systems, and a pile of experiments.
 permalink: /projects
 hero_eyebrow: Selected work
 hero_title: What I've built.

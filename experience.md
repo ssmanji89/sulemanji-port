@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Professional Experience | Suleman Manji | Hands-On Technologist
-description: "Suleman Manji's professional history — a hands-on, analytical career across NOC automation, cloud and security engineering, Microsoft 365, and AI-powered MSP tooling."
+description: "Suleman Manji's professional history — a hands-on, analytical career across NOC automation, cloud and security engineering, Microsoft 365, and service-delivery process automation."
 permalink: /experience
 ---
 

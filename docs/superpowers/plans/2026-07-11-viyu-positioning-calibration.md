@@ -28,15 +28,15 @@
 - Modify `projects.md`
   - Replaces private project-name cards with process-oriented Viyu service-delivery automation cards.
 - Modify `experience.md`
-  - Corrects Viyu title and rewrites current-role highlights.
+  - Corrects Viyu title, rewrites current-role highlights, and replaces technology-heavy tags with process tags.
 - Modify `resume.md`
   - Corrects Viyu title and rewrites recent-experience bullets.
 - Modify `story.md`
   - Rewrites the "Now" section with safer process language.
 - Modify `about.md`
-  - Corrects broad identity language.
+  - Corrects front matter and broad identity language.
 - Modify `index.md`
-  - Corrects homepage lede/current-work framing.
+  - Corrects homepage lede/current-work framing and the first "What I do" card.
 
 ---
 
@@ -207,11 +207,11 @@ The deepest work I do is turning recurring service operations into systems that 
 <div class="card-grid" markdown="0">
   <div class="proj">
     <h3>Service delivery automation at Viyu <span class="proj-meta">· private · production</span></h3>
-    <p>Internal tooling for professional-services and managed-services workflows: SOW intake and generation, project discovery runbooks, PBR/QBR report preparation, invoice-review support, operational evidence packets, and approval gates around client-impacting actions. The important pattern is not any single platform. It is making messy service work easier to scope, verify, review, and hand off.</p>
+    <p>Internal tooling for professional-services and managed-services workflows: SOW intake and generation, project discovery runbooks, PBR/QBR report preparation, invoice-review support, operational evidence packets, and review gates around client-impacting actions. The important pattern is not any single platform. It is making messy service work easier to scope, verify, review, and hand off.</p>
   </div>
   <div class="proj">
     <h3>Review-ready operations artifacts <span class="proj-meta">· private</span></h3>
-    <p>Systems that turn scattered tickets, notes, agreements, usage data, and operational evidence into reviewable artifacts: scope records, business-review packets, audit findings, client-safe placeholders, open questions, assumptions, risks, and next-action lists.</p>
+    <p>Systems that turn scattered tickets, notes, agreements, usage data, and operational evidence into reviewable artifacts: scope records, business-review packets, audit findings, client-safe clarifications, open questions, assumptions, risks, and next-action lists.</p>
   </div>
   <div class="proj">
     <h3>Governed AI-assisted workflows <span class="proj-meta">· private</span></h3>
@@ -257,7 +257,7 @@ In the Viyu timeline item:
 - Replace the Viyu `timeline-description` paragraph with:
 
 ```html
-Acting as a solutions architect and automation engineer across Microsoft 365 migration work, professional-services scoping, service-delivery automation, operational reporting, and governed AI-assisted internal workflows.
+Currently acting as a solutions architect and automation engineer across Microsoft 365 migration work, professional-services scoping, service-delivery automation, operational reporting, and governed AI-assisted internal workflows.
 ```
 
 - Replace the four Viyu `timeline-highlight` blocks with these four blocks:
@@ -279,6 +279,17 @@ Acting as a solutions architect and automation engineer across Microsoft 365 mig
     <i class="fas fa-check-circle"></i>
     <div><strong>Governed AI-Assisted Workflows:</strong> Designed AI-assisted operations patterns around scoped actions, human review, evidence trails, and preview-before-write gates instead of uncontrolled automation.</div>
 </div>
+```
+
+- Replace the Viyu `timeline-technologies` spans with these safer process tags:
+
+```html
+<span class="timeline-tech"><i class="fab fa-microsoft"></i> Microsoft 365 migration</span>
+<span class="timeline-tech"><i class="fas fa-diagram-project"></i> Service delivery automation</span>
+<span class="timeline-tech"><i class="fas fa-file-signature"></i> SOW / PBR support</span>
+<span class="timeline-tech"><i class="fas fa-clipboard-check"></i> Review gates</span>
+<span class="timeline-tech"><i class="fas fa-chart-line"></i> Operational reporting</span>
+<span class="timeline-tech"><i class="fas fa-user-check"></i> Governed AI workflows</span>
 ```
 
 - [ ] **Step 2: Update `resume.md` Viyu role**
@@ -315,7 +326,13 @@ Since July 2025 I've been a Sr. Services Engineer at Viyu Network Solutions, act
 The important pattern is not a specific internal system. It is taking work that depends on memory, chat threads, tickets, spreadsheets, and heroic follow-up, then turning it into something structured enough to scope, review, verify, and hand off.
 ```
 
-- [ ] **Step 4: Update `about.md` opening**
+- [ ] **Step 4: Update `about.md` front matter and opening**
+
+Replace the `description` front matter with:
+
+```yaml
+description: Suleman Manji — a Houston-based Sr. Services Engineer who often acts as a solutions architect and automation engineer across service platforms, infrastructure, and AI-assisted workflow tooling.
+```
 
 Replace the first paragraph under `# About` with:
 
@@ -323,12 +340,31 @@ Replace the first paragraph under `# About` with:
 I work as a Sr. Services Engineer in Houston, often acting as a solutions architect and automation engineer. For about fifteen years I've worked the seam between IT operations and the systems that make them less manual — managed services, Microsoft 365 at enterprise scale, security and identity, and lately the AI-assisted workflow tooling that ties messy service work together.
 ```
 
-- [ ] **Step 5: Update `index.md` hero lede**
+- [ ] **Step 5: Update `index.md` homepage framing**
+
+Replace the `description` front matter with:
+
+```yaml
+description: Engineer and builder in Houston — service-delivery automation, AI-assisted workflow tooling, and the occasional math problem.
+```
 
 Replace `hero_lede` with:
 
 ```yaml
 hero_lede: "By day I help architect Microsoft 365 migration work, service-delivery automation, and AI-assisted operational workflows. The rest of the time, I'm usually building a bot for something."
+```
+
+Replace the first `## What I do` card title and paragraph with:
+
+```html
+<h3>Service-delivery automation</h3>
+<p>The deepest work: turning recurring service operations into scoped, reviewable workflows for SOW support, project discovery, PBR/QBR preparation, invoice-review, operational evidence, and human approval gates. Production systems, not demos.</p>
+```
+
+Replace the `/projects` card paragraph under `## Where to go next` with:
+
+```html
+<p>The real range: service-delivery automation, finance agents, MCP infrastructure, and the odd experiments.</p>
 ```
 
 - [ ] **Step 6: Run verifier**
@@ -385,7 +421,7 @@ Expected: command exits `0`.
 Run:
 
 ```bash
-if rg -i "bodhi|commissions console|commission console|commission dashboard|commission operations|earned/paid/owed|eight-platform|eight TypeScript CLIs|per-customer isolation|Docker container|typed adapter|viyu-agents APIs|viyu-agents" _site/index.html _site/about/index.html _site/projects/index.html _site/experience/index.html _site/resume/index.html _site/story/index.html; then
+if rg -i "bodhi|commissions console|commission console|commission dashboard|commission operations|earned/paid/owed|eight-platform|eight TypeScript CLIs|per-customer isolation|Docker container|typed adapter|viyu-agents APIs|viyu-agents" _site/index.html _site/about.html _site/projects.html _site/experience.html _site/resume.html _site/story.html; then
   echo "Forbidden public positioning found"
   exit 1
 else

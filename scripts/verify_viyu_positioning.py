@@ -13,6 +13,9 @@ PUBLIC_FILES = [
     ROOT / "resume.md",
     ROOT / "story.md",
 ]
+PUBLIC_METADATA_FILES = [
+    ROOT / "_config.yml",
+]
 
 FORBIDDEN = [
     "bodhi",
@@ -28,6 +31,8 @@ FORBIDDEN = [
     "typed adapter",
     "viyu-agents apis",
     "viyu-agents",
+    "msp automation",
+    "ai agent tooling",
 ]
 
 FORBIDDEN_PATTERNS = [
@@ -86,14 +91,14 @@ def main():
     if not cname.exists() or read(cname).strip() != "www.sulemanji.com":
         failures.append("CNAME must remain www.sulemanji.com")
 
-    for path in PUBLIC_FILES:
+    for path in [*PUBLIC_FILES, *PUBLIC_METADATA_FILES]:
         if not path.exists():
             failures.append(f"{path.name} is missing")
             continue
         text = read(path)
         lowered = text.lower()
         for forbidden in FORBIDDEN:
-            if forbidden in lowered:
+            if forbidden.lower() in lowered:
                 failures.append(f"{path.name} contains forbidden public term: {forbidden}")
         for forbidden_pattern in FORBIDDEN_PATTERNS:
             if forbidden_pattern.search(text):

@@ -431,7 +431,7 @@ Expected: command exits `0`.
 Run:
 
 ```bash
-if rg -i "bodhi|\\bcommissions?\\b|commissions console|commission console|commission dashboard|commission operations|earned/paid/owed|eight-platform|eight TypeScript CLIs|per-customer isolation|Docker container|typed adapter|viyu-agents APIs|viyu-agents" _site/index.html _site/about.html _site/projects.html _site/experience.html _site/resume.html _site/story.html; then
+if rg -i "bodhi|\\bcommissions?\\b|commissions console|commission console|commission dashboard|commission operations|earned/paid/owed|eight-platform|eight TypeScript CLIs|per-customer isolation|Docker container|typed adapter|viyu-agents APIs|viyu-agents|MSP automation|AI agent tooling" _site/index.html _site/about.html _site/projects.html _site/experience.html _site/resume.html _site/story.html; then
   echo "Forbidden public positioning found"
   exit 1
 else

@@ -9,11 +9,11 @@ hero_ctas:
   - label: About me
     url: /about
     style: btn-primary
+  - label: Work With Me
+    url: /work-with-me
+    style: btn-outline
   - label: Projects
     url: /projects
-    style: btn-outline
-  - label: Beyond Work
-    url: /beyond
     style: btn-outline
   - label: GitHub
     url: https://github.com/ssmanji89
@@ -50,20 +50,24 @@ hero_signals:
 ## Where to go next
 
 <div class="card-grid" markdown="0">
+  <a class="card" href="/work-with-me">
+    <h3>Work With Me -></h3>
+    <p>Bring me a messy workflow, stuck AI-assisted process, or rough automation idea and we will turn it into a practical next step.</p>
+  </a>
   <a class="card" href="/story">
-    <h3>Story →</h3>
-    <p>The long version — brake shop to NOC to AI agents, and the why underneath it.</p>
+    <h3>Story -></h3>
+    <p>The long version - brake shop to NOC to AI agents, and the why underneath it.</p>
   </a>
   <a class="card" href="/projects">
-    <h3>Projects →</h3>
+    <h3>Projects -></h3>
     <p>The real range: service-delivery automation, finance agents, MCP infrastructure, and the odd experiments.</p>
   </a>
   <a class="card" href="/experience">
-    <h3>Experience →</h3>
-    <p>Fifteen years, in detail — ERGOS, energy, security consulting, real estate, Viyu.</p>
+    <h3>Experience -></h3>
+    <p>Fifteen years, in detail - ERGOS, energy, security consulting, real estate, Viyu.</p>
   </a>
   <a class="card" href="/beyond">
-    <h3>Beyond Work →</h3>
+    <h3>Beyond Work -></h3>
     <p>Markets, mathematics, genealogy, dream engineering, and the things I build for fun.</p>
   </a>
 </div>

@@ -23,8 +23,13 @@ FORBIDDEN_PUBLIC_PATTERNS = [
     (r"\bpricing\b", "pricing"),
     (r"pricing tables?", "pricing tables"),
     (r"\bcalendly\b", "Calendly"),
+    (r"google calendar", "Google Calendar"),
     (r"google forms?", "Google Forms"),
+    (r"intake forms?", "intake forms"),
     (r"booking forms?", "booking forms"),
+    (r"payment links?", "payment links"),
+    (r"custom booking backend", "custom booking backend"),
+    (r"agency branding", "separate agency branding"),
     (r"mechanic quote", "mechanic quote"),
     (r"vehicle[- ]repair", "vehicle repair"),
     (r"invoice review", "vehicle-repair invoice review"),
@@ -101,6 +106,7 @@ def main():
     for path in PUBLIC_SOURCE_FILES:
         check_forbidden(path, failures)
 
+    require(SITE_PAGE.exists(), "_site/work-with-me.html is missing; run bundle exec jekyll build", failures)
     if SITE_PAGE.exists():
         site_text = read(SITE_PAGE)
         require("AI Workflow Clinic" in site_text, "_site/work-with-me.html must include AI Workflow Clinic", failures)

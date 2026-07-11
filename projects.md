@@ -10,22 +10,22 @@ hero_lede: "A few hundred repositories, most of them private. This is the honest
 
 A note on honesty: most of my strongest work is private or client-facing, so I describe those by what they do, not by exposing internals or client names. Where something is public, I link it. Forks and spec-stage work are labeled as such.
 
-## MSP automation platforms
+## Service delivery automation
 
-The center of gravity, and the deepest engineering I do.
+The deepest work I do is turning recurring service operations into systems that are easier to scope, review, and trust.
 
 <div class="card-grid" markdown="0">
   <div class="proj">
-    <h3>viyu-agents <span class="proj-meta">· private · production</span></h3>
-    <p>An eight-platform operations engine for managed services. Eight TypeScript CLIs bridge Microsoft 365, ConnectWise Manage &amp; Automate, ITGlue, ScreenConnect, Sophos Central, VMware Cloud Director, and Cavelo — all addressable from Claude Code through a large library of orchestration skills and autonomous agents covering employee lifecycle, incident response, SLA monitoring, license optimization, and remediation. A safety layer guards every write.</p>
+    <h3>Service delivery automation at Viyu <span class="proj-meta">· private · production</span></h3>
+    <p>Internal tooling for professional-services and managed-services workflows: SOW intake and generation, project discovery runbooks, PBR/QBR report preparation, invoice-review support, operational evidence packets, and review gates around client-impacting actions. The important pattern is not any single platform. It is making messy service work easier to scope, verify, review, and hand off.</p>
   </div>
   <div class="proj">
-    <h3>bodhi-teams <span class="proj-meta">· private · production</span></h3>
-    <p>A multi-tenant Microsoft Teams ticketing platform. Six microservices over one Postgres database with per-org isolation; each customer gets a dynamically provisioned Docker container for runtime isolation while sharing a single bot registration. ConnectWise is the system of record; tickets surface inline as Adaptive Cards. Fastify, Prisma, Redis/BullMQ, Bot Framework, Next.js.</p>
+    <h3>Review-ready operations artifacts <span class="proj-meta">· private</span></h3>
+    <p>Systems that turn scattered tickets, notes, agreements, usage data, and operational evidence into reviewable artifacts: scope records, business-review packets, audit findings, client-safe clarifications, open questions, assumptions, risks, and next-action lists.</p>
   </div>
   <div class="proj">
-    <h3>Commissions console <span class="proj-meta">· private</span></h3>
-    <p>A close-the-month console for commission operations — pick a month, clear blockers, reconcile earned/paid/owed per rep, route to an approver — built as a typed adapter over the viyu-agents APIs with readiness gates and role-based access.</p>
+    <h3>Governed AI-assisted workflows <span class="proj-meta">· private</span></h3>
+    <p>AI-assisted workflow patterns with human review, evidence trails, preview-before-write gates, and explicit boundaries. I care less about autonomous demos than about systems that can show what they used, what they changed, what they skipped, and where a person needs to approve the next step.</p>
   </div>
 </div>
 

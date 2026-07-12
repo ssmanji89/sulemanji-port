@@ -1,4 +1,4 @@
-import type { CaseStatus, IntakeInput } from "../domain/case";
+import { IntakeInput, type CaseStatus } from "../domain/case";
 import { canTransition } from "../domain/state-machine";
 
 export interface ConsentMeta {
@@ -52,6 +52,7 @@ export class D1CaseRepository implements CaseRepository {
     input: IntakeInput,
     meta: ConsentMeta,
   ): Promise<{ id: string; publicToken: string }> {
+    const parsedInput = IntakeInput.parse(input);
     const id = crypto.randomUUID();
     const consentId = crypto.randomUUID();
     const auditId = crypto.randomUUID();
@@ -71,10 +72,10 @@ export class D1CaseRepository implements CaseRepository {
         .bind(
           id,
           publicTokenHash,
-          input.email,
-          input.name,
-          input.contextType,
-          input.path,
+          parsedInput.email,
+          parsedInput.name,
+          parsedInput.contextType,
+          parsedInput.path,
           status,
           now,
           now,
@@ -89,10 +90,10 @@ export class D1CaseRepository implements CaseRepository {
         )
         .bind(
           id,
-          input.problem,
-          input.desiredOutcome,
-          input.priorAttempts,
-          JSON.stringify(input.sanitizedLinks),
+          parsedInput.problem,
+          parsedInput.desiredOutcome,
+          parsedInput.priorAttempts,
+          JSON.stringify(parsedInput.sanitizedLinks),
           null,
         ),
       this.db
@@ -118,7 +119,7 @@ export class D1CaseRepository implements CaseRepository {
           auditId,
           id,
           "intake_created",
-          JSON.stringify({ path: input.path, status }),
+          JSON.stringify({ path: parsedInput.path, status }),
           now,
         ),
     ]);
@@ -166,33 +167,37 @@ export class D1CaseRepository implements CaseRepository {
     }
 
     const now = new Date().toISOString();
-    const result = await this.db
-      .prepare(
-        `UPDATE cases
-        SET status = ?, updated_at = ?, closed_at = ?
-        WHERE id = ? AND status = ?`,
-      )
-      .bind(next, now, next === "closed" ? now : null, id, expected)
-      .run();
+    const [transitionResult, auditResult] = await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE cases
+          SET status = ?, updated_at = ?, closed_at = ?
+          WHERE id = ? AND status = ?`,
+        )
+        .bind(next, now, next === "closed" ? now : null, id, expected),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (
+            id, case_id, event_type, data_json, created_at
+          )
+          SELECT ?, ?, ?, ?, ?
+          WHERE changes() = 1`,
+        )
+        .bind(
+          crypto.randomUUID(),
+          id,
+          event,
+          JSON.stringify({ from: expected, to: next }),
+          now,
+        ),
+    ]);
 
-    if (result.meta.changes !== 1) {
+    if (
+      transitionResult?.meta.changes !== 1 ||
+      auditResult?.meta.changes !== 1
+    ) {
       throw new Error("Case transition failed");
     }
-
-    await this.db
-      .prepare(
-        `INSERT INTO audit_events (
-          id, case_id, event_type, data_json, created_at
-        ) VALUES (?, ?, ?, ?, ?)`,
-      )
-      .bind(
-        crypto.randomUUID(),
-        id,
-        event,
-        JSON.stringify({ from: expected, to: next }),
-        now,
-      )
-      .run();
   }
 }
 

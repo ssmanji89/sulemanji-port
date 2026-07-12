@@ -24,6 +24,12 @@ export interface CaseRepository {
     input: IntakeInput,
     meta: ConsentMeta,
   ): Promise<{ id: string; publicToken: string }>;
+  createIntakeInStatus(
+    input: IntakeInput,
+    meta: ConsentMeta,
+    next: CaseStatus,
+    event: string,
+  ): Promise<{ id: string; publicToken: string }>;
   getByPublicToken(token: string): Promise<PublicCase | null>;
   transition(
     id: string,
@@ -120,6 +126,104 @@ export class D1CaseRepository implements CaseRepository {
           id,
           "intake_created",
           JSON.stringify({ path: parsedInput.path, status }),
+          now,
+        ),
+    ]);
+
+    return { id, publicToken };
+  }
+
+  async createIntakeInStatus(
+    input: IntakeInput,
+    meta: ConsentMeta,
+    next: CaseStatus,
+    event: string,
+  ): Promise<{ id: string; publicToken: string }> {
+    if (!canTransition("intake_received", next)) {
+      throw new Error(`Invalid case transition: intake_received to ${next}`);
+    }
+
+    const parsedInput = IntakeInput.parse(input);
+    const id = crypto.randomUUID();
+    const consentId = crypto.randomUUID();
+    const intakeAuditId = crypto.randomUUID();
+    const transitionAuditId = crypto.randomUUID();
+    const publicToken = randomToken();
+    const publicTokenHash = await sha256(publicToken);
+    const now = new Date().toISOString();
+
+    await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO cases (
+            id, public_token_hash, email, name, context_type, path, status,
+            created_at, updated_at, closed_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          id,
+          publicTokenHash,
+          parsedInput.email,
+          parsedInput.name,
+          parsedInput.contextType,
+          parsedInput.path,
+          next,
+          now,
+          now,
+          null,
+        ),
+      this.db
+        .prepare(
+          `INSERT INTO intakes (
+            case_id, problem, desired_outcome, prior_attempts,
+            sanitized_links_json, redacted_at
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          id,
+          parsedInput.problem,
+          parsedInput.desiredOutcome,
+          parsedInput.priorAttempts,
+          JSON.stringify(parsedInput.sanitizedLinks),
+          null,
+        ),
+      this.db
+        .prepare(
+          `INSERT INTO consents (
+            id, case_id, terms_version, accepted_at, evidence_json
+          ) VALUES (?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          consentId,
+          id,
+          meta.termsVersion,
+          meta.acceptedAt,
+          JSON.stringify(meta.evidence),
+        ),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (
+            id, case_id, event_type, data_json, created_at
+          ) VALUES (?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          intakeAuditId,
+          id,
+          "intake_created",
+          JSON.stringify({ path: parsedInput.path, status: "intake_received" }),
+          now,
+        ),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (
+            id, case_id, event_type, data_json, created_at
+          ) VALUES (?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          transitionAuditId,
+          id,
+          event,
+          JSON.stringify({ from: "intake_received", to: next }),
           now,
         ),
     ]);

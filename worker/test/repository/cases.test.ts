@@ -86,6 +86,71 @@ describe("D1CaseRepository", () => {
     });
   });
 
+  it("creates an intake directly in the requested next status with audit evidence", async () => {
+    const { id, publicToken } = await repository.createIntakeInStatus(
+      validInput,
+      consentMeta,
+      "normal_queue",
+      "case_queued",
+    );
+
+    expect(db.caseStatus(id)).toBe("normal_queue");
+    expect(publicToken).toEqual(expect.any(String));
+    expect(db.auditCount(id, "intake_created")).toBe(1);
+    expect(db.auditCount(id, "case_queued")).toBe(1);
+    expect(db.auditData(id, "case_queued")).toEqual({
+      from: "intake_received",
+      to: "normal_queue",
+    });
+  });
+
+  it("rejects direct intake creation into an invalid next status", async () => {
+    await expect(
+      repository.createIntakeInStatus(
+        validInput,
+        consentMeta,
+        "session_confirmed",
+        "case_confirmed",
+      ),
+    ).rejects.toThrow("Invalid case transition");
+
+    expect(db.tableCount("cases")).toBe(0);
+    expect(db.tableCount("intakes")).toBe(0);
+    expect(db.tableCount("audit_events")).toBe(0);
+  });
+
+  it("rolls back direct intake creation when the transition audit fails", async () => {
+    await expect(
+      repository.createIntakeInStatus(
+        validInput,
+        consentMeta,
+        "normal_queue",
+        null as unknown as string,
+      ),
+    ).rejects.toThrow();
+
+    expect(db.tableCount("cases")).toBe(0);
+    expect(db.tableCount("intakes")).toBe(0);
+    expect(db.tableCount("audit_events")).toBe(0);
+  });
+
+  it("rolls back direct intake creation when the create audit fails", async () => {
+    db.failNextCreateAudit();
+
+    await expect(
+      repository.createIntakeInStatus(
+        validInput,
+        consentMeta,
+        "normal_queue",
+        "case_queued",
+      ),
+    ).rejects.toThrow();
+
+    expect(db.tableCount("cases")).toBe(0);
+    expect(db.tableCount("intakes")).toBe(0);
+    expect(db.tableCount("audit_events")).toBe(0);
+  });
+
   it("rejects invalid transitions without changing status or inserting audit", async () => {
     const { id } = await repository.createIntake(validInput, consentMeta);
 
@@ -177,6 +242,7 @@ class FakeD1Database {
   private intakes = new Map<string, IntakeRecord>();
   private consents = new Map<string, ConsentRecord>();
   private auditEvents: AuditRecord[] = [];
+  private createAuditFailure = false;
 
   asD1(): D1Database {
     return this as unknown as D1Database;
@@ -241,10 +307,18 @@ class FakeD1Database {
   }
 
   insertAudit(record: AuditRecord): void {
+    if (this.createAuditFailure && record.event_type === "intake_created") {
+      this.createAuditFailure = false;
+      throw new Error("forced audit failure");
+    }
     if (record.event_type === null) {
       throw new Error("NOT NULL constraint failed: audit_events.event_type");
     }
     this.auditEvents.push(record);
+  }
+
+  failNextCreateAudit(): void {
+    this.createAuditFailure = true;
   }
 
   updateCaseStatus(
@@ -287,6 +361,7 @@ class FakeD1Database {
       [...this.consents.entries()].map(([key, value]) => [key, { ...value }]),
     );
     copy.auditEvents = this.auditEvents.map((value) => ({ ...value }));
+    copy.createAuditFailure = this.createAuditFailure;
     return copy;
   }
 
@@ -295,6 +370,7 @@ class FakeD1Database {
     this.intakes = snapshot.intakes;
     this.consents = snapshot.consents;
     this.auditEvents = snapshot.auditEvents;
+    this.createAuditFailure = snapshot.createAuditFailure;
   }
 }
 

@@ -19,10 +19,14 @@ export async function verifyTurnstile(
   });
   if (ip) body.set("remoteip", ip);
 
-  const response = await fetch(
-    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-    { method: "POST", body },
-  );
-  const result = (await response.json()) as { success?: boolean };
-  return response.ok && Boolean(result.success);
+  try {
+    const response = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      { method: "POST", body },
+    );
+    const result = (await response.json()) as { success?: boolean };
+    return response.ok && Boolean(result.success);
+  } catch {
+    return false;
+  }
 }

@@ -105,6 +105,72 @@ describe("intake routes", () => {
     );
   });
 
+  it("rejects mutating requests from arbitrary origins without persistence", async () => {
+    const response = await SELF.fetch("https://api.example/v1/intakes", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://attacker.example",
+      },
+      body: JSON.stringify(valid),
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({ error: "forbidden_origin" });
+    await expect(caseCount()).resolves.toBe(0);
+  });
+
+  it("rejects mutating requests without an origin header", async () => {
+    const response = await SELF.fetch("https://api.example/v1/intakes", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(valid),
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({ error: "forbidden_origin" });
+    await expect(caseCount()).resolves.toBe(0);
+  });
+
+  it("rejects oversized request bodies before persistence", async () => {
+    const body = JSON.stringify({
+      ...valid,
+      problem: "x".repeat(20_000),
+    });
+    const response = await SELF.fetch("https://api.example/v1/intakes", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: SITE_ORIGIN,
+        "content-length": String(body.length),
+      },
+      body,
+    });
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toEqual({ error: "request_too_large" });
+    await expect(caseCount()).resolves.toBe(0);
+  });
+
+  it("rejects oversized request bodies without relying on content length", async () => {
+    const body = JSON.stringify({
+      ...valid,
+      problem: "x".repeat(20_000),
+    });
+    const response = await SELF.fetch("https://api.example/v1/intakes", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: SITE_ORIGIN,
+      },
+      body,
+    });
+
+    expect(response.status).toBe(413);
+    await expect(response.json()).resolves.toEqual({ error: "request_too_large" });
+    await expect(caseCount()).resolves.toBe(0);
+  });
+
   it("returns only customer-safe state for a public case token", async () => {
     const created = await postIntake({ ...valid, path: "priority" });
     const { caseToken } = (await created.json()) as { caseToken: string };

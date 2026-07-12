@@ -8,7 +8,14 @@ export const createIntakeRoutes = () => {
   const app = new Hono<{ Bindings: Env }>();
 
   app.post("/intakes", async (c) => {
-    const body = await readJson(c.req.raw);
+    if (c.req.header("Origin") !== c.env.SITE_ORIGIN) {
+      return c.json({ error: "forbidden_origin" }, 403);
+    }
+
+    const body = await readBoundedJson(c.req.raw);
+    if (body === "too_large") {
+      return c.json({ error: "request_too_large" }, 413);
+    }
     if (!body || typeof body !== "object" || Array.isArray(body)) {
       return c.json({ error: "invalid_intake" }, 422);
     }
@@ -34,20 +41,18 @@ export const createIntakeRoutes = () => {
     }
 
     const repository = new D1CaseRepository(c.env.DB);
-    const created = await repository.createIntake(parsed.data, {
-      termsVersion: c.env.TERMS_VERSION,
-      acceptedAt: new Date().toISOString(),
-      evidence: {
-        ip: ip ?? null,
-        origin: c.req.header("Origin") ?? null,
-        userAgent: c.req.header("User-Agent") ?? null,
-      },
-    });
-
     const next = nextStatusForPath(parsed.data.path);
-    await repository.transition(
-      created.id,
-      "intake_received",
+    const created = await repository.createIntakeInStatus(
+      parsed.data,
+      {
+        termsVersion: c.env.TERMS_VERSION,
+        acceptedAt: new Date().toISOString(),
+        evidence: {
+          ip: ip ?? null,
+          origin: c.req.header("Origin") ?? null,
+          userAgent: c.req.header("User-Agent") ?? null,
+        },
+      },
       next,
       parsed.data.path === "priority" ? "priority_checkout_pending" : "case_queued",
     );
@@ -76,9 +81,23 @@ export const createIntakeRoutes = () => {
   return app;
 };
 
-const readJson = async (request: Request): Promise<unknown | null> => {
+const MAX_INTAKE_BODY_BYTES = 16_384;
+
+const readBoundedJson = async (
+  request: Request,
+): Promise<unknown | "too_large" | null> => {
+  const declaredLength = request.headers.get("content-length");
+  if (declaredLength && Number(declaredLength) > MAX_INTAKE_BODY_BYTES) {
+    return "too_large";
+  }
+
+  const text = await request.text();
+  if (new TextEncoder().encode(text).byteLength > MAX_INTAKE_BODY_BYTES) {
+    return "too_large";
+  }
+
   try {
-    return await request.json();
+    return JSON.parse(text) as unknown;
   } catch {
     return null;
   }

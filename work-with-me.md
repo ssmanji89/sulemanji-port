@@ -3,12 +3,13 @@ layout: default
 title: Work With Me
 description: Practical working sessions for people trying to automate messy workflows, rescue stuck AI-assisted projects, or turn rough automation ideas into safer next steps.
 permalink: /work-with-me
+work_with_me_form: true
 hero_eyebrow: Work With Me
 hero_title: Practical help for messy automation work.
 hero_lede: "Bring me a workflow, repo, AI-assisted process, operations problem, or rough automation idea that feels hard to untangle. We will turn it into a clearer map, safer next step, or build path."
 hero_ctas:
   - label: Bring me a messy problem
-    url: mailto:ssmanji89@gmail.com?subject=Work%20With%20Me
+    url: "#work-with-me-intake"
     style: btn-primary
   - label: See the work
     url: /projects
@@ -78,20 +79,34 @@ If the problem is small enough, we may fix or prototype part of it during the se
 
 Do not send secrets, API keys, passwords, tokens, production credentials, regulated records, or private third-party data.
 
-A first working session does not require custody of production systems or employer/client access. Sanitized examples are preferred. This is not regulated legal, medical, financial, or compliance advice.
+A first working session does not require custody of production systems or employer/client access. Sanitized examples are preferred. Do not send attachments at intake. This is not regulated legal, medical, financial, or compliance advice.
 
 One session may produce a plan, map, prototype direction, cleanup path, or next-step checklist. It does not guarantee production deployment.
 
 ## How to start
 
-Email me a short note with:
+Use the intake below to describe one messy problem. AI participates in discovery and blueprint generation when the backend processes a case, and Suleman may review any thread before next steps are sent.
 
-1. what you are trying to automate or untangle
-2. what you have tried so far
-3. where it currently gets messy or stuck
-4. what a useful outcome would look like
+Choose normal review if you want me to look manually as time allows. Choose Priority Discovery if you want the paid discovery path after intake; live checkout is unavailable until the legal/tax review is complete.
 
-<div class="cta-buttons">
-  <a href="mailto:ssmanji89@gmail.com?subject=Work%20With%20Me" class="btn btn-primary">Bring me a messy problem</a>
-  <a href="/projects" class="btn btn-outline">See the work</a>
-</div>
+<form id="work-with-me-intake" class="intake-form" data-endpoint="https://api.sulemanji.com/v1/intakes">
+  <label class="form-field">Name <input name="name" required minlength="2" maxlength="120" autocomplete="name"></label>
+  <label class="form-field">Email <input name="email" type="email" required maxlength="254" autocomplete="email"></label>
+  <fieldset><legend>This workflow is mainly</legend>
+    <label><input type="radio" name="contextType" value="personal" required> Personal</label>
+    <label><input type="radio" name="contextType" value="professional" required> Professional</label>
+  </fieldset>
+  <label class="form-field">What is messy? <textarea name="problem" required minlength="40" maxlength="6000"></textarea></label>
+  <label class="form-field">What would useful look like? <textarea name="desiredOutcome" required minlength="20" maxlength="3000"></textarea></label>
+  <label class="form-field">What have you tried? <textarea name="priorAttempts" maxlength="3000"></textarea></label>
+  <label class="form-field">Sanitized links, one per line <textarea name="sanitizedLinks" maxlength="2000"></textarea></label>
+  <fieldset class="path-choice"><legend>Review path</legend>
+    <label><input type="radio" name="path" value="normal" required> Normal review queue</label>
+    <label><input type="radio" name="path" value="priority" required> Priority Discovery deposit</label>
+  </fieldset>
+  <label><input type="checkbox" name="termsAccepted" required> I accept the <a href="/work-with-me/terms">service terms</a> and <a href="/privacy">privacy notice</a>.</label>
+  <input name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <input name="turnstileToken" type="hidden">
+  <p id="intake-status" class="form-status" role="status" aria-live="polite"></p>
+  <button class="btn btn-primary" type="submit">Submit problem</button>
+</form>

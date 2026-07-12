@@ -56,7 +56,7 @@
           });
           const result = await response.json();
           if (!response.ok) throw new Error(result.error || "submission_failed");
-          window.location.assign(result.next === 'checkout' ? `/work-with-me/priority?case=${encodeURIComponent(result.caseToken)}` : `/work-with-me/thanks?case=${encodeURIComponent(result.caseToken)}`);
+          window.location.assign(result.next === 'checkout_pending' ? `/work-with-me/priority?case=${encodeURIComponent(result.caseToken)}` : `/work-with-me/thanks?case=${encodeURIComponent(result.caseToken)}`);
         } catch (_) { status.textContent = "Submission failed. Your text remains here; try again or email ssmanji89@gmail.com."; }
         finally { submit.disabled = false; }
       });

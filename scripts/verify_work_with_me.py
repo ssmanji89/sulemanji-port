@@ -203,7 +203,7 @@ def main():
         require_text(script, "fetch(form.dataset.endpoint", SCRIPT, failures)
         require_text(script, "content-type", SCRIPT, failures)
         require_text(script, "JSON.stringify", SCRIPT, failures)
-        require_text(script, "result.next === 'checkout'", SCRIPT, failures)
+        require_text(script, "result.next === 'checkout_pending'", SCRIPT, failures)
         require_text(script, "/work-with-me/priority?case=", SCRIPT, failures)
         require_text(script, "/work-with-me/thanks?case=", SCRIPT, failures)
         require_text(script, "Submission failed. Your text remains here", SCRIPT, failures)

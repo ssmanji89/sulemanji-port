@@ -1,7 +1,22 @@
 export type Env = {
   DB: D1Database;
+  PRIORITY_DISCOVERY: Workflow<{ caseId: string }>;
   SITE_ORIGIN: string;
   TERMS_VERSION: string;
   TURNSTILE_SECRET: string;
   TURNSTILE_TEST_BYPASS?: string;
+  STRIPE_SECRET_KEY: string;
+  STRIPE_WEBHOOK_SECRET: string;
+  GMAIL_CLIENT_ID: string;
+  GMAIL_CLIENT_SECRET: string;
+  GMAIL_REFRESH_TOKEN: string;
+  GMAIL_SENDER: string;
+  GMAIL_CLINIC_LABEL: string;
+  OPENAI_API_KEY: string;
+  AGENT_MODEL: string;
+  PRIORITY_DEPOSIT_CENTS: string;
+  MANDATORY_REVIEW_CASE_LIMIT: string;
+  ACCESS_TEAM_DOMAIN: string;
+  ACCESS_AUD: string;
+  ADMIN_EMAIL: string;
 };

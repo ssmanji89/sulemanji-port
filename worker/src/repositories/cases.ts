@@ -19,6 +19,21 @@ export interface PublicCase {
   closedAt: string | null;
 }
 
+export type ArtifactType = "checkpoint" | "blueprint";
+
+export interface DiscoveryState {
+  status: string;
+  workflowId?: string | null;
+  gmailThreadId?: string | null;
+  mandatoryReview?: {
+    held: boolean;
+    reasons: string[];
+    draftId?: string | null;
+    heldAt?: string | null;
+  };
+  [key: string]: unknown;
+}
+
 export interface CaseRepository {
   createIntake(
     input: IntakeInput,
@@ -36,6 +51,29 @@ export interface CaseRepository {
     expected: CaseStatus,
     next: CaseStatus,
     event: string,
+  ): Promise<void>;
+  recordStripeEvent(
+    eventId: string,
+    caseId: string,
+    type: string,
+  ): Promise<"new" | "duplicate">;
+  markDepositPaid(
+    caseId: string,
+    sessionId: string,
+    paymentIntentId: string,
+    cents: number,
+  ): Promise<void>;
+  startDelivery(
+    caseId: string,
+    gmailThreadId: string,
+    workflowId: string,
+  ): Promise<void>;
+  saveDiscoveryState(caseId: string, state: DiscoveryState): Promise<void>;
+  saveArtifact(caseId: string, type: ArtifactType, body: unknown): Promise<number>;
+  holdForReview(
+    caseId: string,
+    reasons: string[],
+    draftId: string,
   ): Promise<void>;
 }
 
@@ -303,6 +341,210 @@ export class D1CaseRepository implements CaseRepository {
       throw new Error("Case transition failed");
     }
   }
+
+  async recordStripeEvent(
+    eventId: string,
+    caseId: string,
+    type: string,
+  ): Promise<"new" | "duplicate"> {
+    try {
+      await this.db
+        .prepare(
+          `INSERT INTO payments (
+            id, stripe_event_id, case_id, type, processed_at
+          ) VALUES (?, ?, ?, ?, ?)`,
+        )
+        .bind(crypto.randomUUID(), eventId, caseId, type, new Date().toISOString())
+        .run();
+
+      return "new";
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        return "duplicate";
+      }
+
+      throw error;
+    }
+  }
+
+  async markDepositPaid(
+    caseId: string,
+    sessionId: string,
+    paymentIntentId: string,
+    cents: number,
+  ): Promise<void> {
+    await this.db
+      .prepare(
+        `INSERT INTO credits (
+          id, case_id, stripe_checkout_session_id, stripe_payment_intent_id,
+          cents, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        crypto.randomUUID(),
+        caseId,
+        sessionId,
+        paymentIntentId,
+        cents,
+        new Date().toISOString(),
+      )
+      .run();
+  }
+
+  async startDelivery(
+    caseId: string,
+    gmailThreadId: string,
+    workflowId: string,
+  ): Promise<void> {
+    const now = new Date().toISOString();
+    const state: DiscoveryState = {
+      status: "delivery_started",
+      workflowId,
+      gmailThreadId,
+      mandatoryReview: { held: false, reasons: [] },
+    };
+
+    await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO gmail_threads (
+            case_id, gmail_thread_id, created_at
+          ) VALUES (?, ?, ?)`,
+        )
+        .bind(caseId, gmailThreadId, now),
+      this.discoveryStateStatement(caseId, state, now),
+    ]);
+  }
+
+  async saveDiscoveryState(
+    caseId: string,
+    state: DiscoveryState,
+  ): Promise<void> {
+    await this.discoveryStateStatement(
+      caseId,
+      state,
+      new Date().toISOString(),
+    ).run();
+  }
+
+  async saveArtifact(
+    caseId: string,
+    type: ArtifactType,
+    body: unknown,
+  ): Promise<number> {
+    const row = await this.db
+      .prepare(
+        `INSERT INTO artifacts (
+          id, case_id, artifact_type, version, body_json, created_at
+        )
+        VALUES (
+          ?,
+          ?,
+          ?,
+          (
+            SELECT COALESCE(MAX(version), 0) + 1
+            FROM artifacts
+            WHERE case_id = ? AND artifact_type = ?
+          ),
+          ?,
+          ?
+        )
+        RETURNING version`,
+      )
+      .bind(
+        crypto.randomUUID(),
+        caseId,
+        type,
+        caseId,
+        type,
+        JSON.stringify(body),
+        new Date().toISOString(),
+      )
+      .first<{ version: number }>();
+
+    if (!row) {
+      throw new Error("Artifact save failed");
+    }
+
+    return row.version;
+  }
+
+  async holdForReview(
+    caseId: string,
+    reasons: string[],
+    draftId: string,
+  ): Promise<void> {
+    const now = new Date().toISOString();
+    const reasonsJson = JSON.stringify(reasons);
+    const state: DiscoveryState = {
+      status: "mandatory_review",
+      mandatoryReview: {
+        held: true,
+        reasons,
+        draftId,
+        heldAt: now,
+      },
+    };
+
+    await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO risk_decisions (
+            id, case_id, reasons_json, draft_id, status, created_at, resolved_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          crypto.randomUUID(),
+          caseId,
+          reasonsJson,
+          draftId,
+          "held",
+          now,
+          null,
+        ),
+      this.discoveryStateStatement(caseId, state, now),
+    ]);
+  }
+
+  private discoveryStateStatement(
+    caseId: string,
+    state: DiscoveryState,
+    now: string,
+  ): D1PreparedStatement {
+    const review = state.mandatoryReview;
+
+    return this.db
+      .prepare(
+        `INSERT INTO discovery_state (
+          case_id, workflow_id, gmail_thread_id, state_json,
+          mandatory_review_held, mandatory_review_reasons_json,
+          mandatory_review_draft_id, mandatory_review_held_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(case_id) DO UPDATE SET
+          workflow_id = COALESCE(excluded.workflow_id, discovery_state.workflow_id),
+          gmail_thread_id = COALESCE(
+            excluded.gmail_thread_id,
+            discovery_state.gmail_thread_id
+          ),
+          state_json = excluded.state_json,
+          mandatory_review_held = excluded.mandatory_review_held,
+          mandatory_review_reasons_json = excluded.mandatory_review_reasons_json,
+          mandatory_review_draft_id = excluded.mandatory_review_draft_id,
+          mandatory_review_held_at = excluded.mandatory_review_held_at,
+          updated_at = excluded.updated_at`,
+      )
+      .bind(
+        caseId,
+        state.workflowId ?? null,
+        state.gmailThreadId ?? null,
+        JSON.stringify(state),
+        review?.held ? 1 : 0,
+        review ? JSON.stringify(review.reasons) : null,
+        review?.draftId ?? null,
+        review?.heldAt ?? null,
+        now,
+      );
+  }
 }
 
 const randomToken = (): string => {
@@ -331,3 +573,6 @@ const bytesToBase64Url = (bytes: Uint8Array): string => {
 
 const bytesToHex = (bytes: Uint8Array): string =>
   [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+
+const isUniqueConstraintError = (error: unknown): boolean =>
+  error instanceof Error && error.message.includes("UNIQUE constraint failed");

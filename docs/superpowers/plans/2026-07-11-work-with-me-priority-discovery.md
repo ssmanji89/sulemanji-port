@@ -147,9 +147,8 @@ export default defineWorkersConfig({
   "vars": {
     "SITE_ORIGIN": "https://www.sulemanji.com",
     "TERMS_VERSION": "2026-07-11",
-    "FOUNDING_DEPOSIT_CENTS": "29500",
-    "STANDARD_DEPOSIT_CENTS": "39500",
-    "FOUNDING_CASE_LIMIT": "10",
+    "PRIORITY_DEPOSIT_CENTS": "29500",
+    "MANDATORY_REVIEW_CASE_LIMIT": "10",
     "AGENT_MODEL": "gpt-5.4-mini"
   }
 }
@@ -459,8 +458,7 @@ an explicit consent checkbox, a normal/priority segmented choice, status region
 </form>
 ```
 
-Create the priority page with the deposit deliverable, `$295` founding and
-`$395` standard wording, non-refundable trigger, 60-day credit, AI disclosure,
+Create the priority page with the deposit deliverable, fixed `$295` deposit wording, non-refundable trigger, 60-day credit, AI disclosure,
 and a button that requests deposit Checkout using the case token. Create the
 thanks page with no customer details in the URL or rendered HTML. Create terms
 and privacy pages containing the exact approved commercial, safety, processor,
@@ -522,7 +520,7 @@ git commit -m "feat: add native Work With Me intake"
 
 - [ ] **Step 1: Write repository tests for one-time fulfillment and credit**
 
-Cover duplicate Stripe event IDs, one Gmail thread per case, one active Workflow ID, immutable consent evidence, versioned artifacts, and atomic founding-count reservation.
+Cover duplicate Stripe event IDs, one Gmail thread per case, one active Workflow ID, immutable consent evidence, versioned artifacts, and atomic mandatory-review gate tracking.
 
 - [ ] **Step 2: Verify RED**
 
@@ -542,7 +540,7 @@ STRIPE_SECRET_KEY: string; STRIPE_WEBHOOK_SECRET: string;
 GMAIL_CLIENT_ID: string; GMAIL_CLIENT_SECRET: string; GMAIL_REFRESH_TOKEN: string;
 GMAIL_SENDER: string; GMAIL_CLINIC_LABEL: string;
 OPENAI_API_KEY: string; AGENT_MODEL: string;
-FOUNDING_DEPOSIT_CENTS: string; STANDARD_DEPOSIT_CENTS: string; FOUNDING_CASE_LIMIT: string;
+PRIORITY_DEPOSIT_CENTS: string; MANDATORY_REVIEW_CASE_LIMIT: string;
 ACCESS_TEAM_DOMAIN: string; ACCESS_AUD: string; ADMIN_EMAIL: string;
 ```
 
@@ -578,7 +576,7 @@ git commit -m "feat: persist priority discovery state"
 
 - [ ] **Step 1: Write failing payment tests**
 
-Test authoritative price selection, founding counter concurrency, Checkout metadata, policy acceptance, raw-body signature rejection, duplicate webhook acknowledgement, successful workflow start, and pre-delivery automatic refund.
+Test authoritative fixed-deposit selection, review-gate concurrency, Checkout metadata, policy acceptance, raw-body signature rejection, duplicate webhook acknowledgement, successful workflow start, and pre-delivery automatic refund.
 
 - [ ] **Step 2: Verify RED**
 
@@ -601,7 +599,7 @@ Create deposit Checkout Sessions with one line item, `case_id` metadata on both 
 
 - [ ] **Step 4: Implement routes**
 
-`POST /v1/cases/:token/deposit-checkout` requires `checkout_pending`, chooses `$295` while a founding place is reservable, otherwise `$395`, and returns `{ checkoutUrl }`. `POST /v1/webhooks/stripe` reads `request.text()` before parsing, verifies the signature, records event ID before effects, and starts exactly one `PRIORITY_DISCOVERY` Workflow on `checkout.session.completed`.
+`POST /v1/cases/:token/deposit-checkout` requires `checkout_pending`, uses the configured fixed Priority Discovery Deposit, records whether the case is inside the launch review gate, and returns `{ checkoutUrl }`. `POST /v1/webhooks/stripe` reads `request.text()` before parsing, verifies the signature, records event ID before effects, and starts exactly one `PRIORITY_DISCOVERY` Workflow on `checkout.session.completed`.
 
 - [ ] **Step 5: Test and commit**
 
@@ -660,7 +658,7 @@ Expose `createDiscoveryThread`, `listLabeledHistory`, `getThreadMessages`, `crea
 
 - [ ] **Step 6: Implement deterministic risk rules before model output**
 
-`evaluateRisk` must hold regulated advice, worker surveillance/evaluation, high-impact decisions, credentials/secrets, private third-party data, destructive actions, unclear authorization, unsupported claims, contradictions, topic expansion, and low-confidence thread mapping. Founding mode forces checkpoints and blueprints to hold regardless of model risk.
+`evaluateRisk` must hold regulated advice, worker surveillance/evaluation, high-impact decisions, credentials/secrets, private third-party data, destructive actions, unclear authorization, unsupported claims, contradictions, topic expansion, and low-confidence thread mapping. Launch-review mode forces checkpoints and blueprints to hold regardless of model risk.
 
 - [ ] **Step 7: Run fixture evals and commit**
 
@@ -688,7 +686,7 @@ git commit -m "feat: add Gmail discovery agent"
 
 - [ ] **Step 1: Write failing workflow tests**
 
-Cover payment-to-first-email, one-hour breach alert, one-question turns, correction reopening, explicit confirmation, mandatory founding review, edited-draft approval, 14-day reminder/pause, 60-day abandoned close, duplicate Gmail history, and provider retry without duplicate sends.
+Cover payment-to-first-email, one-hour breach alert, one-question turns, correction reopening, explicit confirmation, mandatory launch review, edited-draft approval, 14-day reminder/pause, 60-day abandoned close, duplicate Gmail history, and provider retry without duplicate sends.
 
 - [ ] **Step 2: Verify RED**
 
@@ -907,7 +905,7 @@ git commit -m "feat: enforce discovery retention"
 
 - [ ] **Step 1: Write the synthetic end-to-end test**
 
-The test must execute unpaid intake, founding deposit, verified webhook, first Gmail message, three discovery turns, corrected checkpoint, customer confirmation, held blueprint, Suleman approval, private quote, slot hold, remaining-balance payment, Calendar event, 14/60-day timers in accelerated time, and duplicate-event replays. Assert one payment effect, one thread, one blueprint version sent, one credit consumption, and one calendar event.
+The test must execute unpaid intake, fixed deposit, verified webhook, first Gmail message, three discovery turns, corrected checkpoint, customer confirmation, held blueprint, Suleman approval, private quote, slot hold, remaining-balance payment, Calendar event, 14/60-day timers in accelerated time, and duplicate-event replays. Assert one payment effect, one thread, one blueprint version sent, one credit consumption, and one calendar event.
 
 - [ ] **Step 2: Verify RED then GREEN**
 
@@ -950,7 +948,7 @@ Use only synthetic content. Confirm Turnstile, Stripe test Checkout, Gmail label
 
 - [ ] **Step 7: Enforce launch gates**
 
-Keep live Stripe disabled until Texas terms/tax review is recorded, all checks pass, Gmail/Calendar OAuth scopes are reviewed, retention is verified, and a refund drill succeeds. Keep every founding checkpoint and blueprint in mandatory review. Do not enable routine auto-send until ten paid cases reach `discovery_active` and the spec's zero-unsafe-send evaluation gate passes.
+Keep live Stripe disabled until Texas terms/tax review is recorded, all checks pass, Gmail/Calendar OAuth scopes are reviewed, retention is verified, and a refund drill succeeds. Keep every launch-review checkpoint and blueprint in mandatory review. Do not enable routine auto-send until ten paid cases complete launch review and the spec's zero-unsafe-send evaluation gate passes.
 
 - [ ] **Step 8: Commit the verified release configuration**
 

@@ -29,10 +29,9 @@ preserving the Phase 1 audience, positioning, and public safety boundaries.
   product brand.
 - Unpaid path: submission confirmation followed by normal manual review.
 - Paid path: an optional fixed Priority Discovery Deposit.
-- Founding price: `$295` for the first ten paid Priority Discovery cases that
-  reach `discovery_active`; a case refunded before delivery starts does not
-  consume a founding-cohort place.
-- Standard price: `$395` after the founding cohort.
+- Fixed deposit: `$295` for every Priority Discovery case at launch. The
+  deposit amount is public; session pricing remains private and is quoted only
+  after the blueprint.
 - Deposit treatment: non-refundable after discovery starts and credited in full
   once toward the recommended live session.
 - Session prices: quoted privately after the blueprint, not published as a
@@ -54,8 +53,7 @@ preserving the Phase 1 audience, positioning, and public safety boundaries.
   remaining session balance.
 - Automation: risk-based. Routine outputs can eventually send automatically;
   sensitive or uncertain outputs become Gmail drafts for Suleman's review.
-- Founding cohort: all checkpoints and blueprints require Suleman's review,
-  regardless of risk classification.
+- Launch review gate: the first ten paid Priority Discovery cases that reach `discovery_active` require Suleman's review for every checkpoint and blueprint, regardless of risk classification.
 - Human-review commitment: within one business day.
 - Initial-thread commitment: normally within minutes and no later than one hour
   after confirmed payment.
@@ -78,7 +76,7 @@ preserving the Phase 1 audience, positioning, and public safety boundaries.
 - Keep payment, Gmail, model, and customer data out of the static site.
 - Make retries, duplicate events, and multi-day waits safe.
 - Produce enough operational evidence to decide whether routine auto-send is
-  acceptable after the first ten paid cases.
+  acceptable after the first ten paid cases complete the launch review gate.
 
 ## Non-Goals
 
@@ -93,8 +91,7 @@ preserving the Phase 1 audience, positioning, and public safety boundaries.
 - Do not build a general-purpose CRM or full administration console.
 - Do not migrate the portfolio itself away from Jekyll/GitHub Pages.
 - Do not tie the public offer to one model vendor or automation technology.
-- Do not automatically enable routine auto-send before the founding-cohort
-  review gate passes.
+- Do not automatically enable routine auto-send before the launch review gate passes.
 
 ## Customer Flow
 
@@ -119,8 +116,8 @@ preserving the Phase 1 audience, positioning, and public safety boundaries.
    outcome, current process, constraints, stakeholders, and success criteria.
 10. Customer corrections reopen discovery. Explicit confirmation closes
     discovery and allows blueprint generation.
-11. The agent produces an action blueprint. During the founding cohort every
-    checkpoint and blueprint is held for review. After the cohort, cases that
+11. The agent produces an action blueprint. During the launch review gate every
+    checkpoint and blueprint is held for review. After the gate, cases that
     satisfy the auto-send policy may send automatically.
 12. The blueprint recommends a live-session scope and links to a private
     quote-and-book page. It does not expose a public price ladder.
@@ -450,7 +447,7 @@ labels or model reasoning.
 For this commitment, one business day means by 5:00 p.m. America/Chicago on the
 next weekday that is not a United States federal holiday.
 
-During the founding cohort, all checkpoints and blueprints are held even when
+During the launch review gate, all checkpoints and blueprints are held even when
 no risk category triggers. After the cohort, only explicitly allowlisted output
 types may auto-send.
 
@@ -652,27 +649,23 @@ Use synthetic, non-sensitive cases to verify:
 3. Enable Gmail discovery with mandatory human review for every outbound
    checkpoint and blueprint.
 4. Complete a live internal pilot using non-sensitive test cases.
-5. Enable the `$295` founding offer for the first ten paid cases that reach
-   `discovery_active`.
-6. Review all ten cases against the agent and risk rubrics.
-7. Enable the `$395` standard offer.
-8. Allow routine auto-send only if the founding review shows:
+5. Enable the fixed `$295` Priority Discovery Deposit.
+6. Review the first ten paid cases that reach `discovery_active` against the agent and risk rubrics.
+7. Allow routine auto-send only if the launch review shows:
    - zero unsafe sends;
    - zero material invented facts in sent artifacts;
    - reliable case/thread association;
    - no duplicate customer communications or payment effects; and
    - acceptable blueprint quality under the approved rubric.
-9. If any gate fails, keep mandatory review enabled and refine the system before
+8. If any gate fails, keep mandatory review enabled and refine the system before
    reconsidering auto-send.
 
 ## Acceptance Criteria
 
 - `/work-with-me` contains a native intake for one messy problem.
 - Both normal review and Priority Discovery are available after intake.
-- The first ten paid cases that reach `discovery_active` use `$295`; a case
-  refunded before delivery starts does not consume a founding place. Subsequent
-  cases use `$395` without a static-site deployment to change the authoritative
-  price.
+- Priority Discovery uses one fixed `$295` deposit amount; session prices are
+  quoted privately after the blueprint.
 - Stripe Checkout is the only card-entry surface.
 - A verified payment starts exactly one workflow and one Gmail thread.
 - The first discovery message normally sends within minutes and is monitored
@@ -680,7 +673,7 @@ Use synthetic, non-sensitive cases to verify:
 - Discovery asks one topic at a time and cannot produce a blueprint before an
   explicit customer-confirmed understanding checkpoint.
 - Every blueprint satisfies the approved artifact contract.
-- All founding-cohort checkpoints and blueprints require human approval.
+- All launch-review checkpoints and blueprints require human approval for the first ten paid cases that reach `discovery_active`.
 - Risk-triggered cases cannot auto-send.
 - Held cases communicate a one-business-day personal-review expectation.
 - No attachment is downloaded or passed to a model.

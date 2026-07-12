@@ -80,6 +80,7 @@ node_modules/
 .wrangler/
 worker/.dev.vars
 worker/coverage/
+.superpowers/
 
 # Temporary files
 .tmp/

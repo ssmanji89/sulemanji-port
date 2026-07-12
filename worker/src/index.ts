@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { Env } from "./env";
 import { createIntakeRoutes } from "./routes/intakes";
+import { createPaymentRoutes } from "./routes/payments";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -16,6 +17,7 @@ app.use(
 );
 
 app.route("/v1", createIntakeRoutes());
+app.route("/v1", createPaymentRoutes());
 
 app.onError((error, c) => {
   console.error(error);

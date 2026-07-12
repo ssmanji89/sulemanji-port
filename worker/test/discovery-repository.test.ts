@@ -22,15 +22,16 @@ describe("D1CaseRepository priority discovery persistence", () => {
     expect(db.paymentEvents("evt_123")).toHaveLength(1);
   });
 
-  it("records deposit credit once per Stripe checkout session and payment intent", async () => {
+  it("records deposit credit idempotently for a repeated Stripe payment", async () => {
+    await repository.markDepositPaid("case_1", "cs_123", "pi_123", 7_500);
     await repository.markDepositPaid("case_1", "cs_123", "pi_123", 7_500);
 
     await expect(
       repository.markDepositPaid("case_2", "cs_123", "pi_456", 7_500),
-    ).rejects.toThrow("UNIQUE constraint failed");
+    ).rejects.toThrow("Conflicting deposit payment");
     await expect(
       repository.markDepositPaid("case_2", "cs_456", "pi_123", 7_500),
-    ).rejects.toThrow("UNIQUE constraint failed");
+    ).rejects.toThrow("Conflicting deposit payment");
 
     expect(db.credits()).toEqual([
       expect.objectContaining({
@@ -47,7 +48,7 @@ describe("D1CaseRepository priority discovery persistence", () => {
 
     await expect(
       repository.startDelivery("case_1", "thread_2", "workflow_2"),
-    ).rejects.toThrow("UNIQUE constraint failed");
+    ).rejects.toThrow("Conflicting delivery start");
 
     expect(db.gmailThreads()).toEqual([
       expect.objectContaining({
@@ -62,7 +63,7 @@ describe("D1CaseRepository priority discovery persistence", () => {
 
     await expect(
       repository.startDelivery("case_2", "thread_2", "workflow_1"),
-    ).rejects.toThrow("UNIQUE constraint failed");
+    ).rejects.toThrow("Conflicting delivery start");
 
     expect(db.discoveryState("case_2")).toBeNull();
   });
@@ -248,12 +249,67 @@ class DiscoveryFakeD1Database {
     return [...this.creditsById.values()];
   }
 
+  findCredit(
+    stripeCheckoutSessionId: string,
+    stripePaymentIntentId: string,
+  ): CreditRecord | null {
+    return (
+      [...this.creditsById.values()].find(
+        (credit) =>
+          credit.stripe_checkout_session_id === stripeCheckoutSessionId ||
+          credit.stripe_payment_intent_id === stripePaymentIntentId,
+      ) ?? null
+    );
+  }
+
   gmailThreads(): GmailThreadRecord[] {
     return [...this.gmailThreadsByCase.values()];
   }
 
   discoveryState(caseId: string): DiscoveryStateRecord | null {
     return this.discoveryStatesByCase.get(caseId) ?? null;
+  }
+
+  findDeliveryByCase(caseId: string): {
+    case_id: string;
+    gmail_thread_id: string | null;
+    workflow_id: string | null;
+  } | null {
+    const thread = this.gmailThreadsByCase.get(caseId);
+    if (!thread) return null;
+    return {
+      case_id: caseId,
+      gmail_thread_id: thread.gmail_thread_id,
+      workflow_id: this.discoveryStatesByCase.get(caseId)?.workflow_id ?? null,
+    };
+  }
+
+  findDeliveryByThread(gmailThreadId: string): {
+    case_id: string;
+    gmail_thread_id: string | null;
+    workflow_id: string | null;
+  } | null {
+    const thread = [...this.gmailThreadsByCase.values()].find(
+      (record) => record.gmail_thread_id === gmailThreadId,
+    );
+    return thread ? this.findDeliveryByCase(thread.case_id) : null;
+  }
+
+  findDeliveryByWorkflow(workflowId: string): {
+    case_id: string;
+    gmail_thread_id: string | null;
+    workflow_id: string | null;
+  } | null {
+    const state = [...this.discoveryStatesByCase.values()].find(
+      (record) => record.workflow_id === workflowId,
+    );
+    return state
+      ? {
+          case_id: state.case_id,
+          gmail_thread_id: state.gmail_thread_id,
+          workflow_id: state.workflow_id,
+        }
+      : null;
   }
 
   artifacts(caseId: string, artifactType: string): ArtifactRecord[] {
@@ -265,6 +321,22 @@ class DiscoveryFakeD1Database {
 
   riskDecisions(caseId: string): RiskDecisionRecord[] {
     return this.riskDecisionRows.filter((decision) => decision.case_id === caseId);
+  }
+
+  findRiskDecision(
+    caseId: string,
+    draftId: string,
+  ): Pick<RiskDecisionRecord, "reasons_json" | "draft_id" | "status"> | null {
+    const decision = this.riskDecisionRows.find(
+      (record) => record.case_id === caseId && record.draft_id === draftId,
+    );
+    return decision
+      ? {
+          reasons_json: decision.reasons_json,
+          draft_id: decision.draft_id,
+          status: decision.status,
+        }
+      : null;
   }
 
   insertConsent(record: ConsentRecord): void {
@@ -389,6 +461,16 @@ class DiscoveryFakeD1Database {
       throw new Error("forced risk decision failure");
     }
 
+    if (
+      this.riskDecisionRows.some(
+        (decision) =>
+          decision.case_id === record.case_id &&
+          decision.draft_id === record.draft_id,
+      )
+    ) {
+      throw new Error("UNIQUE constraint failed: risk_decisions.case_id, risk_decisions.draft_id");
+    }
+
     this.riskDecisionRows.push(record);
   }
 
@@ -470,6 +552,38 @@ class DiscoveryFakeD1Statement {
       });
 
       return { version } as T;
+    }
+
+    if (this.sql.includes("FROM credits")) {
+      return this.db.findCredit(
+        this.values[0] as string,
+        this.values[1] as string,
+      ) as T | null;
+    }
+
+    if (
+      this.sql.includes("FROM gmail_threads") &&
+      this.sql.includes("WHERE gmail_threads.case_id = ?")
+    ) {
+      return this.db.findDeliveryByCase(this.values[0] as string) as T | null;
+    }
+
+    if (
+      this.sql.includes("FROM gmail_threads") &&
+      this.sql.includes("WHERE gmail_threads.gmail_thread_id = ?")
+    ) {
+      return this.db.findDeliveryByThread(this.values[0] as string) as T | null;
+    }
+
+    if (this.sql.includes("FROM discovery_state")) {
+      return this.db.findDeliveryByWorkflow(this.values[0] as string) as T | null;
+    }
+
+    if (this.sql.includes("FROM risk_decisions")) {
+      return this.db.findRiskDecision(
+        this.values[0] as string,
+        this.values[1] as string,
+      ) as T | null;
     }
 
     throw new Error(`Unsupported first SQL: ${this.sql}`);

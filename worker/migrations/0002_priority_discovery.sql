@@ -92,6 +92,9 @@ CREATE INDEX artifacts_case_type_idx
 CREATE INDEX risk_decisions_case_status_idx
   ON risk_decisions(case_id, status);
 
+CREATE UNIQUE INDEX risk_decisions_case_draft_idx
+  ON risk_decisions(case_id, draft_id);
+
 CREATE INDEX workflow_events_case_created_idx
   ON workflow_events(case_id, created_at);
 

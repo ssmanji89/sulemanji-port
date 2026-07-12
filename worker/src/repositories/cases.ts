@@ -89,6 +89,25 @@ interface CaseRow {
   closed_at: string | null;
 }
 
+interface CreditRow {
+  case_id: string;
+  stripe_checkout_session_id: string;
+  stripe_payment_intent_id: string;
+  cents: number;
+}
+
+interface DeliveryRow {
+  case_id: string;
+  gmail_thread_id: string | null;
+  workflow_id: string | null;
+}
+
+interface RiskDecisionRow {
+  reasons_json: string;
+  draft_id: string;
+  status: string;
+}
+
 export class D1CaseRepository implements CaseRepository {
   constructor(private readonly db: D1Database) {}
 
@@ -373,6 +392,30 @@ export class D1CaseRepository implements CaseRepository {
     paymentIntentId: string,
     cents: number,
   ): Promise<void> {
+    const existing = await this.db
+      .prepare(
+        `SELECT case_id, stripe_checkout_session_id, stripe_payment_intent_id,
+          cents
+        FROM credits
+        WHERE stripe_checkout_session_id = ? OR stripe_payment_intent_id = ?
+        LIMIT 1`,
+      )
+      .bind(sessionId, paymentIntentId)
+      .first<CreditRow>();
+
+    if (existing) {
+      if (
+        existing.case_id === caseId &&
+        existing.stripe_checkout_session_id === sessionId &&
+        existing.stripe_payment_intent_id === paymentIntentId &&
+        existing.cents === cents
+      ) {
+        return;
+      }
+
+      throw new Error("Conflicting deposit payment");
+    }
+
     await this.db
       .prepare(
         `INSERT INTO credits (
@@ -396,6 +439,12 @@ export class D1CaseRepository implements CaseRepository {
     gmailThreadId: string,
     workflowId: string,
   ): Promise<void> {
+    await this.ensureDeliveryStartIsNewOrIdentical(
+      caseId,
+      gmailThreadId,
+      workflowId,
+    );
+
     const now = new Date().toISOString();
     const state: DiscoveryState = {
       status: "delivery_started",
@@ -404,16 +453,37 @@ export class D1CaseRepository implements CaseRepository {
       mandatoryReview: { held: false, reasons: [] },
     };
 
-    await this.db.batch([
-      this.db
-        .prepare(
-          `INSERT INTO gmail_threads (
-            case_id, gmail_thread_id, created_at
-          ) VALUES (?, ?, ?)`,
-        )
-        .bind(caseId, gmailThreadId, now),
-      this.discoveryStateStatement(caseId, state, now),
-    ]);
+    try {
+      await this.db.batch([
+        this.db
+          .prepare(
+            `INSERT INTO gmail_threads (
+              case_id, gmail_thread_id, created_at
+            ) VALUES (?, ?, ?)`,
+          )
+          .bind(caseId, gmailThreadId, now),
+        this.discoveryStateStatement(caseId, state, now),
+      ]);
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        await this.ensureDeliveryStartIsNewOrIdentical(
+          caseId,
+          gmailThreadId,
+          workflowId,
+        );
+        const existing = await this.deliveryByCase(caseId);
+        if (
+          existing?.gmail_thread_id === gmailThreadId &&
+          existing.workflow_id === workflowId
+        ) {
+          return;
+        }
+
+        throw new Error("Conflicting delivery start");
+      }
+
+      throw error;
+    }
   }
 
   async saveDiscoveryState(
@@ -474,8 +544,26 @@ export class D1CaseRepository implements CaseRepository {
     reasons: string[],
     draftId: string,
   ): Promise<void> {
-    const now = new Date().toISOString();
+    const existing = await this.db
+      .prepare(
+        `SELECT reasons_json, draft_id, status
+        FROM risk_decisions
+        WHERE case_id = ? AND draft_id = ?
+        LIMIT 1`,
+      )
+      .bind(caseId, draftId)
+      .first<RiskDecisionRow>();
     const reasonsJson = JSON.stringify(reasons);
+
+    if (existing) {
+      if (existing.reasons_json === reasonsJson && existing.status === "held") {
+        return;
+      }
+
+      throw new Error("Conflicting review hold");
+    }
+
+    const now = new Date().toISOString();
     const state: DiscoveryState = {
       status: "mandatory_review",
       mandatoryReview: {
@@ -504,6 +592,68 @@ export class D1CaseRepository implements CaseRepository {
         ),
       this.discoveryStateStatement(caseId, state, now),
     ]);
+  }
+
+  private async ensureDeliveryStartIsNewOrIdentical(
+    caseId: string,
+    gmailThreadId: string,
+    workflowId: string,
+  ): Promise<void> {
+    const byCase = await this.deliveryByCase(caseId);
+    if (byCase) {
+      if (
+        byCase.gmail_thread_id === gmailThreadId &&
+        byCase.workflow_id === workflowId
+      ) {
+        return;
+      }
+
+      throw new Error("Conflicting delivery start");
+    }
+
+    const byThread = await this.db
+      .prepare(
+        `SELECT gmail_threads.case_id, gmail_threads.gmail_thread_id,
+          discovery_state.workflow_id
+        FROM gmail_threads
+        LEFT JOIN discovery_state
+          ON discovery_state.case_id = gmail_threads.case_id
+        WHERE gmail_threads.gmail_thread_id = ?
+        LIMIT 1`,
+      )
+      .bind(gmailThreadId)
+      .first<DeliveryRow>();
+    if (byThread) {
+      throw new Error("Conflicting delivery start");
+    }
+
+    const byWorkflow = await this.db
+      .prepare(
+        `SELECT case_id, gmail_thread_id, workflow_id
+        FROM discovery_state
+        WHERE workflow_id = ?
+        LIMIT 1`,
+      )
+      .bind(workflowId)
+      .first<DeliveryRow>();
+    if (byWorkflow) {
+      throw new Error("Conflicting delivery start");
+    }
+  }
+
+  private async deliveryByCase(caseId: string): Promise<DeliveryRow | null> {
+    return this.db
+      .prepare(
+        `SELECT gmail_threads.case_id, gmail_threads.gmail_thread_id,
+          discovery_state.workflow_id
+        FROM gmail_threads
+        LEFT JOIN discovery_state
+          ON discovery_state.case_id = gmail_threads.case_id
+        WHERE gmail_threads.case_id = ?
+        LIMIT 1`,
+      )
+      .bind(caseId)
+      .first<DeliveryRow>();
   }
 
   private discoveryStateStatement(

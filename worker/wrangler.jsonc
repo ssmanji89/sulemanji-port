@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "sulemanji-work-with-me",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "vars": {
+    "SITE_ORIGIN": "https://www.sulemanji.com",
+    "TERMS_VERSION": "2026-07-11",
+    "FOUNDING_DEPOSIT_CENTS": "29500",
+    "STANDARD_DEPOSIT_CENTS": "39500",
+    "FOUNDING_CASE_LIMIT": "10",
+    "AGENT_MODEL": "gpt-5.4-mini"
+  }
+}

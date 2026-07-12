@@ -77,6 +77,10 @@ pids/
 node_modules/
 .npm/
 
+.wrangler/
+worker/.dev.vars
+worker/coverage/
+
 # Temporary files
 .tmp/
 temp/

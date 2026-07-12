@@ -258,6 +258,14 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 2.5em 0; }
   font-size: .95rem;
 }
 
+.turnstile-field {
+  min-height: 65px;
+}
+
+.turnstile-field .cf-turnstile {
+  max-width: 100%;
+}
+
 .honeypot {
   position: absolute;
   left: -10000px;

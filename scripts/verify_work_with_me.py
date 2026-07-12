@@ -16,6 +16,7 @@ NAV = ROOT / "_data" / "navigation.yml"
 LAYOUT = ROOT / "_layouts" / "default.html"
 SCRIPT = ROOT / "assets" / "js" / "work-with-me.js"
 STYLE = ROOT / "assets" / "css" / "style.scss"
+CONFIG = ROOT / "_config.yml"
 SITE_PAGE = ROOT / "_site" / "work-with-me.html"
 SITE_PRIORITY_PAGE = ROOT / "_site" / "work-with-me" / "priority.html"
 SITE_THANKS_PAGE = ROOT / "_site" / "work-with-me" / "thanks.html"
@@ -30,7 +31,7 @@ PUBLIC_SOURCE_FILES = [
     PRIVACY_PAGE,
     INDEX,
     NAV,
-    ROOT / "_config.yml",
+    CONFIG,
 ]
 
 FORBIDDEN_PUBLIC_PATTERNS = [
@@ -84,6 +85,7 @@ def main():
     require(PRIVACY_PAGE.exists(), "privacy.md is missing", failures)
     require(SCRIPT.exists(), "assets/js/work-with-me.js is missing", failures)
     require(STYLE.exists(), "assets/css/style.scss is missing", failures)
+    require(CONFIG.exists(), "_config.yml is missing", failures)
     require(LAYOUT.exists(), "_layouts/default.html is missing", failures)
     require(INDEX.exists(), "index.md is missing", failures)
     require(NAV.exists(), "_data/navigation.yml is missing", failures)
@@ -129,6 +131,9 @@ def main():
         require_text(page, 'name="website"', PAGE, failures)
         require_text(page, 'class="honeypot"', PAGE, failures)
         require_text(page, 'name="turnstileToken"', PAGE, failures)
+        require_text(page, 'class="cf-turnstile"', PAGE, failures)
+        require_text(page, 'data-sitekey="{{ site.turnstile_site_key }}"', PAGE, failures)
+        require_text(page, 'data-callback="onWorkWithMeTurnstile"', PAGE, failures)
         require_text(page, 'role="status"', PAGE, failures)
         require_text(page, 'aria-live="polite"', PAGE, failures)
         require('type="file"' not in page.lower(), "work-with-me.md must not include file inputs", failures)
@@ -189,6 +194,10 @@ def main():
     if SCRIPT.exists():
         script = read(SCRIPT)
         require_text(script, "serializeIntake", SCRIPT, failures)
+        require_text(script, "onWorkWithMeTurnstile", SCRIPT, failures)
+        require_text(script, "onWorkWithMeTurnstileExpired", SCRIPT, failures)
+        require_text(script, "cf-turnstile-response", SCRIPT, failures)
+        require_text(script, "Complete the verification check before submitting", SCRIPT, failures)
         require_text(script, "work-with-me-intake", SCRIPT, failures)
         require_text(script, "FormData", SCRIPT, failures)
         require_text(script, "fetch(form.dataset.endpoint", SCRIPT, failures)
@@ -204,6 +213,7 @@ def main():
         style = read(STYLE)
         for selector in [".intake-form", ".form-field", ".field-error", ".path-choice", ".form-status"]:
             require(selector in style, f"assets/css/style.scss must style {selector}", failures)
+        require(".turnstile-field" in style, "assets/css/style.scss must style .turnstile-field", failures)
         require("border-radius: 8px" in style, "assets/css/style.scss must use 8px radius for form controls", failures)
         require(":focus" in style or ":focus-visible" in style, "assets/css/style.scss must include visible focus styles", failures)
 
@@ -211,6 +221,11 @@ def main():
         layout = read(LAYOUT)
         require("page.work_with_me_form" in layout, "_layouts/default.html must conditionally load the Work With Me script", failures)
         require("assets/js/work-with-me.js" in layout, "_layouts/default.html must reference assets/js/work-with-me.js", failures)
+        require("https://challenges.cloudflare.com/turnstile/v0/api.js" in layout, "_layouts/default.html must load the Turnstile script on Work With Me form pages", failures)
+
+    if CONFIG.exists():
+        config = read(CONFIG)
+        require("turnstile_site_key:" in config, "_config.yml must define the public Turnstile site key", failures)
 
     if NAV.exists():
         nav = read(NAV)
@@ -237,6 +252,8 @@ def main():
         require("Build Path / Technical Triage" in site_text, "_site/work-with-me.html must include Build Path / Technical Triage", failures)
         require('id="work-with-me-intake"' in site_text, "_site/work-with-me.html must include the native intake form", failures)
         require("assets/js/work-with-me.js" in site_text, "_site/work-with-me.html must load the Work With Me script", failures)
+        require("https://challenges.cloudflare.com/turnstile/v0/api.js" in site_text, "_site/work-with-me.html must load the Turnstile script", failures)
+        require('class="cf-turnstile"' in site_text, "_site/work-with-me.html must include the Turnstile widget", failures)
         require('type="file"' not in site_text.lower(), "_site/work-with-me.html must not include file inputs", failures)
         for pattern, label in FORBIDDEN_PUBLIC_PATTERNS:
             if contains_forbidden(site_text, pattern):

@@ -1,4 +1,14 @@
 (function () {
+  window.onWorkWithMeTurnstile = function (token) {
+    const field = document.querySelector('[name="turnstileToken"]');
+    if (field) field.value = token;
+  };
+
+  window.onWorkWithMeTurnstileExpired = function () {
+    const field = document.querySelector('[name="turnstileToken"]');
+    if (field) field.value = "";
+  };
+
   function splitLinks(value) {
     return String(value || "")
       .split(/\r?\n/)
@@ -18,7 +28,7 @@
       path: String(formData.get("path") || ""),
       termsAccepted: formData.get("termsAccepted") === "on",
       website: String(formData.get("website") || ""),
-      turnstileToken: String(formData.get("turnstileToken") || "")
+      turnstileToken: String(formData.get("turnstileToken") || formData.get("cf-turnstile-response") || "")
     };
   }
 
@@ -33,11 +43,16 @@
         event.preventDefault();
         const submit = form.querySelector('[type="submit"]');
         const status = document.getElementById("intake-status");
+        const payload = serializeIntake(new FormData(form));
+        if (!payload.turnstileToken) {
+          status.textContent = "Complete the verification check before submitting.";
+          return;
+        }
         submit.disabled = true; status.textContent = "Submitting...";
         try {
           const response = await fetch(form.dataset.endpoint, {
             method: "POST", headers: { "content-type": "application/json" },
-            body: JSON.stringify(serializeIntake(new FormData(form)))
+            body: JSON.stringify(payload)
           });
           const result = await response.json();
           if (!response.ok) throw new Error(result.error || "submission_failed");

@@ -107,6 +107,9 @@ Choose normal review if you want me to look manually as time allows. Choose Prio
   <label><input type="checkbox" name="termsAccepted" required> I accept the <a href="/work-with-me/terms">service terms</a> and <a href="/privacy">privacy notice</a>.</label>
   <input name="website" class="honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
   <input name="turnstileToken" type="hidden">
+  <div class="turnstile-field">
+    <div class="cf-turnstile" data-sitekey="{{ site.turnstile_site_key }}" data-size="flexible" data-callback="onWorkWithMeTurnstile" data-expired-callback="onWorkWithMeTurnstileExpired" data-error-callback="onWorkWithMeTurnstileExpired"></div>
+  </div>
   <p id="intake-status" class="form-status" role="status" aria-live="polite"></p>
   <button class="btn btn-primary" type="submit">Submit problem</button>
 </form>

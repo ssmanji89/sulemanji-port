@@ -46,6 +46,9 @@ def main():
 
     require('"PRIORITY_DEPOSIT_CENTS": "29500"' in wrangler, "wrangler must expose a single fixed deposit variable", failures)
     require('"MANDATORY_REVIEW_CASE_LIMIT": "10"' in wrangler, "wrangler must expose launch review gate size", failures)
+    require('"binding": "DB"' in wrangler, "wrangler must include the D1 DB binding", failures)
+    require('"database_name": "sulemanji-work-with-me"' in wrangler, "wrangler must bind the planned D1 database", failures)
+    require('"database_id"' in wrangler, "wrangler must include the Cloudflare-created D1 database id", failures)
     require("FOUNDING_DEPOSIT_CENTS" not in wrangler, "wrangler must not use founding deposit pricing", failures)
     require("STANDARD_DEPOSIT_CENTS" not in wrangler, "wrangler must not use standard deposit pricing", failures)
     require("FOUNDING_CASE_LIMIT" not in wrangler, "wrangler must not use founding case limit", failures)

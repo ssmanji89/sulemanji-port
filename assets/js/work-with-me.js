@@ -21,6 +21,7 @@
       name: String(formData.get("name") || "").trim(),
       email: String(formData.get("email") || "").trim(),
       contextType: String(formData.get("contextType") || ""),
+      workshopCategory: String(formData.get("workshopCategory") || "not_sure_other"),
       problem: String(formData.get("problem") || "").trim(),
       desiredOutcome: String(formData.get("desiredOutcome") || "").trim(),
       priorAttempts: String(formData.get("priorAttempts") || "").trim(),

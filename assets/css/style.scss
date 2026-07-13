@@ -245,6 +245,36 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 2.5em 0; }
   border-radius: 8px;
 }
 
+.workshop-category-choice {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.workshop-category-choice label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.7rem;
+  min-height: 4.5rem;
+  padding: 0.85rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.workshop-category-choice input {
+  margin-top: 0.25rem;
+}
+
+.workshop-category-choice strong,
+.workshop-category-choice span {
+  grid-column: 2;
+}
+
+.form-help {
+  margin: 0;
+  color: var(--text-muted);
+}
+
 .field-error {
   color: #b42318;
   font-size: .9rem;

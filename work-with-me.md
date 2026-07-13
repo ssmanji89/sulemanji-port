@@ -100,6 +100,13 @@ Choose normal review if you want me to look manually as time allows. Choose Prio
     <label><input type="radio" name="contextType" value="personal" required> Personal</label>
     <label><input type="radio" name="contextType" value="professional" required> Professional</label>
   </fieldset>
+  <fieldset class="workshop-category-choice"><legend>Pick the closest starting point</legend>
+    <p class="form-help">It just helps me ask better first questions. Choose Not sure / Other if the work does not fit cleanly.</p>
+    <label><input type="radio" name="workshopCategory" value="github_codebase_review"> <strong>GitHub / Codebase Review</strong><span>Repo, prototype, AI-built app, broken automation, or unclear technical build path.</span></label>
+    <label><input type="radio" name="workshopCategory" value="ai_business_operations"> <strong>AI Business Operations</strong><span>Recurring work across email, docs, spreadsheets, tickets, forms, or business systems.</span></label>
+    <label><input type="radio" name="workshopCategory" value="home_personal_automation"> <strong>Home + Personal Automation</strong><span>Household, personal admin, inbox, calendar, files, or lightweight life-operations workflows.</span></label>
+    <label><input type="radio" name="workshopCategory" value="not_sure_other" checked> <strong>Not sure / Other</strong><span>A messy problem that needs triage before it has a clean category.</span></label>
+  </fieldset>
   <label class="form-field">What is messy? <textarea name="problem" required minlength="40" maxlength="6000"></textarea></label>
   <label class="form-field">What would useful look like? <textarea name="desiredOutcome" required minlength="20" maxlength="3000"></textarea></label>
   <label class="form-field">What have you tried? <textarea name="priorAttempts" maxlength="3000"></textarea></label>

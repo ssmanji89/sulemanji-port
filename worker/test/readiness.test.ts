@@ -27,7 +27,26 @@ describe("worker readiness", () => {
         "GMAIL_CLIENT_ID",
         "OPENAI_API_KEY",
         "ACCESS_AUD",
+        "GMAIL_HISTORY_START_ID",
       ]),
+    });
+  });
+
+  it("keeps live mode not ready until the Gmail history cursor seed is configured", async () => {
+    const app = new Hono<{ Bindings: Env }>();
+    app.route("/v1", createReadinessRoutes());
+
+    const { GMAIL_HISTORY_START_ID: _omitted, ...env } = completeEnv();
+    const response = await app.fetch(
+      new Request("https://api.example/v1/readiness"),
+      env as Env,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      mode: "live",
+      ready: false,
+      missing: ["GMAIL_HISTORY_START_ID"],
     });
   });
 
@@ -89,6 +108,7 @@ const completeEnv = (overrides: Partial<Env> = {}): Env =>
     GMAIL_REFRESH_TOKEN: "present",
     GMAIL_SENDER: "present",
     GMAIL_CLINIC_LABEL: "present",
+    GMAIL_HISTORY_START_ID: "123456",
     GOOGLE_CALENDAR_CLIENT_ID: "present",
     GOOGLE_CALENDAR_CLIENT_SECRET: "present",
     GOOGLE_CALENDAR_REFRESH_TOKEN: "present",

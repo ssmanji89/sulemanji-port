@@ -26,7 +26,14 @@ in `.env.example`, shell history, docs, commits, or issue comments.
 `GOOGLE_CALENDAR_ID`, `SITE_ORIGIN`, `TERMS_VERSION`,
 `PRIORITY_DEPOSIT_CENTS`, `MANDATORY_REVIEW_CASE_LIMIT`, `AGENT_MODEL`,
 `GMAIL_SENDER`, and `ADMIN_EMAIL` are non-secret Worker vars in
-`wrangler.jsonc`.
+`wrangler.jsonc`. `GMAIL_HISTORY_START_ID` is also non-secret, but it should be
+set only after the Gmail launch label is created and the starting mailbox
+history id is known.
+
+`GMAIL_HISTORY_START_ID` seeds the first Gmail polling cursor. After the first
+successful poll, D1 stores the latest cursor in `automation_state`; until then,
+readiness must keep live mode off so cron cannot fail on an uninitialized Gmail
+history cursor.
 
 ## Deployment Commands
 
@@ -63,9 +70,9 @@ As of 2026-07-13:
 - These required bindings still need live configuration:
   `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `GMAIL_CLIENT_ID`,
   `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_CLINIC_LABEL`,
-  `GOOGLE_CALENDAR_CLIENT_ID`, `GOOGLE_CALENDAR_CLIENT_SECRET`,
-  `GOOGLE_CALENDAR_REFRESH_TOKEN`, `OPENAI_API_KEY`, `ACCESS_TEAM_DOMAIN`, and
-  `ACCESS_AUD`.
+  `GMAIL_HISTORY_START_ID`, `GOOGLE_CALENDAR_CLIENT_ID`,
+  `GOOGLE_CALENDAR_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`,
+  `OPENAI_API_KEY`, `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
 - Existing Bitwarden inventory did not contain unambiguous Stripe, Gmail,
   Google Calendar, or Cloudflare Access credentials for this service. It also
   contained multiple OpenAI key-shaped candidates, so `OPENAI_API_KEY` was not

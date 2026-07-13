@@ -7,6 +7,7 @@ import { createPaymentRoutes } from "./routes/payments";
 import { createQuoteRoutes } from "./routes/quotes";
 import { runOperationalDigest } from "./scheduled/digest";
 import { runGmailPoller } from "./scheduled/gmail-poller";
+import { runRetention } from "./scheduled/retention";
 export { PriorityDiscoveryWorkflow } from "./workflows/priority-discovery-runtime";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -39,8 +40,14 @@ export default {
     env: Env,
     ctx: ExecutionContext,
   ) => {
+    const task =
+      event.cron === "0 13 * * *"
+        ? runOperationalDigest(env)
+        : event.cron === "30 13 * * *"
+          ? runRetention(env)
+          : runGmailPoller(env);
     ctx.waitUntil(
-      event.cron === "0 13 * * *" ? runOperationalDigest(env) : runGmailPoller(env),
+      task,
     );
   },
 };

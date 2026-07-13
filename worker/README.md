@@ -15,7 +15,6 @@ in `.env.example`, shell history, docs, commits, or issue comments.
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`
 - `GMAIL_REFRESH_TOKEN`
-- `GMAIL_SENDER`
 - `GMAIL_CLINIC_LABEL`
 - `GOOGLE_CALENDAR_CLIENT_ID`
 - `GOOGLE_CALENDAR_CLIENT_SECRET`
@@ -23,11 +22,11 @@ in `.env.example`, shell history, docs, commits, or issue comments.
 - `OPENAI_API_KEY`
 - `ACCESS_TEAM_DOMAIN`
 - `ACCESS_AUD`
-- `ADMIN_EMAIL`
 
 `GOOGLE_CALENDAR_ID`, `SITE_ORIGIN`, `TERMS_VERSION`,
-`PRIORITY_DEPOSIT_CENTS`, `MANDATORY_REVIEW_CASE_LIMIT`, and `AGENT_MODEL` are
-non-secret Worker vars in `wrangler.jsonc`.
+`PRIORITY_DEPOSIT_CENTS`, `MANDATORY_REVIEW_CASE_LIMIT`, `AGENT_MODEL`,
+`GMAIL_SENDER`, and `ADMIN_EMAIL` are non-secret Worker vars in
+`wrangler.jsonc`.
 
 ## Deployment Commands
 
@@ -58,7 +57,19 @@ As of 2026-07-13:
   configured.
 - Remote readiness reports `mode: setup`, `ready: false`, and only missing
   binding names.
-- Required Worker secrets are not configured in Cloudflare yet.
+- `GMAIL_SENDER` and `ADMIN_EMAIL` are configured as non-secret Worker vars.
+- `TURNSTILE_SECRET` is configured from the existing Cloudflare Turnstile
+  widget.
+- These required bindings still need live configuration:
+  `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `GMAIL_CLIENT_ID`,
+  `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_CLINIC_LABEL`,
+  `GOOGLE_CALENDAR_CLIENT_ID`, `GOOGLE_CALENDAR_CLIENT_SECRET`,
+  `GOOGLE_CALENDAR_REFRESH_TOKEN`, `OPENAI_API_KEY`, `ACCESS_TEAM_DOMAIN`, and
+  `ACCESS_AUD`.
+- Existing Bitwarden inventory did not contain unambiguous Stripe, Gmail,
+  Google Calendar, or Cloudflare Access credentials for this service. It also
+  contained multiple OpenAI key-shaped candidates, so `OPENAI_API_KEY` was not
+  set without disambiguation.
 - `api.sulemanji.com` is not currently resolvable. Public DNS for
   `sulemanji.com` is still on GoDaddy nameservers, and this Cloudflare account
   does not expose a `sulemanji.com` zone to the deployment token.

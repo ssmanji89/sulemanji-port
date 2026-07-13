@@ -73,9 +73,10 @@ export const createPaymentRoutes = (
     }
 
     const raw = await c.req.raw.text();
+    const stripe = stripeForEnv(c.env);
     let event: unknown;
     try {
-      event = await stripeForEnv(c.env).constructEvent(
+      event = await stripe.constructEvent(
         raw,
         signature,
         c.env.STRIPE_WEBHOOK_SECRET,
@@ -104,25 +105,30 @@ export const createPaymentRoutes = (
     }
 
     const repository = new D1CaseRepository(c.env.DB);
-    const eventState = await repository.recordStripeEvent(
+    await repository.recordStripeEvent(
       event.id,
       caseId,
       event.type,
     );
-    if (eventState === "duplicate") {
-      return c.json({ received: true });
-    }
 
     const depositCents = parseConfiguredCents(c.env.PRIORITY_DEPOSIT_CENTS);
+    const current = await caseById(c.env.DB, caseId);
+    if (!current) {
+      return c.json({ error: "checkout_unavailable" }, 409);
+    }
+
     if (
       session.payment_status !== "paid" ||
       session.amount_total !== depositCents
     ) {
-      return c.json({ error: "deposit_amount_mismatch" }, 422);
+      await refundInvalidDeposit(stripe, repository, current, paymentIntentId);
+      return c.json({ received: true });
     }
 
-    const current = await caseById(c.env.DB, caseId);
-    if (!current || current.status !== "checkout_pending") {
+    if (
+      current.status !== "checkout_pending" &&
+      current.status !== "paid_pending_start"
+    ) {
       return c.json({ error: "checkout_unavailable" }, 409);
     }
 
@@ -132,18 +138,17 @@ export const createPaymentRoutes = (
       paymentIntentId,
       depositCents,
     );
-    await repository.transition(
-      caseId,
-      "checkout_pending",
-      "paid_pending_start",
-      "priority_deposit_paid",
-    );
 
-    const workflowId = workflowIdFor(caseId);
-    await c.env.PRIORITY_DISCOVERY.create({
-      id: workflowId,
-      params: { caseId },
-    });
+    if (current.status === "checkout_pending") {
+      await repository.transition(
+        caseId,
+        "checkout_pending",
+        "paid_pending_start",
+        "priority_deposit_paid",
+      );
+    }
+
+    await ensurePriorityDiscoveryStarted(c.env, caseId);
 
     return c.json({ received: true });
   });
@@ -202,6 +207,109 @@ const priorityCancelUrl = (siteOrigin: string, token: string): string => {
   const url = new URL("/work-with-me/priority", siteOrigin);
   url.searchParams.set("case", token);
   return url.toString();
+};
+
+const refundInvalidDeposit = async (
+  stripe: StripeAdapter,
+  repository: D1CaseRepository,
+  current: { id: string; status: string },
+  paymentIntentId: string,
+): Promise<void> => {
+  if (current.status === "declined_refund_pending") {
+    return;
+  }
+
+  if (
+    current.status !== "checkout_pending" &&
+    current.status !== "paid_pending_start"
+  ) {
+    throw new Error("Invalid refund state");
+  }
+
+  if (current.status === "checkout_pending") {
+    await repository.transition(
+      current.id,
+      "checkout_pending",
+      "paid_pending_start",
+      "priority_deposit_validation_failed",
+    );
+  }
+
+  await stripe.refundPaymentIntent({
+    caseId: current.id,
+    paymentIntentId,
+    reason: "deposit_validation_failed",
+  });
+
+  await repository.transition(
+    current.id,
+    "paid_pending_start",
+    "declined_refund_pending",
+    "priority_deposit_refund_pending",
+  );
+};
+
+const ensurePriorityDiscoveryStarted = async (
+  env: Env,
+  caseId: string,
+): Promise<void> => {
+  const workflowId = workflowIdFor(caseId);
+  const alreadyStarted = await workflowStartRecorded(env.DB, caseId, workflowId);
+  if (alreadyStarted) {
+    return;
+  }
+
+  await env.PRIORITY_DISCOVERY.create({
+    id: workflowId,
+    params: { caseId },
+  });
+  await recordWorkflowStart(env.DB, caseId, workflowId);
+};
+
+const workflowStartRecorded = async (
+  db: D1Database,
+  caseId: string,
+  workflowId: string,
+): Promise<boolean> => {
+  const row = await db
+    .prepare(
+      `SELECT 1
+      FROM workflow_events
+      WHERE case_id = ? AND workflow_id = ? AND event_type = ?
+      LIMIT 1`,
+    )
+    .bind(caseId, workflowId, "priority_discovery_workflow_started")
+    .first();
+
+  return !!row;
+};
+
+const recordWorkflowStart = async (
+  db: D1Database,
+  caseId: string,
+  workflowId: string,
+): Promise<void> => {
+  try {
+    await db
+      .prepare(
+        `INSERT INTO workflow_events (
+          id, case_id, workflow_id, event_type, data_json, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        crypto.randomUUID(),
+        caseId,
+        workflowId,
+        "priority_discovery_workflow_started",
+        JSON.stringify({ source: "stripe_webhook" }),
+        new Date().toISOString(),
+      )
+      .run();
+  } catch (error) {
+    if (!isUniqueConstraintError(error)) {
+      throw error;
+    }
+  }
 };
 
 const isStripeWebhookEvent = (event: unknown): event is StripeWebhookEvent => {
@@ -270,3 +378,7 @@ const caseById = async (
 };
 
 const workflowIdFor = (caseId: string): string => `priority-discovery-${caseId}`;
+
+const isUniqueConstraintError = (error: unknown): boolean =>
+  error instanceof Error &&
+  /unique constraint|constraint failed/i.test(error.message);

@@ -8,6 +8,7 @@ import {
 import { beforeEach, describe, expect, it } from "vitest";
 import migration0001 from "../migrations/0001_cases.sql?raw";
 import migration0002 from "../migrations/0002_priority_discovery.sql?raw";
+import migration0003 from "../migrations/0003_payment_workflow_idempotency.sql?raw";
 import { D1CaseRepository } from "../src/repositories/cases";
 
 const db = (env as unknown as { DB: D1Database }).DB;
@@ -130,6 +131,7 @@ const loadMigrations = async (): Promise<D1Migration[]> =>
   [
     migration("0001_cases.sql", migration0001),
     migration("0002_priority_discovery.sql", migration0002),
+    migration("0003_payment_workflow_idempotency.sql", migration0003),
   ];
 
 const migration = (name: string, text: string): D1Migration => ({

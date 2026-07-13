@@ -6,9 +6,11 @@ import {
   type D1Migration,
 } from "cloudflare:test";
 import { Hono } from "hono";
+import Stripe from "stripe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import migration0001 from "../migrations/0001_cases.sql?raw";
 import migration0002 from "../migrations/0002_priority_discovery.sql?raw";
+import migration0003 from "../migrations/0003_payment_workflow_idempotency.sql?raw";
 import type { IntakeInput } from "../src/domain/case";
 import type { Env } from "../src/env";
 import { createStripeAdapter } from "../src/integrations/stripe";
@@ -178,6 +180,29 @@ describe("payment routes", () => {
     expect(workflowStarts).toHaveLength(0);
   });
 
+  it("rejects deposit checkout from an arbitrary origin before Stripe is called", async () => {
+    const created = await createCase("checkout_pending", {
+      email: "priority@example.com",
+    });
+
+    const response = await app.fetch(
+      new Request(`${API_ORIGIN}/v1/cases/${created.publicToken}/deposit-checkout`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: "https://attacker.example",
+        },
+        body: "{}",
+      }),
+      testEnv,
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({ error: "forbidden_origin" });
+    expect(stripe.checkoutRequests).toHaveLength(0);
+  });
+
+
   it("records duplicate webhook deliveries before effects and acknowledges without starting workflow twice", async () => {
     const created = await createCase("checkout_pending");
     const event = checkoutCompletedEvent({
@@ -235,7 +260,46 @@ describe("payment routes", () => {
     ]);
   });
 
-  it("does not implement pre-delivery automatic refunds without a repository state transition contract", async () => {
+  it("recovers workflow start on duplicate webhook retry after a transient failure", async () => {
+    const created = await createCase("checkout_pending");
+    const event = checkoutCompletedEvent({
+      eventId: "evt_retry_workflow",
+      caseId: created.id,
+      sessionId: "cs_retry_workflow",
+      paymentIntentId: "pi_retry_workflow",
+    });
+    const raw = JSON.stringify(event);
+    stripe.events.set(raw, event);
+    let workflowAttempts = 0;
+    testEnv.PRIORITY_DISCOVERY = {
+      create: vi.fn(
+        async (options: { id: string; params: { caseId: string } }) => {
+          workflowAttempts += 1;
+          if (workflowAttempts === 1) {
+            throw new Error("workflow unavailable");
+          }
+          workflowStarts.push(options);
+          return { id: options.id };
+        },
+      ),
+    } as unknown as Env["PRIORITY_DISCOVERY"];
+
+    const first = await webhook(raw, "valid-signature");
+    const second = await webhook(raw, "valid-signature");
+
+    expect(first.status).toBe(500);
+    expect(second.status).toBe(200);
+    await expect(caseStatus(created.id)).resolves.toBe("paid_pending_start");
+    await expect(tableCount("credits")).resolves.toBe(1);
+    expect(workflowStarts).toEqual([
+      {
+        id: `priority-discovery-${created.id}`,
+        params: { caseId: created.id },
+      },
+    ]);
+  });
+
+  it("automatically refunds paid events that cannot begin delivery before credit or workflow effects", async () => {
     const created = await createCase("checkout_pending");
     const event = checkoutCompletedEvent({
       eventId: "evt_amount_mismatch",
@@ -249,13 +313,37 @@ describe("payment routes", () => {
 
     const response = await webhook(raw, "valid-signature");
 
-    expect(response.status).toBe(422);
-    await expect(response.json()).resolves.toEqual({
-      error: "deposit_amount_mismatch",
-    });
-    expect(stripe.refundRequests).toHaveLength(0);
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ received: true });
+    expect(stripe.refundRequests).toEqual([
+      {
+        caseId: created.id,
+        paymentIntentId: "pi_amount_mismatch",
+        reason: "deposit_validation_failed",
+      },
+    ]);
     expect(workflowStarts).toHaveLength(0);
     await expect(tableCount("credits")).resolves.toBe(0);
+    await expect(caseStatus(created.id)).resolves.toBe("declined_refund_pending");
+  });
+
+  it("retries validation and refund handling for duplicate bad paid events until refund state is reached", async () => {
+    const created = await createCase("checkout_pending");
+    const event = checkoutCompletedEvent({
+      eventId: "evt_bad_retry",
+      caseId: created.id,
+      amountTotal: 100,
+      sessionId: "cs_bad_retry",
+      paymentIntentId: "pi_bad_retry",
+    });
+    const raw = JSON.stringify(event);
+    stripe.events.set(raw, event);
+
+    await webhook(raw, "valid-signature");
+    await webhook(raw, "valid-signature");
+
+    expect(stripe.refundRequests).toHaveLength(1);
+    await expect(caseStatus(created.id)).resolves.toBe("declined_refund_pending");
   });
 
   const checkout = (token: string, body: unknown = {}): Promise<Response> =>
@@ -324,6 +412,7 @@ describe("Stripe adapter", () => {
         cancelUrl: "https://www.sulemanji.com/work-with-me/priority?case=case_123",
         metadata: {
           case_id: "case_123",
+          terms_version: "2026-07-11",
           launch_review_gate: "inside",
           launch_review_gate_position: "1",
         },
@@ -341,12 +430,14 @@ describe("Stripe adapter", () => {
         consent_collection: { terms_of_service: "required" },
         metadata: {
           case_id: "case_123",
+          terms_version: "2026-07-11",
           launch_review_gate: "inside",
           launch_review_gate_position: "1",
         },
         payment_intent_data: {
           metadata: {
             case_id: "case_123",
+            terms_version: "2026-07-11",
             launch_review_gate: "inside",
             launch_review_gate_position: "1",
           },
@@ -368,6 +459,26 @@ describe("Stripe adapter", () => {
     const expiresAt = (params as unknown as { expires_at: number }).expires_at;
     expect(expiresAt).toBeGreaterThanOrEqual(createdAtSeconds + 29 * 60);
     expect(expiresAt).toBeLessThanOrEqual(createdAtSeconds + 31 * 60);
+  });
+
+  it("verifies webhook signatures against the exact raw payload", async () => {
+    const adapter = createStripeAdapter(testEnv);
+    const payload = JSON.stringify({
+      id: "evt_real_signature",
+      type: "checkout.session.completed",
+      data: { object: { id: "cs_real_signature" } },
+    });
+    const signature = await Stripe.webhooks.generateTestHeaderStringAsync({
+      payload,
+      secret: "whsec_test_123",
+    });
+
+    await expect(
+      adapter.constructEvent(payload, signature, "whsec_test_123"),
+    ).resolves.toMatchObject({ id: "evt_real_signature" });
+    await expect(
+      adapter.constructEvent(`${payload}\n`, signature, "whsec_test_123"),
+    ).rejects.toThrow();
   });
 });
 
@@ -444,6 +555,7 @@ const loadMigrations = async (): Promise<D1Migration[]> =>
   [
     migration("0001_cases.sql", migration0001),
     migration("0002_priority_discovery.sql", migration0002),
+    migration("0003_payment_workflow_idempotency.sql", migration0003),
   ];
 
 const migration = (name: string, text: string): D1Migration => ({

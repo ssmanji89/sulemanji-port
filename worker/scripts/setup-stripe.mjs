@@ -229,7 +229,7 @@ async function stripeJson(path, { stripeSecretKey, method, body, idempotencyKey 
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = payload.error?.message || response.statusText;
+    const message = redactStripeError(payload.error?.message || response.statusText);
     fail(`Stripe API request failed (${response.status}): ${message}`);
   }
   return payload;
@@ -269,6 +269,12 @@ Options:
   --idempotency-key VALUE       Stripe idempotency key for webhook creation
 
 This command prints no Stripe secrets and writes none to the repository.`);
+}
+
+function redactStripeError(message) {
+  return message
+    .replace(/\b(?:sk|rk|pk|whsec|we|acct)_[A-Za-z0-9_*]+/g, "<redacted>")
+    .replace(/\b[a-z]{2,}_[A-Za-z0-9]{12,}\b/g, "<redacted>");
 }
 
 function fail(message) {

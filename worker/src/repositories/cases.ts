@@ -1,3 +1,8 @@
+import {
+  AgentDecision,
+  AgentInputSchema,
+  type AgentInput,
+} from "../agent/contracts";
 import { IntakeInput, type CaseStatus } from "../domain/case";
 import { holdExpiresAt, quoteExpiresAt, remainingBalance } from "../domain/booking";
 import { canTransition } from "../domain/state-machine";
@@ -105,6 +110,14 @@ export interface CaseRepository {
   getActiveSlotHoldForPayment(holdId: string): Promise<SlotHoldPayment | null>;
   confirmSlotHold(holdId: string, providerEventId: string): Promise<void>;
   releaseSlotHold(holdId: string): Promise<void>;
+  enqueueAgentDecisionJob(
+    input: EnqueueAgentDecisionJobInput,
+  ): Promise<EnqueuedAgentJob>;
+  claimNextAgentJob(): Promise<ClaimedAgentJob | null>;
+  completeAgentJob(
+    jobId: string,
+    decision: AgentDecision,
+  ): Promise<CompletedAgentJob>;
 }
 
 export interface CreateSessionQuoteInput {
@@ -164,6 +177,34 @@ export interface SlotHoldPayment {
   startsAt: string;
   endsAt: string;
   balanceCents: number;
+}
+
+export interface EnqueueAgentDecisionJobInput {
+  caseId: string;
+  workflowId: string;
+  sourceMessageId: string;
+  input: AgentInput;
+}
+
+export interface EnqueuedAgentJob {
+  id: string;
+}
+
+export interface ClaimedAgentJob {
+  id: string;
+  caseId: string;
+  workflowId: string;
+  sourceMessageId: string;
+  input: AgentInput;
+  claimedAt: string;
+}
+
+export interface CompletedAgentJob {
+  id: string;
+  caseId: string;
+  workflowId: string;
+  sourceMessageId: string;
+  decision: AgentDecision;
 }
 
 interface CaseRow {
@@ -250,6 +291,16 @@ interface SlotHoldPaymentRow {
   starts_at: string;
   ends_at: string;
   balance_cents: number;
+}
+
+interface AgentJobRow {
+  id: string;
+  case_id: string;
+  workflow_id: string;
+  source_message_id: string;
+  input_json: string;
+  result_json: string | null;
+  claimed_at: string | null;
 }
 
 export class D1CaseRepository implements CaseRepository {
@@ -1342,6 +1393,141 @@ export class D1CaseRepository implements CaseRepository {
     ) {
       throw new Error("Slot hold release failed");
     }
+  }
+
+  async enqueueAgentDecisionJob(
+    input: EnqueueAgentDecisionJobInput,
+  ): Promise<EnqueuedAgentJob> {
+    AgentInputSchema.parse(input.input);
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+
+    try {
+      await this.db
+        .prepare(
+          `INSERT INTO agent_jobs (
+            id, case_id, workflow_id, source_message_id, job_type, status,
+            input_json, result_json, error_text, created_at, claimed_at,
+            completed_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          id,
+          input.caseId,
+          input.workflowId,
+          input.sourceMessageId,
+          "agent_decision",
+          "pending",
+          JSON.stringify(input.input),
+          null,
+          null,
+          now,
+          null,
+          null,
+        )
+        .run();
+
+      return { id };
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) throw error;
+
+      const existing = await this.db
+        .prepare(
+          `SELECT id
+          FROM agent_jobs
+          WHERE case_id = ? AND source_message_id = ? AND job_type = ?
+          LIMIT 1`,
+        )
+        .bind(input.caseId, input.sourceMessageId, "agent_decision")
+        .first<{ id: string }>();
+      if (!existing) throw error;
+      return { id: existing.id };
+    }
+  }
+
+  async claimNextAgentJob(): Promise<ClaimedAgentJob | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT id, case_id, workflow_id, source_message_id, input_json,
+          result_json, claimed_at
+        FROM agent_jobs
+        WHERE status = ?
+        ORDER BY created_at ASC
+        LIMIT 1`,
+      )
+      .bind("pending")
+      .first<AgentJobRow>();
+    if (!row) return null;
+
+    const now = new Date().toISOString();
+    const result = await this.db
+      .prepare(
+        `UPDATE agent_jobs
+        SET status = ?, claimed_at = ?
+        WHERE id = ? AND status = ?`,
+      )
+      .bind("claimed", now, row.id, "pending")
+      .run();
+    if (result.meta.changes !== 1) {
+      return this.claimNextAgentJob();
+    }
+
+    return {
+      id: row.id,
+      caseId: row.case_id,
+      workflowId: row.workflow_id,
+      sourceMessageId: row.source_message_id,
+      input: AgentInputSchema.parse(JSON.parse(row.input_json)),
+      claimedAt: now,
+    };
+  }
+
+  async completeAgentJob(
+    jobId: string,
+    decision: AgentDecision,
+  ): Promise<CompletedAgentJob> {
+    const parsedDecision = AgentDecision.parse(decision);
+    const row = await this.db
+      .prepare(
+        `SELECT id, case_id, workflow_id, source_message_id, input_json,
+          result_json, claimed_at
+        FROM agent_jobs
+        WHERE id = ?
+        LIMIT 1`,
+      )
+      .bind(jobId)
+      .first<AgentJobRow>();
+    if (!row) {
+      throw new Error("Agent job not found");
+    }
+
+    const now = new Date().toISOString();
+    const result = await this.db
+      .prepare(
+        `UPDATE agent_jobs
+        SET status = ?, result_json = ?, completed_at = ?
+        WHERE id = ? AND status IN (?, ?)`,
+      )
+      .bind(
+        "completed",
+        JSON.stringify(parsedDecision),
+        now,
+        jobId,
+        "pending",
+        "claimed",
+      )
+      .run();
+    if (result.meta.changes !== 1) {
+      throw new Error("Agent job is not completable");
+    }
+
+    return {
+      id: row.id,
+      caseId: row.case_id,
+      workflowId: row.workflow_id,
+      sourceMessageId: row.source_message_id,
+      decision: parsedDecision,
+    };
   }
 
   private async ensureDeliveryStartIsNewOrIdentical(

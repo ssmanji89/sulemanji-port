@@ -19,6 +19,7 @@ export type Env = {
   GOOGLE_CALENDAR_CLIENT_SECRET: string;
   GOOGLE_CALENDAR_REFRESH_TOKEN: string;
   OPENAI_API_KEY: string;
+  AGENT_EXECUTION_MODE?: "openai" | "local_queue" | string;
   AGENT_MODEL: string;
   PRIORITY_DEPOSIT_CENTS: string;
   MANDATORY_REVIEW_CASE_LIMIT: string;

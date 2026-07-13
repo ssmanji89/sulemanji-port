@@ -84,10 +84,20 @@ export interface PriorityDiscoveryReplyDependencies {
   agent: AgentProvider;
 }
 
+export interface PriorityDiscoveryTurnDependencies {
+  repository: PriorityDiscoveryReplyRepository;
+  gmail: PriorityDiscoveryReplyGmail;
+}
+
 export interface PriorityDiscoveryReplyResult {
   kind: AgentDecision["kind"];
   waitingForCustomer: boolean;
   complete: boolean;
+}
+
+export interface PreparedPriorityDiscoveryTurn {
+  context: DiscoveryAgentContext;
+  agentInput: AgentInput;
 }
 
 export const startPriorityDiscoveryDelivery = async (
@@ -142,6 +152,24 @@ export const handlePriorityDiscoveryCustomerReply = async (
   event: PriorityDiscoveryReplyEvent,
   dependencies: PriorityDiscoveryReplyDependencies,
 ): Promise<PriorityDiscoveryReplyResult> => {
+  const prepared = await preparePriorityDiscoveryAgentTurn(event, {
+    repository: dependencies.repository,
+    gmail: dependencies.gmail,
+  });
+  const decision = await dependencies.agent.decide(prepared.agentInput);
+
+  return applyPriorityDiscoveryAgentDecision(
+    event,
+    prepared.context,
+    decision,
+    dependencies,
+  );
+};
+
+export const preparePriorityDiscoveryAgentTurn = async (
+  event: PriorityDiscoveryReplyEvent,
+  dependencies: PriorityDiscoveryTurnDependencies,
+): Promise<PreparedPriorityDiscoveryTurn> => {
   const context = await dependencies.repository.getDiscoveryAgentContext(
     event.caseId,
   );
@@ -165,7 +193,9 @@ export const handlePriorityDiscoveryCustomerReply = async (
   const knownFacts = stringArrayFromState(context.state, "knownFacts");
   const openQuestions = stringArrayFromState(context.state, "openQuestions");
 
-  const decision = await dependencies.agent.decide({
+  return {
+    context,
+    agentInput: {
     caseId: event.caseId,
     launchReviewRequired: context.launchReviewRequired,
     confirmedUnderstanding: context.state?.confirmedUnderstanding === true,
@@ -178,16 +208,15 @@ export const handlePriorityDiscoveryCustomerReply = async (
     },
     state: { knownFacts, openQuestions },
     latestMessage,
-  } satisfies AgentInput);
-
-  return applyAgentDecision(event, context, decision, dependencies);
+    } satisfies AgentInput,
+  };
 };
 
-const applyAgentDecision = async (
+export const applyPriorityDiscoveryAgentDecision = async (
   event: PriorityDiscoveryReplyEvent,
   context: DiscoveryAgentContext,
   decision: AgentDecision,
-  dependencies: PriorityDiscoveryReplyDependencies,
+  dependencies: PriorityDiscoveryTurnDependencies,
 ): Promise<PriorityDiscoveryReplyResult> => {
   if (decision.kind === "hold") {
     const draft = await dependencies.gmail.createReplyDraft({
@@ -287,7 +316,7 @@ const sendRoutineReply = async (
   event: PriorityDiscoveryReplyEvent,
   to: string,
   bodyText: string,
-  dependencies: PriorityDiscoveryReplyDependencies,
+  dependencies: PriorityDiscoveryTurnDependencies,
 ): Promise<void> => {
   const draft = await dependencies.gmail.createReplyDraft({
     caseId: event.caseId,

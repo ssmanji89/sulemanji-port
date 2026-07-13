@@ -40,7 +40,11 @@ export const readinessStatus = (env: Env): ReadinessStatus => {
 };
 
 export const missingRequiredBindings = (env: Env): RequiredBindingName[] =>
-  REQUIRED_BINDINGS.filter((name) => !env[name]);
+  REQUIRED_BINDINGS.filter(
+    (name) =>
+      !(env.AGENT_EXECUTION_MODE === "local_queue" && name === "OPENAI_API_KEY") &&
+      !env[name],
+  );
 
 export const serviceIsReady = (env: Env): boolean =>
   readinessStatus(env).ready;

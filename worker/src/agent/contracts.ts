@@ -49,25 +49,33 @@ export const AgentDecision = z.discriminatedUnion("kind", [
 
 export type AgentDecision = z.infer<typeof AgentDecision>;
 
-export interface AgentInput {
-  caseId: string;
-  launchReviewRequired?: boolean;
-  confirmedUnderstanding?: boolean;
-  topicExpansionDetected?: boolean;
-  lowConfidenceThreadMapping?: boolean;
-  intake: {
-    contextType: "personal" | "professional";
-    problem: string;
-    desiredOutcome: string;
-    priorAttempts: string;
-    sanitizedLinks: string[];
-  };
-  state: {
-    knownFacts: string[];
-    openQuestions: string[];
-  };
-  latestMessage?: string;
-}
+export const AgentInputSchema = z
+  .object({
+    caseId: z.string().min(1),
+    launchReviewRequired: z.boolean().optional(),
+    confirmedUnderstanding: z.boolean().optional(),
+    topicExpansionDetected: z.boolean().optional(),
+    lowConfidenceThreadMapping: z.boolean().optional(),
+    intake: z
+      .object({
+        contextType: z.enum(["personal", "professional"]),
+        problem: z.string(),
+        desiredOutcome: z.string(),
+        priorAttempts: z.string(),
+        sanitizedLinks: z.array(z.string().url()).max(5),
+      })
+      .strict(),
+    state: z
+      .object({
+        knownFacts: z.array(z.string()),
+        openQuestions: z.array(z.string()),
+      })
+      .strict(),
+    latestMessage: z.string().optional(),
+  })
+  .strict();
+
+export type AgentInput = z.infer<typeof AgentInputSchema>;
 
 export interface AgentProvider {
   decide(input: AgentInput): Promise<AgentDecision>;

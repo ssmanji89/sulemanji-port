@@ -3,6 +3,7 @@ import {
   listHeldReviewCases,
   renderAdminReviewPage,
 } from "../admin/page";
+import { AgentDecision, type AgentInput } from "../agent/contracts";
 import { verifyCloudflareAccessAdmin } from "../auth/access";
 import type { Env } from "../env";
 import { createGmailClient } from "../integrations/gmail";
@@ -43,6 +44,28 @@ export interface AdminAudit {
     next: "waiting_for_customer",
     event: string,
   ): Promise<void>;
+  claimNextAgentJob?(): Promise<ClaimedAgentJob | null>;
+  completeAgentJob?(
+    jobId: string,
+    decision: AgentDecision,
+  ): Promise<CompletedAgentJob>;
+}
+
+export interface ClaimedAgentJob {
+  id: string;
+  caseId: string;
+  workflowId: string;
+  sourceMessageId: string;
+  input: AgentInput;
+  claimedAt: string;
+}
+
+export interface CompletedAgentJob {
+  id: string;
+  caseId: string;
+  workflowId: string;
+  sourceMessageId: string;
+  decision: AgentDecision;
 }
 
 export interface AdminRouteDependencies {
@@ -198,6 +221,72 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
       balanceCents: quote.balanceCents,
       expiresAt: quote.expiresAt,
     });
+  });
+
+  app.post("/admin/agent/jobs/next", async (c) => {
+    const authenticate =
+      dependencies.authenticate ?? verifyCloudflareAccessAdmin;
+    const actor = await authenticate(c.req.raw, c.env);
+    if (actor !== c.env.ADMIN_EMAIL) {
+      return c.json({ error: "forbidden" }, 403);
+    }
+
+    const repository = dependencies.audit ?? new D1CaseRepository(c.env.DB);
+    const job = await repository.claimNextAgentJob?.();
+    if (!job) {
+      return c.json({ job: null }, 200);
+    }
+
+    return c.json({ job });
+  });
+
+  app.post("/admin/agent/jobs/:id/complete", async (c) => {
+    const authenticate =
+      dependencies.authenticate ?? verifyCloudflareAccessAdmin;
+    const actor = await authenticate(c.req.raw, c.env);
+    if (actor !== c.env.ADMIN_EMAIL) {
+      return c.json({ error: "forbidden" }, 403);
+    }
+
+    let body: { decision?: unknown };
+    try {
+      body = await c.req.json<{ decision?: unknown }>();
+    } catch {
+      return c.json({ error: "invalid_request" }, 400);
+    }
+
+    const parsedDecision = AgentDecision.safeParse(body.decision);
+    if (!parsedDecision.success) {
+      return c.json({ error: "invalid_agent_decision" }, 400);
+    }
+
+    const repository = dependencies.audit ?? new D1CaseRepository(c.env.DB);
+    const completed = await repository.completeAgentJob?.(
+      c.req.param("id"),
+      parsedDecision.data,
+    );
+    if (!completed) {
+      throw new Error("Agent job repository unavailable");
+    }
+
+    const workflow = await c.env.PRIORITY_DISCOVERY.get(completed.workflowId);
+    await workflow.sendEvent({
+      type: "agent-decision",
+      payload: {
+        caseId: completed.caseId,
+        messageId: completed.sourceMessageId,
+        jobId: completed.id,
+        decision: completed.decision,
+      },
+    });
+
+    await repository.recordAdminAction({
+      actor,
+      caseId: completed.caseId,
+      action: "complete-agent-job",
+    });
+
+    return c.json({ ok: true });
   });
 
   return app;

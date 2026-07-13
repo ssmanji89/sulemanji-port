@@ -17,6 +17,7 @@
 		"PRIORITY_DEPOSIT_CENTS": "29500",
 		"MANDATORY_REVIEW_CASE_LIMIT": "10",
 		"GOOGLE_CALENDAR_ID": "primary",
+		"AGENT_EXECUTION_MODE": "local_queue",
 		"AGENT_MODEL": "gpt-5.4-mini",
 		"GMAIL_SENDER": "ssmanji89@gmail.com",
 		"ADMIN_EMAIL": "ssmanji89@gmail.com"

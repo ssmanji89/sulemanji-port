@@ -19,7 +19,6 @@ in `.env.example`, shell history, docs, commits, or issue comments.
 - `GOOGLE_CALENDAR_CLIENT_ID`
 - `GOOGLE_CALENDAR_CLIENT_SECRET`
 - `GOOGLE_CALENDAR_REFRESH_TOKEN`
-- `OPENAI_API_KEY`
 - `ACCESS_TEAM_DOMAIN`
 - `ACCESS_AUD`
 
@@ -34,6 +33,11 @@ history id is known.
 successful poll, D1 stores the latest cursor in `automation_state`; until then,
 readiness must keep live mode off so cron cannot fail on an uninitialized Gmail
 history cursor.
+
+`AGENT_EXECUTION_MODE=local_queue` delegates discovery decisions to a local
+Codex runner authenticated with the machine's ChatGPT OAuth session. In this
+mode, `OPENAI_API_KEY` is not required for Worker readiness. If the mode is
+changed back to `openai`, set `OPENAI_API_KEY` as a Worker secret first.
 
 ## Deployment Commands
 
@@ -58,7 +62,7 @@ CORS restricted to `https://www.sulemanji.com`.
 
 As of 2026-07-13:
 
-- Remote D1 migrations `0001` through `0006` have been applied.
+- Remote D1 migrations `0001` through `0007` have been applied.
 - The remote Worker script is deployed in setup mode. Cron triggers are present,
   but scheduled jobs no-op until `SERVICE_MODE=live` and required bindings are
   configured.
@@ -72,11 +76,11 @@ As of 2026-07-13:
   `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_CLINIC_LABEL`,
   `GMAIL_HISTORY_START_ID`, `GOOGLE_CALENDAR_CLIENT_ID`,
   `GOOGLE_CALENDAR_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`,
-  `OPENAI_API_KEY`, `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
+  `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
 - Existing Bitwarden inventory did not contain unambiguous Stripe, Gmail,
   Google Calendar, or Cloudflare Access credentials for this service. It also
-  contained multiple OpenAI key-shaped candidates, so `OPENAI_API_KEY` was not
-  set without disambiguation.
+  contained multiple OpenAI key-shaped candidates; local-queue mode avoids
+  needing to pick one for launch agent execution.
 - `api.sulemanji.com` is not currently resolvable. Public DNS for
   `sulemanji.com` is still on GoDaddy nameservers, and this Cloudflare account
   does not expose a `sulemanji.com` zone to the deployment token.
@@ -86,6 +90,34 @@ As of 2026-07-13:
 Do not set `SERVICE_MODE=live` until the required secrets are set; otherwise
 scheduled Gmail polling, retention, and digest jobs will run against an
 incomplete runtime.
+
+## Local Codex Agent Runner
+
+The Worker can enqueue discovery decisions for a local runner instead of
+calling OpenAI directly. This is the current launch direction because this Mac
+already has Codex logged in with ChatGPT OAuth.
+
+Run one queued job:
+
+```bash
+cd worker
+AI_WORKFLOW_API_BASE="https://sulemanji-work-with-me.ssmanji89.workers.dev" \
+CF_ACCESS_JWT_ASSERTION="$CF_ACCESS_JWT_ASSERTION" \
+npm run agent:run-local
+```
+
+The runner:
+
+- claims one pending `/v1/admin/agent/jobs/next` job;
+- invokes `codex exec --ephemeral` with the local ChatGPT OAuth session;
+- constrains output with `schemas/agent-decision.schema.json`; and
+- submits the decision to `/v1/admin/agent/jobs/:id/complete`, which wakes the
+  matching Cloudflare Workflow.
+
+Do not store Access assertions, cookies, Codex tokens, customer message bodies,
+or generated prompts in the repository. For recurring use, have Hermes or
+launchd provide the API base and short-lived Access assertion from local secure
+state.
 
 ## Launch Gates
 

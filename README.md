@@ -50,6 +50,11 @@ bindings, retention behavior, and test-mode UAT. The live smoke script checks
 public wiring and protected service edges without submitting an intake, sending
 email, or creating a payment.
 
+Priority Discovery checkout is controlled by
+`priority_discovery_checkout_ready` in `_config.yml`. Keep it `false` until
+launch review is complete; when enabling it, rebuild the site and run the live
+smoke with `PRIORITY_CHECKOUT_READY_EXPECTED=true`.
+
 ## License
 
 MIT License Copyright (c) 2025 sulemanji.com

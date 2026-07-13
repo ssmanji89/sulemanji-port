@@ -82,6 +82,10 @@ As of 2026-07-13:
 - Cloudflare Access is enabled for the Worker admin path, and
   `ACCESS_TEAM_DOMAIN` plus `ACCESS_AUD` are configured as Worker secrets.
 - Stripe live API and webhook signing secrets are configured as Worker secrets.
+- The public Priority Discovery checkout button is still controlled by
+  `priority_discovery_checkout_ready` in `_config.yml`; keep it `false` until
+  launch review is complete, then smoke with
+  `PRIORITY_CHECKOUT_READY_EXPECTED=true`.
 - Existing Bitwarden inventory does not contain unambiguous live API/OAuth
   material for the remaining bindings. Stripe-looking entries are dashboard
   login-shaped rather than `sk_*` / `whsec_*` API material. The `ssmanji89 GMail

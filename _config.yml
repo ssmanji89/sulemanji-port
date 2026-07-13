@@ -19,6 +19,7 @@ linkedin_username: suleman-manji-1a46852a0
 repository: ssmanji89/sulemanji-port
 turnstile_site_key: 0x4AAAAAAD0keTHPr0kZYqia
 work_with_me_api_base: https://api.sulemanji.com
+priority_discovery_checkout_ready: false
 
 markdown: kramdown
 sass:

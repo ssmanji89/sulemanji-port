@@ -5,6 +5,7 @@ description: Priority Discovery deposit summary for Work With Me intake cases.
 permalink: /work-with-me/priority
 work_with_me_form: true
 ---
+{% assign priority_checkout_ready = site.priority_discovery_checkout_ready | default: false %}
 
 # Priority Discovery Deposit
 
@@ -31,9 +32,13 @@ If Suleman declines the engagement or the system cannot start discovery, the pay
 
 AI participates in discovery and blueprint generation, and Suleman may review any thread. Do not send secrets, credentials, attachments, regulated records, sensitive third-party data, or material you lack authority to share.
 
+{% if priority_checkout_ready %}
+Use the button below only after submitting an eligible Priority Discovery intake and receiving a case token. Checkout starts the paid discovery path for that one defined messy problem.
+{% else %}
 Live checkout is unavailable until legal/tax review is recorded. The button below is the intended deposit handoff for an eligible case token, but it will not open payment until that review gate is complete.
+{% endif %}
 
 <div class="priority-actions">
-  <button id="priority-checkout" class="btn btn-primary" type="button" data-endpoint-base="{{ site.work_with_me_api_base }}/v1/cases" data-checkout-ready="false" aria-describedby="priority-status">Request deposit checkout</button>
-  <p id="priority-status" class="form-status" role="status" aria-live="polite">Deposit checkout is unavailable until legal/tax review is recorded.</p>
+  <button id="priority-checkout" class="btn btn-primary" type="button" data-endpoint-base="{{ site.work_with_me_api_base }}/v1/cases" data-checkout-ready="{{ priority_checkout_ready }}" aria-describedby="priority-status">Request deposit checkout</button>
+  <p id="priority-status" class="form-status" role="status" aria-live="polite">{% if priority_checkout_ready %}Enter a valid Priority Discovery case token to request checkout.{% else %}Deposit checkout is unavailable until legal/tax review is recorded.{% endif %}</p>
 </div>

@@ -72,6 +72,13 @@ def configured_api_base():
     return match.group(1) if match else ""
 
 
+def configured_checkout_ready():
+    if not CONFIG.exists():
+        return ""
+    match = re.search(r"^priority_discovery_checkout_ready:\s*(true|false)\s*$", read(CONFIG), flags=re.MULTILINE)
+    return match.group(1) if match else ""
+
+
 def check_forbidden(path, failures):
     if not path.exists():
         return
@@ -84,6 +91,7 @@ def check_forbidden(path, failures):
 def main():
     failures = []
     api_base = configured_api_base()
+    checkout_ready = configured_checkout_ready()
 
     require(CNAME.exists(), "CNAME file is missing", failures)
     if CNAME.exists():
@@ -159,8 +167,10 @@ def main():
         require("60-day" in priority_lower or "60 days" in priority_lower, "work-with-me-priority.md must explain the 60-day credit", failures)
         require("AI participates" in priority or "AI-assisted" in priority, "work-with-me-priority.md must disclose AI participation", failures)
         require("legal/tax review" in priority_lower, "work-with-me-priority.md must mark checkout unavailable until legal/tax review", failures)
+        require_text(priority, "{% assign priority_checkout_ready = site.priority_discovery_checkout_ready | default: false %}", PRIORITY_PAGE, failures)
         require_text(priority, 'id="priority-checkout"', PRIORITY_PAGE, failures)
         require_text(priority, 'data-endpoint-base="{{ site.work_with_me_api_base }}/v1/cases"', PRIORITY_PAGE, failures)
+        require_text(priority, 'data-checkout-ready="{{ priority_checkout_ready }}"', PRIORITY_PAGE, failures)
         require_text(priority, "case", PRIORITY_PAGE, failures)
 
     if QUOTE_PAGE.exists():
@@ -251,6 +261,8 @@ def main():
         require("turnstile_site_key:" in config, "_config.yml must define the public Turnstile site key", failures)
         require("work_with_me_api_base:" in config, "_config.yml must define the Work With Me API base", failures)
         require(api_base.startswith("https://"), "_config.yml Work With Me API base must be an HTTPS URL", failures)
+        require("priority_discovery_checkout_ready:" in config, "_config.yml must define the Priority Discovery checkout launch flag", failures)
+        require(checkout_ready in ["true", "false"], "_config.yml Priority Discovery checkout launch flag must be true or false", failures)
 
     if NAV.exists():
         nav = read(NAV)
@@ -298,6 +310,8 @@ def main():
             site_text = read(site_file)
             if site_file == SITE_PRIORITY_PAGE and api_base:
                 require(f'data-endpoint-base="{api_base}/v1/cases"' in site_text, "_site/work-with-me/priority.html must render the configured API base", failures)
+                if checkout_ready:
+                    require(f'data-checkout-ready="{checkout_ready}"' in site_text, "_site/work-with-me/priority.html must render the configured checkout launch flag", failures)
             if site_file == SITE_QUOTE_PAGE:
                 require("assets/js/work-with-me-quote.js" in site_text, "_site/work-with-me/quote.html must load the private quote script", failures)
                 require('class="quote-shell"' in site_text, "_site/work-with-me/quote.html must include the private quote shell", failures)

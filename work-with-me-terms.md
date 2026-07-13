@@ -38,7 +38,11 @@ New or materially different problems require a separate intake. The agent must i
 - A booking hold has no monetary value and is released automatically after its 15-minute checkout window expires.
 - Final public terms, tax treatment, cancellation language, and receipt wording require Texas attorney/CPA review before live payment is enabled.
 
+{% if site.priority_discovery_checkout_ready %}
+Live checkout is enabled only for eligible Priority Discovery cases that have passed intake screening.
+{% else %}
 Live checkout is unavailable until legal/tax review is recorded.
+{% endif %}
 
 ## Safety boundaries
 
@@ -47,4 +51,3 @@ Do not submit secrets, API keys, passwords, tokens, production credentials, atta
 Priority Discovery does not include production implementation, custody of production systems, or access to employer/client systems unless separately agreed after discovery. This is not regulated legal, medical, financial, or compliance advice.
 
 AI participates in discovery and blueprint generation, and Suleman may review any thread.
-

@@ -87,7 +87,11 @@ One session may produce a plan, map, prototype direction, cleanup path, or next-
 
 Use the intake below to describe one messy problem. AI participates in discovery and blueprint generation when the backend processes a case, and Suleman may review any thread before next steps are sent.
 
+{% if site.priority_discovery_checkout_ready %}
+Choose normal review if you want me to look manually as time allows. Choose Priority Discovery if you want the paid discovery path after intake; eligible priority cases can request deposit checkout after submission.
+{% else %}
 Choose normal review if you want me to look manually as time allows. Choose Priority Discovery if you want the paid discovery path after intake; live checkout is unavailable until the legal/tax review is complete.
+{% endif %}
 
 <form id="work-with-me-intake" class="intake-form" data-endpoint="{{ site.work_with_me_api_base }}/v1/intakes">
   <label class="form-field">Name <input name="name" required minlength="2" maxlength="120" autocomplete="name"></label>

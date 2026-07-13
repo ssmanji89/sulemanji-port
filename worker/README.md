@@ -84,10 +84,18 @@ As of 2026-07-13:
   `GMAIL_HISTORY_START_ID`, `GOOGLE_CALENDAR_CLIENT_ID`,
   `GOOGLE_CALENDAR_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`,
   `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
-- Existing Bitwarden inventory did not contain unambiguous Stripe, Gmail,
-  Google Calendar, or Cloudflare Access credentials for this service. It also
-  contained multiple OpenAI key-shaped candidates; local-queue mode avoids
-  needing to pick one for launch agent execution.
+- Existing Bitwarden inventory does not contain unambiguous live API/OAuth
+  material for the remaining bindings. Stripe-looking entries are dashboard
+  login-shaped rather than `sk_*` / `whsec_*` API material. The `ssmanji89 GMail
+  API` item is not an OAuth credential bundle with client ID, client secret, and
+  refresh token. No Google Calendar OAuth or Cloudflare Access audience item was
+  found by metadata search. Local-queue mode avoids needing to pick an OpenAI
+  key for launch agent execution.
+- The currently available Cloudflare API token can deploy Workers and set Worker
+  secrets, but it cannot read Zero Trust Access applications or organizations;
+  Access API reads returned a permission error. Configure `ACCESS_TEAM_DOMAIN`
+  and `ACCESS_AUD` after an Access application is created or a Cloudflare token
+  with Zero Trust Access read scope is available.
 - `api.sulemanji.com` is not currently resolvable. Public DNS for
   `sulemanji.com` is still on GoDaddy nameservers, and this Cloudflare account
   does not expose a `sulemanji.com` zone to the deployment token.

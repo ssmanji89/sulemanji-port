@@ -1,4 +1,5 @@
 import { IntakeInput, type CaseStatus } from "../domain/case";
+import { holdExpiresAt, quoteExpiresAt, remainingBalance } from "../domain/booking";
 import { canTransition } from "../domain/state-machine";
 
 export interface ConsentMeta {
@@ -93,6 +94,41 @@ export interface CaseRepository {
     reasons: string[],
     draftId: string,
   ): Promise<void>;
+  createSessionQuote(input: CreateSessionQuoteInput): Promise<CreatedSessionQuote>;
+  createSlotHold(input: CreateSlotHoldInput): Promise<CreatedSlotHold>;
+  releaseSlotHold(holdId: string): Promise<void>;
+}
+
+export interface CreateSessionQuoteInput {
+  caseId: string;
+  blueprintVersion: number;
+  durationMinutes: number;
+  totalCents: number;
+  blueprintDeliveredAt: Date;
+  now?: Date;
+}
+
+export interface CreatedSessionQuote {
+  id: string;
+  publicToken: string;
+  creditCents: number;
+  balanceCents: number;
+  expiresAt: string;
+}
+
+export interface CreateSlotHoldInput {
+  quoteToken: string;
+  calendarId: string;
+  startsAt: string;
+  endsAt: string;
+  stripeCheckoutSessionId: string;
+  now?: Date;
+}
+
+export interface CreatedSlotHold {
+  id: string;
+  quoteId: string;
+  expiresAt: string;
 }
 
 interface CaseRow {
@@ -115,6 +151,7 @@ interface PriorityDiscoveryCaseRow {
 }
 
 interface CreditRow {
+  id?: string;
   case_id: string;
   stripe_checkout_session_id: string;
   stripe_payment_intent_id: string;
@@ -149,6 +186,23 @@ interface DiscoveryAgentContextRow {
   prior_attempts: string;
   sanitized_links_json: string;
   state_json: string | null;
+}
+
+interface QuoteLookupRow {
+  id: string;
+  case_id: string;
+  duration_minutes: number;
+  total_cents: number;
+  credit_cents: number;
+  balance_cents: number;
+  expires_at: string;
+  case_status: CaseStatus;
+}
+
+interface HoldLookupRow {
+  id: string;
+  case_id: string;
+  status: string;
 }
 
 export class D1CaseRepository implements CaseRepository {
@@ -771,6 +825,290 @@ export class D1CaseRepository implements CaseRepository {
         new Date().toISOString(),
       )
       .run();
+  }
+
+  async createSessionQuote(
+    input: CreateSessionQuoteInput,
+  ): Promise<CreatedSessionQuote> {
+    if (
+      !Number.isInteger(input.blueprintVersion) ||
+      input.blueprintVersion < 1 ||
+      !Number.isInteger(input.durationMinutes) ||
+      input.durationMinutes < 15 ||
+      !Number.isInteger(input.totalCents) ||
+      input.totalCents < 0
+    ) {
+      throw new Error("Invalid session quote input");
+    }
+
+    const credit = await this.db
+      .prepare(
+        `SELECT id, case_id, stripe_checkout_session_id,
+          stripe_payment_intent_id, cents
+        FROM credits
+        WHERE case_id = ?
+        ORDER BY created_at ASC
+        LIMIT 1`,
+      )
+      .bind(input.caseId)
+      .first<CreditRow>();
+
+    if (!credit?.id) {
+      throw new Error("Deposit credit not found");
+    }
+
+    const id = crypto.randomUUID();
+    const publicToken = randomToken();
+    const publicTokenHash = await sha256(publicToken);
+    const creditCents = Math.min(input.totalCents, credit.cents);
+    const balanceCents = remainingBalance(input.totalCents, credit.cents);
+    const expiresAt = quoteExpiresAt(input.blueprintDeliveredAt).toISOString();
+    const now = (input.now ?? new Date()).toISOString();
+
+    try {
+      const [quoteResult, transitionResult, auditResult] = await this.db.batch([
+        this.db
+          .prepare(
+            `INSERT INTO session_quotes (
+              id, case_id, blueprint_version, credit_id, public_token_hash,
+              duration_minutes, total_cents, credit_cents, balance_cents,
+              expires_at, created_at, approved_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          )
+          .bind(
+            id,
+            input.caseId,
+            input.blueprintVersion,
+            credit.id,
+            publicTokenHash,
+            input.durationMinutes,
+            input.totalCents,
+            creditCents,
+            balanceCents,
+            expiresAt,
+            now,
+            now,
+          ),
+        this.db
+          .prepare(
+            `UPDATE cases
+            SET status = ?, updated_at = ?
+            WHERE id = ? AND status = ?`,
+          )
+          .bind("priority_scheduling", now, input.caseId, "blueprint_delivered"),
+        this.db
+          .prepare(
+            `INSERT INTO audit_events (
+              id, case_id, event_type, data_json, created_at
+            )
+            SELECT ?, ?, ?, ?, ?
+            WHERE changes() = 1`,
+          )
+          .bind(
+            crypto.randomUUID(),
+            input.caseId,
+            "session_quote_created",
+            JSON.stringify({
+              blueprintVersion: input.blueprintVersion,
+              durationMinutes: input.durationMinutes,
+              totalCents: input.totalCents,
+              creditCents,
+              balanceCents,
+              expiresAt,
+            }),
+            now,
+          ),
+      ]);
+
+      if (
+        quoteResult?.meta.changes !== 1 ||
+        transitionResult?.meta.changes !== 1 ||
+        auditResult?.meta.changes !== 1
+      ) {
+        throw new Error("Session quote creation failed");
+      }
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new Error("Session quote already exists or deposit credit consumed");
+      }
+
+      throw error;
+    }
+
+    return { id, publicToken, creditCents, balanceCents, expiresAt };
+  }
+
+  async createSlotHold(input: CreateSlotHoldInput): Promise<CreatedSlotHold> {
+    const startsAt = new Date(input.startsAt);
+    const endsAt = new Date(input.endsAt);
+    const nowDate = input.now ?? new Date();
+
+    if (
+      Number.isNaN(startsAt.getTime()) ||
+      Number.isNaN(endsAt.getTime()) ||
+      startsAt >= endsAt ||
+      !input.calendarId ||
+      !input.stripeCheckoutSessionId
+    ) {
+      throw new Error("Invalid slot hold input");
+    }
+
+    const publicTokenHash = await sha256(input.quoteToken);
+    const quote = await this.db
+      .prepare(
+        `SELECT session_quotes.id, session_quotes.case_id,
+          session_quotes.duration_minutes, session_quotes.total_cents,
+          session_quotes.credit_cents, session_quotes.balance_cents,
+          session_quotes.expires_at, cases.status AS case_status
+        FROM session_quotes
+        INNER JOIN cases ON cases.id = session_quotes.case_id
+        WHERE session_quotes.public_token_hash = ?
+        LIMIT 1`,
+      )
+      .bind(publicTokenHash)
+      .first<QuoteLookupRow>();
+
+    if (
+      !quote ||
+      quote.case_status !== "priority_scheduling" ||
+      new Date(quote.expires_at) <= nowDate
+    ) {
+      throw new Error("Private quote is expired or unavailable");
+    }
+
+    const expectedDurationMs = quote.duration_minutes * 60_000;
+    if (endsAt.getTime() - startsAt.getTime() !== expectedDurationMs) {
+      throw new Error("Slot duration does not match private quote");
+    }
+
+    const id = crypto.randomUUID();
+    const expiresAt = holdExpiresAt(nowDate).toISOString();
+    const now = nowDate.toISOString();
+
+    try {
+      const [holdResult, transitionResult, auditResult] = await this.db.batch([
+        this.db
+          .prepare(
+            `INSERT INTO slot_holds (
+              id, quote_id, calendar_id, starts_at, ends_at, status,
+              expires_at, stripe_checkout_session_id, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          )
+          .bind(
+            id,
+            quote.id,
+            input.calendarId,
+            startsAt.toISOString(),
+            endsAt.toISOString(),
+            "active",
+            expiresAt,
+            input.stripeCheckoutSessionId,
+            now,
+          ),
+        this.db
+          .prepare(
+            `UPDATE cases
+            SET status = ?, updated_at = ?
+            WHERE id = ? AND status = ?`,
+          )
+          .bind("slot_held", now, quote.case_id, "priority_scheduling"),
+        this.db
+          .prepare(
+            `INSERT INTO audit_events (
+              id, case_id, event_type, data_json, created_at
+            )
+            SELECT ?, ?, ?, ?, ?
+            WHERE changes() = 1`,
+          )
+          .bind(
+            crypto.randomUUID(),
+            quote.case_id,
+            "slot_hold_created",
+            JSON.stringify({
+              quoteId: quote.id,
+              calendarId: input.calendarId,
+              startsAt: startsAt.toISOString(),
+              endsAt: endsAt.toISOString(),
+              expiresAt,
+            }),
+            now,
+          ),
+      ]);
+
+      if (
+        holdResult?.meta.changes !== 1 ||
+        transitionResult?.meta.changes !== 1 ||
+        auditResult?.meta.changes !== 1
+      ) {
+        throw new Error("Slot hold failed");
+      }
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new Error("Slot is already held");
+      }
+
+      throw error;
+    }
+
+    return { id, quoteId: quote.id, expiresAt };
+  }
+
+  async releaseSlotHold(holdId: string): Promise<void> {
+    const hold = await this.db
+      .prepare(
+        `SELECT slot_holds.id, session_quotes.case_id, slot_holds.status
+        FROM slot_holds
+        INNER JOIN session_quotes ON session_quotes.id = slot_holds.quote_id
+        WHERE slot_holds.id = ?
+        LIMIT 1`,
+      )
+      .bind(holdId)
+      .first<HoldLookupRow>();
+
+    if (!hold || hold.status !== "active") {
+      throw new Error("Active slot hold not found");
+    }
+
+    const now = new Date().toISOString();
+    const [holdResult, transitionResult, auditResult] = await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE slot_holds
+          SET status = ?
+          WHERE id = ? AND status = ?`,
+        )
+        .bind("released", holdId, "active"),
+      this.db
+        .prepare(
+          `UPDATE cases
+          SET status = ?, updated_at = ?
+          WHERE id = ? AND status = ?`,
+        )
+        .bind("priority_scheduling", now, hold.case_id, "slot_held"),
+      this.db
+        .prepare(
+          `INSERT INTO audit_events (
+            id, case_id, event_type, data_json, created_at
+          )
+          SELECT ?, ?, ?, ?, ?
+          WHERE changes() = 1`,
+        )
+        .bind(
+          crypto.randomUUID(),
+          hold.case_id,
+          "slot_hold_released",
+          JSON.stringify({ holdId }),
+          now,
+        ),
+    ]);
+
+    if (
+      holdResult?.meta.changes !== 1 ||
+      transitionResult?.meta.changes !== 1 ||
+      auditResult?.meta.changes !== 1
+    ) {
+      throw new Error("Slot hold release failed");
+    }
   }
 
   private async ensureDeliveryStartIsNewOrIdentical(

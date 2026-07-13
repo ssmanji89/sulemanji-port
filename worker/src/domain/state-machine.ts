@@ -12,6 +12,7 @@ const allowed: Record<CaseStatus, readonly CaseStatus[]> = {
   discovery_active: [
     "waiting_for_customer",
     "waiting_for_suleman",
+    "blueprint_delivered",
     "paused_inactive",
   ],
   waiting_for_customer: [

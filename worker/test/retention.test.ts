@@ -11,6 +11,7 @@ import migration0002 from "../migrations/0002_priority_discovery.sql?raw";
 import migration0003 from "../migrations/0003_payment_workflow_idempotency.sql?raw";
 import migration0004 from "../migrations/0004_automation_state.sql?raw";
 import migration0005 from "../migrations/0005_booking_retention.sql?raw";
+import migration0006 from "../migrations/0006_launch_review_and_quotes.sql?raw";
 import { runOperationalDigest } from "../src/scheduled/digest";
 import { runRetention, type RetentionGmailClient } from "../src/scheduled/retention";
 import type { Env } from "../src/env";
@@ -94,6 +95,7 @@ const loadMigrations = async (): Promise<D1Migration[]> =>
     migration("0003_payment_workflow_idempotency.sql", migration0003),
     migration("0004_automation_state.sql", migration0004),
     migration("0005_booking_retention.sql", migration0005),
+    migration("0006_launch_review_and_quotes.sql", migration0006),
   ];
 
 const migration = (name: string, text: string): D1Migration => ({

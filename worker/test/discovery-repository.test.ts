@@ -613,6 +613,10 @@ class DiscoveryFakeD1Statement {
       return d1Result(1);
     }
 
+    if (this.sql.includes("SET launch_review_required")) {
+      return d1Result(1);
+    }
+
     if (this.sql.includes("INSERT INTO gmail_threads")) {
       db.insertGmailThread({
         case_id: this.values[0] as string,

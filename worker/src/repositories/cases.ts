@@ -35,6 +35,7 @@ export interface DiscoveryAgentContext {
   desiredOutcome: string;
   priorAttempts: string;
   sanitizedLinks: string[];
+  launchReviewRequired: boolean;
   state: DiscoveryState | null;
 }
 
@@ -81,6 +82,7 @@ export interface CaseRepository {
     sessionId: string,
     paymentIntentId: string,
     cents: number,
+    options?: { launchReviewRequired?: boolean },
   ): Promise<void>;
   startDelivery(
     caseId: string,
@@ -95,6 +97,7 @@ export interface CaseRepository {
     draftId: string,
   ): Promise<void>;
   createSessionQuote(input: CreateSessionQuoteInput): Promise<CreatedSessionQuote>;
+  latestBlueprintForQuote(caseId: string): Promise<LatestBlueprintForQuote | null>;
   getSessionQuoteByPublicToken(
     token: string,
   ): Promise<PrivateSessionQuote | null>;
@@ -131,6 +134,11 @@ export interface PrivateSessionQuote {
   balanceCents: number;
   expiresAt: string;
   caseStatus: CaseStatus;
+}
+
+export interface LatestBlueprintForQuote {
+  version: number;
+  deliveredAt: string;
 }
 
 export interface CreateSlotHoldInput {
@@ -212,6 +220,7 @@ interface DiscoveryAgentContextRow {
   desired_outcome: string;
   prior_attempts: string;
   sanitized_links_json: string;
+  launch_review_required: number;
   state_json: string | null;
 }
 
@@ -478,7 +487,8 @@ export class D1CaseRepository implements CaseRepository {
   ): Promise<DiscoveryAgentContext | null> {
     const row = await this.db
       .prepare(
-        `SELECT cases.id, cases.email, cases.context_type, intakes.problem,
+        `SELECT cases.id, cases.email, cases.context_type,
+          cases.launch_review_required, intakes.problem,
           intakes.desired_outcome, intakes.prior_attempts,
           intakes.sanitized_links_json, discovery_state.state_json
         FROM cases
@@ -499,6 +509,7 @@ export class D1CaseRepository implements CaseRepository {
       desiredOutcome: row.desired_outcome,
       priorAttempts: row.prior_attempts,
       sanitizedLinks: parseStringArray(row.sanitized_links_json),
+      launchReviewRequired: row.launch_review_required === 1,
       state: row.state_json ? (JSON.parse(row.state_json) as DiscoveryState) : null,
     };
   }
@@ -577,6 +588,7 @@ export class D1CaseRepository implements CaseRepository {
     sessionId: string,
     paymentIntentId: string,
     cents: number,
+    options: { launchReviewRequired?: boolean } = {},
   ): Promise<void> {
     const existing = await this.db
       .prepare(
@@ -602,22 +614,28 @@ export class D1CaseRepository implements CaseRepository {
       throw new Error("Conflicting deposit payment");
     }
 
-    await this.db
-      .prepare(
-        `INSERT INTO credits (
-          id, case_id, stripe_checkout_session_id, stripe_payment_intent_id,
-          cents, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
-      )
-      .bind(
-        crypto.randomUUID(),
-        caseId,
-        sessionId,
-        paymentIntentId,
-        cents,
-        new Date().toISOString(),
-      )
-      .run();
+    const now = new Date().toISOString();
+    const [creditResult, caseResult] = await this.db.batch([
+      this.db
+        .prepare(
+          `INSERT INTO credits (
+            id, case_id, stripe_checkout_session_id, stripe_payment_intent_id,
+            cents, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(crypto.randomUUID(), caseId, sessionId, paymentIntentId, cents, now),
+      this.db
+        .prepare(
+          `UPDATE cases
+          SET launch_review_required = ?
+          WHERE id = ?`,
+        )
+        .bind(options.launchReviewRequired === true ? 1 : 0, caseId),
+    ]);
+
+    if (creditResult?.meta.changes !== 1 || caseResult?.meta.changes !== 1) {
+      throw new Error("Deposit payment persistence failed");
+    }
   }
 
   async startDelivery(
@@ -974,6 +992,27 @@ export class D1CaseRepository implements CaseRepository {
     }
 
     return { id, publicToken, creditCents, balanceCents, expiresAt };
+  }
+
+  async latestBlueprintForQuote(
+    caseId: string,
+  ): Promise<LatestBlueprintForQuote | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT artifacts.version, artifacts.created_at
+        FROM artifacts
+        INNER JOIN cases ON cases.id = artifacts.case_id
+        WHERE artifacts.case_id = ?
+          AND artifacts.artifact_type = ?
+          AND cases.status = ?
+        ORDER BY artifacts.version DESC
+        LIMIT 1`,
+      )
+      .bind(caseId, "blueprint", "blueprint_delivered")
+      .first<{ version: number; created_at: string }>();
+
+    if (!row) return null;
+    return { version: row.version, deliveredAt: row.created_at };
   }
 
   async getSessionQuoteByPublicToken(

@@ -11,6 +11,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import migration0001 from "../migrations/0001_cases.sql?raw";
 import migration0002 from "../migrations/0002_priority_discovery.sql?raw";
 import migration0003 from "../migrations/0003_payment_workflow_idempotency.sql?raw";
+import migration0006 from "../migrations/0006_launch_review_and_quotes.sql?raw";
 import type { IntakeInput } from "../src/domain/case";
 import type { Env } from "../src/env";
 import { createStripeAdapter } from "../src/integrations/stripe";
@@ -260,6 +261,28 @@ describe("payment routes", () => {
     ]);
   });
 
+  it("persists launch-review requirement from verified checkout metadata", async () => {
+    const created = await createCase("checkout_pending");
+    const event = checkoutCompletedEvent({
+      eventId: "evt_review_gate",
+      caseId: created.id,
+      sessionId: "cs_review_gate",
+      paymentIntentId: "pi_review_gate",
+      metadata: {
+        case_id: created.id,
+        launch_review_gate: "inside",
+        launch_review_gate_position: "1",
+      },
+    });
+    const raw = JSON.stringify(event);
+    stripe.events.set(raw, event);
+
+    const response = await webhook(raw, "valid-signature");
+
+    expect(response.status).toBe(200);
+    await expect(launchReviewRequiredForCase(created.id)).resolves.toBe(1);
+  });
+
   it("recovers workflow start on duplicate webhook retry after a transient failure", async () => {
     const created = await createCase("checkout_pending");
     const event = checkoutCompletedEvent({
@@ -488,6 +511,7 @@ interface CheckoutCompletedEventOptions {
   sessionId?: string;
   paymentIntentId?: string;
   amountTotal?: number;
+  metadata?: Record<string, string>;
 }
 
 const checkoutCompletedEvent = ({
@@ -496,6 +520,7 @@ const checkoutCompletedEvent = ({
   sessionId = "cs_123",
   paymentIntentId = "pi_123",
   amountTotal = 29_500,
+  metadata = { case_id: caseId },
 }: CheckoutCompletedEventOptions) => ({
   id: eventId,
   type: "checkout.session.completed",
@@ -504,7 +529,7 @@ const checkoutCompletedEvent = ({
       id: sessionId,
       object: "checkout.session",
       amount_total: amountTotal,
-      metadata: { case_id: caseId },
+      metadata,
       payment_intent: paymentIntentId,
       payment_status: "paid",
     },
@@ -562,6 +587,7 @@ const loadMigrations = async (): Promise<D1Migration[]> =>
     migration("0001_cases.sql", migration0001),
     migration("0002_priority_discovery.sql", migration0002),
     migration("0003_payment_workflow_idempotency.sql", migration0003),
+    migration("0006_launch_review_and_quotes.sql", migration0006),
   ];
 
 const migration = (name: string, text: string): D1Migration => ({
@@ -639,6 +665,15 @@ const caseStatus = async (caseId: string): Promise<string | null> => {
     .bind(caseId)
     .first<{ status: string }>();
   return result?.status ?? null;
+};
+
+const launchReviewRequiredForCase = async (caseId: string): Promise<number | null> => {
+  const result = await testEnv.DB.prepare(
+    "SELECT launch_review_required FROM cases WHERE id = ?",
+  )
+    .bind(caseId)
+    .first<{ launch_review_required: number }>();
+  return result?.launch_review_required ?? null;
 };
 
 const creditForCase = async (

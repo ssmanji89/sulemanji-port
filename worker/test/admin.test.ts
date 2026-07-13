@@ -166,4 +166,67 @@ describe("admin review routes", () => {
     await expect(response.json()).resolves.toEqual({ error: "invalid_request" });
     expect(gmail.sendDraft).not.toHaveBeenCalled();
   });
+
+  it("creates a private quote from the latest blueprint after admin approval", async () => {
+    const quote = {
+      id: "quote_1",
+      publicToken: "quote_token_123",
+      creditCents: 29_500,
+      balanceCents: 95_500,
+      expiresAt: "2026-09-11T15:30:00.000Z",
+    };
+    const audit = {
+      recordAdminAction: vi.fn(async () => undefined),
+      latestBlueprintForQuote: vi.fn(async () => ({
+        version: 2,
+        deliveredAt: "2026-07-13T15:30:00.000Z",
+      })),
+      createSessionQuote: vi.fn(async () => quote),
+    };
+    const app = new Hono<{ Bindings: Env }>();
+    app.route(
+      "/v1",
+      createAdminRoutes({
+        audit,
+        authenticate: async () => "ssmanji89@gmail.com",
+      }),
+    );
+
+    const response = await app.fetch(
+      new Request(
+        "https://api.example/v1/admin/cases/case_1/approve-private-quote",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ durationMinutes: 90, totalCents: 125_000 }),
+        },
+      ),
+      {
+        ADMIN_EMAIL: "ssmanji89@gmail.com",
+        SITE_ORIGIN: "https://www.sulemanji.com",
+      } as Env,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      quoteUrl: "https://www.sulemanji.com/work-with-me/quote#quote_token_123",
+      creditCents: 29_500,
+      balanceCents: 95_500,
+      expiresAt: "2026-09-11T15:30:00.000Z",
+    });
+    expect(audit.latestBlueprintForQuote).toHaveBeenCalledWith("case_1");
+    expect(audit.createSessionQuote).toHaveBeenCalledWith({
+      caseId: "case_1",
+      blueprintVersion: 2,
+      durationMinutes: 90,
+      totalCents: 125_000,
+      blueprintDeliveredAt: new Date("2026-07-13T15:30:00.000Z"),
+    });
+    expect(audit.recordAdminAction).toHaveBeenCalledWith({
+      actor: "ssmanji89@gmail.com",
+      caseId: "case_1",
+      action: "approve-private-quote",
+      artifactVersion: 2,
+    });
+  });
 });

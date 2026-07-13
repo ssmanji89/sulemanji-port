@@ -167,6 +167,7 @@ export const handlePriorityDiscoveryCustomerReply = async (
 
   const decision = await dependencies.agent.decide({
     caseId: event.caseId,
+    launchReviewRequired: context.launchReviewRequired,
     confirmedUnderstanding: context.state?.confirmedUnderstanding === true,
     intake: {
       contextType: context.contextType,
@@ -272,6 +273,13 @@ const applyAgentDecision = async (
     gmailThreadId: event.gmailThreadId,
     mandatoryReview: { held: false, reasons: [] },
   });
+  await safeTransition(
+    dependencies.repository,
+    event.caseId,
+    "discovery_active",
+    "blueprint_delivered",
+    "blueprint_delivered",
+  );
   return { kind: "blueprint", waitingForCustomer: false, complete: true };
 };
 

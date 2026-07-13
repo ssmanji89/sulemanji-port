@@ -177,6 +177,9 @@ export const createPaymentRoutes = (
       session.id,
       paymentIntentId,
       depositCents,
+      {
+        launchReviewRequired: session.metadata?.launch_review_gate === "inside",
+      },
     );
 
     if (current.status === "checkout_pending") {

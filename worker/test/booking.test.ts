@@ -177,6 +177,28 @@ describe("booking persistence schema", () => {
     expect(row?.balance_cents).toBe(95_500);
   });
 
+  it("returns customer email and Gmail thread for quote-ready blueprints", async () => {
+    await seedCase("case_1");
+    await seedCredit("case_1", 29_500);
+    await seedGmailThread("case_1", "thread_1");
+    await seedBlueprint("case_1", 1);
+
+    await expect(repository.latestBlueprintForQuote("case_1")).resolves.toEqual({
+      version: 1,
+      deliveredAt: "2026-07-13T15:50:00.000Z",
+      email: "case_1@example.com",
+      gmailThreadId: "thread_1",
+    });
+  });
+
+  it("does not treat a blueprint as quote-ready without a Gmail thread", async () => {
+    await seedCase("case_1");
+    await seedCredit("case_1", 29_500);
+    await seedBlueprint("case_1", 1);
+
+    await expect(repository.latestBlueprintForQuote("case_1")).resolves.toBeNull();
+  });
+
   it("lists open normal and priority intake queue cases", async () => {
     await seedIntakeQueueCase({
       id: "case_normal",
@@ -231,12 +253,18 @@ describe("booking persistence schema", () => {
   it("lists blueprint-delivered cases that need private quote approval", async () => {
     await seedCase("case_1");
     await seedCredit("case_1", 29_500);
+    await seedGmailThread("case_1", "thread_1");
     await seedBlueprint("case_1", 1);
 
     await seedCase("case_2");
     await seedCredit("case_2", 29_500);
+    await seedGmailThread("case_2", "thread_2");
     await seedBlueprint("case_2", 1);
     await seedQuote("quote_case_2", "case_2");
+
+    await seedCase("case_without_thread");
+    await seedCredit("case_without_thread", 29_500);
+    await seedBlueprint("case_without_thread", 1);
 
     await expect(listQuoteReadyCases(db)).resolves.toEqual([
       {
@@ -514,6 +542,20 @@ const seedBlueprint = async (caseId: string, version: number): Promise<void> => 
       "{\"summary\":\"Ready for quote\"}",
       "2026-07-13T15:50:00.000Z",
     )
+    .run();
+};
+
+const seedGmailThread = async (
+  caseId: string,
+  gmailThreadId: string,
+): Promise<void> => {
+  await db
+    .prepare(
+      `INSERT INTO gmail_threads (
+        case_id, gmail_thread_id, created_at
+      ) VALUES (?, ?, ?)`,
+    )
+    .bind(caseId, gmailThreadId, "2026-07-13T15:40:00.000Z")
     .run();
 };
 

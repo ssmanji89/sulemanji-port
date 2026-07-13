@@ -55,7 +55,7 @@ describe("admin review routes", () => {
   });
 
   it("requires the configured Access identity before sending a draft", async () => {
-    const gmail = { sendDraft: vi.fn(async () => undefined) };
+    const gmail = testAdminGmail();
     const audit = { recordAdminAction: vi.fn(async () => undefined) };
     const app = new Hono<{ Bindings: Env }>();
     app.route("/v1", createAdminRoutes({ gmail, audit }));
@@ -74,7 +74,7 @@ describe("admin review routes", () => {
   });
 
   it("does not trust a spoofed Cloudflare Access email header without a verified JWT", async () => {
-    const gmail = { sendDraft: vi.fn(async () => undefined) };
+    const gmail = testAdminGmail();
     const audit = { recordAdminAction: vi.fn(async () => undefined) };
     const app = new Hono<{ Bindings: Env }>();
     app.route("/v1", createAdminRoutes({ gmail, audit }));
@@ -100,7 +100,7 @@ describe("admin review routes", () => {
   });
 
   it("sends approved Gmail drafts and records the actor", async () => {
-    const gmail = { sendDraft: vi.fn(async () => undefined) };
+    const gmail = testAdminGmail();
     const audit = {
       recordAdminAction: vi.fn(async () => undefined),
       assertHeldDraftForReview: vi.fn(async () => undefined),
@@ -156,7 +156,7 @@ describe("admin review routes", () => {
   });
 
   it("accepts browser form submissions for approved Gmail drafts", async () => {
-    const gmail = { sendDraft: vi.fn(async () => undefined) };
+    const gmail = testAdminGmail();
     const audit = {
       recordAdminAction: vi.fn(async () => undefined),
       assertHeldDraftForReview: vi.fn(async () => undefined),
@@ -196,7 +196,7 @@ describe("admin review routes", () => {
   });
 
   it("rejects draft approval when the draft is not held for the case", async () => {
-    const gmail = { sendDraft: vi.fn(async () => undefined) };
+    const gmail = testAdminGmail();
     const audit = {
       recordAdminAction: vi.fn(async () => undefined),
       assertHeldDraftForReview: vi.fn(async () => {
@@ -231,7 +231,7 @@ describe("admin review routes", () => {
   });
 
   it("returns invalid_request for malformed JSON", async () => {
-    const gmail = { sendDraft: vi.fn(async () => undefined) };
+    const gmail = testAdminGmail();
     const audit = { recordAdminAction: vi.fn(async () => undefined) };
     const app = new Hono<{ Bindings: Env }>();
     app.route(
@@ -258,6 +258,13 @@ describe("admin review routes", () => {
   });
 
   it("creates a private quote from the latest blueprint after admin approval", async () => {
+    const gmail = {
+      createReplyDraft: vi.fn(async () => ({
+        draftId: "draft_quote_1",
+        messageId: "msg_quote_1",
+      })),
+      sendDraft: vi.fn(async () => undefined),
+    };
     const quote = {
       id: "quote_1",
       publicToken: "quote_token_123",
@@ -270,6 +277,8 @@ describe("admin review routes", () => {
       latestBlueprintForQuote: vi.fn(async () => ({
         version: 2,
         deliveredAt: "2026-07-13T15:30:00.000Z",
+        email: "customer@example.com",
+        gmailThreadId: "thread_1",
       })),
       createSessionQuote: vi.fn(async () => quote),
     };
@@ -277,6 +286,7 @@ describe("admin review routes", () => {
     app.route(
       "/v1",
       createAdminRoutes({
+        gmail,
         audit,
         authenticate: async () => "ssmanji89@gmail.com",
       }),
@@ -318,9 +328,26 @@ describe("admin review routes", () => {
       action: "approve-private-quote",
       artifactVersion: 2,
     });
+    expect(gmail.createReplyDraft).toHaveBeenCalledWith({
+      caseId: "case_1",
+      to: "customer@example.com",
+      subject: "Re: AI Workflow Discovery",
+      threadId: "thread_1",
+      bodyText: expect.stringContaining(
+        "https://www.sulemanji.com/work-with-me/quote#quote_token_123",
+      ),
+    });
+    expect(gmail.createReplyDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ bodyText: expect.stringContaining("90 minutes") }),
+    );
+    expect(gmail.createReplyDraft).toHaveBeenCalledWith(
+      expect.objectContaining({ bodyText: expect.stringContaining("$955.00") }),
+    );
+    expect(gmail.sendDraft).toHaveBeenCalledWith("draft_quote_1");
   });
 
   it("accepts browser form submissions for private quote approval", async () => {
+    const gmail = testAdminGmail();
     const quote = {
       id: "quote_1",
       publicToken: "quote_token_123",
@@ -333,6 +360,8 @@ describe("admin review routes", () => {
       latestBlueprintForQuote: vi.fn(async () => ({
         version: 2,
         deliveredAt: "2026-07-13T15:30:00.000Z",
+        email: "customer@example.com",
+        gmailThreadId: "thread_1",
       })),
       createSessionQuote: vi.fn(async () => quote),
     };
@@ -340,6 +369,7 @@ describe("admin review routes", () => {
     app.route(
       "/v1",
       createAdminRoutes({
+        gmail,
         audit,
         authenticate: async () => "ssmanji89@gmail.com",
       }),
@@ -371,6 +401,7 @@ describe("admin review routes", () => {
       totalCents: 125_000,
       blueprintDeliveredAt: new Date("2026-07-13T15:30:00.000Z"),
     });
+    expect(gmail.sendDraft).toHaveBeenCalledWith("draft_unused");
   });
 
   it("rejects non-integer private quote form values", async () => {
@@ -379,6 +410,8 @@ describe("admin review routes", () => {
       latestBlueprintForQuote: vi.fn(async () => ({
         version: 2,
         deliveredAt: "2026-07-13T15:30:00.000Z",
+        email: "customer@example.com",
+        gmailThreadId: "thread_1",
       })),
       createSessionQuote: vi.fn(),
     };
@@ -628,4 +661,12 @@ describe("admin review routes", () => {
       action: "complete-agent-job",
     });
   });
+});
+
+const testAdminGmail = () => ({
+  createReplyDraft: vi.fn(async () => ({
+    draftId: "draft_unused",
+    messageId: "msg_unused",
+  })),
+  sendDraft: vi.fn(async () => undefined),
 });

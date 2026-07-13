@@ -16,6 +16,13 @@ import {
 } from "../repositories/cases";
 
 export interface AdminGmail {
+  createReplyDraft(input: {
+    caseId: string;
+    to: string;
+    subject: string;
+    bodyText: string;
+    threadId: string;
+  }): Promise<{ draftId: string; messageId: string }>;
   sendDraft(draftId: string): Promise<void>;
 }
 
@@ -208,6 +215,23 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
     if (!quote) {
       throw new Error("Session quote repository unavailable");
     }
+    const privateQuoteUrl = quoteUrl(c.env.SITE_ORIGIN, quote.publicToken);
+    const gmail = dependencies.gmail ?? createAdminGmail(c.env);
+    const draft = await gmail.createReplyDraft({
+      caseId,
+      to: latestBlueprint.email,
+      subject: "Re: AI Workflow Discovery",
+      bodyText: privateQuoteMessage({
+        quoteUrl: privateQuoteUrl,
+        durationMinutes: quoteDurationMinutes,
+        totalCents: quoteTotalCents,
+        creditCents: quote.creditCents,
+        balanceCents: quote.balanceCents,
+        expiresAt: quote.expiresAt,
+      }),
+      threadId: latestBlueprint.gmailThreadId,
+    });
+    await gmail.sendDraft(draft.draftId);
 
     await repository.recordAdminAction({
       actor,
@@ -215,9 +239,15 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
       action: "approve-private-quote",
       artifactVersion: latestBlueprint.version,
     });
+    await repository.recordAdminAction({
+      actor,
+      caseId,
+      action: "private-quote-sent",
+      artifactVersion: latestBlueprint.version,
+    });
 
     return c.json({
-      quoteUrl: quoteUrl(c.env.SITE_ORIGIN, quote.publicToken),
+      quoteUrl: privateQuoteUrl,
       creditCents: quote.creditCents,
       balanceCents: quote.balanceCents,
       expiresAt: quote.expiresAt,
@@ -386,3 +416,31 @@ const quoteUrl = (siteOrigin: string, token: string): string => {
   url.hash = token;
   return url.toString();
 };
+
+const privateQuoteMessage = (input: {
+  quoteUrl: string;
+  durationMinutes: number;
+  totalCents: number;
+  creditCents: number;
+  balanceCents: number;
+  expiresAt: string;
+}): string =>
+  [
+    "Your private Priority Discovery session quote is ready.",
+    "",
+    input.quoteUrl,
+    "",
+    `Recommended session length: ${input.durationMinutes} minutes`,
+    `Session quote: ${formatDollars(input.totalCents)}`,
+    `Discovery credit: ${formatDollars(input.creditCents)}`,
+    `Remaining balance: ${formatDollars(input.balanceCents)}`,
+    `Credit expires: ${input.expiresAt}`,
+    "",
+    "Use the private quote page to review priority windows and complete the remaining session balance when you are ready to hold a time.",
+  ].join("\n");
+
+const formatDollars = (cents: number): string =>
+  new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(cents / 100);

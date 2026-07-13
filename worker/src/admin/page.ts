@@ -122,6 +122,8 @@ export const listQuoteReadyCases = async (
        AND artifacts.artifact_type = ?
       INNER JOIN credits
         ON credits.case_id = cases.id
+      INNER JOIN gmail_threads
+        ON gmail_threads.case_id = cases.id
       WHERE cases.status = ?
         AND artifacts.version = (
           SELECT MAX(latest.version)

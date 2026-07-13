@@ -152,6 +152,8 @@ export interface PrivateSessionQuote {
 export interface LatestBlueprintForQuote {
   version: number;
   deliveredAt: string;
+  email: string;
+  gmailThreadId: string;
 }
 
 export interface CreateSlotHoldInput {
@@ -1050,9 +1052,11 @@ export class D1CaseRepository implements CaseRepository {
   ): Promise<LatestBlueprintForQuote | null> {
     const row = await this.db
       .prepare(
-        `SELECT artifacts.version, artifacts.created_at
+        `SELECT artifacts.version, artifacts.created_at, cases.email,
+          gmail_threads.gmail_thread_id
         FROM artifacts
         INNER JOIN cases ON cases.id = artifacts.case_id
+        INNER JOIN gmail_threads ON gmail_threads.case_id = cases.id
         WHERE artifacts.case_id = ?
           AND artifacts.artifact_type = ?
           AND cases.status = ?
@@ -1060,10 +1064,20 @@ export class D1CaseRepository implements CaseRepository {
         LIMIT 1`,
       )
       .bind(caseId, "blueprint", "blueprint_delivered")
-      .first<{ version: number; created_at: string }>();
+      .first<{
+        version: number;
+        created_at: string;
+        email: string;
+        gmail_thread_id: string;
+      }>();
 
     if (!row) return null;
-    return { version: row.version, deliveredAt: row.created_at };
+    return {
+      version: row.version,
+      deliveredAt: row.created_at,
+      email: row.email,
+      gmailThreadId: row.gmail_thread_id,
+    };
   }
 
   async getSessionQuoteByPublicToken(

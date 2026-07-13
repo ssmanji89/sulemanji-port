@@ -89,7 +89,7 @@ Use the intake below to describe one messy problem. AI participates in discovery
 
 Choose normal review if you want me to look manually as time allows. Choose Priority Discovery if you want the paid discovery path after intake; live checkout is unavailable until the legal/tax review is complete.
 
-<form id="work-with-me-intake" class="intake-form" data-endpoint="https://api.sulemanji.com/v1/intakes">
+<form id="work-with-me-intake" class="intake-form" data-endpoint="{{ site.work_with_me_api_base }}/v1/intakes">
   <label class="form-field">Name <input name="name" required minlength="2" maxlength="120" autocomplete="name"></label>
   <label class="form-field">Email <input name="email" type="email" required maxlength="254" autocomplete="email"></label>
   <fieldset><legend>This workflow is mainly</legend>

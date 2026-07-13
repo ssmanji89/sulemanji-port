@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CNAME = ROOT / "CNAME"
 PAGE = ROOT / "work-with-me.md"
 PRIORITY_PAGE = ROOT / "work-with-me-priority.md"
+QUOTE_PAGE = ROOT / "work-with-me-quote.md"
 THANKS_PAGE = ROOT / "work-with-me-thanks.md"
 TERMS_PAGE = ROOT / "work-with-me-terms.md"
 PRIVACY_PAGE = ROOT / "privacy.md"
@@ -19,6 +20,7 @@ STYLE = ROOT / "assets" / "css" / "style.scss"
 CONFIG = ROOT / "_config.yml"
 SITE_PAGE = ROOT / "_site" / "work-with-me.html"
 SITE_PRIORITY_PAGE = ROOT / "_site" / "work-with-me" / "priority.html"
+SITE_QUOTE_PAGE = ROOT / "_site" / "work-with-me" / "quote.html"
 SITE_THANKS_PAGE = ROOT / "_site" / "work-with-me" / "thanks.html"
 SITE_TERMS_PAGE = ROOT / "_site" / "work-with-me" / "terms.html"
 SITE_PRIVACY_PAGE = ROOT / "_site" / "privacy.html"
@@ -26,6 +28,7 @@ SITE_PRIVACY_PAGE = ROOT / "_site" / "privacy.html"
 PUBLIC_SOURCE_FILES = [
     PAGE,
     PRIORITY_PAGE,
+    QUOTE_PAGE,
     THANKS_PAGE,
     TERMS_PAGE,
     PRIVACY_PAGE,
@@ -62,6 +65,13 @@ def require_text(text, needle, path, failures):
     require(needle in text, f"{path.name} must include {needle!r}", failures)
 
 
+def configured_api_base():
+    if not CONFIG.exists():
+        return ""
+    match = re.search(r"^work_with_me_api_base:\s*(\S+)\s*$", read(CONFIG), flags=re.MULTILINE)
+    return match.group(1) if match else ""
+
+
 def check_forbidden(path, failures):
     if not path.exists():
         return
@@ -73,6 +83,7 @@ def check_forbidden(path, failures):
 
 def main():
     failures = []
+    api_base = configured_api_base()
 
     require(CNAME.exists(), "CNAME file is missing", failures)
     if CNAME.exists():
@@ -80,6 +91,7 @@ def main():
 
     require(PAGE.exists(), "work-with-me.md is missing", failures)
     require(PRIORITY_PAGE.exists(), "work-with-me-priority.md is missing", failures)
+    require(QUOTE_PAGE.exists(), "work-with-me-quote.md is missing", failures)
     require(THANKS_PAGE.exists(), "work-with-me-thanks.md is missing", failures)
     require(TERMS_PAGE.exists(), "work-with-me-terms.md is missing", failures)
     require(PRIVACY_PAGE.exists(), "privacy.md is missing", failures)
@@ -112,7 +124,7 @@ def main():
         require("AI participates" in page or "AI-assisted" in page, "work-with-me.md must disclose AI participation", failures)
         require_text(page, 'id="work-with-me-intake"', PAGE, failures)
         require_text(page, 'class="intake-form"', PAGE, failures)
-        require_text(page, 'data-endpoint="https://api.sulemanji.com/v1/intakes"', PAGE, failures)
+        require_text(page, 'data-endpoint="{{ site.work_with_me_api_base }}/v1/intakes"', PAGE, failures)
         require_text(page, 'name="name"', PAGE, failures)
         require_text(page, 'name="email"', PAGE, failures)
         require_text(page, 'name="contextType"', PAGE, failures)
@@ -148,7 +160,16 @@ def main():
         require("AI participates" in priority or "AI-assisted" in priority, "work-with-me-priority.md must disclose AI participation", failures)
         require("legal/tax review" in priority_lower, "work-with-me-priority.md must mark checkout unavailable until legal/tax review", failures)
         require_text(priority, 'id="priority-checkout"', PRIORITY_PAGE, failures)
+        require_text(priority, 'data-endpoint-base="{{ site.work_with_me_api_base }}/v1/cases"', PRIORITY_PAGE, failures)
         require_text(priority, "case", PRIORITY_PAGE, failures)
+
+    if QUOTE_PAGE.exists():
+        quote = read(QUOTE_PAGE)
+        require("permalink: /work-with-me/quote" in quote, "work-with-me-quote.md must publish at /work-with-me/quote", failures)
+        require("work_with_me_quote: true" in quote, "work-with-me-quote.md must enable the quote script", failures)
+        require("Private Priority Session Quote" in quote, "work-with-me-quote.md must identify the private quote page", failures)
+        require_text(quote, 'class="quote-shell"', QUOTE_PAGE, failures)
+        require_text(quote, 'data-endpoint-base="{{ site.work_with_me_api_base }}/v1/quotes"', QUOTE_PAGE, failures)
 
     if THANKS_PAGE.exists():
         thanks = read(THANKS_PAGE)
@@ -222,10 +243,14 @@ def main():
         require("page.work_with_me_form" in layout, "_layouts/default.html must conditionally load the Work With Me script", failures)
         require("assets/js/work-with-me.js" in layout, "_layouts/default.html must reference assets/js/work-with-me.js", failures)
         require("https://challenges.cloudflare.com/turnstile/v0/api.js" in layout, "_layouts/default.html must load the Turnstile script on Work With Me form pages", failures)
+        require("page.work_with_me_quote" in layout, "_layouts/default.html must conditionally load the private quote script", failures)
+        require("assets/js/work-with-me-quote.js" in layout, "_layouts/default.html must reference assets/js/work-with-me-quote.js", failures)
 
     if CONFIG.exists():
         config = read(CONFIG)
         require("turnstile_site_key:" in config, "_config.yml must define the public Turnstile site key", failures)
+        require("work_with_me_api_base:" in config, "_config.yml must define the Work With Me API base", failures)
+        require(api_base.startswith("https://"), "_config.yml Work With Me API base must be an HTTPS URL", failures)
 
     if NAV.exists():
         nav = read(NAV)
@@ -251,6 +276,8 @@ def main():
         require("Automation / Ops Systems Review" in site_text, "_site/work-with-me.html must include Automation / Ops Systems Review", failures)
         require("Build Path / Technical Triage" in site_text, "_site/work-with-me.html must include Build Path / Technical Triage", failures)
         require('id="work-with-me-intake"' in site_text, "_site/work-with-me.html must include the native intake form", failures)
+        if api_base:
+            require(f'data-endpoint="{api_base}/v1/intakes"' in site_text, "_site/work-with-me.html must render the configured API base", failures)
         require("assets/js/work-with-me.js" in site_text, "_site/work-with-me.html must load the Work With Me script", failures)
         require("https://challenges.cloudflare.com/turnstile/v0/api.js" in site_text, "_site/work-with-me.html must load the Turnstile script", failures)
         require('class="cf-turnstile"' in site_text, "_site/work-with-me.html must include the Turnstile widget", failures)
@@ -261,6 +288,7 @@ def main():
 
     for site_file, label in [
         (SITE_PRIORITY_PAGE, "_site/work-with-me/priority.html"),
+        (SITE_QUOTE_PAGE, "_site/work-with-me/quote.html"),
         (SITE_THANKS_PAGE, "_site/work-with-me/thanks.html"),
         (SITE_TERMS_PAGE, "_site/work-with-me/terms.html"),
         (SITE_PRIVACY_PAGE, "_site/privacy.html"),
@@ -268,6 +296,13 @@ def main():
         require(site_file.exists(), f"{label} is missing; run bundle exec jekyll build", failures)
         if site_file.exists():
             site_text = read(site_file)
+            if site_file == SITE_PRIORITY_PAGE and api_base:
+                require(f'data-endpoint-base="{api_base}/v1/cases"' in site_text, "_site/work-with-me/priority.html must render the configured API base", failures)
+            if site_file == SITE_QUOTE_PAGE:
+                require("assets/js/work-with-me-quote.js" in site_text, "_site/work-with-me/quote.html must load the private quote script", failures)
+                require('class="quote-shell"' in site_text, "_site/work-with-me/quote.html must include the private quote shell", failures)
+                if api_base:
+                    require(f'data-endpoint-base="{api_base}/v1/quotes"' in site_text, "_site/work-with-me/quote.html must render the configured API base", failures)
             for pattern, forbidden_label in FORBIDDEN_PUBLIC_PATTERNS:
                 if contains_forbidden(site_text, pattern):
                     failures.append(f"{label} must not mention {forbidden_label}")

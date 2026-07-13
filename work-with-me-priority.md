@@ -34,7 +34,6 @@ AI participates in discovery and blueprint generation, and Suleman may review an
 Live checkout is unavailable until legal/tax review is recorded. The button below is the intended deposit handoff for an eligible case token, but it will not open payment until that review gate is complete.
 
 <div class="priority-actions">
-  <button id="priority-checkout" class="btn btn-primary" type="button" data-endpoint-base="https://api.sulemanji.com/v1/cases" data-checkout-ready="false" aria-describedby="priority-status">Request deposit checkout</button>
+  <button id="priority-checkout" class="btn btn-primary" type="button" data-endpoint-base="{{ site.work_with_me_api_base }}/v1/cases" data-checkout-ready="false" aria-describedby="priority-status">Request deposit checkout</button>
   <p id="priority-status" class="form-status" role="status" aria-live="polite">Deposit checkout is unavailable until legal/tax review is recorded.</p>
 </div>
-

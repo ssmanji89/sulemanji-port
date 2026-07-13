@@ -43,8 +43,10 @@ python3 scripts/verify_work_with_me.py
 python3 scripts/verify_viyu_positioning.py
 ```
 
-Configure `api.sulemanji.com` to route to this Worker and keep CORS restricted
-to `https://www.sulemanji.com`.
+The current public API base is the Worker `workers.dev` URL configured in
+`_config.yml`. Switch that value to `https://api.sulemanji.com` only after DNS
+is delegated or proxied to Cloudflare and the hostname reaches this Worker. Keep
+CORS restricted to `https://www.sulemanji.com`.
 
 ## Current Remote State
 
@@ -57,8 +59,11 @@ As of 2026-07-13:
 - Remote readiness reports `mode: setup`, `ready: false`, and only missing
   binding names.
 - Required Worker secrets are not configured in Cloudflare yet.
-- `api.sulemanji.com`, Stripe webhook delivery, Gmail/Calendar OAuth, and
-  Cloudflare Access admin protection still need live configuration and UAT.
+- `api.sulemanji.com` is not currently resolvable. Public DNS for
+  `sulemanji.com` is still on GoDaddy nameservers, and this Cloudflare account
+  does not expose a `sulemanji.com` zone to the deployment token.
+- Stripe webhook delivery, Gmail/Calendar OAuth, and Cloudflare Access admin
+  protection still need live configuration and UAT.
 
 Do not set `SERVICE_MODE=live` until the required secrets are set; otherwise
 scheduled Gmail polling, retention, and digest jobs will run against an

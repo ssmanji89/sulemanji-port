@@ -75,12 +75,15 @@ As of 2026-07-13:
 - `GMAIL_SENDER` and `ADMIN_EMAIL` are configured as non-secret Worker vars.
 - `TURNSTILE_SECRET` is configured from the existing Cloudflare Turnstile
   widget.
+- `AGENT_RUNNER_TOKEN` is configured as a Worker secret and mirrored in macOS
+  Keychain under service `sulemanji.work-with-me.agent-runner-token`, account
+  `agent-runner`.
 - These required bindings still need live configuration:
   `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `GMAIL_CLIENT_ID`,
   `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_CLINIC_LABEL`,
   `GMAIL_HISTORY_START_ID`, `GOOGLE_CALENDAR_CLIENT_ID`,
   `GOOGLE_CALENDAR_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`,
-  `AGENT_RUNNER_TOKEN`, `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
+  `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
 - Existing Bitwarden inventory did not contain unambiguous Stripe, Gmail,
   Google Calendar, or Cloudflare Access credentials for this service. It also
   contained multiple OpenAI key-shaped candidates; local-queue mode avoids
@@ -105,9 +108,11 @@ Run one queued job:
 
 ```bash
 cd worker
+AGENT_RUNNER_TOKEN="$(security find-generic-password -w -a agent-runner -s sulemanji.work-with-me.agent-runner-token)"
 AI_WORKFLOW_API_BASE="https://sulemanji-work-with-me.ssmanji89.workers.dev" \
 AGENT_RUNNER_TOKEN="$AGENT_RUNNER_TOKEN" \
 npm run agent:run-local
+unset AGENT_RUNNER_TOKEN
 ```
 
 The runner:

@@ -81,9 +81,10 @@ As of 2026-07-13:
 - Google OAuth, the Gmail launch label, and the Gmail history seed are
   configured as Worker secrets from the local Google Workspace OAuth grant for
   `ssmanji89@gmail.com`.
+- Cloudflare Access is enabled for the Worker admin path, and
+  `ACCESS_TEAM_DOMAIN` plus `ACCESS_AUD` are configured as Worker secrets.
 - These required bindings still need live configuration:
-  `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `ACCESS_TEAM_DOMAIN`, and
-  `ACCESS_AUD`.
+  `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
 - Existing Bitwarden inventory does not contain unambiguous live API/OAuth
   material for the remaining bindings. Stripe-looking entries are dashboard
   login-shaped rather than `sk_*` / `whsec_*` API material. The `ssmanji89 GMail
@@ -91,16 +92,10 @@ As of 2026-07-13:
   refresh token. No Google Calendar OAuth or Cloudflare Access audience item was
   found by metadata search. Local-queue mode avoids needing to pick an OpenAI
   key for launch agent execution.
-- The currently available Cloudflare API token can deploy Workers and set Worker
-  secrets, but it cannot read Zero Trust Access applications or organizations;
-  Access API reads returned a permission error. Configure `ACCESS_TEAM_DOMAIN`
-  and `ACCESS_AUD` after an Access application is created or a Cloudflare token
-  with Zero Trust Access read scope is available.
 - `api.sulemanji.com` is not currently resolvable. Public DNS for
   `sulemanji.com` is still on GoDaddy nameservers, and this Cloudflare account
   does not expose a `sulemanji.com` zone to the deployment token.
-- Stripe webhook delivery and Cloudflare Access admin protection still need
-  live configuration and UAT.
+- Stripe webhook delivery still needs live configuration and UAT.
 
 Do not set `SERVICE_MODE=live` until the required secrets are set; otherwise
 scheduled Gmail polling, retention, and digest jobs will run against an
@@ -258,9 +253,7 @@ Admin review routes require a Cloudflare Access application that issues
 - `ACCESS_AUD`: the Application Audience (AUD) tag for the Access application
 - `ADMIN_EMAIL`: already configured as `ssmanji89@gmail.com`
 
-Cloudflare currently reports that Access is not enabled for this account. Enable
-Zero Trust, choose the team domain, then create a self-hosted Access application
-for the Worker admin path:
+Cloudflare Access is configured for the Worker admin path:
 
 ```text
 Host: sulemanji-work-with-me.ssmanji89.workers.dev
@@ -268,15 +261,9 @@ Path: /v1/admin*
 Policy: Allow only ssmanji89@gmail.com
 ```
 
-After copying the Application Audience (AUD) tag from the Access application,
-set the Worker vars with non-secret values:
-
-```bash
-npx wrangler secret put ACCESS_TEAM_DOMAIN
-npx wrangler secret put ACCESS_AUD
-```
-
-These are stored as Worker secrets because readiness treats all required
+Unauthenticated requests to `/v1/admin` should redirect to the Cloudflare Access
+login flow before the Worker renders the review UI. `ACCESS_TEAM_DOMAIN` and
+`ACCESS_AUD` are stored as Worker secrets because readiness treats all required
 operator-only launch bindings uniformly, even though the values are not
 customer secrets.
 

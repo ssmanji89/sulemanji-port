@@ -29,14 +29,33 @@ jobs:
           ruby-version: '3.1'
           bundler-cache: true
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
+
+      - name: Install Worker dependencies
+        run: npm ci --prefix worker
+
+      - name: Check Worker
+        run: npm run check --prefix worker
 
       - name: Build with Jekyll
         run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
         env:
           JEKYLL_ENV: production
+
+      - name: Verify Work With Me content
+        run: python3 scripts/verify_work_with_me.py
+
+      - name: Verify Viyu positioning
+        run: python3 scripts/verify_viyu_positioning.py
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

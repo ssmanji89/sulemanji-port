@@ -30,6 +30,23 @@ To run this site locally:
 3. Start the local server: `bundle exec jekyll serve`
 4. Visit `http://localhost:4000` in your browser
 
+## Work With Me Worker
+
+The AI Workflow Services intake and Priority Discovery flow live in `worker/`.
+Run these checks before publishing site changes:
+
+```bash
+npm ci --prefix worker
+npm run check --prefix worker
+bundle exec jekyll build
+python3 scripts/verify_work_with_me.py
+python3 scripts/verify_viyu_positioning.py
+```
+
+Production Worker secrets must be configured with `wrangler secret put NAME`;
+never commit secret values. See `worker/README.md` for deployment gates, required
+bindings, retention behavior, and test-mode UAT.
+
 ## License
 
 MIT License Copyright (c) 2025 sulemanji.com

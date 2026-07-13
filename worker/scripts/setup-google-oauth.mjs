@@ -17,7 +17,7 @@ const SCOPES = [
 
 const args = parseArgs(process.argv.slice(2));
 
-if (args.help || !args.clientFile) {
+if (args.help || (!args.clientFile && !args.credentialsFile)) {
   printUsage();
   process.exit(args.help ? 0 : 1);
 }
@@ -28,21 +28,10 @@ if (!args.installWorkerSecrets) {
 
 const sender = args.sender || process.env.GMAIL_SENDER || "ssmanji89@gmail.com";
 const labelName = args.label || process.env.GMAIL_CLINIC_LABEL_NAME || "AI Workflow Services";
-const client = readOAuthClient(args.clientFile);
-const redirect = await waitForOAuthRedirect();
-
-tryOpen(authUrl(client.clientId, redirect.uri, sender));
-console.log("Opened Google OAuth consent in the browser.");
-console.log("If a browser did not open, paste the following URL into Chrome:");
-console.log(redirect.authUrl);
-
-const code = await redirect.code;
-const token = await exchangeCode(client, redirect.uri, code);
-if (!token.refresh_token) {
-  fail(
-    "Google did not return a refresh token. Revoke this app grant or create a fresh OAuth client, then rerun.",
-  );
-}
+const credential = args.credentialsFile
+  ? readOAuthCredential(args.credentialsFile)
+  : await authorizeWithClient(readOAuthClient(args.clientFile), sender);
+const token = await refreshAccessToken(credential);
 
 const profile = await googleJson("https://gmail.googleapis.com/gmail/v1/users/me/profile", {
   accessToken: token.access_token,
@@ -54,14 +43,14 @@ if (profile.emailAddress?.toLowerCase() !== sender.toLowerCase()) {
 const labelId = await ensureGmailLabel(token.access_token, labelName);
 await validateCalendar(token.access_token);
 
-installWorkerSecret("GMAIL_CLIENT_ID", client.clientId);
-installWorkerSecret("GMAIL_CLIENT_SECRET", client.clientSecret);
-installWorkerSecret("GMAIL_REFRESH_TOKEN", token.refresh_token);
+installWorkerSecret("GMAIL_CLIENT_ID", credential.clientId);
+installWorkerSecret("GMAIL_CLIENT_SECRET", credential.clientSecret);
+installWorkerSecret("GMAIL_REFRESH_TOKEN", credential.refreshToken);
 installWorkerSecret("GMAIL_CLINIC_LABEL", labelId);
 installWorkerSecret("GMAIL_HISTORY_START_ID", profile.historyId);
-installWorkerSecret("GOOGLE_CALENDAR_CLIENT_ID", client.clientId);
-installWorkerSecret("GOOGLE_CALENDAR_CLIENT_SECRET", client.clientSecret);
-installWorkerSecret("GOOGLE_CALENDAR_REFRESH_TOKEN", token.refresh_token);
+installWorkerSecret("GOOGLE_CALENDAR_CLIENT_ID", credential.clientId);
+installWorkerSecret("GOOGLE_CALENDAR_CLIENT_SECRET", credential.clientSecret);
+installWorkerSecret("GOOGLE_CALENDAR_REFRESH_TOKEN", credential.refreshToken);
 
 console.log("Google OAuth, Gmail label, and Gmail history seed were installed as Worker secrets.");
 console.log("No OAuth secrets were printed or written to the repository.");
@@ -69,6 +58,7 @@ console.log("No OAuth secrets were printed or written to the repository.");
 function parseArgs(argv) {
   const parsed = {
     clientFile: "",
+    credentialsFile: "",
     sender: "",
     label: "",
     installWorkerSecrets: false,
@@ -81,6 +71,8 @@ function parseArgs(argv) {
       parsed.help = true;
     } else if (arg === "--client-file") {
       parsed.clientFile = requireValue(argv, ++index, arg);
+    } else if (arg === "--credentials-file") {
+      parsed.credentialsFile = requireValue(argv, ++index, arg);
     } else if (arg === "--sender") {
       parsed.sender = requireValue(argv, ++index, arg);
     } else if (arg === "--label") {
@@ -90,6 +82,10 @@ function parseArgs(argv) {
     } else {
       fail(`Unknown argument: ${arg}`);
     }
+  }
+
+  if (parsed.clientFile && parsed.credentialsFile) {
+    fail("Use either --client-file or --credentials-file, not both.");
   }
 
   return parsed;
@@ -112,7 +108,58 @@ function readOAuthClient(path) {
   return { clientId, clientSecret };
 }
 
-async function waitForOAuthRedirect() {
+function readOAuthCredential(path) {
+  const parsed = JSON.parse(readFileSync(path, "utf8"));
+  const clientId = parsed.client_id;
+  const clientSecret = parsed.client_secret;
+  const refreshToken = parsed.refresh_token;
+  if (!clientId || !clientSecret || !refreshToken) {
+    fail("OAuth credentials JSON must include client_id, client_secret, and refresh_token.");
+  }
+  return { clientId, clientSecret, refreshToken };
+}
+
+async function authorizeWithClient(client, targetSender) {
+  const redirect = await waitForOAuthRedirect(client.clientId, targetSender);
+
+  tryOpen(authUrl(client.clientId, redirect.uri, targetSender));
+  console.log("Opened Google OAuth consent in the browser.");
+  console.log("If a browser did not open, paste the following URL into Chrome:");
+  console.log(redirect.authUrl);
+
+  const code = await redirect.code;
+  const token = await exchangeCode(client, redirect.uri, code);
+  if (!token.refresh_token) {
+    fail(
+      "Google did not return a refresh token. Revoke this app grant or create a fresh OAuth client, then rerun.",
+    );
+  }
+
+  return {
+    clientId: client.clientId,
+    clientSecret: client.clientSecret,
+    refreshToken: token.refresh_token,
+  };
+}
+
+async function refreshAccessToken(credential) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: credential.clientId,
+      client_secret: credential.clientSecret,
+      refresh_token: credential.refreshToken,
+      grant_type: "refresh_token",
+    }),
+  });
+  if (!response.ok) {
+    fail(`OAuth token refresh failed: ${response.status} ${await response.text()}`);
+  }
+  return response.json();
+}
+
+async function waitForOAuthRedirect(clientId, targetSender) {
   let server;
   const code = new Promise((resolveCode, rejectCode) => {
     server = createServer((request, response) => {
@@ -155,7 +202,7 @@ async function waitForOAuthRedirect() {
     uri,
     code,
     get authUrl() {
-      return authUrl(readOAuthClient(args.clientFile).clientId, uri, sender);
+      return authUrl(clientId, uri, targetSender);
     },
   };
 }
@@ -266,9 +313,11 @@ function tryOpen(url) {
 function printUsage() {
   console.log(`Usage:
   npm run setup:google-oauth -- --client-file ~/Downloads/client_secret.json --install-worker-secrets
+  npm run setup:google-oauth -- --credentials-file ~/.config/gws/credentials.json --install-worker-secrets
 
 Options:
   --client-file PATH          Google OAuth Desktop client JSON from Cloud Console
+  --credentials-file PATH     Existing OAuth JSON with client_id, client_secret, and refresh_token
   --sender EMAIL              Gmail sender to authorize (default: ssmanji89@gmail.com)
   --label NAME                Gmail label to create/use (default: AI Workflow Services)
   --install-worker-secrets    Required; writes OAuth, label, and history values to Cloudflare secrets

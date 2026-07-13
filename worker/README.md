@@ -155,7 +155,19 @@ without granting permanent-delete access. The retention job trashes old Gmail
 threads after D1 redaction is confirmed and then removes the thread mapping from
 D1.
 
-After downloading the OAuth client JSON, run:
+If a local Google Workspace OAuth credential file already exists for the same
+account and scopes, the helper can validate and install it directly:
+
+```bash
+cd worker
+npm run setup:google-oauth -- \
+  --credentials-file ~/.config/gws/credentials.json \
+  --sender ssmanji89@gmail.com \
+  --label "AI Workflow Services" \
+  --install-worker-secrets
+```
+
+Otherwise, after downloading the OAuth client JSON, run:
 
 ```bash
 cd worker
@@ -166,10 +178,11 @@ npm run setup:google-oauth -- \
   --install-worker-secrets
 ```
 
-The helper opens the Google consent flow, captures the local callback, validates
-Gmail profile access, creates or reuses the launch label, validates Calendar
-free/busy access, captures the Gmail history seed, and installs these Worker
-secrets without printing their values:
+With `--client-file`, the helper opens the Google consent flow and captures the
+local callback. With either credential source, it validates Gmail profile
+access, creates or reuses the launch label, validates Calendar free/busy access,
+captures the Gmail history seed, and installs these Worker secrets without
+printing their values:
 
 - `GMAIL_CLIENT_ID`
 - `GMAIL_CLIENT_SECRET`

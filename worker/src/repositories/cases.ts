@@ -19,6 +19,24 @@ export interface PublicCase {
   closedAt: string | null;
 }
 
+export interface PriorityDiscoveryCaseRecord {
+  caseId: string;
+  email: string;
+  name: string;
+  status: CaseStatus;
+}
+
+export interface DiscoveryAgentContext {
+  caseId: string;
+  email: string;
+  contextType: IntakeInput["contextType"];
+  problem: string;
+  desiredOutcome: string;
+  priorAttempts: string;
+  sanitizedLinks: string[];
+  state: DiscoveryState | null;
+}
+
 export type ArtifactType = "checkpoint" | "blueprint";
 
 export interface DiscoveryState {
@@ -89,6 +107,13 @@ interface CaseRow {
   closed_at: string | null;
 }
 
+interface PriorityDiscoveryCaseRow {
+  id: string;
+  email: string;
+  name: string;
+  status: CaseStatus;
+}
+
 interface CreditRow {
   case_id: string;
   stripe_checkout_session_id: string;
@@ -106,6 +131,24 @@ interface RiskDecisionRow {
   reasons_json: string;
   draft_id: string;
   status: string;
+}
+
+interface HeldReviewRow {
+  draft_id: string;
+  status: string;
+  mandatory_review_draft_id: string | null;
+  mandatory_review_held: number;
+}
+
+interface DiscoveryAgentContextRow {
+  id: string;
+  email: string;
+  context_type: IntakeInput["contextType"];
+  problem: string;
+  desired_outcome: string;
+  prior_attempts: string;
+  sanitized_links_json: string;
+  state_json: string | null;
 }
 
 export class D1CaseRepository implements CaseRepository {
@@ -314,6 +357,57 @@ export class D1CaseRepository implements CaseRepository {
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       closedAt: row.closed_at,
+    };
+  }
+
+  async getPriorityDiscoveryCase(
+    caseId: string,
+  ): Promise<PriorityDiscoveryCaseRecord | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT id, email, name, status
+        FROM cases
+        WHERE id = ? AND status IN (?, ?)`,
+      )
+      .bind(caseId, "paid_pending_start", "discovery_active")
+      .first<PriorityDiscoveryCaseRow>();
+
+    if (!row) return null;
+    return {
+      caseId: row.id,
+      email: row.email,
+      name: row.name,
+      status: row.status,
+    };
+  }
+
+  async getDiscoveryAgentContext(
+    caseId: string,
+  ): Promise<DiscoveryAgentContext | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT cases.id, cases.email, cases.context_type, intakes.problem,
+          intakes.desired_outcome, intakes.prior_attempts,
+          intakes.sanitized_links_json, discovery_state.state_json
+        FROM cases
+        INNER JOIN intakes ON intakes.case_id = cases.id
+        LEFT JOIN discovery_state ON discovery_state.case_id = cases.id
+        WHERE cases.id = ?
+        LIMIT 1`,
+      )
+      .bind(caseId)
+      .first<DiscoveryAgentContextRow>();
+
+    if (!row) return null;
+    return {
+      caseId: row.id,
+      email: row.email,
+      contextType: row.context_type,
+      problem: row.problem,
+      desiredOutcome: row.desired_outcome,
+      priorAttempts: row.prior_attempts,
+      sanitizedLinks: parseStringArray(row.sanitized_links_json),
+      state: row.state_json ? (JSON.parse(row.state_json) as DiscoveryState) : null,
     };
   }
 
@@ -594,6 +688,91 @@ export class D1CaseRepository implements CaseRepository {
     ]);
   }
 
+  async assertHeldDraftForReview(
+    caseId: string,
+    draftId: string,
+  ): Promise<void> {
+    const row = await this.db
+      .prepare(
+        `SELECT risk_decisions.draft_id, risk_decisions.status,
+          discovery_state.mandatory_review_draft_id,
+          discovery_state.mandatory_review_held
+        FROM risk_decisions
+        LEFT JOIN discovery_state
+          ON discovery_state.case_id = risk_decisions.case_id
+        WHERE risk_decisions.case_id = ? AND risk_decisions.draft_id = ?
+        LIMIT 1`,
+      )
+      .bind(caseId, draftId)
+      .first<HeldReviewRow>();
+
+    if (
+      !row ||
+      row.status !== "held" ||
+      row.mandatory_review_held !== 1 ||
+      row.mandatory_review_draft_id !== draftId
+    ) {
+      throw new Error("Draft is not held for this case");
+    }
+  }
+
+  async resolveReviewHold(
+    caseId: string,
+    draftId: string,
+    status: "approved" | "revised",
+  ): Promise<void> {
+    const now = new Date().toISOString();
+    const [riskResult, stateResult] = await this.db.batch([
+      this.db
+        .prepare(
+          `UPDATE risk_decisions
+          SET status = ?, resolved_at = ?
+          WHERE case_id = ? AND draft_id = ? AND status = ?`,
+        )
+        .bind(status, now, caseId, draftId, "held"),
+      this.db
+        .prepare(
+          `UPDATE discovery_state
+          SET mandatory_review_held = 0,
+            mandatory_review_reasons_json = ?,
+            mandatory_review_draft_id = ?,
+            mandatory_review_held_at = ?,
+            updated_at = ?
+          WHERE case_id = ? AND mandatory_review_draft_id = ?`,
+        )
+        .bind(null, null, null, now, caseId, draftId),
+    ]);
+
+    if (riskResult?.meta.changes !== 1 || stateResult?.meta.changes !== 1) {
+      throw new Error("Review hold resolution failed");
+    }
+  }
+
+  async recordAdminAction(action: {
+    actor: string;
+    caseId: string;
+    action: string;
+    artifactVersion?: number;
+  }): Promise<void> {
+    await this.db
+      .prepare(
+        `INSERT INTO audit_events (
+          id, case_id, event_type, data_json, created_at
+        ) VALUES (?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        crypto.randomUUID(),
+        action.caseId,
+        `admin_${action.action}`,
+        JSON.stringify({
+          actor: action.actor,
+          artifactVersion: action.artifactVersion ?? null,
+        }),
+        new Date().toISOString(),
+      )
+      .run();
+  }
+
   private async ensureDeliveryStartIsNewOrIdentical(
     caseId: string,
     gmailThreadId: string,
@@ -726,3 +905,10 @@ const bytesToHex = (bytes: Uint8Array): string =>
 
 const isUniqueConstraintError = (error: unknown): boolean =>
   error instanceof Error && error.message.includes("UNIQUE constraint failed");
+
+const parseStringArray = (value: string): string[] => {
+  const parsed = JSON.parse(value) as unknown;
+  return Array.isArray(parsed)
+    ? parsed.filter((item): item is string => typeof item === "string")
+    : [];
+};

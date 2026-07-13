@@ -12,6 +12,7 @@ export type Env = {
   GMAIL_REFRESH_TOKEN: string;
   GMAIL_SENDER: string;
   GMAIL_CLINIC_LABEL: string;
+  GMAIL_HISTORY_START_ID?: string;
   OPENAI_API_KEY: string;
   AGENT_MODEL: string;
   PRIORITY_DEPOSIT_CENTS: string;

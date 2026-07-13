@@ -124,6 +124,16 @@ class GmailClient {
     }));
   }
 
+  async getMessageThreadId(messageId: string): Promise<string> {
+    const response = await this.gmailJson<{ threadId?: string }>(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${messageId}`,
+    );
+    if (!response.threadId) {
+      throw new Error("Gmail message did not include a thread id");
+    }
+    return response.threadId;
+  }
+
   async createReplyDraft(
     request: DraftReplyRequest,
   ): Promise<{ draftId: string; messageId: string }> {

@@ -105,11 +105,18 @@ export const createPaymentRoutes = (
     }
 
     const repository = new D1CaseRepository(c.env.DB);
-    await repository.recordStripeEvent(
+    const stripeEventStatus = await repository.recordStripeEvent(
       event.id,
       caseId,
       event.type,
     );
+    if (stripeEventStatus === "duplicate") {
+      const current = await caseById(c.env.DB, caseId);
+      if (current?.status === "paid_pending_start") {
+        await ensurePriorityDiscoveryStarted(c.env, caseId);
+      }
+      return c.json({ received: true });
+    }
 
     const depositCents = parseConfiguredCents(c.env.PRIORITY_DEPOSIT_CENTS);
     const current = await caseById(c.env.DB, caseId);

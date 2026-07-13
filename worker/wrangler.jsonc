@@ -22,5 +22,18 @@
 			"database_name": "sulemanji-work-with-me",
 			"database_id": "744677b2-e1d4-48f4-be9a-cf93ca562a54"
 		}
-	]
+	],
+	"workflows": [
+		{
+			"name": "priority-discovery",
+			"binding": "PRIORITY_DISCOVERY",
+			"class_name": "PriorityDiscoveryWorkflow"
+		}
+	],
+	"triggers": {
+		"crons": [
+			"*/2 * * * *",
+			"0 13 * * *"
+		]
+	}
 }

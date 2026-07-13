@@ -17,6 +17,7 @@ import {
   quoteExpiresAt,
   remainingBalance,
 } from "../src/domain/booking";
+import { listQuoteReadyCases } from "../src/admin/page";
 import { D1CaseRepository } from "../src/repositories/cases";
 
 const db = (env as unknown as { DB: D1Database }).DB;
@@ -174,6 +175,28 @@ describe("booking persistence schema", () => {
     expect(row?.credit_id).toBe("credit_case_1");
     expect(row?.credit_cents).toBe(29_500);
     expect(row?.balance_cents).toBe(95_500);
+  });
+
+  it("lists blueprint-delivered cases that need private quote approval", async () => {
+    await seedCase("case_1");
+    await seedCredit("case_1", 29_500);
+    await seedBlueprint("case_1", 1);
+
+    await seedCase("case_2");
+    await seedCredit("case_2", 29_500);
+    await seedBlueprint("case_2", 1);
+    await seedQuote("quote_case_2", "case_2");
+
+    await expect(listQuoteReadyCases(db)).resolves.toEqual([
+      {
+        caseId: "case_1",
+        email: "case_1@example.com",
+        name: "Case case_1",
+        blueprintVersion: 1,
+        blueprintDeliveredAt: "2026-07-13T15:50:00.000Z",
+        creditCents: 29_500,
+      },
+    ]);
   });
 
   it("rejects a second quote that would consume the same deposit credit", async () => {
@@ -375,6 +398,24 @@ const seedCredit = async (
       `pi_deposit_${id}`,
       cents,
       "2026-07-13T15:45:00.000Z",
+    )
+    .run();
+};
+
+const seedBlueprint = async (caseId: string, version: number): Promise<void> => {
+  await db
+    .prepare(
+      `INSERT INTO artifacts (
+        id, case_id, artifact_type, version, body_json, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(
+      `artifact_${caseId}_${version}`,
+      caseId,
+      "blueprint",
+      version,
+      "{\"summary\":\"Ready for quote\"}",
+      "2026-07-13T15:50:00.000Z",
     )
     .run();
 };

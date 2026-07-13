@@ -1,9 +1,41 @@
 import { Hono } from "hono";
 import { describe, expect, it, vi } from "vitest";
+import { renderAdminReviewPage } from "../src/admin/page";
 import type { Env } from "../src/env";
 import { createAdminRoutes } from "../src/routes/admin";
 
 describe("admin review routes", () => {
+  it("renders operator controls for held drafts and quote-ready blueprints", () => {
+    const html = renderAdminReviewPage({
+      heldReviews: [
+        {
+          caseId: "case_1",
+          draftId: "draft_1",
+          reasons: ["launch_review_required"],
+          createdAt: "2026-07-13T15:30:00.000Z",
+          artifactVersion: 2,
+        },
+      ],
+      quoteReadyCases: [
+        {
+          caseId: "case_2",
+          email: "customer@example.com",
+          name: "Customer Name",
+          blueprintVersion: 1,
+          blueprintDeliveredAt: "2026-07-13T16:00:00.000Z",
+          creditCents: 29_500,
+        },
+      ],
+    });
+
+    expect(html).toContain("/v1/admin/cases/case_1/approve-draft");
+    expect(html).toContain('name="draftId" value="draft_1"');
+    expect(html).toContain("/v1/admin/cases/case_2/approve-private-quote");
+    expect(html).toContain('name="durationMinutes"');
+    expect(html).toContain('name="totalCents"');
+    expect(html).toContain("$295.00");
+  });
+
   it("requires the configured Access identity before sending a draft", async () => {
     const gmail = { sendDraft: vi.fn(async () => undefined) };
     const audit = { recordAdminAction: vi.fn(async () => undefined) };
@@ -101,6 +133,46 @@ describe("admin review routes", () => {
       actor: "ssmanji89@gmail.com",
       caseId: "case_1",
       action: "approve-draft-sent",
+      artifactVersion: 2,
+    });
+  });
+
+  it("accepts browser form submissions for approved Gmail drafts", async () => {
+    const gmail = { sendDraft: vi.fn(async () => undefined) };
+    const audit = {
+      recordAdminAction: vi.fn(async () => undefined),
+      assertHeldDraftForReview: vi.fn(async () => undefined),
+      resolveReviewHold: vi.fn(async () => undefined),
+      transition: vi.fn(async () => undefined),
+    };
+    const app = new Hono<{ Bindings: Env }>();
+    app.route(
+      "/v1",
+      createAdminRoutes({
+        gmail,
+        audit,
+        authenticate: async () => "ssmanji89@gmail.com",
+      }),
+    );
+
+    const response = await app.fetch(
+      new Request("https://api.example/v1/admin/cases/case_1/approve-draft", {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          draftId: "draft_1",
+          artifactVersion: "2",
+        }),
+      }),
+      { ADMIN_EMAIL: "ssmanji89@gmail.com" } as Env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(gmail.sendDraft).toHaveBeenCalledWith("draft_1");
+    expect(audit.recordAdminAction).toHaveBeenNthCalledWith(1, {
+      actor: "ssmanji89@gmail.com",
+      caseId: "case_1",
+      action: "approve-draft-intent",
       artifactVersion: 2,
     });
   });
@@ -228,6 +300,99 @@ describe("admin review routes", () => {
       action: "approve-private-quote",
       artifactVersion: 2,
     });
+  });
+
+  it("accepts browser form submissions for private quote approval", async () => {
+    const quote = {
+      id: "quote_1",
+      publicToken: "quote_token_123",
+      creditCents: 29_500,
+      balanceCents: 95_500,
+      expiresAt: "2026-09-11T15:30:00.000Z",
+    };
+    const audit = {
+      recordAdminAction: vi.fn(async () => undefined),
+      latestBlueprintForQuote: vi.fn(async () => ({
+        version: 2,
+        deliveredAt: "2026-07-13T15:30:00.000Z",
+      })),
+      createSessionQuote: vi.fn(async () => quote),
+    };
+    const app = new Hono<{ Bindings: Env }>();
+    app.route(
+      "/v1",
+      createAdminRoutes({
+        audit,
+        authenticate: async () => "ssmanji89@gmail.com",
+      }),
+    );
+
+    const response = await app.fetch(
+      new Request(
+        "https://api.example/v1/admin/cases/case_1/approve-private-quote",
+        {
+          method: "POST",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            durationMinutes: "90",
+            totalCents: "125000",
+          }),
+        },
+      ),
+      {
+        ADMIN_EMAIL: "ssmanji89@gmail.com",
+        SITE_ORIGIN: "https://www.sulemanji.com",
+      } as Env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(audit.createSessionQuote).toHaveBeenCalledWith({
+      caseId: "case_1",
+      blueprintVersion: 2,
+      durationMinutes: 90,
+      totalCents: 125_000,
+      blueprintDeliveredAt: new Date("2026-07-13T15:30:00.000Z"),
+    });
+  });
+
+  it("rejects non-integer private quote form values", async () => {
+    const audit = {
+      recordAdminAction: vi.fn(async () => undefined),
+      latestBlueprintForQuote: vi.fn(async () => ({
+        version: 2,
+        deliveredAt: "2026-07-13T15:30:00.000Z",
+      })),
+      createSessionQuote: vi.fn(),
+    };
+    const app = new Hono<{ Bindings: Env }>();
+    app.route(
+      "/v1",
+      createAdminRoutes({
+        audit,
+        authenticate: async () => "ssmanji89@gmail.com",
+      }),
+    );
+
+    const response = await app.fetch(
+      new Request(
+        "https://api.example/v1/admin/cases/case_1/approve-private-quote",
+        {
+          method: "POST",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            durationMinutes: "90.5",
+            totalCents: "125000",
+          }),
+        },
+      ),
+      {
+        ADMIN_EMAIL: "ssmanji89@gmail.com",
+        SITE_ORIGIN: "https://www.sulemanji.com",
+      } as Env,
+    );
+
+    expect(response.status).toBe(400);
+    expect(audit.createSessionQuote).not.toHaveBeenCalled();
   });
 
   it("lets the authenticated local agent runner claim the next queued job", async () => {

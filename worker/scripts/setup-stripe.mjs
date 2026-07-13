@@ -8,7 +8,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const workerRoot = resolve(__dirname, "..");
 
 const DEFAULT_WEBHOOK_URL =
-  "https://sulemanji-work-with-me.ssmanji89.workers.dev/v1/webhooks/stripe";
+  "https://api.sulemanji.com/v1/webhooks/stripe";
 const WEBHOOK_EVENT = "checkout.session.completed";
 
 const args = parseArgs(process.argv.slice(2));

@@ -57,9 +57,8 @@ python3 scripts/verify_work_with_me.py
 python3 scripts/verify_viyu_positioning.py
 ```
 
-The current public API base is the Worker `workers.dev` URL configured in
-`_config.yml`. Switch that value to `https://api.sulemanji.com` only after DNS
-is delegated or proxied to Cloudflare and the hostname reaches this Worker. Keep
+The current public API base is `https://api.sulemanji.com`, configured in
+`_config.yml` and attached to the Worker as a Cloudflare custom domain. Keep
 CORS restricted to `https://www.sulemanji.com`.
 
 ## Current Remote State
@@ -92,9 +91,8 @@ As of 2026-07-13:
   refresh token. No Google Calendar OAuth or Cloudflare Access audience item was
   found by metadata search. Local-queue mode avoids needing to pick an OpenAI
   key for launch agent execution.
-- `api.sulemanji.com` is not currently resolvable. Public DNS for
-  `sulemanji.com` is still on GoDaddy nameservers, and this Cloudflare account
-  does not expose a `sulemanji.com` zone to the deployment token.
+- `api.sulemanji.com` is attached to the Worker as a custom domain after the
+  `sulemanji.com` nameservers were moved to Cloudflare.
 - Stripe webhook delivery still needs live configuration and UAT.
 
 Do not set `SERVICE_MODE=live` until the required secrets are set; otherwise
@@ -112,7 +110,7 @@ Run one queued job:
 ```bash
 cd worker
 AGENT_RUNNER_TOKEN="$(security find-generic-password -w -a agent-runner -s sulemanji.work-with-me.agent-runner-token)"
-AI_WORKFLOW_API_BASE="https://sulemanji-work-with-me.ssmanji89.workers.dev" \
+AI_WORKFLOW_API_BASE="https://api.sulemanji.com" \
 AGENT_RUNNER_TOKEN="$AGENT_RUNNER_TOKEN" \
 npm run agent:run-local
 unset AGENT_RUNNER_TOKEN
@@ -198,7 +196,7 @@ Stripe needs one live server-side API key and one webhook signing secret for the
 Worker. The webhook endpoint must send `checkout.session.completed` to:
 
 ```text
-https://sulemanji-work-with-me.ssmanji89.workers.dev/v1/webhooks/stripe
+https://api.sulemanji.com/v1/webhooks/stripe
 ```
 
 The Stripe CLI can authenticate with browser approval, but CLI-generated
@@ -256,7 +254,7 @@ Admin review routes require a Cloudflare Access application that issues
 Cloudflare Access is configured for the Worker admin path:
 
 ```text
-Host: sulemanji-work-with-me.ssmanji89.workers.dev
+Host: api.sulemanji.com
 Path: /v1/admin*
 Policy: Allow only ssmanji89@gmail.com
 ```

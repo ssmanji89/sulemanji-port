@@ -165,7 +165,7 @@ describe("Gmail adapter", () => {
     );
   });
 
-  it("applies case labels, sends approved drafts, and can delete a case thread", async () => {
+  it("applies case labels, sends approved drafts, and trashes retained case threads", async () => {
     const transport = new RecordingGmailFetch([
       jsonResponse({ access_token: "access_1", expires_in: 3600 }),
       jsonResponse({ id: "msg_1" }),
@@ -181,8 +181,9 @@ describe("Gmail adapter", () => {
     expect(transport.requests.map((request) => request.url).slice(1)).toEqual([
       "https://gmail.googleapis.com/gmail/v1/users/me/messages/msg_1/modify",
       "https://gmail.googleapis.com/gmail/v1/users/me/drafts/send",
-      "https://gmail.googleapis.com/gmail/v1/users/me/threads/thread_1",
+      "https://gmail.googleapis.com/gmail/v1/users/me/threads/thread_1/trash",
     ]);
+    expect(transport.requests[3]?.method).toBe("POST");
   });
 });
 

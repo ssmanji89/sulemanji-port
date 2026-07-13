@@ -136,6 +136,54 @@ runner tokens, or generated prompts in the repository. For recurring use, have
 Hermes or launchd provide the API base and runner token from local secure state.
 Cloudflare Access remains required for human admin review actions.
 
+## Google OAuth Launch Setup
+
+Gmail and Calendar use one user-authorized OAuth grant for
+`ssmanji89@gmail.com`. The Google project currently has both Gmail API and
+Google Calendar API enabled. Create a Google Auth Platform OAuth client as a
+**Desktop app** in project `codexm1mbp`, download the JSON client file, and keep
+that file outside the repository.
+
+The Worker needs these Google scopes:
+
+- `https://www.googleapis.com/auth/gmail.modify`
+- `https://www.googleapis.com/auth/calendar.events`
+- `https://www.googleapis.com/auth/calendar.freebusy`
+
+`gmail.modify` supports reading, labeling, drafting, and sending case messages
+without granting permanent-delete access. The retention job trashes old Gmail
+threads after D1 redaction is confirmed and then removes the thread mapping from
+D1.
+
+After downloading the OAuth client JSON, run:
+
+```bash
+cd worker
+npm run setup:google-oauth -- \
+  --client-file ~/Downloads/client_secret_*.json \
+  --sender ssmanji89@gmail.com \
+  --label "AI Workflow Services" \
+  --install-worker-secrets
+```
+
+The helper opens the Google consent flow, captures the local callback, validates
+Gmail profile access, creates or reuses the launch label, validates Calendar
+free/busy access, captures the Gmail history seed, and installs these Worker
+secrets without printing their values:
+
+- `GMAIL_CLIENT_ID`
+- `GMAIL_CLIENT_SECRET`
+- `GMAIL_REFRESH_TOKEN`
+- `GMAIL_CLINIC_LABEL`
+- `GMAIL_HISTORY_START_ID`
+- `GOOGLE_CALENDAR_CLIENT_ID`
+- `GOOGLE_CALENDAR_CLIENT_SECRET`
+- `GOOGLE_CALENDAR_REFRESH_TOKEN`
+
+If the browser is stopped at Google sign-in, complete sign-in locally first. If
+Bitwarden or macOS Keychain is needed, unlock it locally; do not paste OAuth
+client secrets, refresh tokens, or passwords into shell history or commit them.
+
 ## Launch Gates
 
 Keep live Stripe disabled until:

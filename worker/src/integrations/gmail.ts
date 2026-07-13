@@ -172,8 +172,8 @@ class GmailClient {
 
   async deleteThread(threadId: string): Promise<void> {
     await this.gmailJson(
-      `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}`,
-      { method: "DELETE" },
+      `https://gmail.googleapis.com/gmail/v1/users/me/threads/${threadId}/trash`,
+      { method: "POST" },
     );
   }
 

@@ -16,6 +16,8 @@ _site
 # API Keys and sensitive config
 config/secrets.yml
 secrets.json
+client_secret*.json
+oauth-client*.json
 *.key
 *.pem
 *.p12

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   listHeldReviewCases,
+  listQuoteReadyCases,
   renderAdminReviewPage,
 } from "../admin/page";
 import { AgentDecision, type AgentInput } from "../agent/contracts";
@@ -85,7 +86,12 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
       return c.text("Forbidden", 403);
     }
 
-    return c.html(renderAdminReviewPage(await listHeldReviewCases(c.env.DB)));
+    const [heldReviews, quoteReadyCases] = await Promise.all([
+      listHeldReviewCases(c.env.DB),
+      listQuoteReadyCases(c.env.DB),
+    ]);
+
+    return c.html(renderAdminReviewPage({ heldReviews, quoteReadyCases }));
   });
 
   app.post("/admin/cases/:id/approve-draft", async (c) => {
@@ -96,13 +102,8 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
       return c.json({ error: "forbidden" }, 403);
     }
 
-    let body: { draftId?: unknown; artifactVersion?: unknown };
-    try {
-      body = await c.req.json<{
-        draftId?: unknown;
-        artifactVersion?: unknown;
-      }>();
-    } catch {
+    const body = await readAdminBody(c.req.raw);
+    if (!body) {
       return c.json({ error: "invalid_request" }, 400);
     }
     if (typeof body.draftId !== "string") {
@@ -112,8 +113,7 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
     const gmail = dependencies.gmail ?? createAdminGmail(c.env);
     const audit = dependencies.audit ?? new D1CaseRepository(c.env.DB);
     const caseId = c.req.param("id");
-    const artifactVersion =
-      typeof body.artifactVersion === "number" ? body.artifactVersion : undefined;
+    const artifactVersion = optionalInteger(body.artifactVersion);
 
     try {
       await audit.assertHeldDraftForReview?.(caseId, body.draftId);
@@ -168,27 +168,22 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
       return c.json({ error: "forbidden" }, 403);
     }
 
-    let body: { durationMinutes?: unknown; totalCents?: unknown };
-    try {
-      body = await c.req.json<{
-        durationMinutes?: unknown;
-        totalCents?: unknown;
-      }>();
-    } catch {
+    const body = await readAdminBody(c.req.raw);
+    if (!body) {
       return c.json({ error: "invalid_request" }, 400);
     }
-    const durationMinutes = body.durationMinutes;
-    const totalCents = body.totalCents;
+    const durationMinutes = requiredInteger(body.durationMinutes);
+    const totalCents = requiredInteger(body.totalCents);
     if (
-      !Number.isInteger(durationMinutes) ||
-      !Number.isInteger(totalCents) ||
-      (durationMinutes as number) < 15 ||
-      (totalCents as number) < 0
+      durationMinutes === null ||
+      totalCents === null ||
+      durationMinutes < 15 ||
+      totalCents < 0
     ) {
       return c.json({ error: "invalid_request" }, 400);
     }
-    const quoteDurationMinutes = durationMinutes as number;
-    const quoteTotalCents = totalCents as number;
+    const quoteDurationMinutes = durationMinutes;
+    const quoteTotalCents = totalCents;
 
     const caseId = c.req.param("id");
     const repository = dependencies.audit ?? new D1CaseRepository(c.env.DB);
@@ -296,6 +291,47 @@ const createAdminGmail = (env: Env): AdminGmail =>
     sender: env.GMAIL_SENDER,
     labelId: env.GMAIL_CLINIC_LABEL,
   });
+
+const readAdminBody = async (
+  request: Request,
+): Promise<Record<string, unknown> | null> => {
+  const contentType = request.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    try {
+      const body = await request.json<Record<string, unknown>>();
+      return body && typeof body === "object" && !Array.isArray(body)
+        ? body
+        : null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (
+    contentType.includes("application/x-www-form-urlencoded") ||
+    contentType.includes("multipart/form-data")
+  ) {
+    const form = await request.formData();
+    return Object.fromEntries(form.entries());
+  }
+
+  return null;
+};
+
+const optionalInteger = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === "") return undefined;
+  const parsed = requiredInteger(value);
+  return parsed ?? undefined;
+};
+
+const requiredInteger = (value: unknown): number | null => {
+  if (typeof value === "number" && Number.isInteger(value)) return value;
+  if (typeof value === "string" && /^-?\d+$/.test(value.trim())) {
+    const parsed = Number(value);
+    return Number.isSafeInteger(parsed) ? parsed : null;
+  }
+  return null;
+};
 
 const authenticateAgentRunner = async (
   request: Request,

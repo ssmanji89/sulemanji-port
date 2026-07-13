@@ -46,6 +46,20 @@ python3 scripts/verify_viyu_positioning.py
 Configure `api.sulemanji.com` to route to this Worker and keep CORS restricted
 to `https://www.sulemanji.com`.
 
+## Current Remote State
+
+As of 2026-07-13:
+
+- Remote D1 migrations `0001` through `0006` have been applied.
+- The remote Worker script is not deployed yet.
+- Required Worker secrets have not been verified in Cloudflare.
+- `api.sulemanji.com`, Stripe webhook delivery, Gmail/Calendar OAuth, and
+  Cloudflare Access admin protection still need live configuration and UAT.
+
+Do not deploy the Worker with cron triggers until the required secrets are set;
+otherwise scheduled Gmail polling and retention jobs will run against an
+incomplete runtime.
+
 ## Launch Gates
 
 Keep live Stripe disabled until:

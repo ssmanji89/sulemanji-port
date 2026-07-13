@@ -11,7 +11,8 @@
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "agent:run-local": "node scripts/run-local-agent-job.mjs",
-    "setup:google-oauth": "node scripts/setup-google-oauth.mjs"
+    "setup:google-oauth": "node scripts/setup-google-oauth.mjs",
+    "setup:stripe": "node scripts/setup-stripe.mjs"
   },
   "dependencies": {
     "hono": "4.12.29",

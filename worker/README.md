@@ -78,12 +78,12 @@ As of 2026-07-13:
 - `AGENT_RUNNER_TOKEN` is configured as a Worker secret and mirrored in macOS
   Keychain under service `sulemanji.work-with-me.agent-runner-token`, account
   `agent-runner`.
+- Google OAuth, the Gmail launch label, and the Gmail history seed are
+  configured as Worker secrets from the local Google Workspace OAuth grant for
+  `ssmanji89@gmail.com`.
 - These required bindings still need live configuration:
-  `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `GMAIL_CLIENT_ID`,
-  `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_CLINIC_LABEL`,
-  `GMAIL_HISTORY_START_ID`, `GOOGLE_CALENDAR_CLIENT_ID`,
-  `GOOGLE_CALENDAR_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`,
-  `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
+  `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `ACCESS_TEAM_DOMAIN`, and
+  `ACCESS_AUD`.
 - Existing Bitwarden inventory does not contain unambiguous live API/OAuth
   material for the remaining bindings. Stripe-looking entries are dashboard
   login-shaped rather than `sk_*` / `whsec_*` API material. The `ssmanji89 GMail
@@ -99,8 +99,8 @@ As of 2026-07-13:
 - `api.sulemanji.com` is not currently resolvable. Public DNS for
   `sulemanji.com` is still on GoDaddy nameservers, and this Cloudflare account
   does not expose a `sulemanji.com` zone to the deployment token.
-- Stripe webhook delivery, Gmail/Calendar OAuth, and Cloudflare Access admin
-  protection still need live configuration and UAT.
+- Stripe webhook delivery and Cloudflare Access admin protection still need
+  live configuration and UAT.
 
 Do not set `SERVICE_MODE=live` until the required secrets are set; otherwise
 scheduled Gmail polling, retention, and digest jobs will run against an
@@ -196,6 +196,89 @@ printing their values:
 If the browser is stopped at Google sign-in, complete sign-in locally first. If
 Bitwarden or macOS Keychain is needed, unlock it locally; do not paste OAuth
 client secrets, refresh tokens, or passwords into shell history or commit them.
+
+## Stripe Launch Setup
+
+Stripe needs one live server-side API key and one webhook signing secret for the
+Worker. The webhook endpoint must send `checkout.session.completed` to:
+
+```text
+https://sulemanji-work-with-me.ssmanji89.workers.dev/v1/webhooks/stripe
+```
+
+The Stripe CLI can authenticate with browser approval, but CLI-generated
+restricted keys expire after 90 days and may not have permission to create live
+webhook endpoints. Prefer a durable Dashboard-created live restricted key with
+the minimum permissions needed for Checkout Sessions, refunds, and webhook
+endpoint setup, plus the webhook endpoint signing secret.
+
+After the live key and webhook secret are available in macOS Keychain, install
+them into the Worker:
+
+```bash
+cd worker
+npm run setup:stripe -- --install-worker-secrets
+```
+
+By default the helper reads:
+
+- `sulemanji.stripe.worker-secret-key` /
+  `stripe-live-secret-key`
+- `sulemanji.stripe.worker-webhook-secret` /
+  `stripe-live-webhook-secret`
+
+If Keychain is unlocked and you have a live key that can create webhook
+endpoints, the helper can create the exact endpoint, store both secrets in
+Keychain, and install Worker secrets:
+
+```bash
+cd worker
+STRIPE_SECRET_KEY="$(security find-generic-password -w -a stripe-live-secret-key -s sulemanji.stripe.worker-secret-key)" \
+npm run setup:stripe -- \
+  --create-webhook \
+  --store-keychain \
+  --install-worker-secrets
+```
+
+If the webhook endpoint already exists, Stripe does not return its signing
+secret from list/read calls. Reveal the endpoint's signing secret in the Stripe
+Dashboard, store it in Keychain, then rerun `npm run setup:stripe -- \
+--install-worker-secrets`.
+
+The helper validates the Stripe account, installs only
+`STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`, and prints no secret values.
+
+## Cloudflare Access Launch Setup
+
+Admin review routes require a Cloudflare Access application that issues
+`cf-access-jwt-assertion` tokens for the Worker admin path. The Worker verifies:
+
+- `ACCESS_TEAM_DOMAIN`: the Zero Trust team domain, for example
+  `sulemanji.cloudflareaccess.com`
+- `ACCESS_AUD`: the Application Audience (AUD) tag for the Access application
+- `ADMIN_EMAIL`: already configured as `ssmanji89@gmail.com`
+
+Cloudflare currently reports that Access is not enabled for this account. Enable
+Zero Trust, choose the team domain, then create a self-hosted Access application
+for the Worker admin path:
+
+```text
+Host: sulemanji-work-with-me.ssmanji89.workers.dev
+Path: /v1/admin*
+Policy: Allow only ssmanji89@gmail.com
+```
+
+After copying the Application Audience (AUD) tag from the Access application,
+set the Worker vars with non-secret values:
+
+```bash
+npx wrangler secret put ACCESS_TEAM_DOMAIN
+npx wrangler secret put ACCESS_AUD
+```
+
+These are stored as Worker secrets because readiness treats all required
+operator-only launch bindings uniformly, even though the values are not
+customer secrets.
 
 ## Launch Gates
 

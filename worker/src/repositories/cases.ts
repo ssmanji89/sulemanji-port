@@ -344,12 +344,13 @@ export class D1CaseRepository implements CaseRepository {
       this.db
         .prepare(
           `INSERT INTO intakes (
-            case_id, problem, desired_outcome, prior_attempts,
-            sanitized_links_json, redacted_at
-          ) VALUES (?, ?, ?, ?, ?, ?)`,
+            case_id, workshop_category, problem, desired_outcome,
+            prior_attempts, sanitized_links_json, redacted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           id,
+          parsedInput.workshopCategory,
           parsedInput.problem,
           parsedInput.desiredOutcome,
           parsedInput.priorAttempts,
@@ -429,12 +430,13 @@ export class D1CaseRepository implements CaseRepository {
       this.db
         .prepare(
           `INSERT INTO intakes (
-            case_id, problem, desired_outcome, prior_attempts,
-            sanitized_links_json, redacted_at
-          ) VALUES (?, ?, ?, ?, ?, ?)`,
+            case_id, workshop_category, problem, desired_outcome,
+            prior_attempts, sanitized_links_json, redacted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           id,
+          parsedInput.workshopCategory,
           parsedInput.problem,
           parsedInput.desiredOutcome,
           parsedInput.priorAttempts,

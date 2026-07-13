@@ -11,6 +11,7 @@ const valid = {
   name: "Ada Lovelace",
   email: "ada@example.com",
   contextType: "professional",
+  workshopCategory: "github_codebase_review",
   problem:
     "A recurring intake process is copied manually between email and a tracker.",
   desiredOutcome:
@@ -49,6 +50,49 @@ describe("intake routes", () => {
       .bind(valid.email)
       .first<{ status: string; path: string }>();
     expect(caseRecord).toEqual({ status: "normal_queue", path: "normal" });
+  });
+
+  it("persists the selected workshop category", async () => {
+    const response = await postIntake({
+      ...valid,
+      workshopCategory: "ai_business_operations",
+    });
+
+    expect(response.status).toBe(201);
+    const intake = await testEnv.DB.prepare(
+      "SELECT workshop_category FROM intakes INNER JOIN cases ON cases.id = intakes.case_id WHERE cases.email = ?",
+    )
+      .bind(valid.email)
+      .first<{ workshop_category: string }>();
+    expect(intake).toEqual({ workshop_category: "ai_business_operations" });
+  });
+
+  it("defaults missing workshop category for legacy submissions", async () => {
+    const { workshopCategory: _workshopCategory, ...legacyInput } = valid;
+    const response = await postIntake(legacyInput);
+
+    expect(response.status).toBe(201);
+    const intake = await testEnv.DB.prepare(
+      "SELECT workshop_category FROM intakes INNER JOIN cases ON cases.id = intakes.case_id WHERE cases.email = ?",
+    )
+      .bind(valid.email)
+      .first<{ workshop_category: string }>();
+    expect(intake).toEqual({ workshop_category: "not_sure_other" });
+  });
+
+  it("normalizes unknown workshop categories instead of rejecting the intake", async () => {
+    const response = await postIntake({
+      ...valid,
+      workshopCategory: "unsupported_category",
+    });
+
+    expect(response.status).toBe(201);
+    const intake = await testEnv.DB.prepare(
+      "SELECT workshop_category FROM intakes INNER JOIN cases ON cases.id = intakes.case_id WHERE cases.email = ?",
+    )
+      .bind(valid.email)
+      .first<{ workshop_category: string }>();
+    expect(intake).toEqual({ workshop_category: "not_sure_other" });
   });
 
   it("rejects invalid intake input without persistence", async () => {
@@ -237,6 +281,7 @@ const schemaStatements = [
     )`,
   `CREATE TABLE intakes (
       case_id TEXT PRIMARY KEY REFERENCES cases(id),
+      workshop_category TEXT NOT NULL DEFAULT 'not_sure_other',
       problem TEXT NOT NULL,
       desired_outcome TEXT NOT NULL,
       prior_attempts TEXT NOT NULL,

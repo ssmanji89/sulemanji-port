@@ -7,6 +7,7 @@ import {
 import { evaluateRisk } from "../src/domain/risk";
 import {
   createOpenAIAgentProvider,
+  sanitizeAgentInputForModel,
   type AgentFetch,
 } from "../src/integrations/openai";
 
@@ -43,6 +44,11 @@ describe("agent contracts and risk policy", () => {
     expect(riskyCases.map((fixture) => fixture.name)).toContain("third party sensitive data");
     expect(riskyCases.map((fixture) => fixture.name)).toContain("destructive action");
     expect(riskyCases.map((fixture) => fixture.name)).toContain("topic expansion");
+    expect(riskyCases.map((fixture) => fixture.name)).toContain("high impact decision");
+    expect(riskyCases.map((fixture) => fixture.name)).toContain("unclear authorization");
+    expect(riskyCases.map((fixture) => fixture.name)).toContain("unsupported claims");
+    expect(riskyCases.map((fixture) => fixture.name)).toContain("contradiction");
+    expect(riskyCases.map((fixture) => fixture.name)).toContain("low confidence thread mapping");
 
     for (const fixture of riskyCases) {
       expect(evaluateRisk(fixture.input as AgentInput)).toMatchObject({
@@ -132,6 +138,88 @@ describe("agent contracts and risk policy", () => {
       reasons: ["schema_validation_failed"],
     });
     expect(transport.requests).toHaveLength(2);
+  });
+
+  it("retries one grounding failure before accepting a grounded single question", async () => {
+    const transport = new RecordingAgentFetch([
+      responsePayload({
+        kind: "question",
+        topic: "unrelated",
+        message: "What is your favorite color?",
+      }),
+      responsePayload({
+        kind: "question",
+        topic: "current queue",
+        message: "What is the first manual step after the intake arrives?",
+      }),
+    ]);
+    const provider = createOpenAIAgentProvider(
+      { apiKey: "sk-test", model: "gpt-test" },
+      transport.fetch,
+    );
+
+    const decision = await provider.decide(
+      fixtures.find((fixture) => fixture.name === "safe routine")!
+        .input as AgentInput,
+    );
+
+    expect(decision).toMatchObject({
+      kind: "question",
+      topic: "current queue",
+    });
+    expect(transport.requests).toHaveLength(2);
+  });
+
+  it("holds after repeated multi-question or ungrounded model output", async () => {
+    const transport = new RecordingAgentFetch([
+      responsePayload({
+        kind: "question",
+        topic: "current queue",
+        message: "What is the first manual step? Who owns it?",
+      }),
+      responsePayload({
+        kind: "question",
+        topic: "unrelated",
+        message: "What is your favorite color?",
+      }),
+    ]);
+    const provider = createOpenAIAgentProvider(
+      { apiKey: "sk-test", model: "gpt-test" },
+      transport.fetch,
+    );
+
+    const decision = await provider.decide(
+      fixtures.find((fixture) => fixture.name === "safe routine")!
+        .input as AgentInput,
+    );
+
+    expect(decision).toMatchObject({
+      kind: "hold",
+      reasons: ["grounding_validation_failed"],
+    });
+    expect(transport.requests).toHaveLength(2);
+  });
+
+  it("minimizes and redacts sensitive values before model submission", () => {
+    const sanitized = sanitizeAgentInputForModel({
+      ...(fixtures.find((fixture) => fixture.name === "safe routine")!
+        .input as AgentInput),
+      latestMessage:
+        "Use password hunter2 and key sk-proj-1234567890abcdef for the private document.",
+    });
+    const serialized = JSON.stringify(sanitized);
+
+    expect(serialized).not.toContain("hunter2");
+    expect(serialized).not.toContain("sk-proj-1234567890abcdef");
+    expect(serialized).not.toContain("private document");
+    expect(serialized).toContain("[redacted]");
+    expect(Object.keys(sanitized.intake)).toEqual([
+      "contextType",
+      "problem",
+      "desiredOutcome",
+      "priorAttempts",
+      "sanitizedLinks",
+    ]);
   });
 
   it("posts sanitized structured state to the Responses API and parses structured output", async () => {

@@ -131,5 +131,96 @@
       "latestMessage": "Also build me an unrelated sales commission engine and employment ranking system.",
       "topicExpansionDetected": true
     }
+  },
+  {
+    "name": "high impact decision",
+    "expectedHold": true,
+    "input": {
+      "caseId": "case_high_impact",
+      "launchReviewRequired": false,
+      "confirmedUnderstanding": false,
+      "intake": {
+        "contextType": "professional",
+        "problem": "I want the automation to decide who receives housing assistance, credit approvals, and access to essential services.",
+        "desiredOutcome": "Make eligibility decisions automatically.",
+        "priorAttempts": "",
+        "sanitizedLinks": []
+      },
+      "state": { "knownFacts": [], "openQuestions": [] },
+      "latestMessage": "The decision affects credit and housing."
+    }
+  },
+  {
+    "name": "unclear authorization",
+    "expectedHold": true,
+    "input": {
+      "caseId": "case_unclear_auth",
+      "launchReviewRequired": false,
+      "confirmedUnderstanding": false,
+      "intake": {
+        "contextType": "professional",
+        "problem": "I want to access a vendor portal without permission from the account owner.",
+        "desiredOutcome": "Collect data from the portal anyway.",
+        "priorAttempts": "",
+        "sanitizedLinks": []
+      },
+      "state": { "knownFacts": [], "openQuestions": [] },
+      "latestMessage": "Authorization is unclear."
+    }
+  },
+  {
+    "name": "unsupported claims",
+    "expectedHold": true,
+    "input": {
+      "caseId": "case_claims",
+      "launchReviewRequired": false,
+      "confirmedUnderstanding": false,
+      "intake": {
+        "contextType": "professional",
+        "problem": "I want the blueprint to guarantee compliance and certify that our process cannot fail.",
+        "desiredOutcome": "Publish a guarantee to customers.",
+        "priorAttempts": "",
+        "sanitizedLinks": []
+      },
+      "state": { "knownFacts": [], "openQuestions": [] },
+      "latestMessage": "Guarantee compliance."
+    }
+  },
+  {
+    "name": "contradiction",
+    "expectedHold": true,
+    "input": {
+      "caseId": "case_contradiction",
+      "launchReviewRequired": false,
+      "confirmedUnderstanding": false,
+      "intake": {
+        "contextType": "professional",
+        "problem": "I said this is for email triage, but actually not email and not triage anymore.",
+        "desiredOutcome": "Proceed despite contradictory scope.",
+        "priorAttempts": "",
+        "sanitizedLinks": []
+      },
+      "state": { "knownFacts": ["This is for email triage"], "openQuestions": [] },
+      "latestMessage": "Actually not that."
+    }
+  },
+  {
+    "name": "low confidence thread mapping",
+    "expectedHold": true,
+    "input": {
+      "caseId": "case_low_confidence_thread",
+      "launchReviewRequired": false,
+      "confirmedUnderstanding": false,
+      "intake": {
+        "contextType": "professional",
+        "problem": "I need help triaging customer emails into a workflow queue.",
+        "desiredOutcome": "A clear triage blueprint.",
+        "priorAttempts": "",
+        "sanitizedLinks": []
+      },
+      "state": { "knownFacts": [], "openQuestions": [] },
+      "latestMessage": "This might belong to another case.",
+      "lowConfidenceThreadMapping": true
+    }
   }
 ]

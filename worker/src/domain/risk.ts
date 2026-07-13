@@ -23,9 +23,10 @@ export const evaluateRisk = (input: AgentInput): RiskDecision => {
   addIf(reasons, "credentials_or_secrets", /\b(password|api key|login token|credential)\b/.test(text));
   addIf(reasons, "sensitive_third_party_data", /\b(tax record|medical note|private third-party|private client|client records?|identifier)\b/.test(text));
   addIf(reasons, "destructive_action", /\b(delete production|delete records?|close customer accounts?|remove records?)\b/.test(text));
-  addIf(reasons, "unclear_authorization", /\b(without permission|without authorization|unauthorized)\b/.test(text));
+  addIf(reasons, "high_impact_decision", /\b(housing|credit|essential services?|eligibility|access to essential)\b/.test(text));
+  addIf(reasons, "unclear_authorization", /\b(without permission|without authorization|unauthorized|authorization is unclear|unclear authorization)\b/.test(text));
   addIf(reasons, "unsupported_claims", /\b(guarantee|certify|prove compliance)\b/.test(text));
-  addIf(reasons, "contradiction", /\b(contradict|actually not|opposite)\b/.test(text));
+  addIf(reasons, "contradiction", /\b(contradict|actually not|opposite|not .* anymore)\b/.test(text));
   addIf(reasons, "topic_expansion", input.topicExpansionDetected === true);
   addIf(
     reasons,

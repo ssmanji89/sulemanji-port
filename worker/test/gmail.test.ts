@@ -15,10 +15,10 @@ const config = {
 };
 
 describe("Gmail adapter", () => {
-  it("refreshes OAuth and creates deterministic discovery messages with case headers", async () => {
+  it("refreshes OAuth and creates deterministic discovery drafts with case headers", async () => {
     const transport = new RecordingGmailFetch([
       jsonResponse({ access_token: "access_1", expires_in: 3600 }),
-      jsonResponse({ id: "msg_1", threadId: "thread_1" }),
+      jsonResponse({ id: "draft_1", message: { id: "msg_1", threadId: "thread_1" } }),
     ]);
     const gmail = createGmailClient(config, transport.fetch);
 
@@ -29,19 +29,41 @@ describe("Gmail adapter", () => {
       bodyText: "Let's start with one focused question.",
     });
 
-    expect(result).toEqual({ messageId: "msg_1", threadId: "thread_1" });
+    expect(result).toEqual({
+      draftId: "draft_1",
+      messageId: "msg_1",
+      threadId: "thread_1",
+    });
     expect(transport.requests[0]?.url).toBe(
       "https://oauth2.googleapis.com/token",
     );
     expect(transport.requests[1]?.url).toBe(
-      "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+      "https://gmail.googleapis.com/gmail/v1/users/me/drafts",
     );
     expect(transport.requests[1]?.authorization).toBe("Bearer access_1");
 
-    const raw = JSON.parse(String(transport.requests[1]?.body)).raw;
+    const raw = JSON.parse(String(transport.requests[1]?.body)).message.raw;
     expect(decodeMime(raw)).toContain("X-Sulemanji-Case: case_123");
     expect(decodeMime(raw)).toContain("From: ssmanji89@gmail.com");
     expect(decodeMime(raw)).toContain("To: ada@example.com");
+  });
+
+  it("rejects CRLF injection in message headers before calling Gmail", async () => {
+    const transport = new RecordingGmailFetch([
+      jsonResponse({ access_token: "access_1", expires_in: 3600 }),
+    ]);
+    const gmail = createGmailClient(config, transport.fetch);
+
+    await expect(
+      gmail.createDiscoveryThread({
+        caseId: "case_123",
+        to: "ada@example.com\r\nBcc: attacker@example.com",
+        subject: "AI Workflow Discovery",
+        bodyText: "One safe question.",
+      }),
+    ).rejects.toThrow("Invalid email header value");
+
+    expect(transport.requests).toHaveLength(0);
   });
 
   it("lists only dedicated label history instead of scanning the mailbox", async () => {
@@ -49,6 +71,11 @@ describe("Gmail adapter", () => {
       jsonResponse({ access_token: "access_1", expires_in: 3600 }),
       jsonResponse({
         history: [{ messagesAdded: [{ message: { id: "msg_2" } }] }],
+        nextPageToken: "page_2",
+        historyId: "97",
+      }),
+      jsonResponse({
+        history: [{ messagesAdded: [{ message: { id: "msg_3" } }] }],
         historyId: "98",
       }),
     ]);
@@ -56,12 +83,13 @@ describe("Gmail adapter", () => {
 
     const history = await gmail.listLabeledHistory("42");
 
-    expect(history).toEqual({ messageIds: ["msg_2"], historyId: "98" });
+    expect(history).toEqual({ messageIds: ["msg_2", "msg_3"], historyId: "98" });
     const historyUrl = new URL(String(transport.requests[1]?.url));
     expect(historyUrl.pathname).toBe("/gmail/v1/users/me/history");
     expect(historyUrl.searchParams.get("labelId")).toBe("Label_Clinic");
     expect(historyUrl.searchParams.get("startHistoryId")).toBe("42");
     expect(historyUrl.searchParams.get("historyTypes")).toBe("messageAdded");
+    expect(new URL(String(transport.requests[2]?.url)).searchParams.get("pageToken")).toBe("page_2");
   });
 
   it("creates reply drafts with the existing thread id and does not send them", async () => {
@@ -85,6 +113,24 @@ describe("Gmail adapter", () => {
     );
     const requestBody = JSON.parse(String(transport.requests[1]?.body));
     expect(requestBody.message.threadId).toBe("thread_1");
+  });
+
+  it("round-trips unicode message bodies through Gmail base64url encoding", async () => {
+    const transport = new RecordingGmailFetch([
+      jsonResponse({ access_token: "access_1", expires_in: 3600 }),
+      jsonResponse({ id: "draft_1", message: { id: "msg_1", threadId: "thread_1" } }),
+    ]);
+    const gmail = createGmailClient(config, transport.fetch);
+
+    await gmail.createDiscoveryThread({
+      caseId: "case_123",
+      to: "ada@example.com",
+      subject: "AI Workflow Discovery",
+      bodyText: "What changed in the café workflow?",
+    });
+
+    const raw = JSON.parse(String(transport.requests[1]?.body)).message.raw;
+    expect(decodeMime(raw)).toContain("café workflow");
   });
 
   it("rejects attachments before decoding message bodies", async () => {

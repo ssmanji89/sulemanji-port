@@ -42,42 +42,61 @@ class GmailClient {
 
   async createDiscoveryThread(
     request: DiscoveryMessageRequest,
-  ): Promise<{ messageId: string; threadId: string }> {
-    const response = await this.gmailJson<{ id: string; threadId: string }>(
-      "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+  ): Promise<{ draftId: string; messageId: string; threadId: string }> {
+    const raw = encodeMime(this.messageMime(request));
+    const response = await this.gmailJson<{
+      id: string;
+      message?: { id?: string; threadId?: string };
+    }>(
+      "https://gmail.googleapis.com/gmail/v1/users/me/drafts",
       {
         method: "POST",
         body: JSON.stringify({
-          raw: encodeMime(this.messageMime(request)),
+          message: { raw },
         }),
       },
     );
 
-    return { messageId: response.id, threadId: response.threadId };
+    return {
+      draftId: response.id,
+      messageId: response.message?.id ?? "",
+      threadId: response.message?.threadId ?? "",
+    };
   }
 
   async listLabeledHistory(
     startHistoryId: string,
   ): Promise<{ messageIds: string[]; historyId: string | null }> {
-    const url = new URL("https://gmail.googleapis.com/gmail/v1/users/me/history");
-    url.searchParams.set("startHistoryId", startHistoryId);
-    url.searchParams.set("labelId", this.config.labelId);
-    url.searchParams.set("historyTypes", "messageAdded");
+    const messageIds: string[] = [];
+    let historyId: string | null = null;
+    let pageToken: string | null = null;
 
-    const response = await this.gmailJson<{
-      history?: Array<{ messagesAdded?: Array<{ message?: { id?: string } }> }>;
-      historyId?: string;
-    }>(url.toString());
+    do {
+      const url = new URL("https://gmail.googleapis.com/gmail/v1/users/me/history");
+      url.searchParams.set("startHistoryId", startHistoryId);
+      url.searchParams.set("labelId", this.config.labelId);
+      url.searchParams.set("historyTypes", "messageAdded");
+      if (pageToken) url.searchParams.set("pageToken", pageToken);
 
-    const messageIds =
-      response.history?.flatMap(
+      const response = await this.gmailJson<{
+        history?: Array<{ messagesAdded?: Array<{ message?: { id?: string } }> }>;
+        historyId?: string;
+        nextPageToken?: string;
+      }>(url.toString());
+
+      messageIds.push(
+        ...(response.history?.flatMap(
         (entry) =>
           entry.messagesAdded
             ?.map((added) => added.message?.id)
             .filter((id): id is string => !!id) ?? [],
-      ) ?? [];
+        ) ?? []),
+      );
+      historyId = response.historyId ?? historyId;
+      pageToken = response.nextPageToken ?? null;
+    } while (pageToken);
 
-    return { messageIds, historyId: response.historyId ?? null };
+    return { messageIds, historyId };
   }
 
   async getThreadMessages(
@@ -189,11 +208,16 @@ class GmailClient {
   }
 
   private messageMime(request: DiscoveryMessageRequest): string {
+    const sender = safeHeaderValue(this.config.sender);
+    const to = safeHeaderValue(request.to);
+    const subject = safeHeaderValue(request.subject);
+    const caseId = safeHeaderValue(request.caseId);
+
     return [
-      `From: ${this.config.sender}`,
-      `To: ${request.to}`,
-      `Subject: ${request.subject}`,
-      `X-Sulemanji-Case: ${request.caseId}`,
+      `From: ${sender}`,
+      `To: ${to}`,
+      `Subject: ${subject}`,
+      `X-Sulemanji-Case: ${caseId}`,
       "MIME-Version: 1.0",
       "Content-Type: text/plain; charset=UTF-8",
       "",
@@ -222,7 +246,7 @@ const extractText = (payload: GmailPayload): string => {
 };
 
 const encodeMime = (value: string): string =>
-  btoa(value)
+  bytesToBase64(new TextEncoder().encode(value))
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/g, "");
@@ -230,5 +254,27 @@ const encodeMime = (value: string): string =>
 export const decodeMime = (value: string): string => {
   const padded = value.replace(/-/g, "+").replace(/_/g, "/");
   const padding = "=".repeat((4 - (padded.length % 4)) % 4);
-  return atob(`${padded}${padding}`);
+  return new TextDecoder().decode(base64ToBytes(`${padded}${padding}`));
+};
+
+const safeHeaderValue = (value: string): string => {
+  if (/[\r\n\0]/.test(value)) {
+    throw new Error("Invalid email header value");
+  }
+  return value;
+};
+
+const bytesToBase64 = (bytes: Uint8Array): string => {
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary);
+};
+
+const base64ToBytes = (value: string): Uint8Array => {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
 };

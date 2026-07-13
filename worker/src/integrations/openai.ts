@@ -67,13 +67,13 @@ export const createOpenAIAgentProvider = (
         continue;
       }
 
+      if (decision.kind === "blueprint" && input.confirmedUnderstanding !== true) {
+        return { kind: "hold", reasons: ["understanding_not_confirmed"] };
+      }
+
       if (!isGroundedDecision(decision, input)) {
         lastFailure = "grounding_validation_failed";
         continue;
-      }
-
-      if (decision.kind === "blueprint" && input.confirmedUnderstanding !== true) {
-        return { kind: "hold", reasons: ["understanding_not_confirmed"] };
       }
 
       if (
@@ -106,9 +106,34 @@ const parseDecision = (body: unknown): AgentDecision | null => {
   if (!text) return null;
 
   try {
-    return AgentDecision.parse(JSON.parse(text));
+    return AgentDecision.parse(normalizeDecisionPayload(JSON.parse(text)));
   } catch {
     return null;
+  }
+};
+
+const normalizeDecisionPayload = (value: unknown): unknown => {
+  if (!value || typeof value !== "object") return value;
+  const candidate = value as Record<string, unknown>;
+  switch (candidate.kind) {
+    case "question":
+      return {
+        kind: "question",
+        topic: candidate.topic,
+        message: candidate.message,
+      };
+    case "hold":
+      return {
+        kind: "hold",
+        reasons: candidate.reasons,
+        draft: typeof candidate.draft === "string" ? candidate.draft : undefined,
+      };
+    case "checkpoint":
+      return { kind: "checkpoint", summary: candidate.summary };
+    case "blueprint":
+      return { kind: "blueprint", blueprint: candidate.blueprint };
+    default:
+      return value;
   }
 };
 
@@ -138,19 +163,46 @@ const isGroundedDecision = (
   decision: AgentDecision,
   input: AgentInput,
 ): boolean => {
-  if (decision.kind !== "question") return true;
-  if ((decision.message.match(/\?/g) ?? []).length !== 1) return false;
-
   const sourceText = [
     input.intake.problem,
     input.intake.desiredOutcome,
     input.intake.priorAttempts,
+    input.latestMessage ?? "",
     ...input.state.knownFacts,
     ...input.state.openQuestions,
   ].join(" ");
   const sourceTerms = significantTerms(sourceText);
-  const questionTerms = significantTerms(`${decision.topic} ${decision.message}`);
-  return questionTerms.some((term) => sourceTerms.includes(term));
+  const decisionTerms = significantTerms(decisionText(decision));
+
+  if (decision.kind === "question") {
+    if ((decision.message.match(/\?/g) ?? []).length !== 1) return false;
+    if (/\b(and|also)\b/i.test(decision.message)) return false;
+  }
+
+  const overlap = decisionTerms.filter((term) => sourceTerms.includes(term));
+  return overlap.length >= 1 && overlap.some((term) => !genericGroundingTerms.has(term));
+};
+
+const decisionText = (decision: AgentDecision): string => {
+  switch (decision.kind) {
+    case "question":
+      return `${decision.topic} ${decision.message}`;
+    case "checkpoint":
+      return [
+        decision.summary.summary,
+        ...decision.summary.knownFacts,
+        ...decision.summary.openQuestions,
+      ].join(" ");
+    case "blueprint":
+      return [
+        decision.blueprint.summary,
+        ...decision.blueprint.workflow,
+        ...decision.blueprint.automationOpportunities,
+        ...decision.blueprint.sessionAgenda,
+      ].join(" ");
+    case "hold":
+      return [...decision.reasons, decision.draft ?? ""].join(" ");
+  }
 };
 
 const significantTerms = (value: string): string[] =>
@@ -175,6 +227,15 @@ const stopTerms = new Set([
   "would",
 ]);
 
+const genericGroundingTerms = new Set([
+  "customer",
+  "customers",
+  "intake",
+  "process",
+  "session",
+  "workflow",
+]);
+
 export const sanitizeAgentInputForModel = (input: AgentInput): AgentInput => ({
   caseId: input.caseId,
   launchReviewRequired: input.launchReviewRequired,
@@ -192,89 +253,88 @@ export const sanitizeAgentInputForModel = (input: AgentInput): AgentInput => ({
     knownFacts: input.state.knownFacts.map(redactSensitiveText),
     openQuestions: input.state.openQuestions.map(redactSensitiveText),
   },
-  latestMessage: redactSensitiveText(input.latestMessage ?? ""),
+  latestMessage: redactLatestMessage(input.latestMessage ?? ""),
 });
 
 const redactSensitiveText = (value: string): string => {
   if (!value) return value;
-  const secretPattern =
-    /\b(password|api key|key|token|secret)\s+([^\s,.;]+)|\b(sk-[a-z0-9_-]{8,})\b|secret-value/gi;
-  if (secretPattern.test(value)) {
-    return "[redacted]";
-  }
-  return value;
+  return value
+    .replace(
+      /\b(password|api[_ -]?key|token|secret|credential|key)\s*[:=]\s*[^\s,.;]+/gi,
+      "$1: [redacted]",
+    )
+    .replace(
+      /\b(password|api[_ -]?key|token|secret|credential|key)\s+[^\s,.;]+/gi,
+      "$1 [redacted]",
+    )
+    .replace(/\bsk-[a-z0-9_-]{8,}\b/gi, "[redacted]")
+    .replace(/\b[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, "[redacted]")
+    .replace(/https?:\/\/[^/\s:@]+:[^@\s/]+@/gi, "https://[redacted]@")
+    .replace(/secret-value/gi, "[redacted]");
 };
+
+const redactLatestMessage = (value: string): string => {
+  if (!value) return value;
+  return containsSecretLikeValue(value) ? "[redacted]" : redactSensitiveText(value);
+};
+
+const containsSecretLikeValue = (value: string): boolean =>
+  /\b(password|api[_ -]?key|token|secret|credential|key)\s*[:= ]\s*[^\s,.;]+|\bsk-[a-z0-9_-]{8,}\b|https?:\/\/[^/\s:@]+:[^@\s/]+@|secret-value/i.test(value);
 
 const agentDecisionJsonSchema = {
   type: "object",
-  oneOf: [
-    {
+  properties: {
+    kind: {
+      type: "string",
+      enum: ["question", "checkpoint", "blueprint", "hold"],
+    },
+    topic: { type: ["string", "null"] },
+    message: { type: ["string", "null"] },
+    summary: {
+      type: ["object", "null"],
       properties: {
-        kind: { const: "question" },
-        topic: { type: "string" },
-        message: { type: "string" },
+        summary: { type: "string" },
+        knownFacts: { type: "array", items: { type: "string" } },
+        openQuestions: { type: "array", items: { type: "string" } },
       },
-      required: ["kind", "topic", "message"],
+      required: ["summary", "knownFacts", "openQuestions"],
       additionalProperties: false,
     },
-    {
+    blueprint: {
+      type: ["object", "null"],
       properties: {
-        kind: { const: "hold" },
-        reasons: { type: "array", items: { type: "string" }, minItems: 1 },
-        draft: { type: "string" },
-      },
-      required: ["kind", "reasons"],
-      additionalProperties: false,
-    },
-    {
-      properties: {
-        kind: { const: "checkpoint" },
-        summary: {
-          type: "object",
-          properties: {
-            summary: { type: "string" },
-            knownFacts: { type: "array", items: { type: "string" } },
-            openQuestions: { type: "array", items: { type: "string" } },
-          },
-          required: ["summary", "knownFacts", "openQuestions"],
-          additionalProperties: false,
+        summary: { type: "string" },
+        workflow: { type: "array", items: { type: "string" } },
+        automationOpportunities: {
+          type: "array",
+          items: { type: "string" },
         },
-      },
-      required: ["kind", "summary"],
-      additionalProperties: false,
-    },
-    {
-      properties: {
-        kind: { const: "blueprint" },
-        blueprint: {
-          type: "object",
-          properties: {
-            summary: { type: "string" },
-            workflow: { type: "array", items: { type: "string" }, minItems: 1 },
-            automationOpportunities: {
-              type: "array",
-              items: { type: "string" },
-              minItems: 1,
-            },
-            sessionAgenda: {
-              type: "array",
-              items: { type: "string" },
-              minItems: 1,
-            },
-            recommendedSessionLengthMinutes: { type: "integer", minimum: 1 },
-          },
-          required: [
-            "summary",
-            "workflow",
-            "automationOpportunities",
-            "sessionAgenda",
-            "recommendedSessionLengthMinutes",
-          ],
-          additionalProperties: false,
+        sessionAgenda: {
+          type: "array",
+          items: { type: "string" },
         },
+        recommendedSessionLengthMinutes: { type: "integer" },
       },
-      required: ["kind", "blueprint"],
+      required: [
+        "summary",
+        "workflow",
+        "automationOpportunities",
+        "sessionAgenda",
+        "recommendedSessionLengthMinutes",
+      ],
       additionalProperties: false,
     },
+    reasons: { type: "array", items: { type: "string" } },
+    draft: { type: ["string", "null"] },
+  },
+  required: [
+    "kind",
+    "topic",
+    "message",
+    "summary",
+    "blueprint",
+    "reasons",
+    "draft",
   ],
+  additionalProperties: false,
 };

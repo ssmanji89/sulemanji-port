@@ -55,6 +55,17 @@ describe("agent contracts and risk policy", () => {
         hold: true,
       });
     }
+
+    expect(
+      evaluateRisk({
+        ...(fixtures.find((fixture) => fixture.name === "safe routine")!
+          .input as AgentInput),
+        latestMessage: "Please process passwords, API keys, api_key values, tokens, and secret keys.",
+      }),
+    ).toMatchObject({
+      hold: true,
+      reasons: expect.arrayContaining(["credentials_or_secrets"]),
+    });
   });
 
   it("forces launch-review checkpoints and blueprints into human review", async () => {
@@ -174,8 +185,8 @@ describe("agent contracts and risk policy", () => {
     const transport = new RecordingAgentFetch([
       responsePayload({
         kind: "question",
-        topic: "current queue",
-        message: "What is the first manual step? Who owns it?",
+        topic: "current workflow",
+        message: "What is the owner and SLA?",
       }),
       responsePayload({
         kind: "question",
@@ -200,16 +211,60 @@ describe("agent contracts and risk policy", () => {
     expect(transport.requests).toHaveLength(2);
   });
 
+  it("holds hallucinated blueprint output that is not grounded in the intake", async () => {
+    const transport = new RecordingAgentFetch([
+      responsePayload({
+        kind: "blueprint",
+        blueprint: {
+          summary: "Deploy a warehouse robotics optimization program.",
+          workflow: ["Install robots", "Optimize warehouse pick paths"],
+          automationOpportunities: ["Automate forklift routes"],
+          sessionAgenda: ["Discuss robotics vendors"],
+          recommendedSessionLengthMinutes: 90,
+        },
+      }),
+      responsePayload({
+        kind: "blueprint",
+        blueprint: {
+          summary: "Design an unrelated inventory forecasting engine.",
+          workflow: ["Forecast inventory"],
+          automationOpportunities: ["Automate purchase orders"],
+          sessionAgenda: ["Pick forecasting methods"],
+          recommendedSessionLengthMinutes: 90,
+        },
+      }),
+    ]);
+    const provider = createOpenAIAgentProvider(
+      { apiKey: "sk-test", model: "gpt-test" },
+      transport.fetch,
+    );
+
+    const decision = await provider.decide({
+      ...(fixtures.find((fixture) => fixture.name === "safe routine")!
+        .input as AgentInput),
+      confirmedUnderstanding: true,
+    });
+
+    expect(decision).toMatchObject({
+      kind: "hold",
+      reasons: ["grounding_validation_failed"],
+    });
+  });
+
   it("minimizes and redacts sensitive values before model submission", () => {
     const sanitized = sanitizeAgentInputForModel({
       ...(fixtures.find((fixture) => fixture.name === "safe routine")!
         .input as AgentInput),
       latestMessage:
-        "Use password hunter2 and key sk-proj-1234567890abcdef for the private document.",
+        "Use password: hunter2, token=abc123, api_key=def456, API key: ghi789, https://user:pass@example.com, and key sk-proj-1234567890abcdef for the private document.",
     });
     const serialized = JSON.stringify(sanitized);
 
     expect(serialized).not.toContain("hunter2");
+    expect(serialized).not.toContain("abc123");
+    expect(serialized).not.toContain("def456");
+    expect(serialized).not.toContain("ghi789");
+    expect(serialized).not.toContain("user:pass@example.com");
     expect(serialized).not.toContain("sk-proj-1234567890abcdef");
     expect(serialized).not.toContain("private document");
     expect(serialized).toContain("[redacted]");
@@ -252,6 +307,20 @@ describe("agent contracts and risk policy", () => {
     expect(request.reasoning).toEqual({ effort: "low" });
     expect(JSON.stringify(request)).not.toContain("secret-value");
     expect(JSON.stringify(request)).toContain("sanitizedLinks");
+    expect(request.text.format.schema).toMatchObject({
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "kind",
+        "topic",
+        "message",
+        "summary",
+        "blueprint",
+        "reasons",
+        "draft",
+      ],
+    });
+    expect(request.text.format.schema.oneOf).toBeUndefined();
   });
 });
 

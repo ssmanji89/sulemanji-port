@@ -20,7 +20,11 @@ export const evaluateRisk = (input: AgentInput): RiskDecision => {
   const reasons = new Set<string>();
   addIf(reasons, "regulated_advice", /\b(prescription|medical|insurance claim|legal advice|financial advice)\b/.test(text));
   addIf(reasons, "employee_surveillance", /\b(employee|staff|worker).*(monitor|surveillance|score|rank|fire|fired|terminate|productivity)\b/.test(text));
-  addIf(reasons, "credentials_or_secrets", /\b(password|api key|login token|credential)\b/.test(text));
+  addIf(
+    reasons,
+    "credentials_or_secrets",
+    /\b(passwords?|api[_ -]?keys?|login[_ -]?tokens?|tokens?|credentials?|secret[_ -]?keys?)\b/.test(text),
+  );
   addIf(reasons, "sensitive_third_party_data", /\b(tax record|medical note|private third-party|private client|client records?|identifier)\b/.test(text));
   addIf(reasons, "destructive_action", /\b(delete production|delete records?|close customer accounts?|remove records?)\b/.test(text));
   addIf(reasons, "high_impact_decision", /\b(housing|credit|essential services?|eligibility|access to essential)\b/.test(text));

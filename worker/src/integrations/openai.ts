@@ -71,11 +71,6 @@ export const createOpenAIAgentProvider = (
         return { kind: "hold", reasons: ["understanding_not_confirmed"] };
       }
 
-      if (!isGroundedDecision(decision, input)) {
-        lastFailure = "grounding_validation_failed";
-        continue;
-      }
-
       if (
         input.launchReviewRequired === true &&
         (decision.kind === "checkpoint" || decision.kind === "blueprint")
@@ -88,6 +83,11 @@ export const createOpenAIAgentProvider = (
               ? JSON.stringify(decision.blueprint)
               : JSON.stringify(decision.summary),
         };
+      }
+
+      if (!isGroundedDecision(decision, input)) {
+        lastFailure = "grounding_validation_failed";
+        continue;
       }
 
       return decision;
@@ -172,15 +172,48 @@ const isGroundedDecision = (
     ...input.state.openQuestions,
   ].join(" ");
   const sourceTerms = significantTerms(sourceText);
-  const decisionTerms = significantTerms(decisionText(decision));
 
   if (decision.kind === "question") {
     if ((decision.message.match(/\?/g) ?? []).length !== 1) return false;
-    if (/\b(and|also)\b/i.test(decision.message)) return false;
+    if (hasMultipleQuestionIntents(decision.message)) return false;
   }
 
+  const decisionTerms = significantTerms(decisionText(decision));
   const overlap = decisionTerms.filter((term) => sourceTerms.includes(term));
-  return overlap.length >= 1 && overlap.some((term) => !genericGroundingTerms.has(term));
+  if (overlap.length < 1 || !overlap.some((term) => !genericGroundingTerms.has(term))) {
+    return false;
+  }
+
+  if (decision.kind === "checkpoint") {
+    return [
+      decision.summary.summary,
+      ...decision.summary.knownFacts,
+      ...decision.summary.openQuestions,
+    ].every((item) => itemIsGrounded(item, sourceTerms));
+  }
+
+  if (decision.kind === "blueprint") {
+    return [
+      decision.blueprint.summary,
+      ...decision.blueprint.workflow,
+      ...decision.blueprint.automationOpportunities,
+      ...decision.blueprint.sessionAgenda,
+    ].every((item) => itemIsGrounded(item, sourceTerms));
+  }
+
+  return true;
+};
+
+const hasMultipleQuestionIntents = (message: string): boolean =>
+  /\b(and|also|plus|as well as)\b/i.test(message) ||
+  /[,;].*\b(or|and)\b/i.test(message);
+
+const itemIsGrounded = (value: string, sourceTerms: string[]): boolean => {
+  const terms = significantTerms(value).filter(
+    (term) => !genericGroundingTerms.has(term),
+  );
+  if (terms.length === 0) return true;
+  return terms.some((term) => sourceTerms.includes(term));
 };
 
 const decisionText = (decision: AgentDecision): string => {
@@ -264,9 +297,18 @@ const redactSensitiveText = (value: string): string => {
       "$1: [redacted]",
     )
     .replace(
+      /\b(authorization)\s*:\s*bearer\s+[a-z0-9._-]+/gi,
+      "$1: Bearer [redacted]",
+    )
+    .replace(
+      /\b(private[_ -]?key|client[_ -]?secret)\s*[:=]\s*[^\s,.;]+/gi,
+      "$1: [redacted]",
+    )
+    .replace(
       /\b(password|api[_ -]?key|token|secret|credential|key)\s+[^\s,.;]+/gi,
       "$1 [redacted]",
     )
+    .replace(/\bbearer\s+[a-z0-9._-]+/gi, "Bearer [redacted]")
     .replace(/\bsk-[a-z0-9_-]{8,}\b/gi, "[redacted]")
     .replace(/\b[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, "[redacted]")
     .replace(/https?:\/\/[^/\s:@]+:[^@\s/]+@/gi, "https://[redacted]@")
@@ -279,7 +321,7 @@ const redactLatestMessage = (value: string): string => {
 };
 
 const containsSecretLikeValue = (value: string): boolean =>
-  /\b(password|api[_ -]?key|token|secret|credential|key)\s*[:= ]\s*[^\s,.;]+|\bsk-[a-z0-9_-]{8,}\b|https?:\/\/[^/\s:@]+:[^@\s/]+@|secret-value/i.test(value);
+  /\b(password|api[_ -]?key|token|secret|credential|key|private[_ -]?key|client[_ -]?secret)\s*[:= ]\s*[^\s,.;]+|\bbearer\s+[a-z0-9._-]+|\bauthorization\s*:\s*bearer\s+[a-z0-9._-]+|\bsk-[a-z0-9_-]{8,}\b|https?:\/\/[^/\s:@]+:[^@\s/]+@|secret-value/i.test(value);
 
 const agentDecisionJsonSchema = {
   type: "object",

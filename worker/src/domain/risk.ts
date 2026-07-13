@@ -23,7 +23,7 @@ export const evaluateRisk = (input: AgentInput): RiskDecision => {
   addIf(
     reasons,
     "credentials_or_secrets",
-    /\b(passwords?|api[_ -]?keys?|login[_ -]?tokens?|tokens?|credentials?|secret[_ -]?keys?)\b/.test(text),
+    /\b(?:api[_ -]?keys?|bearer\s+[a-z0-9._-]+|pass(?:word|wd)?s?|private[_ -]?keys?|client[_ -]?secrets?|login[_ -]?tokens?|tokens?|credentials?|secret[_ -]?keys?)\b/.test(text),
   );
   addIf(reasons, "sensitive_third_party_data", /\b(tax record|medical note|private third-party|private client|client records?|identifier)\b/.test(text));
   addIf(reasons, "destructive_action", /\b(delete production|delete records?|close customer accounts?|remove records?)\b/.test(text));

@@ -60,7 +60,17 @@ describe("agent contracts and risk policy", () => {
       evaluateRisk({
         ...(fixtures.find((fixture) => fixture.name === "safe routine")!
           .input as AgentInput),
-        latestMessage: "Please process passwords, API keys, api_key values, tokens, and secret keys.",
+        latestMessage: "Authorization: Bearer abc123",
+      }),
+    ).toMatchObject({
+      hold: true,
+      reasons: expect.arrayContaining(["credentials_or_secrets"]),
+    });
+    expect(
+      evaluateRisk({
+        ...(fixtures.find((fixture) => fixture.name === "safe routine")!
+          .input as AgentInput),
+        latestMessage: "private_key=xyz client_secret=def",
       }),
     ).toMatchObject({
       hold: true,
@@ -186,7 +196,7 @@ describe("agent contracts and risk policy", () => {
       responsePayload({
         kind: "question",
         topic: "current workflow",
-        message: "What is the owner and SLA?",
+        message: "What owner, SLA, or escalation path is needed?",
       }),
       responsePayload({
         kind: "question",
@@ -251,12 +261,55 @@ describe("agent contracts and risk policy", () => {
     });
   });
 
+  it("holds partly hallucinated blueprint items even when one term is grounded", async () => {
+    const transport = new RecordingAgentFetch([
+      responsePayload({
+        kind: "blueprint",
+        blueprint: {
+          summary: "Improve email triage.",
+          workflow: ["Email the customer", "Deploy warehouse robots"],
+          automationOpportunities: ["Automate forklift routes"],
+          sessionAgenda: ["Discuss intake queue", "Choose robotics vendors"],
+          recommendedSessionLengthMinutes: 90,
+        },
+      }),
+      responsePayload({
+        kind: "blueprint",
+        blueprint: {
+          summary: "Improve email triage with a queue.",
+          workflow: ["Capture customer requests", "Classify incoming work"],
+          automationOpportunities: ["Use email labels for triage"],
+          sessionAgenda: ["Confirm intake fields"],
+          recommendedSessionLengthMinutes: 90,
+        },
+      }),
+    ]);
+    const provider = createOpenAIAgentProvider(
+      { apiKey: "sk-test", model: "gpt-test" },
+      transport.fetch,
+    );
+
+    const decision = await provider.decide({
+      ...(fixtures.find((fixture) => fixture.name === "safe routine")!
+        .input as AgentInput),
+      confirmedUnderstanding: true,
+    });
+
+    expect(decision).toMatchObject({
+      kind: "blueprint",
+      blueprint: {
+        workflow: ["Capture customer requests", "Classify incoming work"],
+      },
+    });
+    expect(transport.requests).toHaveLength(2);
+  });
+
   it("minimizes and redacts sensitive values before model submission", () => {
     const sanitized = sanitizeAgentInputForModel({
       ...(fixtures.find((fixture) => fixture.name === "safe routine")!
         .input as AgentInput),
       latestMessage:
-        "Use password: hunter2, token=abc123, api_key=def456, API key: ghi789, https://user:pass@example.com, and key sk-proj-1234567890abcdef for the private document.",
+        "Use password: hunter2, token=abc123, api_key=def456, API key: ghi789, Authorization: Bearer bearer-secret, private_key=private-secret, client_secret=client-secret, https://user:pass@example.com, and key sk-proj-1234567890abcdef for the private document.",
     });
     const serialized = JSON.stringify(sanitized);
 
@@ -264,6 +317,9 @@ describe("agent contracts and risk policy", () => {
     expect(serialized).not.toContain("abc123");
     expect(serialized).not.toContain("def456");
     expect(serialized).not.toContain("ghi789");
+    expect(serialized).not.toContain("bearer-secret");
+    expect(serialized).not.toContain("private-secret");
+    expect(serialized).not.toContain("client-secret");
     expect(serialized).not.toContain("user:pass@example.com");
     expect(serialized).not.toContain("sk-proj-1234567890abcdef");
     expect(serialized).not.toContain("private document");
@@ -275,6 +331,13 @@ describe("agent contracts and risk policy", () => {
       "priorAttempts",
       "sanitizedLinks",
     ]);
+
+    const bearerOnly = sanitizeAgentInputForModel({
+      ...(fixtures.find((fixture) => fixture.name === "safe routine")!
+        .input as AgentInput),
+      latestMessage: "Authorization: Bearer bearer-secret",
+    });
+    expect(JSON.stringify(bearerOnly)).not.toContain("bearer-secret");
   });
 
   it("posts sanitized structured state to the Responses API and parses structured output", async () => {

@@ -51,13 +51,17 @@ to `https://www.sulemanji.com`.
 As of 2026-07-13:
 
 - Remote D1 migrations `0001` through `0006` have been applied.
-- The remote Worker script is not deployed yet.
-- Required Worker secrets have not been verified in Cloudflare.
+- The remote Worker script is deployed in setup mode. Cron triggers are present,
+  but scheduled jobs no-op until `SERVICE_MODE=live` and required bindings are
+  configured.
+- Remote readiness reports `mode: setup`, `ready: false`, and only missing
+  binding names.
+- Required Worker secrets are not configured in Cloudflare yet.
 - `api.sulemanji.com`, Stripe webhook delivery, Gmail/Calendar OAuth, and
   Cloudflare Access admin protection still need live configuration and UAT.
 
-Do not deploy the Worker with cron triggers until the required secrets are set;
-otherwise scheduled Gmail polling and retention jobs will run against an
+Do not set `SERVICE_MODE=live` until the required secrets are set; otherwise
+scheduled Gmail polling, retention, and digest jobs will run against an
 incomplete runtime.
 
 ## Launch Gates

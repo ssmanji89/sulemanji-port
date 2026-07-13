@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import {
   listHeldReviewCases,
+  listIntakeQueueCases,
   listQuoteReadyCases,
   renderAdminReviewPage,
 } from "../admin/page";
@@ -86,12 +87,17 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
       return c.text("Forbidden", 403);
     }
 
-    const [heldReviews, quoteReadyCases] = await Promise.all([
+    const [intakeQueueCases, heldReviews, quoteReadyCases] = await Promise.all([
+      listIntakeQueueCases(c.env.DB),
       listHeldReviewCases(c.env.DB),
       listQuoteReadyCases(c.env.DB),
     ]);
 
-    return c.html(renderAdminReviewPage({ heldReviews, quoteReadyCases }));
+    return c.html(renderAdminReviewPage({
+      intakeQueueCases,
+      heldReviews,
+      quoteReadyCases,
+    }));
   });
 
   app.post("/admin/cases/:id/approve-draft", async (c) => {

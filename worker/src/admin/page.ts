@@ -15,6 +15,19 @@ export interface QuoteReadyCase {
   creditCents: number;
 }
 
+export interface IntakeQueueCase {
+  caseId: string;
+  email: string;
+  name: string;
+  path: "normal" | "priority";
+  status: "normal_queue" | "checkout_pending";
+  contextType: "personal" | "professional";
+  problem: string;
+  desiredOutcome: string;
+  sanitizedLinkCount: number;
+  createdAt: string;
+}
+
 export const listHeldReviewCases = async (
   db: D1Database,
 ): Promise<HeldReviewCase[]> => {
@@ -47,6 +60,50 @@ export const listHeldReviewCases = async (
     reasons: parseReasons(row.reasons_json),
     createdAt: row.created_at,
     artifactVersion: row.artifact_version,
+  }));
+};
+
+export const listIntakeQueueCases = async (
+  db: D1Database,
+): Promise<IntakeQueueCase[]> => {
+  const rows = await db
+    .prepare(
+      `SELECT cases.id AS case_id, cases.email, cases.name, cases.path,
+        cases.status, cases.context_type, cases.created_at,
+        intakes.problem, intakes.desired_outcome,
+        intakes.sanitized_links_json
+      FROM cases
+      INNER JOIN intakes
+        ON intakes.case_id = cases.id
+      WHERE cases.status IN (?, ?)
+      ORDER BY cases.created_at ASC
+      LIMIT 50`,
+    )
+    .bind("normal_queue", "checkout_pending")
+    .all<{
+      case_id: string;
+      email: string;
+      name: string;
+      path: "normal" | "priority";
+      status: "normal_queue" | "checkout_pending";
+      context_type: "personal" | "professional";
+      created_at: string;
+      problem: string;
+      desired_outcome: string;
+      sanitized_links_json: string;
+    }>();
+
+  return (rows.results ?? []).map((row) => ({
+    caseId: row.case_id,
+    email: row.email,
+    name: row.name,
+    path: row.path,
+    status: row.status,
+    contextType: row.context_type,
+    problem: row.problem,
+    desiredOutcome: row.desired_outcome,
+    sanitizedLinkCount: parseStringArray(row.sanitized_links_json).length,
+    createdAt: row.created_at,
   }));
 };
 
@@ -101,6 +158,7 @@ export const listQuoteReadyCases = async (
 };
 
 export const renderAdminReviewPage = (input: {
+  intakeQueueCases: IntakeQueueCase[];
   heldReviews: HeldReviewCase[];
   quoteReadyCases: QuoteReadyCase[];
 }): string => `<!doctype html>
@@ -121,10 +179,34 @@ export const renderAdminReviewPage = (input: {
     button { font: inherit; border: 1px solid #17202a; background: #17202a; color: white; padding: 0.5rem 0.7rem; cursor: pointer; }
     .inline-form { display: inline-grid; max-width: none; }
     .muted { color: #52616f; }
+    .summary { max-width: 38rem; }
   </style>
 </head>
 <body>
   <h1>AI Workflow Reviews</h1>
+  <section>
+    <h2>Open intake queue</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>Customer</th>
+          <th>Path</th>
+          <th>Submitted</th>
+          <th>Problem</th>
+          <th>Links</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${
+          input.intakeQueueCases.length
+            ? input.intakeQueueCases.map(renderIntakeQueueRow).join("")
+            : '<tr><td colspan="6">No open intake cases.</td></tr>'
+        }
+      </tbody>
+    </table>
+  </section>
+
   <section>
     <h2>Held Gmail drafts</h2>
   <table>
@@ -172,6 +254,19 @@ export const renderAdminReviewPage = (input: {
 </body>
 </html>`;
 
+const renderIntakeQueueRow = (item: IntakeQueueCase): string => `
+  <tr>
+    <td><code>${escapeHtml(item.caseId)}</code></td>
+    <td>${escapeHtml(item.name)}<br><span class="muted">${escapeHtml(item.email)}</span></td>
+    <td>${escapeHtml(labelForPath(item.path))}<br><span class="muted">${escapeHtml(item.status)}</span></td>
+    <td>${escapeHtml(item.createdAt)}<br><span class="muted">${escapeHtml(item.contextType)}</span></td>
+    <td class="summary">
+      ${escapeHtml(truncate(item.problem, 220))}
+      <br><span class="muted">${escapeHtml(truncate(item.desiredOutcome, 140))}</span>
+    </td>
+    <td>${item.sanitizedLinkCount}</td>
+  </tr>`;
+
 const renderHeldReviewRow = (held: HeldReviewCase): string => `
   <tr>
     <td><code>${escapeHtml(held.caseId)}</code></td>
@@ -204,6 +299,10 @@ const renderQuoteReadyRow = (item: QuoteReadyCase): string => `
   </tr>`;
 
 const parseReasons = (value: string): string[] => {
+  return parseStringArray(value);
+};
+
+const parseStringArray = (value: string): string[] => {
   try {
     const parsed = JSON.parse(value) as unknown;
     return Array.isArray(parsed)
@@ -213,6 +312,12 @@ const parseReasons = (value: string): string[] => {
     return [];
   }
 };
+
+const labelForPath = (path: IntakeQueueCase["path"]): string =>
+  path === "priority" ? "Priority Discovery" : "Normal review";
+
+const truncate = (value: string, maxLength: number): string =>
+  value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;
 
 const escapeHtml = (value: string): string =>
   value

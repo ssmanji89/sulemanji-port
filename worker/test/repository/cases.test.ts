@@ -6,6 +6,7 @@ const validInput: IntakeInput = {
   name: "Ada Lovelace",
   email: "ada@example.com",
   contextType: "professional",
+  workshopCategory: "ai_business_operations",
   problem:
     "I need help prioritizing a complex operating model change across multiple teams.",
   desiredOutcome: "A clear blueprint for the next operating decision.",
@@ -210,6 +211,7 @@ interface CaseRecord {
 
 interface IntakeRecord {
   case_id: string;
+  workshop_category: IntakeInput["workshopCategory"];
   problem: string;
   desired_outcome: string;
   prior_attempts: string;
@@ -420,11 +422,12 @@ class FakeD1Statement {
     if (this.sql.includes("INSERT INTO intakes")) {
       db.insertIntake({
         case_id: this.values[0] as string,
-        problem: this.values[1] as string,
-        desired_outcome: this.values[2] as string,
-        prior_attempts: this.values[3] as string,
-        sanitized_links_json: this.values[4] as string,
-        redacted_at: this.values[5] as string | null,
+        workshop_category: this.values[1] as IntakeInput["workshopCategory"],
+        problem: this.values[2] as string,
+        desired_outcome: this.values[3] as string,
+        prior_attempts: this.values[4] as string,
+        sanitized_links_json: this.values[5] as string,
+        redacted_at: this.values[6] as string | null,
       });
       return d1Result(1);
     }

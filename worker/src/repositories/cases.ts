@@ -3,7 +3,12 @@ import {
   AgentInputSchema,
   type AgentInput,
 } from "../agent/contracts";
-import { IntakeInput, type CaseStatus } from "../domain/case";
+import {
+  IntakeInput,
+  normalizeWorkshopCategory,
+  type CaseStatus,
+  type WorkshopCategory,
+} from "../domain/case";
 import { holdExpiresAt, quoteExpiresAt, remainingBalance } from "../domain/booking";
 import { canTransition } from "../domain/state-machine";
 
@@ -36,6 +41,7 @@ export interface DiscoveryAgentContext {
   caseId: string;
   email: string;
   contextType: IntakeInput["contextType"];
+  workshopCategory: WorkshopCategory;
   problem: string;
   desiredOutcome: string;
   priorAttempts: string;
@@ -259,6 +265,7 @@ interface DiscoveryAgentContextRow {
   id: string;
   email: string;
   context_type: IntakeInput["contextType"];
+  workshop_category: string | null;
   problem: string;
   desired_outcome: string;
   prior_attempts: string;
@@ -344,12 +351,13 @@ export class D1CaseRepository implements CaseRepository {
       this.db
         .prepare(
           `INSERT INTO intakes (
-            case_id, problem, desired_outcome, prior_attempts,
-            sanitized_links_json, redacted_at
-          ) VALUES (?, ?, ?, ?, ?, ?)`,
+            case_id, workshop_category, problem, desired_outcome,
+            prior_attempts, sanitized_links_json, redacted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           id,
+          parsedInput.workshopCategory,
           parsedInput.problem,
           parsedInput.desiredOutcome,
           parsedInput.priorAttempts,
@@ -429,12 +437,13 @@ export class D1CaseRepository implements CaseRepository {
       this.db
         .prepare(
           `INSERT INTO intakes (
-            case_id, problem, desired_outcome, prior_attempts,
-            sanitized_links_json, redacted_at
-          ) VALUES (?, ?, ?, ?, ?, ?)`,
+            case_id, workshop_category, problem, desired_outcome,
+            prior_attempts, sanitized_links_json, redacted_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         )
         .bind(
           id,
+          parsedInput.workshopCategory,
           parsedInput.problem,
           parsedInput.desiredOutcome,
           parsedInput.priorAttempts,
@@ -541,9 +550,10 @@ export class D1CaseRepository implements CaseRepository {
     const row = await this.db
       .prepare(
         `SELECT cases.id, cases.email, cases.context_type,
-          cases.launch_review_required, intakes.problem,
-          intakes.desired_outcome, intakes.prior_attempts,
-          intakes.sanitized_links_json, discovery_state.state_json
+          cases.launch_review_required, intakes.workshop_category,
+          intakes.problem, intakes.desired_outcome,
+          intakes.prior_attempts, intakes.sanitized_links_json,
+          discovery_state.state_json
         FROM cases
         INNER JOIN intakes ON intakes.case_id = cases.id
         LEFT JOIN discovery_state ON discovery_state.case_id = cases.id
@@ -558,6 +568,7 @@ export class D1CaseRepository implements CaseRepository {
       caseId: row.id,
       email: row.email,
       contextType: row.context_type,
+      workshopCategory: normalizeWorkshopCategory(row.workshop_category),
       problem: row.problem,
       desiredOutcome: row.desired_outcome,
       priorAttempts: row.prior_attempts,

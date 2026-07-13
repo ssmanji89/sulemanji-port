@@ -12,6 +12,7 @@ import migration0003 from "../migrations/0003_payment_workflow_idempotency.sql?r
 import migration0004 from "../migrations/0004_automation_state.sql?raw";
 import migration0005 from "../migrations/0005_booking_retention.sql?raw";
 import migration0006 from "../migrations/0006_launch_review_and_quotes.sql?raw";
+import migration0008 from "../migrations/0008_workshop_category.sql?raw";
 import {
   holdExpiresAt,
   quoteExpiresAt,
@@ -230,6 +231,7 @@ describe("booking persistence schema", () => {
         path: "normal",
         status: "normal_queue",
         contextType: "professional",
+        workshopCategory: "not_sure_other",
         problem: "A messy intake case needs manual review before deciding whether to automate.",
         desiredOutcome: "A practical next step and clear handoff.",
         sanitizedLinkCount: 1,
@@ -242,6 +244,7 @@ describe("booking persistence schema", () => {
         path: "priority",
         status: "checkout_pending",
         contextType: "professional",
+        workshopCategory: "not_sure_other",
         problem: "A messy intake case needs manual review before deciding whether to automate.",
         desiredOutcome: "A practical next step and clear handoff.",
         sanitizedLinkCount: 0,
@@ -370,6 +373,7 @@ const loadMigrations = async (): Promise<D1Migration[]> =>
     migration("0004_automation_state.sql", migration0004),
     migration("0005_booking_retention.sql", migration0005),
     migration("0006_launch_review_and_quotes.sql", migration0006),
+    migration("0008_workshop_category.sql", migration0008),
   ];
 
 const migration = (name: string, text: string): D1Migration => ({

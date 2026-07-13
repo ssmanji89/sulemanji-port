@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { WorkshopCategory } from "../domain/case";
 
 export const UnderstandingSchema = z
   .object({
@@ -59,6 +60,7 @@ export const AgentInputSchema = z
     intake: z
       .object({
         contextType: z.enum(["personal", "professional"]),
+        workshopCategory: WorkshopCategory,
         problem: z.string(),
         desiredOutcome: z.string(),
         priorAttempts: z.string(),

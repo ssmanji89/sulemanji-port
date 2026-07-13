@@ -118,6 +118,7 @@ describe("priority discovery orchestration", () => {
         caseId: "case_1",
         email: "ada@example.com",
         contextType: "professional" as const,
+        workshopCategory: "ai_business_operations" as const,
         problem:
           "I need help prioritizing a messy intake workflow across several teams.",
         desiredOutcome: "A simple automation blueprint and session agenda.",
@@ -187,6 +188,7 @@ describe("priority discovery orchestration", () => {
         caseId: "case_1",
         email: "ada@example.com",
         contextType: "professional" as const,
+        workshopCategory: "ai_business_operations" as const,
         problem:
           "I need help prioritizing a messy intake workflow across several teams.",
         desiredOutcome: "A simple automation blueprint and session agenda.",
@@ -249,6 +251,7 @@ describe("priority discovery orchestration", () => {
         caseId: "case_1",
         email: "ada@example.com",
         contextType: "professional" as const,
+        workshopCategory: "ai_business_operations" as const,
         problem:
           "I need help prioritizing a messy intake workflow across several teams.",
         desiredOutcome: "A simple automation blueprint and session agenda.",
@@ -320,6 +323,7 @@ describe("priority discovery orchestration", () => {
         caseId: "case_1",
         email: "ada@example.com",
         contextType: "professional" as const,
+        workshopCategory: "ai_business_operations" as const,
         problem:
           "I need help prioritizing a messy intake workflow across several teams.",
         desiredOutcome: "A simple automation blueprint and session agenda.",

@@ -136,6 +136,19 @@ def main():
         require_text(page, 'name="name"', PAGE, failures)
         require_text(page, 'name="email"', PAGE, failures)
         require_text(page, 'name="contextType"', PAGE, failures)
+        for phrase in [
+            "Pick the closest starting point",
+            "GitHub / Codebase Review",
+            "AI Business Operations",
+            "Home + Personal Automation",
+            "Not sure / Other",
+            'name="workshopCategory"',
+            'value="github_codebase_review"',
+            'value="ai_business_operations"',
+            'value="home_personal_automation"',
+            'value="not_sure_other"',
+        ]:
+            require_text(page, phrase, PAGE, failures)
         require_text(page, 'name="problem"', PAGE, failures)
         require_text(page, 'name="desiredOutcome"', PAGE, failures)
         require_text(page, 'name="priorAttempts"', PAGE, failures)
@@ -225,6 +238,8 @@ def main():
     if SCRIPT.exists():
         script = read(SCRIPT)
         require_text(script, "serializeIntake", SCRIPT, failures)
+        require_text(script, "workshopCategory", SCRIPT, failures)
+        require_text(script, 'formData.get("workshopCategory")', SCRIPT, failures)
         require_text(script, "onWorkWithMeTurnstile", SCRIPT, failures)
         require_text(script, "onWorkWithMeTurnstileExpired", SCRIPT, failures)
         require_text(script, "cf-turnstile-response", SCRIPT, failures)
@@ -287,6 +302,15 @@ def main():
         require("AI Workflow Clinic" in site_text, "_site/work-with-me.html must include AI Workflow Clinic", failures)
         require("Automation / Ops Systems Review" in site_text, "_site/work-with-me.html must include Automation / Ops Systems Review", failures)
         require("Build Path / Technical Triage" in site_text, "_site/work-with-me.html must include Build Path / Technical Triage", failures)
+        for phrase in [
+            "Pick the closest starting point",
+            "GitHub / Codebase Review",
+            "AI Business Operations",
+            "Home + Personal Automation",
+            "Not sure / Other",
+            'name="workshopCategory"',
+        ]:
+            require(phrase in site_text, f"_site/work-with-me.html must include {phrase!r}", failures)
         require('id="work-with-me-intake"' in site_text, "_site/work-with-me.html must include the native intake form", failures)
         if api_base:
             require(f'data-endpoint="{api_base}/v1/intakes"' in site_text, "_site/work-with-me.html must render the configured API base", failures)

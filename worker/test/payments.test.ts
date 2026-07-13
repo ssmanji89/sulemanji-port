@@ -12,6 +12,7 @@ import migration0001 from "../migrations/0001_cases.sql?raw";
 import migration0002 from "../migrations/0002_priority_discovery.sql?raw";
 import migration0003 from "../migrations/0003_payment_workflow_idempotency.sql?raw";
 import migration0006 from "../migrations/0006_launch_review_and_quotes.sql?raw";
+import migration0008 from "../migrations/0008_workshop_category.sql?raw";
 import type { IntakeInput } from "../src/domain/case";
 import type { Env } from "../src/env";
 import { createStripeAdapter } from "../src/integrations/stripe";
@@ -30,6 +31,7 @@ const validInput: IntakeInput = {
   name: "Ada Lovelace",
   email: "ada@example.com",
   contextType: "professional",
+  workshopCategory: "ai_business_operations",
   problem:
     "I need help prioritizing a complex operating model change across multiple teams.",
   desiredOutcome: "A clear blueprint for the next operating decision.",
@@ -588,6 +590,7 @@ const loadMigrations = async (): Promise<D1Migration[]> =>
     migration("0002_priority_discovery.sql", migration0002),
     migration("0003_payment_workflow_idempotency.sql", migration0003),
     migration("0006_launch_review_and_quotes.sql", migration0006),
+    migration("0008_workshop_category.sql", migration0008),
   ];
 
 const migration = (name: string, text: string): D1Migration => ({

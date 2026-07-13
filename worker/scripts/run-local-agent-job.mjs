@@ -13,10 +13,12 @@ const schemaPath = resolve(workerRoot, "schemas/agent-decision.schema.json");
 
 const apiBase = envRequired("AI_WORKFLOW_API_BASE").replace(/\/$/, "");
 const accessJwt = process.env.CF_ACCESS_JWT_ASSERTION ?? "";
+const runnerToken = process.env.AGENT_RUNNER_TOKEN ?? "";
 const codexPath = process.env.CODEX_CLI_PATH || "codex";
 
 const headers = {
   "content-type": "application/json",
+  ...(runnerToken ? { authorization: `Bearer ${runnerToken}` } : {}),
   ...(accessJwt ? { "cf-access-jwt-assertion": accessJwt } : {}),
 };
 

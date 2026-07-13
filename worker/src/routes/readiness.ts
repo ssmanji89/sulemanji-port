@@ -15,6 +15,7 @@ export const REQUIRED_BINDINGS = [
   "GOOGLE_CALENDAR_CLIENT_SECRET",
   "GOOGLE_CALENDAR_REFRESH_TOKEN",
   "OPENAI_API_KEY",
+  "AGENT_RUNNER_TOKEN",
   "ACCESS_TEAM_DOMAIN",
   "ACCESS_AUD",
   "ADMIN_EMAIL",
@@ -43,6 +44,7 @@ export const missingRequiredBindings = (env: Env): RequiredBindingName[] =>
   REQUIRED_BINDINGS.filter(
     (name) =>
       !(env.AGENT_EXECUTION_MODE === "local_queue" && name === "OPENAI_API_KEY") &&
+      !(env.AGENT_EXECUTION_MODE !== "local_queue" && name === "AGENT_RUNNER_TOKEN") &&
       !env[name],
   );
 

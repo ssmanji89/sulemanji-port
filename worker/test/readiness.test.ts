@@ -87,6 +87,31 @@ describe("worker readiness", () => {
     });
   });
 
+  it("requires a local runner token when agent execution is delegated to the local queue", async () => {
+    const app = new Hono<{ Bindings: Env }>();
+    app.route("/v1", createReadinessRoutes());
+
+    const {
+      OPENAI_API_KEY: _openAiKey,
+      AGENT_RUNNER_TOKEN: _runnerToken,
+      ...env
+    } = completeEnv({
+      AGENT_EXECUTION_MODE: "local_queue",
+      AGENT_RUNNER_TOKEN: "present",
+    } as Partial<Env>);
+    const response = await app.fetch(
+      new Request("https://api.example/v1/readiness"),
+      env as Env,
+    );
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      mode: "live",
+      ready: false,
+      missing: ["AGENT_RUNNER_TOKEN"],
+    });
+  });
+
   it("does not run scheduled jobs until the service is live and configured", () => {
     const event = { cron: "*/2 * * * *" } as ScheduledController;
     const task = scheduledTaskFor(event, {
@@ -134,6 +159,7 @@ const completeEnv = (overrides: Partial<Env> = {}): Env =>
     GOOGLE_CALENDAR_REFRESH_TOKEN: "present",
     OPENAI_API_KEY: "present",
     AGENT_EXECUTION_MODE: "openai",
+    AGENT_RUNNER_TOKEN: "present",
     ACCESS_TEAM_DOMAIN: "present",
     ACCESS_AUD: "present",
     ADMIN_EMAIL: "present",

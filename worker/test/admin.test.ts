@@ -286,6 +286,48 @@ describe("admin review routes", () => {
     });
   });
 
+  it("lets the local agent runner claim a job with the runner token", async () => {
+    const audit = {
+      recordAdminAction: vi.fn(async () => undefined),
+      claimNextAgentJob: vi.fn(async () => ({
+        id: "job_1",
+        caseId: "case_1",
+        workflowId: "workflow_1",
+        sourceMessageId: "msg_1",
+        input: {
+          caseId: "case_1",
+          launchReviewRequired: true,
+          intake: {
+            contextType: "professional" as const,
+            problem: "We need to turn a messy intake process into a clearer workflow.",
+            desiredOutcome: "A scoped blueprint and session agenda.",
+            priorAttempts: "",
+            sanitizedLinks: [],
+          },
+          state: { knownFacts: [], openQuestions: [] },
+          latestMessage: "The request starts in a shared inbox.",
+        },
+        claimedAt: "2026-07-13T15:30:00.000Z",
+      })),
+    };
+    const app = new Hono<{ Bindings: Env }>();
+    app.route("/v1", createAdminRoutes({ audit }));
+
+    const response = await app.fetch(
+      new Request("https://api.example/v1/admin/agent/jobs/next", {
+        method: "POST",
+        headers: { authorization: "Bearer runner_secret" },
+      }),
+      {
+        ADMIN_EMAIL: "ssmanji89@gmail.com",
+        AGENT_RUNNER_TOKEN: "runner_secret",
+      } as unknown as Env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(audit.claimNextAgentJob).toHaveBeenCalledOnce();
+  });
+
   it("submits a local agent decision and wakes the matching workflow", async () => {
     const sendEvent = vi.fn(async () => undefined);
     const audit = {
@@ -350,6 +392,57 @@ describe("admin review routes", () => {
           message: "Who owns the first handoff after the shared inbox?",
         },
       },
+    });
+  });
+
+  it("records runner-token completed agent decisions with a runner actor", async () => {
+    const sendEvent = vi.fn(async () => undefined);
+    const audit = {
+      recordAdminAction: vi.fn(async () => undefined),
+      completeAgentJob: vi.fn(async () => ({
+        id: "job_1",
+        caseId: "case_1",
+        workflowId: "workflow_1",
+        sourceMessageId: "msg_1",
+        decision: {
+          kind: "question" as const,
+          topic: "handoff",
+          message: "Who owns the first handoff after the shared inbox?",
+        },
+      })),
+    };
+    const app = new Hono<{ Bindings: Env }>();
+    app.route("/v1", createAdminRoutes({ audit }));
+
+    const response = await app.fetch(
+      new Request("https://api.example/v1/admin/agent/jobs/job_1/complete", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer runner_secret",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          decision: {
+            kind: "question",
+            topic: "handoff",
+            message: "Who owns the first handoff after the shared inbox?",
+          },
+        }),
+      }),
+      {
+        ADMIN_EMAIL: "ssmanji89@gmail.com",
+        AGENT_RUNNER_TOKEN: "runner_secret",
+        PRIORITY_DISCOVERY: {
+          get: vi.fn(() => ({ sendEvent })),
+        },
+      } as unknown as Env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(audit.recordAdminAction).toHaveBeenCalledWith({
+      actor: "agent:local-runner",
+      caseId: "case_1",
+      action: "complete-agent-job",
     });
   });
 });

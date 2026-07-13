@@ -224,10 +224,8 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
   });
 
   app.post("/admin/agent/jobs/next", async (c) => {
-    const authenticate =
-      dependencies.authenticate ?? verifyCloudflareAccessAdmin;
-    const actor = await authenticate(c.req.raw, c.env);
-    if (actor !== c.env.ADMIN_EMAIL) {
+    const actor = await authenticateAgentRunner(c.req.raw, c.env, dependencies);
+    if (!actor) {
       return c.json({ error: "forbidden" }, 403);
     }
 
@@ -241,10 +239,8 @@ export const createAdminRoutes = (dependencies: AdminRouteDependencies = {}) => 
   });
 
   app.post("/admin/agent/jobs/:id/complete", async (c) => {
-    const authenticate =
-      dependencies.authenticate ?? verifyCloudflareAccessAdmin;
-    const actor = await authenticate(c.req.raw, c.env);
-    if (actor !== c.env.ADMIN_EMAIL) {
+    const actor = await authenticateAgentRunner(c.req.raw, c.env, dependencies);
+    if (!actor) {
       return c.json({ error: "forbidden" }, 403);
     }
 
@@ -300,6 +296,48 @@ const createAdminGmail = (env: Env): AdminGmail =>
     sender: env.GMAIL_SENDER,
     labelId: env.GMAIL_CLINIC_LABEL,
   });
+
+const authenticateAgentRunner = async (
+  request: Request,
+  env: Env,
+  dependencies: AdminRouteDependencies,
+): Promise<string | null> => {
+  if (await hasValidRunnerToken(request, env)) {
+    return "agent:local-runner";
+  }
+
+  const authenticate = dependencies.authenticate ?? verifyCloudflareAccessAdmin;
+  const actor = await authenticate(request, env);
+  return actor === env.ADMIN_EMAIL ? actor : null;
+};
+
+const hasValidRunnerToken = async (
+  request: Request,
+  env: Env,
+): Promise<boolean> => {
+  if (!env.AGENT_RUNNER_TOKEN) return false;
+
+  const header = request.headers.get("authorization") ?? "";
+  const token = header.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+  if (!token) return false;
+
+  return digestEqual(token, env.AGENT_RUNNER_TOKEN);
+};
+
+const digestEqual = async (left: string, right: string): Promise<boolean> => {
+  const encoder = new TextEncoder();
+  const [leftDigest, rightDigest] = await Promise.all([
+    crypto.subtle.digest("SHA-256", encoder.encode(left)),
+    crypto.subtle.digest("SHA-256", encoder.encode(right)),
+  ]);
+  const leftBytes = new Uint8Array(leftDigest);
+  const rightBytes = new Uint8Array(rightDigest);
+  let diff = leftBytes.length ^ rightBytes.length;
+  for (let index = 0; index < leftBytes.length; index += 1) {
+    diff |= (leftBytes[index] ?? 0) ^ (rightBytes[index] ?? 0);
+  }
+  return diff === 0;
+};
 
 const quoteUrl = (siteOrigin: string, token: string): string => {
   const url = new URL("/work-with-me/quote", siteOrigin);

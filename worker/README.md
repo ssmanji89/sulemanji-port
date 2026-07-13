@@ -19,6 +19,7 @@ in `.env.example`, shell history, docs, commits, or issue comments.
 - `GOOGLE_CALENDAR_CLIENT_ID`
 - `GOOGLE_CALENDAR_CLIENT_SECRET`
 - `GOOGLE_CALENDAR_REFRESH_TOKEN`
+- `AGENT_RUNNER_TOKEN`
 - `ACCESS_TEAM_DOMAIN`
 - `ACCESS_AUD`
 
@@ -36,8 +37,11 @@ history cursor.
 
 `AGENT_EXECUTION_MODE=local_queue` delegates discovery decisions to a local
 Codex runner authenticated with the machine's ChatGPT OAuth session. In this
-mode, `OPENAI_API_KEY` is not required for Worker readiness. If the mode is
-changed back to `openai`, set `OPENAI_API_KEY` as a Worker secret first.
+mode, `OPENAI_API_KEY` is not required for Worker readiness, but
+`AGENT_RUNNER_TOKEN` must be configured so Hermes or another local runner can
+claim and complete queued jobs without a human Cloudflare Access assertion. If
+the mode is changed back to `openai`, set `OPENAI_API_KEY` as a Worker secret
+first.
 
 ## Deployment Commands
 
@@ -76,7 +80,7 @@ As of 2026-07-13:
   `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_CLINIC_LABEL`,
   `GMAIL_HISTORY_START_ID`, `GOOGLE_CALENDAR_CLIENT_ID`,
   `GOOGLE_CALENDAR_CLIENT_SECRET`, `GOOGLE_CALENDAR_REFRESH_TOKEN`,
-  `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
+  `AGENT_RUNNER_TOKEN`, `ACCESS_TEAM_DOMAIN`, and `ACCESS_AUD`.
 - Existing Bitwarden inventory did not contain unambiguous Stripe, Gmail,
   Google Calendar, or Cloudflare Access credentials for this service. It also
   contained multiple OpenAI key-shaped candidates; local-queue mode avoids
@@ -102,7 +106,7 @@ Run one queued job:
 ```bash
 cd worker
 AI_WORKFLOW_API_BASE="https://sulemanji-work-with-me.ssmanji89.workers.dev" \
-CF_ACCESS_JWT_ASSERTION="$CF_ACCESS_JWT_ASSERTION" \
+AGENT_RUNNER_TOKEN="$AGENT_RUNNER_TOKEN" \
 npm run agent:run-local
 ```
 
@@ -115,9 +119,9 @@ The runner:
   matching Cloudflare Workflow.
 
 Do not store Access assertions, cookies, Codex tokens, customer message bodies,
-or generated prompts in the repository. For recurring use, have Hermes or
-launchd provide the API base and short-lived Access assertion from local secure
-state.
+runner tokens, or generated prompts in the repository. For recurring use, have
+Hermes or launchd provide the API base and runner token from local secure state.
+Cloudflare Access remains required for human admin review actions.
 
 ## Launch Gates
 

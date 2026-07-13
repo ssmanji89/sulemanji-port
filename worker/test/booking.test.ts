@@ -17,7 +17,7 @@ import {
   quoteExpiresAt,
   remainingBalance,
 } from "../src/domain/booking";
-import { listQuoteReadyCases } from "../src/admin/page";
+import { listIntakeQueueCases, listQuoteReadyCases } from "../src/admin/page";
 import { D1CaseRepository } from "../src/repositories/cases";
 
 const db = (env as unknown as { DB: D1Database }).DB;
@@ -175,6 +175,57 @@ describe("booking persistence schema", () => {
     expect(row?.credit_id).toBe("credit_case_1");
     expect(row?.credit_cents).toBe(29_500);
     expect(row?.balance_cents).toBe(95_500);
+  });
+
+  it("lists open normal and priority intake queue cases", async () => {
+    await seedIntakeQueueCase({
+      id: "case_normal",
+      path: "normal",
+      status: "normal_queue",
+      createdAt: "2026-07-13T15:00:00.000Z",
+      links: ["https://example.com/safe-context"],
+    });
+    await seedIntakeQueueCase({
+      id: "case_priority",
+      path: "priority",
+      status: "checkout_pending",
+      createdAt: "2026-07-13T15:05:00.000Z",
+      links: [],
+    });
+    await seedIntakeQueueCase({
+      id: "case_progressed",
+      path: "priority",
+      status: "discovery_active",
+      createdAt: "2026-07-13T15:10:00.000Z",
+      links: [],
+    });
+
+    await expect(listIntakeQueueCases(db)).resolves.toEqual([
+      {
+        caseId: "case_normal",
+        email: "case_normal@example.com",
+        name: "Case case_normal",
+        path: "normal",
+        status: "normal_queue",
+        contextType: "professional",
+        problem: "A messy intake case needs manual review before deciding whether to automate.",
+        desiredOutcome: "A practical next step and clear handoff.",
+        sanitizedLinkCount: 1,
+        createdAt: "2026-07-13T15:00:00.000Z",
+      },
+      {
+        caseId: "case_priority",
+        email: "case_priority@example.com",
+        name: "Case case_priority",
+        path: "priority",
+        status: "checkout_pending",
+        contextType: "professional",
+        problem: "A messy intake case needs manual review before deciding whether to automate.",
+        desiredOutcome: "A practical next step and clear handoff.",
+        sanitizedLinkCount: 0,
+        createdAt: "2026-07-13T15:05:00.000Z",
+      },
+    ]);
   });
 
   it("lists blueprint-delivered cases that need private quote approval", async () => {
@@ -374,6 +425,52 @@ const seedCase = async (id: string): Promise<void> => {
       "blueprint_delivered",
       "2026-07-13T15:30:00.000Z",
       "2026-07-13T15:30:00.000Z",
+      null,
+    )
+    .run();
+};
+
+const seedIntakeQueueCase = async (input: {
+  id: string;
+  path: "normal" | "priority";
+  status: string;
+  createdAt: string;
+  links: string[];
+}): Promise<void> => {
+  await db
+    .prepare(
+      `INSERT INTO cases (
+        id, public_token_hash, email, name, context_type, path, status,
+        created_at, updated_at, closed_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(
+      input.id,
+      `hash_${input.id}`,
+      `${input.id}@example.com`,
+      `Case ${input.id}`,
+      "professional",
+      input.path,
+      input.status,
+      input.createdAt,
+      input.createdAt,
+      null,
+    )
+    .run();
+
+  await db
+    .prepare(
+      `INSERT INTO intakes (
+        case_id, problem, desired_outcome, prior_attempts,
+        sanitized_links_json, redacted_at
+      ) VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(
+      input.id,
+      "A messy intake case needs manual review before deciding whether to automate.",
+      "A practical next step and clear handoff.",
+      "",
+      JSON.stringify(input.links),
       null,
     )
     .run();

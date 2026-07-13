@@ -7,6 +7,20 @@ import { createAdminRoutes } from "../src/routes/admin";
 describe("admin review routes", () => {
   it("renders operator controls for held drafts and quote-ready blueprints", () => {
     const html = renderAdminReviewPage({
+      intakeQueueCases: [
+        {
+          caseId: "case_0",
+          email: "normal@example.com",
+          name: "Normal Customer",
+          path: "normal",
+          status: "normal_queue",
+          contextType: "professional",
+          problem: "A manual intake queue needs review before any automation should be proposed.",
+          desiredOutcome: "A clear next step without forcing payment.",
+          sanitizedLinkCount: 1,
+          createdAt: "2026-07-13T15:00:00.000Z",
+        },
+      ],
       heldReviews: [
         {
           caseId: "case_1",
@@ -28,6 +42,10 @@ describe("admin review routes", () => {
       ],
     });
 
+    expect(html).toContain("Open intake queue");
+    expect(html).toContain("Normal Customer");
+    expect(html).toContain("normal_queue");
+    expect(html).toContain("A manual intake queue needs review");
     expect(html).toContain("/v1/admin/cases/case_1/approve-draft");
     expect(html).toContain('name="draftId" value="draft_1"');
     expect(html).toContain("/v1/admin/cases/case_2/approve-private-quote");

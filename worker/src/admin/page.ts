@@ -1,3 +1,9 @@
+import {
+  WORKSHOP_CATEGORY_LABELS,
+  normalizeWorkshopCategory,
+  type WorkshopCategory,
+} from "../domain/case";
+
 export interface HeldReviewCase {
   caseId: string;
   draftId: string;
@@ -22,6 +28,7 @@ export interface IntakeQueueCase {
   path: "normal" | "priority";
   status: "normal_queue" | "checkout_pending";
   contextType: "personal" | "professional";
+  workshopCategory: WorkshopCategory;
   problem: string;
   desiredOutcome: string;
   sanitizedLinkCount: number;
@@ -71,7 +78,7 @@ export const listIntakeQueueCases = async (
       `SELECT cases.id AS case_id, cases.email, cases.name, cases.path,
         cases.status, cases.context_type, cases.created_at,
         intakes.problem, intakes.desired_outcome,
-        intakes.sanitized_links_json
+        intakes.sanitized_links_json, intakes.workshop_category
       FROM cases
       INNER JOIN intakes
         ON intakes.case_id = cases.id
@@ -88,6 +95,7 @@ export const listIntakeQueueCases = async (
       status: "normal_queue" | "checkout_pending";
       context_type: "personal" | "professional";
       created_at: string;
+      workshop_category: string | null;
       problem: string;
       desired_outcome: string;
       sanitized_links_json: string;
@@ -100,6 +108,7 @@ export const listIntakeQueueCases = async (
     path: row.path,
     status: row.status,
     contextType: row.context_type,
+    workshopCategory: normalizeWorkshopCategory(row.workshop_category),
     problem: row.problem,
     desiredOutcome: row.desired_outcome,
     sanitizedLinkCount: parseStringArray(row.sanitized_links_json).length,
@@ -260,7 +269,7 @@ const renderIntakeQueueRow = (item: IntakeQueueCase): string => `
   <tr>
     <td><code>${escapeHtml(item.caseId)}</code></td>
     <td>${escapeHtml(item.name)}<br><span class="muted">${escapeHtml(item.email)}</span></td>
-    <td>${escapeHtml(labelForPath(item.path))}<br><span class="muted">${escapeHtml(item.status)}</span></td>
+    <td>${escapeHtml(labelForPath(item.path))}<br><span class="muted">${escapeHtml(item.status)}</span><br><span class="muted">${escapeHtml(labelForWorkshopCategory(item.workshopCategory))}</span></td>
     <td>${escapeHtml(item.createdAt)}<br><span class="muted">${escapeHtml(item.contextType)}</span></td>
     <td class="summary">
       ${escapeHtml(truncate(item.problem, 220))}
@@ -317,6 +326,9 @@ const parseStringArray = (value: string): string[] => {
 
 const labelForPath = (path: IntakeQueueCase["path"]): string =>
   path === "priority" ? "Priority Discovery" : "Normal review";
+
+const labelForWorkshopCategory = (category: WorkshopCategory): string =>
+  WORKSHOP_CATEGORY_LABELS[category];
 
 const truncate = (value: string, maxLength: number): string =>
   value.length > maxLength ? `${value.slice(0, maxLength - 1)}...` : value;

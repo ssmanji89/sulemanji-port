@@ -15,6 +15,7 @@ describe("admin review routes", () => {
           path: "normal",
           status: "normal_queue",
           contextType: "professional",
+          workshopCategory: "ai_business_operations",
           problem: "A manual intake queue needs review before any automation should be proposed.",
           desiredOutcome: "A clear next step without forcing payment.",
           sanitizedLinkCount: 1,
@@ -45,6 +46,7 @@ describe("admin review routes", () => {
     expect(html).toContain("Open intake queue");
     expect(html).toContain("Normal Customer");
     expect(html).toContain("normal_queue");
+    expect(html).toContain("AI Business Operations");
     expect(html).toContain("A manual intake queue needs review");
     expect(html).toContain("/v1/admin/cases/case_1/approve-draft");
     expect(html).toContain('name="draftId" value="draft_1"');

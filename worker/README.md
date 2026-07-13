@@ -66,11 +66,10 @@ CORS restricted to `https://www.sulemanji.com`.
 As of 2026-07-13:
 
 - Remote D1 migrations `0001` through `0007` have been applied.
-- The remote Worker script is deployed in setup mode. Cron triggers are present,
-  but scheduled jobs no-op until `SERVICE_MODE=live` and required bindings are
-  configured.
-- Remote readiness reports `mode: setup`, `ready: false`, and only missing
-  binding names.
+- The remote Worker script is deployed in live mode. Cron triggers are present,
+  and scheduled jobs run only while readiness remains true.
+- Remote readiness reports `mode: live`, `ready: true`, and no missing binding
+  names.
 - `GMAIL_SENDER` and `ADMIN_EMAIL` are configured as non-secret Worker vars.
 - `TURNSTILE_SECRET` is configured from the existing Cloudflare Turnstile
   widget.
@@ -82,8 +81,7 @@ As of 2026-07-13:
   `ssmanji89@gmail.com`.
 - Cloudflare Access is enabled for the Worker admin path, and
   `ACCESS_TEAM_DOMAIN` plus `ACCESS_AUD` are configured as Worker secrets.
-- These required bindings still need live configuration:
-  `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`.
+- Stripe live API and webhook signing secrets are configured as Worker secrets.
 - Existing Bitwarden inventory does not contain unambiguous live API/OAuth
   material for the remaining bindings. Stripe-looking entries are dashboard
   login-shaped rather than `sk_*` / `whsec_*` API material. The `ssmanji89 GMail
@@ -93,11 +91,13 @@ As of 2026-07-13:
   key for launch agent execution.
 - `api.sulemanji.com` is attached to the Worker as a custom domain after the
   `sulemanji.com` nameservers were moved to Cloudflare.
-- Stripe webhook delivery still needs live configuration and UAT.
+- Stripe webhook delivery is configured for
+  `https://api.sulemanji.com/v1/webhooks/stripe`; live UAT evidence should still
+  be recorded before broad advertising.
 
-Do not set `SERVICE_MODE=live` until the required secrets are set; otherwise
-scheduled Gmail polling, retention, and digest jobs will run against an
-incomplete runtime.
+If readiness ever reports missing bindings, immediately set `SERVICE_MODE=setup`
+before investigating so scheduled Gmail polling, retention, and digest jobs do
+not run against an incomplete runtime.
 
 ## Local Codex Agent Runner
 

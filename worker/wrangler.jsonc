@@ -11,7 +11,7 @@
 		"enabled": true
 	},
 	"vars": {
-		"SERVICE_MODE": "setup",
+		"SERVICE_MODE": "live",
 		"SITE_ORIGIN": "https://www.sulemanji.com",
 		"TERMS_VERSION": "2026-07-11",
 		"PRIORITY_DEPOSIT_CENTS": "29500",

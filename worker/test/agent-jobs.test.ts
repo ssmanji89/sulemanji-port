@@ -103,6 +103,7 @@ const agentInput = (caseId: string, latestMessage: string) => ({
   launchReviewRequired: true,
   intake: {
     contextType: "professional" as const,
+    workshopCategory: "ai_business_operations" as const,
     problem: "I need help prioritizing a messy intake workflow across teams.",
     desiredOutcome: "A practical automation blueprint and session agenda.",
     priorAttempts: "",

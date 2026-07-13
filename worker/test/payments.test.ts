@@ -30,6 +30,7 @@ const validInput: IntakeInput = {
   name: "Ada Lovelace",
   email: "ada@example.com",
   contextType: "professional",
+  workshopCategory: "ai_business_operations",
   problem:
     "I need help prioritizing a complex operating model change across multiple teams.",
   desiredOutcome: "A clear blueprint for the next operating decision.",

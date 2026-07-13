@@ -10,6 +10,7 @@ import migration0001 from "../migrations/0001_cases.sql?raw";
 import migration0002 from "../migrations/0002_priority_discovery.sql?raw";
 import migration0003 from "../migrations/0003_payment_workflow_idempotency.sql?raw";
 import migration0006 from "../migrations/0006_launch_review_and_quotes.sql?raw";
+import migration0008 from "../migrations/0008_workshop_category.sql?raw";
 import { D1CaseRepository } from "../src/repositories/cases";
 
 const db = (env as unknown as { DB: D1Database }).DB;
@@ -65,6 +66,62 @@ describe("D1CaseRepository priority discovery SQL contracts", () => {
       .prepare("SELECT COUNT(*) AS count FROM gmail_threads")
       .first<{ count: number }>();
     expect(threads?.count).toBe(1);
+  });
+
+  it("loads workshop category into discovery agent context", async () => {
+    await seedCase("case_1");
+    await db
+      .prepare(
+        `INSERT INTO intakes (
+          case_id, workshop_category, problem, desired_outcome, prior_attempts,
+          sanitized_links_json, redacted_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        "case_1",
+        "github_codebase_review",
+        "A public repo has an unclear build path and failing automation handoffs.",
+        "A clear review agenda and first safe build slice.",
+        "The README and scripts were edited several times.",
+        JSON.stringify(["https://github.com/example/repo"]),
+        null,
+      )
+      .run();
+
+    const context = await repository.getDiscoveryAgentContext("case_1");
+
+    expect(context).toMatchObject({
+      caseId: "case_1",
+      workshopCategory: "github_codebase_review",
+      contextType: "professional",
+    });
+  });
+
+  it("defaults historical discovery context rows without a category", async () => {
+    await seedCase("case_2");
+    await db
+      .prepare(
+        `INSERT INTO intakes (
+          case_id, problem, desired_outcome, prior_attempts,
+          sanitized_links_json, redacted_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+      )
+      .bind(
+        "case_2",
+        "A messy recurring workflow needs a general triage path.",
+        "A clearer map and review agenda.",
+        "",
+        JSON.stringify([]),
+        null,
+      )
+      .run();
+
+    const context = await repository.getDiscoveryAgentContext("case_2");
+
+    expect(context).toMatchObject({
+      caseId: "case_2",
+      workshopCategory: "not_sure_other",
+    });
   });
 
   it("rejects conflicting delivery starts", async () => {
@@ -134,6 +191,7 @@ const loadMigrations = async (): Promise<D1Migration[]> =>
     migration("0002_priority_discovery.sql", migration0002),
     migration("0003_payment_workflow_idempotency.sql", migration0003),
     migration("0006_launch_review_and_quotes.sql", migration0006),
+    migration("0008_workshop_category.sql", migration0008),
   ];
 
 const migration = (name: string, text: string): D1Migration => ({

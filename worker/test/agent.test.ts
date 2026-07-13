@@ -35,6 +35,13 @@ describe("agent contracts and risk policy", () => {
     ).toThrow();
   });
 
+  it("accepts workshop category in agent intake context", () => {
+    const safeRoutine = fixtures.find((fixture) => fixture.name === "safe routine")!
+      .input as AgentInput;
+
+    expect(safeRoutine.intake.workshopCategory).toBe("ai_business_operations");
+  });
+
   it("holds regulated, surveillance, credential, third-party-sensitive, destructive, and topic-expansion cases before model calls", () => {
     const riskyCases = fixtures.filter((fixture) => fixture.expectedHold);
 
@@ -326,6 +333,7 @@ describe("agent contracts and risk policy", () => {
     expect(serialized).toContain("[redacted]");
     expect(Object.keys(sanitized.intake)).toEqual([
       "contextType",
+      "workshopCategory",
       "problem",
       "desiredOutcome",
       "priorAttempts",

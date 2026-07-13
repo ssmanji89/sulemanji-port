@@ -277,6 +277,7 @@ export const sanitizeAgentInputForModel = (input: AgentInput): AgentInput => ({
   lowConfidenceThreadMapping: input.lowConfidenceThreadMapping,
   intake: {
     contextType: input.intake.contextType,
+    workshopCategory: input.intake.workshopCategory,
     problem: redactSensitiveText(input.intake.problem),
     desiredOutcome: redactSensitiveText(input.intake.desiredOutcome),
     priorAttempts: redactSensitiveText(input.intake.priorAttempts),

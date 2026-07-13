@@ -461,6 +461,7 @@ describe("admin review routes", () => {
           launchReviewRequired: true,
           intake: {
             contextType: "professional" as const,
+            workshopCategory: "ai_business_operations" as const,
             problem: "We need to turn a messy intake process into a clearer workflow.",
             desiredOutcome: "A scoped blueprint and session agenda.",
             priorAttempts: "",
@@ -517,6 +518,7 @@ describe("admin review routes", () => {
           launchReviewRequired: true,
           intake: {
             contextType: "professional" as const,
+            workshopCategory: "ai_business_operations" as const,
             problem: "We need to turn a messy intake process into a clearer workflow.",
             desiredOutcome: "A scoped blueprint and session agenda.",
             priorAttempts: "",

@@ -201,6 +201,7 @@ export const preparePriorityDiscoveryAgentTurn = async (
     confirmedUnderstanding: context.state?.confirmedUnderstanding === true,
     intake: {
       contextType: context.contextType,
+      workshopCategory: context.workshopCategory,
       problem: context.problem,
       desiredOutcome: context.desiredOutcome,
       priorAttempts: context.priorAttempts,

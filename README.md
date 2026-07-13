@@ -41,11 +41,14 @@ npm run check --prefix worker
 bundle exec jekyll build
 python3 scripts/verify_work_with_me.py
 python3 scripts/verify_viyu_positioning.py
+python3 scripts/smoke_work_with_me_live.py
 ```
 
 Production Worker secrets must be configured with `wrangler secret put NAME`;
 never commit secret values. See `worker/README.md` for deployment gates, required
-bindings, retention behavior, and test-mode UAT.
+bindings, retention behavior, and test-mode UAT. The live smoke script checks
+public wiring and protected service edges without submitting an intake, sending
+email, or creating a payment.
 
 ## License
 

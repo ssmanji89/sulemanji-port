@@ -14,6 +14,7 @@
 		"TERMS_VERSION": "2026-07-11",
 		"PRIORITY_DEPOSIT_CENTS": "29500",
 		"MANDATORY_REVIEW_CASE_LIMIT": "10",
+		"GOOGLE_CALENDAR_ID": "primary",
 		"AGENT_MODEL": "gpt-5.4-mini"
 	},
 	"d1_databases": [

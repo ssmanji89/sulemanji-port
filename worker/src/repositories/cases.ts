@@ -95,7 +95,12 @@ export interface CaseRepository {
     draftId: string,
   ): Promise<void>;
   createSessionQuote(input: CreateSessionQuoteInput): Promise<CreatedSessionQuote>;
+  getSessionQuoteByPublicToken(
+    token: string,
+  ): Promise<PrivateSessionQuote | null>;
   createSlotHold(input: CreateSlotHoldInput): Promise<CreatedSlotHold>;
+  getActiveSlotHoldForPayment(holdId: string): Promise<SlotHoldPayment | null>;
+  confirmSlotHold(holdId: string, providerEventId: string): Promise<void>;
   releaseSlotHold(holdId: string): Promise<void>;
 }
 
@@ -116,6 +121,18 @@ export interface CreatedSessionQuote {
   expiresAt: string;
 }
 
+export interface PrivateSessionQuote {
+  id: string;
+  caseId: string;
+  email: string;
+  durationMinutes: number;
+  totalCents: number;
+  creditCents: number;
+  balanceCents: number;
+  expiresAt: string;
+  caseStatus: CaseStatus;
+}
+
 export interface CreateSlotHoldInput {
   quoteToken: string;
   calendarId: string;
@@ -129,6 +146,16 @@ export interface CreatedSlotHold {
   id: string;
   quoteId: string;
   expiresAt: string;
+}
+
+export interface SlotHoldPayment {
+  holdId: string;
+  quoteId: string;
+  caseId: string;
+  calendarId: string;
+  startsAt: string;
+  endsAt: string;
+  balanceCents: number;
 }
 
 interface CaseRow {
@@ -191,6 +218,7 @@ interface DiscoveryAgentContextRow {
 interface QuoteLookupRow {
   id: string;
   case_id: string;
+  email: string;
   duration_minutes: number;
   total_cents: number;
   credit_cents: number;
@@ -203,6 +231,16 @@ interface HoldLookupRow {
   id: string;
   case_id: string;
   status: string;
+}
+
+interface SlotHoldPaymentRow {
+  hold_id: string;
+  quote_id: string;
+  case_id: string;
+  calendar_id: string;
+  starts_at: string;
+  ends_at: string;
+  balance_cents: number;
 }
 
 export class D1CaseRepository implements CaseRepository {
@@ -938,6 +976,38 @@ export class D1CaseRepository implements CaseRepository {
     return { id, publicToken, creditCents, balanceCents, expiresAt };
   }
 
+  async getSessionQuoteByPublicToken(
+    token: string,
+  ): Promise<PrivateSessionQuote | null> {
+    const publicTokenHash = await sha256(token);
+    const row = await this.db
+      .prepare(
+        `SELECT session_quotes.id, session_quotes.case_id, cases.email,
+          session_quotes.duration_minutes, session_quotes.total_cents,
+          session_quotes.credit_cents, session_quotes.balance_cents,
+          session_quotes.expires_at, cases.status AS case_status
+        FROM session_quotes
+        INNER JOIN cases ON cases.id = session_quotes.case_id
+        WHERE session_quotes.public_token_hash = ?
+        LIMIT 1`,
+      )
+      .bind(publicTokenHash)
+      .first<QuoteLookupRow>();
+
+    if (!row) return null;
+    return {
+      id: row.id,
+      caseId: row.case_id,
+      email: row.email,
+      durationMinutes: row.duration_minutes,
+      totalCents: row.total_cents,
+      creditCents: row.credit_cents,
+      balanceCents: row.balance_cents,
+      expiresAt: row.expires_at,
+      caseStatus: row.case_status,
+    };
+  }
+
   async createSlotHold(input: CreateSlotHoldInput): Promise<CreatedSlotHold> {
     const startsAt = new Date(input.startsAt);
     const endsAt = new Date(input.endsAt);
@@ -956,7 +1026,7 @@ export class D1CaseRepository implements CaseRepository {
     const publicTokenHash = await sha256(input.quoteToken);
     const quote = await this.db
       .prepare(
-        `SELECT session_quotes.id, session_quotes.case_id,
+        `SELECT session_quotes.id, session_quotes.case_id, cases.email,
           session_quotes.duration_minutes, session_quotes.total_cents,
           session_quotes.credit_cents, session_quotes.balance_cents,
           session_quotes.expires_at, cases.status AS case_status
@@ -1051,6 +1121,130 @@ export class D1CaseRepository implements CaseRepository {
     }
 
     return { id, quoteId: quote.id, expiresAt };
+  }
+
+  async getActiveSlotHoldForPayment(
+    holdId: string,
+  ): Promise<SlotHoldPayment | null> {
+    const row = await this.db
+      .prepare(
+        `SELECT slot_holds.id AS hold_id, session_quotes.id AS quote_id,
+          session_quotes.case_id, slot_holds.calendar_id, slot_holds.starts_at,
+          slot_holds.ends_at, session_quotes.balance_cents
+        FROM slot_holds
+        INNER JOIN session_quotes ON session_quotes.id = slot_holds.quote_id
+        INNER JOIN cases ON cases.id = session_quotes.case_id
+        WHERE slot_holds.id = ?
+          AND slot_holds.status = ?
+          AND cases.status = ?
+        LIMIT 1`,
+      )
+      .bind(holdId, "active", "slot_held")
+      .first<SlotHoldPaymentRow>();
+
+    if (!row) return null;
+    return {
+      holdId: row.hold_id,
+      quoteId: row.quote_id,
+      caseId: row.case_id,
+      calendarId: row.calendar_id,
+      startsAt: row.starts_at,
+      endsAt: row.ends_at,
+      balanceCents: row.balance_cents,
+    };
+  }
+
+  async confirmSlotHold(
+    holdId: string,
+    providerEventId: string,
+  ): Promise<void> {
+    const hold = await this.getActiveSlotHoldForPayment(holdId);
+    if (!hold) {
+      throw new Error("Active slot hold not found");
+    }
+
+    const now = new Date().toISOString();
+    const [eventResult, holdResult, pendingResult, pendingAudit, confirmedResult, confirmedAudit] =
+      await this.db.batch([
+        this.db
+          .prepare(
+            `INSERT INTO calendar_events (
+              id, hold_id, calendar_id, starts_at, ends_at, provider_event_id,
+              created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          )
+          .bind(
+            crypto.randomUUID(),
+            holdId,
+            hold.calendarId,
+            hold.startsAt,
+            hold.endsAt,
+            providerEventId,
+            now,
+          ),
+        this.db
+          .prepare(
+            `UPDATE slot_holds
+            SET status = ?
+            WHERE id = ? AND status = ?`,
+          )
+          .bind("confirmed", holdId, "active"),
+        this.db
+          .prepare(
+            `UPDATE cases
+            SET status = ?, updated_at = ?
+            WHERE id = ? AND status = ?`,
+          )
+          .bind("balance_payment_pending", now, hold.caseId, "slot_held"),
+        this.db
+          .prepare(
+            `INSERT INTO audit_events (
+              id, case_id, event_type, data_json, created_at
+            )
+            SELECT ?, ?, ?, ?, ?
+            WHERE changes() = 1`,
+          )
+          .bind(
+            crypto.randomUUID(),
+            hold.caseId,
+            "session_balance_paid",
+            JSON.stringify({ holdId }),
+            now,
+          ),
+        this.db
+          .prepare(
+            `UPDATE cases
+            SET status = ?, updated_at = ?
+            WHERE id = ? AND status = ?`,
+          )
+          .bind("session_confirmed", now, hold.caseId, "balance_payment_pending"),
+        this.db
+          .prepare(
+            `INSERT INTO audit_events (
+              id, case_id, event_type, data_json, created_at
+            )
+            SELECT ?, ?, ?, ?, ?
+            WHERE changes() = 1`,
+          )
+          .bind(
+            crypto.randomUUID(),
+            hold.caseId,
+            "session_confirmed",
+            JSON.stringify({ holdId, providerEventId }),
+            now,
+          ),
+      ]);
+
+    if (
+      eventResult?.meta.changes !== 1 ||
+      holdResult?.meta.changes !== 1 ||
+      pendingResult?.meta.changes !== 1 ||
+      pendingAudit?.meta.changes !== 1 ||
+      confirmedResult?.meta.changes !== 1 ||
+      confirmedAudit?.meta.changes !== 1
+    ) {
+      throw new Error("Slot hold confirmation failed");
+    }
   }
 
   async releaseSlotHold(holdId: string): Promise<void> {

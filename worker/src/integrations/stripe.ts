@@ -16,9 +16,22 @@ export interface RefundPaymentIntentRequest {
   reason: string;
 }
 
+export interface BalanceCheckoutSessionRequest {
+  caseId: string;
+  customerEmail: string;
+  holdId: string;
+  balanceCents: number;
+  successUrl: string;
+  cancelUrl: string;
+  metadata: Record<string, string>;
+}
+
 export interface StripeAdapter {
   createDepositCheckout(
     request: CheckoutSessionRequest,
+  ): Promise<{ checkoutUrl: string }>;
+  createBalanceCheckout(
+    request: BalanceCheckoutSessionRequest,
   ): Promise<{ checkoutUrl: string }>;
   constructEvent(
     raw: string,
@@ -88,6 +101,39 @@ export const createStripeAdapter = (
               name: "Priority Discovery Deposit",
               description:
                 "Fixed deposit for a Priority Discovery operational blueprint.",
+            },
+          },
+        },
+      ],
+    });
+
+    if (!session.url) {
+      throw new Error("Stripe Checkout Session did not include a URL");
+    }
+
+    return { checkoutUrl: session.url };
+  },
+
+  async createBalanceCheckout(request) {
+    const client = stripeClientFrom(clientOrBundle);
+    const session = await client.checkout.sessions.create({
+      mode: "payment",
+      customer_email: request.customerEmail,
+      success_url: request.successUrl,
+      cancel_url: request.cancelUrl,
+      expires_at: Math.floor(Date.now() / 1000) + 15 * 60,
+      metadata: request.metadata,
+      payment_intent_data: { metadata: request.metadata },
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: request.balanceCents,
+            product_data: {
+              name: "Priority Session Balance",
+              description:
+                "Remaining balance after Priority Discovery deposit credit.",
             },
           },
         },

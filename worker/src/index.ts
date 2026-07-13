@@ -4,6 +4,7 @@ import type { Env } from "./env";
 import { createAdminRoutes } from "./routes/admin";
 import { createIntakeRoutes } from "./routes/intakes";
 import { createPaymentRoutes } from "./routes/payments";
+import { createQuoteRoutes } from "./routes/quotes";
 import { runOperationalDigest } from "./scheduled/digest";
 import { runGmailPoller } from "./scheduled/gmail-poller";
 export { PriorityDiscoveryWorkflow } from "./workflows/priority-discovery-runtime";
@@ -22,6 +23,7 @@ app.use(
 
 app.route("/v1", createIntakeRoutes());
 app.route("/v1", createPaymentRoutes());
+app.route("/v1", createQuoteRoutes());
 app.route("/v1", createAdminRoutes());
 
 app.onError((error, c) => {

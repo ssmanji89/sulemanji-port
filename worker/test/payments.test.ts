@@ -513,6 +513,7 @@ const checkoutCompletedEvent = ({
 
 class FakeStripeAdapter implements StripeAdapter {
   readonly checkoutRequests: CheckoutSessionRequest[] = [];
+  readonly balanceCheckoutRequests: unknown[] = [];
   readonly constructEventCalls: Array<{
     raw: string;
     signature: string;
@@ -526,6 +527,11 @@ class FakeStripeAdapter implements StripeAdapter {
   ): Promise<{ checkoutUrl: string }> {
     this.checkoutRequests.push(request);
     return { checkoutUrl: "https://checkout.example/session" };
+  }
+
+  async createBalanceCheckout(request: unknown): Promise<{ checkoutUrl: string }> {
+    this.balanceCheckoutRequests.push(request);
+    return { checkoutUrl: "https://checkout.example/balance" };
   }
 
   async constructEvent(

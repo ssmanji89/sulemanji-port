@@ -1,6 +1,10 @@
 import { Hono } from "hono";
 import type { Env } from "../env";
 import {
+  createGoogleCalendarAdapter,
+  type CalendarAdapter,
+} from "../integrations/calendar";
+import {
   createStripeAdapter,
   type CheckoutSessionRequest,
   type StripeAdapter,
@@ -11,6 +15,7 @@ export type { CheckoutSessionRequest, StripeAdapter };
 
 export interface PaymentRouteDependencies {
   stripeFactory?: (env: Env) => StripeAdapter;
+  calendarFactory?: (env: Env) => CalendarAdapter;
 }
 
 interface ReviewGateReservation {
@@ -38,6 +43,14 @@ export const createPaymentRoutes = (
   const app = new Hono<{ Bindings: Env }>();
   const stripeForEnv =
     dependencies.stripeFactory ?? ((env: Env) => createStripeAdapter(env));
+  const calendarForEnv =
+    dependencies.calendarFactory ??
+    ((env: Env) =>
+      createGoogleCalendarAdapter({
+        clientId: env.GOOGLE_CALENDAR_CLIENT_ID,
+        clientSecret: env.GOOGLE_CALENDAR_CLIENT_SECRET,
+        refreshToken: env.GOOGLE_CALENDAR_REFRESH_TOKEN,
+      }));
 
   app.post("/cases/:token/deposit-checkout", async (c) => {
     if (c.req.header("Origin") !== c.env.SITE_ORIGIN) {
@@ -105,6 +118,26 @@ export const createPaymentRoutes = (
     }
 
     const repository = new D1CaseRepository(c.env.DB);
+    if (session.metadata?.checkout_kind === "session_balance") {
+      const status = await repository.recordStripeEvent(
+        event.id,
+        caseId,
+        event.type,
+      );
+      if (status === "duplicate") {
+        return c.json({ received: true });
+      }
+
+      await handleBalanceCheckout({
+        repository,
+        stripe,
+        calendar: calendarForEnv(c.env),
+        session,
+        paymentIntentId,
+      });
+      return c.json({ received: true });
+    }
+
     const stripeEventStatus = await repository.recordStripeEvent(
       event.id,
       caseId,
@@ -254,6 +287,61 @@ const refundInvalidDeposit = async (
     "declined_refund_pending",
     "priority_deposit_refund_pending",
   );
+};
+
+const handleBalanceCheckout = async (input: {
+  repository: D1CaseRepository;
+  stripe: StripeAdapter;
+  calendar: CalendarAdapter;
+  session: CheckoutSessionCompleted;
+  paymentIntentId: string;
+}): Promise<void> => {
+  const holdId = input.session.metadata?.hold_id;
+  if (!holdId) {
+    throw new Error("Missing balance hold metadata");
+  }
+
+  const hold = await input.repository.getActiveSlotHoldForPayment(holdId);
+  if (!hold) {
+    throw new Error("Active slot hold not found");
+  }
+
+  if (
+    input.session.payment_status !== "paid" ||
+    input.session.amount_total !== hold.balanceCents
+  ) {
+    await input.stripe.refundPaymentIntent({
+      caseId: hold.caseId,
+      paymentIntentId: input.paymentIntentId,
+      reason: "balance_validation_failed",
+    });
+    await input.repository.releaseSlotHold(hold.holdId);
+    return;
+  }
+
+  const isFree = await input.calendar.isFree({
+    calendarId: hold.calendarId,
+    startsAt: hold.startsAt,
+    endsAt: hold.endsAt,
+  });
+  if (!isFree) {
+    await input.stripe.refundPaymentIntent({
+      caseId: hold.caseId,
+      paymentIntentId: input.paymentIntentId,
+      reason: "slot_unavailable_after_payment",
+    });
+    await input.repository.releaseSlotHold(hold.holdId);
+    return;
+  }
+
+  const event = await input.calendar.createSessionEvent({
+    calendarId: hold.calendarId,
+    startsAt: hold.startsAt,
+    endsAt: hold.endsAt,
+    summary: "Priority workflow session",
+    description: `Case ${hold.caseId}`,
+  });
+  await input.repository.confirmSlotHold(hold.holdId, event.providerEventId);
 };
 
 const ensurePriorityDiscoveryStarted = async (

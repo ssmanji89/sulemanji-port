@@ -38,7 +38,7 @@ hero_signals:
   <div class="card">
     <span class="card-icon"><i class="fas fa-robot"></i></span>
     <h3>AI &amp; agent infrastructure</h3>
-    <p>MCP servers (a few public, on npm), a Claude Code plugin with autonomous agents, and the memory/runtime plumbing underneath. I was forking the first agent frameworks in 2023, before it was a category.</p>
+    <p>MCP servers, agent-consumable CLI contracts, repository-native control planes, and the evidence plumbing that makes automated work reviewable. The emphasis is not autonomy for its own sake; it is knowing what ran, what changed, what failed, and where a person still needs to decide.</p>
   </div>
   <div class="card">
     <span class="card-icon"><i class="fas fa-cloud-arrow-up"></i></span>

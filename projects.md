@@ -50,8 +50,12 @@ The substrate everything else runs on — and where I started early.
 
 <div class="card-grid" markdown="0">
   <div class="card">
-    <h3>Governed agent infrastructure <span class="proj-meta">· private</span></h3>
-    <p>Private AI infrastructure for governed service-delivery automation: reviewable retrieval, decision support, evidence-backed recommendations, preview-before-write workflows, and clear approval points before client-impacting changes are made.</p>
+    <h3>Evidence-first agent infrastructure <span class="proj-meta">· private · active</span></h3>
+    <p>I design and lead agent-assisted engineering systems around repository-native control planes, role-separated implementation and review, agent-consumable CLI result envelopes, mutation read-back, partial-success reporting, and durable execution evidence. The implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and deciding what evidence is strong enough to merge.</p>
+  </div>
+  <div class="card">
+    <h3><a href="https://github.com/ssmanji89/toast-pos-mcp">toast-pos-mcp</a> <span class="proj-meta">· public · foundation in progress</span></h3>
+    <p>An open-source MCP server foundation for Toast POS reporting. The current work establishes a strict TypeScript stdio runtime, synthetic fixture harness, traversal and symlink-boundary protections, and review gates before real Toast tools or API integration are exposed.</p>
   </div>
   <div class="card">
     <h3><a href="https://github.com/ssmanji89/postgres-mcp-tools">postgres-mcp-tools</a> <span class="proj-meta">· public · npm</span></h3>

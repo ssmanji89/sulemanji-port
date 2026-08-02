@@ -44,11 +44,11 @@ Then ZG Companies, a real-estate group, where the work turned operational and br
 
 ## The maker thread
 
-Running underneath the day jobs is a hobby that refuses to stay a hobby. On January 12, 2021, I committed the first version of a repository called `botStuff`: a Python bot that traded stocks through Robinhood. That repository became a personal lab. Trading bots, a crypto high-frequency experiment, machine-learning detours, a lottery-probability tool — all of it the same instinct from the brake shop and the NOC, just pointed at the market.
+Running underneath the day jobs is a hobby that refuses to stay a hobby. On January 12, 2021, I committed the first version of a Python paper-trading experiment. It became a personal lab for market simulation, machine-learning detours, probability tools, and the engineering of decisions under uncertainty — the same instinct from the brake shop and the NOC, just pointed at a different kind of system.
 
 When the first wave of AI agent frameworks showed up in 2023, I was already there, forking and extending MetaGPT, AutoGen, MemGPT — building things like an AutoGen-to-Azure integration and an early AI-SOAR prototype before "agent" was a product category. By 2025 the hobby and the profession had collapsed into the same thing.
 
-The trading work is the clearest example of how far the instinct runs. What started as a script is now a multi-agent system: four analysts arguing fundamentals, sentiment, news, and technicals in parallel, a bull-versus-bear debate, a risk manager and a fund manager who can veto a trade, a dozen validation gates before anything executes — and a desktop app wrapped around it. It still only trades on paper. The point was never the money; it was whether I could build a thing that reasons about a decision the way a careful person would.
+The market-research work is the clearest example of how far the instinct runs. What started as a script became a multi-agent research system that separates analysis, structured disagreement, risk review, paper execution, and post-decision evidence. The point was never a performance claim; it was whether I could build a thing that reasons about a decision the way a careful person would.
 
 ## Now
 

@@ -10,7 +10,7 @@ hero_lede: "The same instinct as the day job, pointed at whatever I'm curious ab
 
 ## Markets &amp; probability
 
-This is where the maker habit started. On January 12, 2021 I committed a Python bot that traded stocks through Robinhood, and I never really stopped. It's grown into something genuinely overbuilt — a system where four analysts argue fundamentals, sentiment, news, and technicals, a bull and a bear debate it out, and a risk manager gets veto power before anything executes. It trades on paper. I'm less interested in the money than in whether I can build a thing that reasons about a decision the way a careful person would. (There's a lottery-probability tool in here too, with a clear-eyed note that the draws are random.)
+This is where the maker habit started. On January 12, 2021 I committed a Python paper-trading experiment, and I never really stopped studying decision systems. It grew into an intentionally overbuilt research environment for multi-agent analysis, structured disagreement, explicit risk review, and reproducible decision evidence. It remains paper research. I'm less interested in a performance story than in whether I can build a thing that reasons about uncertainty the way a careful person would. (There's a lottery-probability tool in here too, with a clear-eyed note that the draws are random.)
 
 ## Mathematics
 
@@ -22,7 +22,7 @@ I built a privacy-first DNA pipeline that parses raw exports from the consumer t
 
 ## Dream engineering
 
-The strangest one. *Svapna* is a tool I'm building around targeted memory reactivation — the idea that you can nudge what the sleeping brain rehearses. It is exactly as odd as it sounds, and that's most of the appeal.
+The strangest one. I am building a tool around targeted memory reactivation — the idea that you can nudge what the sleeping brain rehearses. It is exactly as odd as it sounds, and that's most of the appeal.
 
 ## Brakes, still
 

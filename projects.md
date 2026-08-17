@@ -55,7 +55,7 @@ The substrate everything else runs on — and where I started early.
   </div>
   <div class="card">
     <h3><a href="https://github.com/ssmanji89/toast-pos-mcp">toast-pos-mcp</a> <span class="proj-meta">· public · foundation in progress</span></h3>
-    <p>An open-source MCP server foundation for Toast POS reporting. The current work establishes a strict TypeScript stdio runtime, synthetic fixture harness, traversal and symlink-boundary protections, and review gates before real Toast tools or API integration are exposed.</p>
+    <p>An open-source, local, read-only MCP foundation for Toast POS reporting. The merged foundation now includes consent-gated runtime configuration, in-memory OAuth, bounded retry/rate-limit-aware Standard API transport, both Toast pagination families, credential-scoped location discovery, and synthetic fixture validation. Reporting tools, the complete capability model, exact production validation, package release, and live merchant-data use remain in progress.</p>
   </div>
   <div class="card">
     <h3><a href="https://github.com/ssmanji89/postgres-mcp-tools">postgres-mcp-tools</a> <span class="proj-meta">· public · npm</span></h3>

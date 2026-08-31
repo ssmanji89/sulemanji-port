@@ -12,7 +12,7 @@ QUOTE_PAGE = ROOT / "work-with-me-quote.md"
 THANKS_PAGE = ROOT / "work-with-me-thanks.md"
 TERMS_PAGE = ROOT / "work-with-me-terms.md"
 PRIVACY_PAGE = ROOT / "privacy.md"
-INDEX = ROOT / "index.md"
+INDEX = ROOT / "index.html"
 NAV = ROOT / "_data" / "navigation.yml"
 LAYOUT = ROOT / "_layouts" / "default.html"
 SCRIPT = ROOT / "assets" / "js" / "work-with-me.js"
@@ -107,7 +107,7 @@ def main():
     require(STYLE.exists(), "assets/css/style.scss is missing", failures)
     require(CONFIG.exists(), "_config.yml is missing", failures)
     require(LAYOUT.exists(), "_layouts/default.html is missing", failures)
-    require(INDEX.exists(), "index.md is missing", failures)
+    require(INDEX.exists(), "index.html is missing", failures)
     require(NAV.exists(), "_data/navigation.yml is missing", failures)
 
     if PAGE.exists():
@@ -289,9 +289,9 @@ def main():
 
     if INDEX.exists():
         index = read(INDEX)
-        require("url: /work-with-me" in index or 'href="/work-with-me"' in index, "index.md must link to /work-with-me", failures)
-        require("Work With Me" in index, "index.md must include Work With Me", failures)
-        require("messy" in index.lower(), "index.md Work With Me entry must use messy-problem language", failures)
+        require('href="/work-with-me"' in index, "index.html must link to /work-with-me", failures)
+        require("nav-cta" in index, "index.html must expose the work-with-me nav CTA", failures)
+        require("messy" in index.lower(), "index.html Work With Me entry must use messy-problem language", failures)
 
     for path in PUBLIC_SOURCE_FILES:
         check_forbidden(path, failures)

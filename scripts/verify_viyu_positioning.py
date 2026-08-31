@@ -6,7 +6,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_FILES = [
-    ROOT / "index.md",
+    ROOT / "index.html",
     ROOT / "about.md",
     ROOT / "projects.md",
     ROOT / "experience.md",
@@ -73,8 +73,9 @@ REQUIRED_BY_FILE = {
         "Sr. Services Engineer",
         "acting as a solutions architect and automation engineer",
     ],
-    "index.md": [
-        "help architect Microsoft 365 migration work",
+    "index.html": [
+        "Microsoft 365",
+        "migration work",
         "service-delivery automation",
     ],
 }

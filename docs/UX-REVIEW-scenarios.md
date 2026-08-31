@@ -34,4 +34,16 @@ Baseline verdict: mostly **no** across F1–F6, as expected. F7 is out of scope 
 
 The harness's local static server (`scripts/ux_snapshot.sh`) needed a fix: Jekyll publishes extensionless permalinks (`about.html`, `projects.html`, ...) that a plain `python3 -m http.server` does not resolve for a request to `/about` — every inner page 404'd or (for `/work-with-me`, which collides with the `work-with-me/` subpages directory) showed a directory listing. Fixed by adding a small `.html`-fallback handler in the script; see its inline comment.
 
-## Re-test — filled in by Task 7
+## Re-test — 2026-08-30, after Tasks 2–6
+
+| ID | Friction | Fix applied | Status |
+|---|---|---|---|
+| F1 | No name/role/location, no resume path above fold, stale lead stat | Role line + `View resume`/`Selected work` CTAs directly under the headline (both fully visible in the first 900px desktop screen — verified in `index-desktop.png`); audience-paths row (Hiring?/Engineer?/long version); stat sidebar reordered to lead with Aug-2026 platform counts (141/307/240), legacy scale stats relabeled with era (`2015 era`, `2021–23 era`) | **CLOSED** (desktop) |
+| F2 | Full agency funnel reading as freelancer storefront | Rewritten as two labeled lanes — "Bring it to me" (home/hobby-scale, keeps the existing intake/quote/priority/terms machinery) and "Bring it to Viyu" (referral, one paragraph + link) — first link on the page is now `View resume`; nav label changed `Work With Me` → `Contact` (URL unchanged) | **CLOSED** |
+| F3 | Heavy disclosure (father's death, assault) with no opt-in | Italic opt-in preface inserted before "Houston" pointing professional visitors to About/Experience; story content itself untouched | **CLOSED** |
+| F4 | Bio told 4x, no page with one clear job | About rewritten to a 205-word one-screen summary (thesis + pattern paragraph + 3-sentence "right now" + 3 signposts); Story demoted from primary nav (still reachable via About/home) | **CLOSED** |
+| F5 | Projects a wall of mostly-private cards, no proof-first ordering | Restructured into Proof (case studies + public/linkable work) → Production systems (single consolidated, honesty-noted, trimmed-card section) → Experiments; first screen on `/projects` shows the hero plus 3 clickable proof cards | **CLOSED** |
+| F6 | No scan layer on long pages | `.tldr` In-brief blocks added to experience.md, beyond.md, case-studies/agentic-msp-delivery.md, notes/agent-safety-from-incidents.md; jump-links row (one per employer) added to experience.md | **CLOSED** |
+| F7 | Two nav vocabularies (home vs inner pages) | Verify-only per plan. Confirmed: `index.html` renders the same shared `{% include nav.html %}` as every inner page (program/ui-unification's fix); all 7 harness screenshots show identical nav labels (Home/About/Experience/Projects/Contact/Beyond Work/Resume) on every page | **CLOSED** (verified, not this branch's work) |
+
+**OWNER-TASTE / deferred:** the hero headline's mobile (375px) type clips at the viewport's right edge (`index-mobile.png`) — pre-existing in the `@media (max-width:680px) { .hero h1 { font-size: clamp(3.1rem,16vw,5.2rem); } }` rule inherited from `program/ui-unification`, unrelated to this branch's diff (confirmed identical clipping pattern across every harness run in this session, before and after all content edits). Task 2's acceptance check is desktop-only (`index-desktop.png`), so it is not gating this plan's closure, but it's a real mobile rendering issue worth a follow-up.

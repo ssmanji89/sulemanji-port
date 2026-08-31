@@ -41,7 +41,7 @@ None of this is safe to run against production client systems without a floor un
 
 ## What it changed
 
-The clearest, most measurable change is in an unglamorous corner of the work: daily timesheet and billing reconciliation. What used to require someone checking logged time against actual work each day now runs mostly unattended, as a scheduled agent routine. Time-entry compliance rose from 21.0 to 24.25 logged days per month after adoption (+15%, CWM data H2-2025 vs 2026) — the one number in this piece I can point to a data source for and defend if asked.
+The clearest, most measurable change is in an unglamorous corner of the work: daily timesheet and billing reconciliation. What used to require someone checking logged time against actual work each day now runs mostly unattended, as a scheduled agent routine. Time-entry compliance rose from 21.0 to 24.25 logged days per month — a change temporally consistent with the reconciler's adoption (+15%, CWM data H2-2025 vs 2026) — the one number in this piece I can point to a data source for and defend if asked.
 
 Billing is the second place the change is real, and here I'll describe it rather than quantify it, because that's what the evidence actually supports. Sole operation of a six-figure-monthly cloud-billing process moved off a set of manual, per-client spreadsheet calculators and into an automated pipeline. Before that pipeline touched production, it ran in shadow against the existing manual process long enough that the gap between the two narrowed to a small, single-digit percentage, and it only went live behind a tiered approval chain with rollback available at every stage.
 

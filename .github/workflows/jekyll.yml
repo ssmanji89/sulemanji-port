@@ -57,6 +57,9 @@ jobs:
       - name: Verify Viyu positioning
         run: python3 scripts/verify_viyu_positioning.py
 
+      - name: Verify public safety
+        run: python3 scripts/verify_public_safety.py
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 

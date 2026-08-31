@@ -22,11 +22,11 @@ Start here if you want something you can actually click through: the case studie
     <p>How three real incidents became the destructive-action gating, approval kernel, and independent state re-read that guard every write against a client system.</p>
   </div>
   <div class="card">
-    <h3><a href="https://github.com/ssmanji89/halopsa-workflows-mcp">halopsa-workflows-mcp</a> <span class="proj-meta">· public · npm</span></h3>
-    <p>An MCP server exposing the HaloPSA Workflows API to Claude and other clients, with auth and token caching. A companion <a href="https://github.com/ssmanji89/halopsa-tickets-mcp">halopsa-tickets-mcp</a> covers tickets; both are listed publicly.</p>
+    <h3><a href="https://github.com/ssmanji89/halopsa-workflows-mcp">halopsa-workflows-mcp</a> <span class="proj-meta">· public · npm (v1.1.0 on npm)</span></h3>
+    <p>An MCP server exposing the HaloPSA Workflows API to Claude and other clients, with auth and token caching. A companion <a href="https://github.com/ssmanji89/halopsa-tickets-mcp">halopsa-tickets-mcp</a> covers tickets; the workflows server is published on npm, the tickets server is public on GitHub.</p>
   </div>
   <div class="card">
-    <h3><a href="https://github.com/ssmanji89/postgres-mcp-tools">postgres-mcp-tools</a> <span class="proj-meta">· public · npm</span></h3>
+    <h3><a href="https://github.com/ssmanji89/postgres-mcp-tools">postgres-mcp-tools</a> <span class="proj-meta">· public · npm (v1.0.14 on npm)</span></h3>
     <p>A Postgres + pgvector memory system for AI apps — semantic search and persistent cross-session memory over MCP, with pluggable embeddings.</p>
   </div>
   <div class="card">

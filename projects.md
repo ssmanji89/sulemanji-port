@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Projects | Suleman Manji
+title: Projects
 description: The real range of Suleman Manji's work — service-delivery automation, process-led AI systems, Microsoft 365 and cloud tools, decision systems, and a pile of experiments.
 permalink: /projects
 hero_eyebrow: Selected work

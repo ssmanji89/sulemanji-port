@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Beyond Work | Suleman Manji
+title: Beyond Work
 description: The personal side — markets, mathematics, genealogy, dream engineering, and a habit of building things just to see what holds.
 permalink: /beyond
 hero_eyebrow: Off the clock

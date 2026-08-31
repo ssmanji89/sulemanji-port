@@ -72,11 +72,13 @@ REQUIRED_BY_FILE = {
     "about.md": [
         "Sr. Services Engineer",
         "acting as a solutions architect and automation engineer",
+        "agentic",
     ],
     "index.html": [
         "Microsoft 365",
         "migration work",
         "service-delivery automation",
+        "agentic",
     ],
 }
 

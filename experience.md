@@ -10,10 +10,23 @@ permalink: /experience
     <p class="section-subtitle">Fifteen years, one job description: find the manual, fragile, or broken part of an operation and make it hold. The <a href="/story">story</a> has the why; this is the what.</p>
 </div>
 
+<div class="tldr" markdown="0">
+  <p><strong>In brief:</strong> Six employers, fifteen years, one recurring job: find the fragile part of an operation and automate it. Currently a Sr. Services Engineer at Viyu Network Solutions building the AI-assisted systems behind MSP service delivery &mdash; before that, real-estate operations, cloud/.NET engineering, security and identity consulting, multi-site energy operations, and where it started: NOC automation at ERGOS.</p>
+</div>
+
+<ul class="jump-links" aria-label="Jump to an employer">
+  <li><a href="#viyu">Viyu &middot; 2025&ndash;now</a></li>
+  <li><a href="#zg-companies">ZG Companies &middot; 2023&ndash;25</a></li>
+  <li><a href="#stackadvisors">StackAdvisors &middot; 2023</a></li>
+  <li><a href="#fulcrum">Fulcrum &middot; 2021&ndash;23</a></li>
+  <li><a href="#sugar-land-petroleum">Sugar Land Petroleum &middot; 2017&ndash;20</a></li>
+  <li><a href="#ergos">ERGOS &middot; 2011&ndash;17</a></li>
+</ul>
+
 <div class="timeline animate-on-scroll">
 
     <!-- Viyu Network Solutions -->
-    <div class="timeline-item">
+    <div class="timeline-item" id="viyu">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
             <div class="timeline-date">
@@ -57,7 +70,7 @@ permalink: /experience
     </div>
 
     <!-- ZG Companies -->
-    <div class="timeline-item">
+    <div class="timeline-item" id="zg-companies">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
             <div class="timeline-date">
@@ -101,7 +114,7 @@ permalink: /experience
     </div>
 
     <!-- StackAdvisors, LLC -->
-    <div class="timeline-item">
+    <div class="timeline-item" id="stackadvisors">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
             <div class="timeline-date">
@@ -145,7 +158,7 @@ permalink: /experience
     </div>
     
     <!-- Fulcrum Technology Solutions (FTSC) -->
-    <div class="timeline-item">
+    <div class="timeline-item" id="fulcrum">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
             <div class="timeline-date">
@@ -189,7 +202,7 @@ permalink: /experience
     </div>
 
     <!-- Sugar Land Petroleum, LLC -->
-    <div class="timeline-item">
+    <div class="timeline-item" id="sugar-land-petroleum">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
             <div class="timeline-date">
@@ -232,7 +245,7 @@ permalink: /experience
     </div>
 
      <!-- ERGOS Technology Partners -->
-    <div class="timeline-item">
+    <div class="timeline-item" id="ergos">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
             <div class="timeline-date">

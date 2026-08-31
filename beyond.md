@@ -8,6 +8,10 @@ hero_title: Things I build when no one's paying me to.
 hero_lede: "The same instinct as the day job, pointed at whatever I'm curious about that month. Most of it never ships. That was never the point."
 ---
 
+<div class="tldr" markdown="0">
+  <p><strong>In brief:</strong> The off-the-clock version of the same reflex &mdash; markets and decision systems, a number-theory research platform, a privacy-first DNA pipeline, dream engineering, and the brake shop that never fully went away.</p>
+</div>
+
 ## Markets &amp; probability
 
 This is where the maker habit started. On January 12, 2021 I committed a Python paper-trading experiment, and I never really stopped studying decision systems. It grew into an intentionally overbuilt research environment for multi-agent analysis, structured disagreement, explicit risk review, and reproducible decision evidence. It remains paper research. I'm less interested in a performance story than in whether I can build a thing that reasons about uncertainty the way a careful person would. (There's a lottery-probability tool in here too, with a clear-eyed note that the draws are random.)

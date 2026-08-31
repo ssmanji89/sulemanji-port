@@ -22,14 +22,13 @@ permalink: /
   <header class="site-header" data-site-header>
     <a class="wordmark" href="/" aria-label="Suleman Manji home">
       <span class="wordmark-mark" aria-hidden="true">SM</span>
-      <span>Suleman Manji</span>
+      <span class="wordmark-text">
+        <span class="wordmark-name">Suleman Manji</span>
+        <span class="wordmark-role">Sr. Services Engineer &mdash; MSP delivery via agentic-LLM systems</span>
+      </span>
     </a>
     <nav class="site-nav" aria-label="Primary navigation">
-      <a href="#work">Work</a>
-      <a href="#career">Career</a>
-      <a href="#range">Range</a>
-      <a href="/story">Story</a>
-      <a class="nav-cta" href="/work-with-me">Contact <span aria-hidden="true">↗</span></a>
+      {% include nav.html %}
     </nav>
     <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-button>
       <span class="sr-only">Open navigation</span>
@@ -38,11 +37,7 @@ permalink: /
   </header>
 
   <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden data-mobile-nav>
-    <a href="#work">Work</a>
-    <a href="#career">Career</a>
-    <a href="#range">Range</a>
-    <a href="/story">Story</a>
-    <a href="/work-with-me">Contact ↗</a>
+    {% include nav.html %}
   </nav>
 
   <main id="main">
@@ -50,7 +45,7 @@ permalink: /
       <div class="hero-copy">
         <p class="kicker">Systems engineer · automation architect · operator</p>
         <h1 id="hero-title">I turn messy operations into systems people can trust.</h1>
-        <p class="hero-lede">Fifteen years across managed services, enterprise security, cloud, software, real-estate operations, and AI agents. I came back to the MSP world because the breadth is the point.</p>
+        <p class="hero-lede">Fifteen years across managed services, enterprise security, cloud, software, real-estate operations, and AI agents. I deliver MSP service &mdash; migrations, security operations, billing &mdash; through agentic-LLM systems I build, with evidence contracts and human approval gates. I came back to the MSP world because the breadth is the point.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="#work">Explore the work <span aria-hidden="true">↓</span></a>
           <a class="button button-quiet" href="/experience">Read the career <span aria-hidden="true">↗</span></a>

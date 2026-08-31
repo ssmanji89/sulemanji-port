@@ -4,40 +4,43 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#0b0e14">
     <meta name="color-scheme" content="light dark">
 {% seo %}
     <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
     {% include head-custom.html %}
   </head>
   <body>
-    <header class="topbar">
-      <div class="topbar-inner">
-        <a class="brand" href="{{ "/" | relative_url }}">
-          {% if site.logo %}<img src="{{ site.logo | relative_url }}" alt="">{% endif %}
-          <span>{{ site.title }}</span>
-        </a>
-        <div class="nav-right">
-          <nav aria-label="Primary">
-            <ul class="nav-links" id="nav-links">
-              {% for item in site.data.navigation %}
-                <li><a href="{{ item.url }}"{% if page.url == item.url %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
-              {% endfor %}
-            </ul>
-          </nav>
-          <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
-            <i class="fas fa-moon icon-light" aria-hidden="true"></i><i class="fas fa-sun icon-dark" aria-hidden="true"></i>
-          </button>
-          <button class="nav-toggle" type="button" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
-        </div>
+    <header class="site-header" data-site-header>
+      <a class="wordmark" href="{{ "/" | relative_url }}" aria-label="{{ site.title }} home">
+        <span class="wordmark-mark" aria-hidden="true">SM</span>
+        <span class="wordmark-text">
+          <span class="wordmark-name">{{ site.title }}</span>
+          <span class="wordmark-role">Sr. Services Engineer &mdash; MSP delivery via agentic-LLM systems</span>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        {% include nav.html %}
+      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+          <i class="fas fa-moon icon-light" aria-hidden="true"></i><i class="fas fa-sun icon-dark" aria-hidden="true"></i>
+        </button>
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-button>
+          <span class="sr-only">Open navigation</span>
+          <span class="menu-line menu-line-one" aria-hidden="true"></span><span class="menu-line menu-line-two" aria-hidden="true"></span>
+        </button>
       </div>
     </header>
+
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden data-mobile-nav>
+      {% include nav.html %}
+    </nav>
 
     {% if page.hero_title %}
     <section class="hero">
       <div class="hero-inner">
         <div class="hero-text reveal">
-          {% if page.hero_eyebrow %}<p class="eyebrow">{{ page.hero_eyebrow }}</p>{% endif %}
+          {% if page.hero_eyebrow %}<p class="kicker">{{ page.hero_eyebrow }}</p>{% endif %}
           <h1>{{ page.hero_title }}</h1>
           <p class="lede">{{ page.hero_lede }}</p>
           {% if page.hero_ctas %}
@@ -53,7 +56,6 @@
           </div>
           {% endif %}
         </div>
-        {% if site.logo %}<img class="hero-avatar reveal" src="{{ site.logo | relative_url }}" alt="Suleman Manji">{% endif %}
       </div>
     </section>
     {% endif %}
@@ -66,16 +68,18 @@
 
     <footer class="site-footer">
       <div class="container">
+        <p>&copy; <span data-current-year>2026</span> {{ site.title }}</p>
+        <p class="footer-tagline">Currently engineering at <a href="https://www.viyu.net" target="_blank" rel="noopener">Viyu Network Solutions</a></p>
         <div class="site-social">
           <a href="https://github.com/{{ site.github_username }}" aria-label="GitHub"><i class="fab fa-github"></i></a>
           <a href="https://www.linkedin.com/in/{{ site.linkedin_username }}" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
           <a href="mailto:{{ site.email }}" aria-label="Email"><i class="fas fa-envelope"></i></a>
         </div>
-        <p class="footer-tagline">© {{ site.title }} · Currently engineering at <a href="https://www.viyu.net" target="_blank" rel="noopener">Viyu Network Solutions</a></p>
       </div>
     </footer>
 
     <script src="{{ "/assets/js/theme-toggle.js" | relative_url }}"></script>
+    <script src="{{ "/assets/js/portfolio-rewrite.js" | relative_url }}" defer></script>
     {% if page.work_with_me_form %}
     <script src="{{ "/assets/js/work-with-me.js" | relative_url }}"></script>
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
@@ -83,14 +87,5 @@
     {% if page.work_with_me_quote %}
     <script src="{{ "/assets/js/work-with-me-quote.js" | relative_url }}"></script>
     {% endif %}
-    <script>
-      (function () {
-        var t = document.querySelector('.nav-toggle'), l = document.getElementById('nav-links');
-        if (t && l) t.addEventListener('click', function () {
-          var open = l.classList.toggle('open');
-          t.setAttribute('aria-expanded', open ? 'true' : 'false');
-        });
-      })();
-    </script>
   </body>
 </html>

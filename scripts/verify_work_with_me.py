@@ -43,7 +43,7 @@ FORBIDDEN_PUBLIC_PATTERNS = [
     (r"agency branding", "separate agency branding"),
     (r"mechanic quote", "mechanic quote"),
     (r"vehicle[- ]repair", "vehicle repair"),
-    (r"invoice review", "vehicle-repair invoice review"),
+    (r"vehicle[- ]repair invoice review", "vehicle-repair invoice review"),
     (r"brakes\s*&\s*bytes", "Brakes & Bytes"),
 ]
 

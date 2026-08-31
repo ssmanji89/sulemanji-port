@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Professional Experience | Hands-On Technologist
+title: Professional Experience — Hands-On Technologist
 description: "Suleman Manji's professional history — a hands-on, analytical career across NOC automation, cloud and security engineering, Microsoft 365, and service-delivery process automation."
 permalink: /experience
 ---

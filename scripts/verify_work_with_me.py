@@ -24,6 +24,7 @@ SITE_QUOTE_PAGE = ROOT / "_site" / "work-with-me" / "quote.html"
 SITE_THANKS_PAGE = ROOT / "_site" / "work-with-me" / "thanks.html"
 SITE_TERMS_PAGE = ROOT / "_site" / "work-with-me" / "terms.html"
 SITE_PRIVACY_PAGE = ROOT / "_site" / "privacy.html"
+SITE_INDEX = ROOT / "_site" / "index.html"
 
 PUBLIC_SOURCE_FILES = [
     PAGE,
@@ -289,9 +290,17 @@ def main():
 
     if INDEX.exists():
         index = read(INDEX)
-        require('href="/work-with-me"' in index, "index.html must link to /work-with-me", failures)
-        require("nav-cta" in index, "index.html must expose the work-with-me nav CTA", failures)
         require("messy" in index.lower(), "index.html Work With Me entry must use messy-problem language", failures)
+        # The homepage nav is data-driven via {% include nav.html %} (shared with
+        # _layouts/default.html), so the literal link/CTA markup lives in the render,
+        # not the source. Require the shared include here and verify its render below.
+        require("{% include nav.html %}" in index, "index.html must render the shared nav.html include", failures)
+
+    require(SITE_INDEX.exists(), "_site/index.html is missing; run bundle exec jekyll build", failures)
+    if SITE_INDEX.exists():
+        site_index = read(SITE_INDEX)
+        require('href="/work-with-me"' in site_index, "_site/index.html must link to /work-with-me", failures)
+        require("nav-cta" in site_index, "_site/index.html must expose the work-with-me nav CTA", failures)
 
     for path in PUBLIC_SOURCE_FILES:
         check_forbidden(path, failures)

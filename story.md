@@ -8,6 +8,8 @@ hero_title: From brakes to bytes.
 hero_lede: "A counter at a brake shop, a NOC running fifteen thousand machines, a few hundred repositories, and a habit I've never shaken: point automation at a problem and see what holds."
 ---
 
+*This is the long, personal version — childhood, the brake shop, the hard parts, twenty years of it. If you're here professionally, [About](/about) and [Experience](/experience) are the short path. If you want the whole story, read on.*
+
 ## Houston
 
 I grew up in Houston, mostly. The detail I remember best about being a kid is that I watched everything — I was the one in the room keeping track of who was where and what was about to go wrong. That turned out to be useful later, professionally; pattern recognition is most of the job. It came from somewhere harder than a job, though. My father's illness and his passing in 2000 set the terms for a lot of what followed, and I'll leave it there except to say it's the hinge the rest of the story turns on.

@@ -292,7 +292,7 @@ img { max-width: 100%; }
 }
 
 @media (max-width: 680px) {
-  .hero h1 { font-size: clamp(3.1rem, 16vw, 5.2rem); }
+  .hero h1 { font-size: clamp(2.2rem, 10vw, 3.4rem); }
   .hero-copy { justify-content: flex-end; padding-top: 6rem; }
   .hero-lede { font-size: 1rem; }
   .hero-actions, .button { width: 100%; }

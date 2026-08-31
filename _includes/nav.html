@@ -1,0 +1,5 @@
+<ul class="nav-list">
+  {% for item in site.data.navigation %}
+  <li><a href="{{ item.url | relative_url }}"{% if page.url == item.url %} aria-current="page"{% endif %}{% if item.url == "/work-with-me" %} class="nav-cta"{% endif %}>{{ item.title }}{% if item.url == "/work-with-me" %} <span aria-hidden="true">&#8599;</span>{% endif %}</a></li>
+  {% endfor %}
+</ul>

@@ -6,7 +6,7 @@
     document.documentElement.setAttribute('data-theme', theme);
     try { localStorage.setItem('theme', theme); } catch (e) {}
     var meta = document.getElementById('theme-color-meta');
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#0d1117' : '#0969da');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#171715' : '#f5f1e8');
   }
   document.addEventListener('DOMContentLoaded', function () {
     var btn = document.querySelector('.theme-toggle');

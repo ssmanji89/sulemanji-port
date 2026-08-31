@@ -1,12 +1,14 @@
 ---
 layout: default
-title: Story | Suleman Manji
+title: Story
 description: The long version — how Suleman Manji went from a brake-shop counter in Houston to building service-delivery systems for managed operations.
 permalink: /story
 hero_eyebrow: The long version
 hero_title: From brakes to bytes.
 hero_lede: "A counter at a brake shop, a NOC running fifteen thousand machines, a few hundred repositories, and a habit I've never shaken: point automation at a problem and see what holds."
 ---
+
+*This is the long, personal version — childhood, the brake shop, the hard parts, twenty years of it. If you're here professionally, [About](/about) and [Experience](/experience) are the short path. If you want the whole story, read on.*
 
 ## Houston
 

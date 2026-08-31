@@ -1,12 +1,16 @@
 ---
 layout: default
-title: Beyond Work | Suleman Manji
+title: Beyond Work
 description: The personal side — markets, mathematics, genealogy, dream engineering, and a habit of building things just to see what holds.
 permalink: /beyond
 hero_eyebrow: Off the clock
 hero_title: Things I build when no one's paying me to.
 hero_lede: "The same instinct as the day job, pointed at whatever I'm curious about that month. Most of it never ships. That was never the point."
 ---
+
+<div class="tldr" markdown="0">
+  <p><strong>In brief:</strong> The off-the-clock version of the same reflex &mdash; markets and decision systems, a number-theory research platform, a privacy-first DNA pipeline, dream engineering, and the brake shop that never fully went away.</p>
+</div>
 
 ## Markets &amp; probability
 

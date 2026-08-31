@@ -1,48 +1,54 @@
-/* ===== Design tokens — light is default, dark via [data-theme="dark"] ===== */
+/* ===== Design tokens — editorial system, single source for every page
+   that renders through _layouts/default.html. Values mirror the homepage
+   (assets/css/portfolio-rewrite.css), which stays a standalone stylesheet
+   by design (index.html uses layout: null) — see docs/UI-REVIEW-2026-08-30.md.
+   Light is default, dark via [data-theme="dark"]. ===== */
 :root {
-  --bg: #ffffff;
-  --bg-alt: #f4f6fb;
-  --surface: #ffffff;
-  --surface-2: #f8fafc;
-  --border: #e4e8f0;
-  --border-strong: #d0d7e2;
-  --text: #1a1f29;
-  --text-muted: #5a6473;
-  --link: #4f46e5;
-  --link-hover: #4338ca;
-  --accent: #4f46e5;
-  --accent-2: #7c3aed;
-  --accent-soft: rgba(79, 70, 229, 0.10);
-  --code-bg: #f4f6fb;
-  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
-  --shadow-md: 0 4px 16px rgba(16, 24, 40, 0.08), 0 2px 6px rgba(16, 24, 40, 0.05);
-  --shadow-lg: 0 12px 36px rgba(16, 24, 40, 0.12);
-  --hero-glow: radial-gradient(60% 120% at 20% 0%, rgba(124, 58, 237, 0.12), transparent 60%),
-               radial-gradient(50% 100% at 90% 10%, rgba(79, 70, 229, 0.10), transparent 60%);
-  --radius: 14px;
-  --radius-sm: 9px;
-  --maxw: 1080px;
+  --bg: #f5f1e8;
+  --bg-alt: #ebe5d8;
+  --surface: #fffefa;
+  --surface-2: #ebe5d8;
+  --border: rgba(23, 23, 21, 0.22);
+  --border-strong: rgba(23, 23, 21, 0.42);
+  --text: #171715;
+  --text-muted: #6c6b64;
+  --link: #171715;
+  --link-hover: #d63a1c;
+  --accent: #ff5a36;
+  --accent-2: #d63a1c;
+  --accent-warm: #c9ff63;
+  --accent-soft: rgba(255, 90, 54, 0.12);
+  --code-bg: #ebe5d8;
+  --shadow: 0 1px 2px rgba(23, 23, 21, 0.08);
+  --shadow-md: 0 4px 14px rgba(23, 23, 21, 0.10);
+  --shadow-lg: 0 10px 30px rgba(23, 23, 21, 0.14);
+  --hero-glow: none;
+  --radius: 2px;
+  --radius-sm: 2px;
+  --maxw: 1180px;
+  --font-display: "Arial Black", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 html[data-theme="dark"] {
-  --bg: #0b0e14;
-  --bg-alt: #11151d;
-  --surface: #141925;
-  --surface-2: #1a2030;
-  --border: #232a39;
-  --border-strong: #2e3850;
-  --text: #e8edf6;
-  --text-muted: #9aa6ba;
-  --link: #a5b4fc;
-  --link-hover: #c4ccff;
-  --accent: #818cf8;
-  --accent-2: #a78bfa;
-  --accent-soft: rgba(129, 140, 248, 0.14);
-  --code-bg: #1a2030;
+  --bg: #171715;
+  --bg-alt: #1d1d1a;
+  --surface: #201f1c;
+  --surface-2: #272620;
+  --border: rgba(245, 241, 232, 0.16);
+  --border-strong: rgba(245, 241, 232, 0.30);
+  --text: #f5f1e8;
+  --text-muted: #b0ada2;
+  --link: #f5f1e8;
+  --link-hover: #ff8a63;
+  --accent: #ff6a42;
+  --accent-2: #ff8a63;
+  --accent-warm: #c9ff63;
+  --accent-soft: rgba(255, 106, 66, 0.20);
+  --code-bg: #272620;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.40);
   --shadow-lg: 0 16px 44px rgba(0, 0, 0, 0.55);
-  --hero-glow: radial-gradient(60% 120% at 20% 0%, rgba(167, 139, 250, 0.18), transparent 60%),
-               radial-gradient(50% 100% at 90% 10%, rgba(129, 140, 248, 0.15), transparent 60%);
+  --hero-glow: none;
 }
 
 /* Theme toggle button (top bar) */

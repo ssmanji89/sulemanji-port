@@ -6,6 +6,8 @@ permalink: /resume
 
 # Resume
 
+[Download PDF](/assets/resume/Suleman-Manji-Resume.pdf)
+
 The one-page version. The [Experience](/experience) page has the full fifteen-year timeline with detail; the [Story](/story) has the rest.
 
 ## Recent experience

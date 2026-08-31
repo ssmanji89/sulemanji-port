@@ -29,7 +29,7 @@ There's a further step I think about even where I haven't fully built it: eventu
 
 ## The method
 
-None of the above is trustworthy if the same agent that makes a change is also the one that decides the change is fine. The review discipline around this platform is built to prevent exactly that. Of the several thousand agent sessions run against it over the past several months, 2,049 were role-typed subagent threads rather than direct chats — a named reviewer, planner, or executor agent spawned for one scoped piece of work — and 670 of those were specifically code-reviewer runs, each returning a structured verdict rather than a free-text opinion an orchestrator has to interpret.
+None of the above is trustworthy if the same agent that makes a change is also the one that decides the change is fine. The review discipline around this platform is built to prevent exactly that. Of the several thousand agent sessions run against it between May and August 2026, 2,049 were role-typed subagent threads rather than direct chats — a named reviewer, planner, or executor agent spawned for one scoped piece of work — and 670 of those were specifically code-reviewer runs, each returning a structured verdict rather than a free-text opinion an orchestrator has to interpret.
 
 The more interesting piece is the cross-vendor version of that same pattern: one agent runtime dispatching a different vendor's model to independently review the same pull request, read-only, under an identical structured contract — a verdict of approve or request-changes, backed by cited evidence. Neither side sees what the other found until both reports land, which is closer to how a second engineer's review actually functions than a single model checking its own homework ever could be.
 

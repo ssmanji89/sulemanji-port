@@ -283,7 +283,7 @@ def main():
     if NAV.exists():
         nav = read(NAV)
         nav_pattern = re.compile(
-            r"- title: Projects\s+url: /projects\s+- title: Work With Me\s+url: /work-with-me\s+- title: Beyond Work\s+url: /beyond",
+            r"- title: Projects\s+url: /projects\s+- title: Contact\s+url: /work-with-me\s+- title: Beyond Work\s+url: /beyond",
             re.MULTILINE,
         )
         require(nav_pattern.search(nav) is not None, "navigation must place Work With Me after Projects and before Beyond Work", failures)

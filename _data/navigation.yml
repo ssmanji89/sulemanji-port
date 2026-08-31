@@ -2,13 +2,11 @@
   url: /
 - title: About
   url: /about
-- title: Story
-  url: /story
 - title: Experience
   url: /experience
 - title: Projects
   url: /projects
-- title: Work With Me
+- title: Contact
   url: /work-with-me
 - title: Beyond Work
   url: /beyond

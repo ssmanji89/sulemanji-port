@@ -51,7 +51,7 @@ The substrate everything else runs on — and where I started early.
 <div class="card-grid" markdown="0">
   <div class="card">
     <h3>Evidence-first agent infrastructure <span class="proj-meta">· private · active</span></h3>
-    <p>I design and lead agent-assisted engineering systems around repository-native control planes, role-separated implementation and review, agent-consumable CLI result envelopes, mutation read-back, partial-success reporting, and durable execution evidence. The implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and deciding what evidence is strong enough to merge.</p>
+    <p>I design and lead agent-assisted engineering systems around repository-native control planes, role-separated implementation and review, agent-consumable CLI result envelopes, mutation read-back, partial-success reporting, and durable execution evidence. The implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and deciding what evidence is strong enough to merge. Counted from the primary platform repository in August 2026: 13 vendor-platform CLIs, 307 skill modules, 28 agent definitions.</p>
   </div>
   <div class="card">
     <h3><a href="https://github.com/ssmanji89/toast-pos-mcp">toast-pos-mcp</a> <span class="proj-meta">· public · foundation in progress</span></h3>

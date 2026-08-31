@@ -39,8 +39,8 @@ A multi-year effort instrumenting a PSA platform with AI triage and public MCP s
     <p>AI triage middleware for a PSA workflow: multiple expert-role perspectives analyze each ticket, suggest priority and category, draft remediation steps, and prepare reviewable enrichment. The private implementation remains abstracted from the public portfolio.</p>
   </div>
   <div class="card">
-    <h3><a href="https://github.com/ssmanji89/halopsa-workflows-mcp">halopsa-workflows-mcp</a> <span class="proj-meta">· public · npm</span></h3>
-    <p>An MCP server exposing the HaloPSA Workflows API to Claude and other clients, with auth and token caching. A companion <a href="https://github.com/ssmanji89/halopsa-tickets-mcp">halopsa-tickets-mcp</a> covers tickets; both are listed publicly.</p>
+    <h3><a href="https://github.com/ssmanji89/halopsa-workflows-mcp">halopsa-workflows-mcp</a> <span class="proj-meta">· public · npm (v1.1.0 on npm)</span></h3>
+    <p>An MCP server exposing the HaloPSA Workflows API to Claude and other clients, with auth and token caching. A companion <a href="https://github.com/ssmanji89/halopsa-tickets-mcp">halopsa-tickets-mcp</a> covers tickets; the workflows server is published on npm, the tickets server is public on GitHub.</p>
   </div>
 </div>
 
@@ -58,7 +58,7 @@ The substrate everything else runs on — and where I started early.
     <p>An open-source MCP server foundation for Toast POS reporting. The current work establishes a strict TypeScript stdio runtime, synthetic fixture harness, traversal and symlink-boundary protections, and review gates before real Toast tools or API integration are exposed.</p>
   </div>
   <div class="card">
-    <h3><a href="https://github.com/ssmanji89/postgres-mcp-tools">postgres-mcp-tools</a> <span class="proj-meta">· public · npm</span></h3>
+    <h3><a href="https://github.com/ssmanji89/postgres-mcp-tools">postgres-mcp-tools</a> <span class="proj-meta">· public · npm (v1.0.14 on npm)</span></h3>
     <p>A Postgres + pgvector memory system for AI apps — semantic search and persistent cross-session memory over MCP, with pluggable embeddings.</p>
   </div>
   <div class="card">

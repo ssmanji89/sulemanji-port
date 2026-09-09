@@ -25,3 +25,9 @@ Leave SEO author defaults unset: jekyll-seo-tag 2.8 cannot attach the shared Per
 ID to its author object. Its page schema and the explicit Person remain separate.
 Keep metadata changes in that shared path. Navigation remains available without JavaScript; only enable the
 mobile disclosure after its handlers are attached.
+
+## Public build boundary
+
+`_config.yml` must exclude agent instructions, operational logs, repository scripts,
+worker source, documentation, and dependency trees from the generated public site.
+`scripts/verify_portfolio_review.py` enforces this boundary against `_site`.

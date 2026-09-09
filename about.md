@@ -3,11 +3,14 @@ layout: default
 title: About
 description: Suleman Manji — a Houston-based Sr. Services Engineer who often acts as a solutions architect and automation engineer across service platforms, infrastructure, and AI-assisted workflow tooling.
 permalink: /about
+profile_page: true
+seo:
+  type: WebPage
 ---
 
 # About
 
-I work as a Sr. Services Engineer in Houston, often acting as a solutions architect and automation engineer. I deliver MSP service — migrations, security operations, billing — through agentic-LLM systems I build, with evidence contracts and human approval gates.
+I work as a Sr. Services Engineer in Houston, often acting as a solutions architect and automation engineer. My work spans migrations, security operations, and infrastructure. That engineering practice came first; agentic-LLM systems are a later addition to how I organize and review service delivery.
 
 ## The pattern
 
@@ -15,7 +18,7 @@ For about fifteen years the same reflex keeps repeating: find a process that sur
 
 ## Right now
 
-At Viyu Network Solutions I handle Microsoft 365 migrations, professional-services scoping, and project-discovery work. I build the AI-assisted systems that support SOW drafting, PBR/QBR prep, and invoice-review support, with human approval gates on anything that touches a client. The goal on all of it is the same: turn work that currently survives on folklore into something structured enough to scope, review, and hand off.
+At Viyu Network Solutions I handle Microsoft 365 migrations, professional-services scoping, and project-discovery work. I architect and review the AI-assisted systems that support SOW drafting, PBR/QBR prep, and invoice-review support, with human approval gates on anything that touches a client. Platform implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and evidence judgment. The goal on all of it is the same: turn work that currently survives on folklore into something structured enough to scope, review, and hand off.
 
 <div class="cta-buttons" markdown="0">
     <a href="/experience" class="btn btn-primary">The full timeline <span aria-hidden="true">&rarr;</span></a>

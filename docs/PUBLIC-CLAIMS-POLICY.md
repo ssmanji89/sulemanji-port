@@ -17,7 +17,7 @@ A claim failing any question is either dropped or rewritten until it passes — 
 - Voice: **Sr. Services Engineer at a managed IT services provider** (Viyu Network Solutions; vArida/ARW Systems context) who delivers MSP service through agentic-LLM systems he builds. Never founder/owner/product-vendor framing for the MSP work.
 - The site is a personal life-profile, not a storefront. The "AI Agent Control Plane" productized framing was tried and reverted by owner decision — do not reintroduce it.
 - Implementation honesty: platform work is *materially agent-assisted*; his stated role is architecture, contracts, orchestration, review standards, and evidence judgment. Keep that sentence-shape; never imply hand-typed volume.
-- **Work With Me framing (owner-stated 2026-08-30):** he is an FTE at Viyu; the page offers personal help on *home-level/hobby-scale* problems ONLY, and explicitly routes business-grade work to Viyu/vArida/ARW as a referral. Never frame him as a freelancer, consultancy, or agency; never present personal engagement as competing with his employer.
+- **Work With Me framing (owner-stated 2026-09-09, superseding the 2026-08-30 home/hobby-only interpretation):** he is an FTE at Viyu. Route by the visitor's situation: organizational projects retain Suleman as the point of contact and business delivery is through Viyu Network Solutions; professional opportunities and technical collaborations may go directly to Suleman; optional personal workshop intake is for home-level/hobby-scale projects only. Never infer an independent consultancy, agency, fee arrangement, availability guarantee, or delivery commitment. Preserve the personal life-profile and actual employer identity.
 
 ## §2. Attribution (NEVER violate)
 

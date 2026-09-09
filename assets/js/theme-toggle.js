@@ -1,23 +1,33 @@
 (function () {
-  function current() {
-    return document.documentElement.getAttribute('data-theme') || 'light';
-  }
+  var preference = null;
+  var media = window.matchMedia('(prefers-color-scheme: dark)');
+  try {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'light' || saved === 'dark') preference = saved;
+  } catch (e) {}
+
   function apply(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    try { localStorage.setItem('theme', theme); } catch (e) {}
     var meta = document.getElementById('theme-color-meta');
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#171715' : '#f5f1e8');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#17232a' : '#f7f6f2');
+    var button = document.querySelector('.theme-toggle');
+    if (button) button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
   }
+
   document.addEventListener('DOMContentLoaded', function () {
-    var btn = document.querySelector('.theme-toggle');
-    if (!btn) return;
-    btn.addEventListener('click', function () {
-      apply(current() === 'dark' ? 'light' : 'dark');
+    apply(preference || (media.matches ? 'dark' : 'light'));
+    var button = document.querySelector('.theme-toggle');
+    if (!button) return;
+    button.addEventListener('click', function () {
+      preference = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem('theme', preference); } catch (e) {}
+      apply(preference);
     });
+    button.hidden = false;
   });
-  // Follow OS changes only when the user hasn't chosen explicitly
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
-    try { if (localStorage.getItem('theme')) return; } catch (err) {}
-    document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-  });
+  var followSystem = function (event) {
+    if (!preference) apply(event.matches ? 'dark' : 'light');
+  };
+  if (media.addEventListener) media.addEventListener('change', followSystem);
+  else if (media.addListener) media.addListener(followSystem);
 })();

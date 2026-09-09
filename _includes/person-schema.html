@@ -1,0 +1,30 @@
+{% assign person_id = '/#person' | absolute_url %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "@id": {{ person_id | jsonify }},
+  "name": {{ site.person.name | jsonify }},
+  "url": {{ '/' | absolute_url | jsonify }},
+  "jobTitle": {{ site.person.job_title | jsonify }},
+  "worksFor": {
+    "@type": "Organization",
+    "name": {{ site.person.employer_name | jsonify }},
+    "url": {{ site.person.employer_url | jsonify }}
+  },
+  "sameAs": {{ site.person.same_as | jsonify }}
+}
+</script>
+{% if page.profile_page %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfilePage",
+  "@id": {{ page.url | absolute_url | jsonify }},
+  "url": {{ page.url | absolute_url | jsonify }},
+  "name": {{ page.title | jsonify }},
+  "description": {{ page.description | jsonify }},
+  "mainEntity": { "@id": {{ person_id | jsonify }} }
+}
+</script>
+{% endif %}

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 from pathlib import Path
+from html.parser import HTMLParser
 import re
 import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
 CNAME = ROOT / "CNAME"
-PAGE = ROOT / "work-with-me.md"
+CONTACT_PAGE = ROOT / "work-with-me.md"
+PAGE = ROOT / "work-with-me-personal.md"
 PRIORITY_PAGE = ROOT / "work-with-me-priority.md"
 QUOTE_PAGE = ROOT / "work-with-me-quote.md"
 THANKS_PAGE = ROOT / "work-with-me-thanks.md"
@@ -18,7 +20,8 @@ LAYOUT = ROOT / "_layouts" / "default.html"
 SCRIPT = ROOT / "assets" / "js" / "work-with-me.js"
 STYLE = ROOT / "assets" / "css" / "style.scss"
 CONFIG = ROOT / "_config.yml"
-SITE_PAGE = ROOT / "_site" / "work-with-me.html"
+SITE_CONTACT_PAGE = ROOT / "_site" / "work-with-me.html"
+SITE_PAGE = ROOT / "_site" / "work-with-me" / "personal.html"
 SITE_PRIORITY_PAGE = ROOT / "_site" / "work-with-me" / "priority.html"
 SITE_QUOTE_PAGE = ROOT / "_site" / "work-with-me" / "quote.html"
 SITE_THANKS_PAGE = ROOT / "_site" / "work-with-me" / "thanks.html"
@@ -27,6 +30,7 @@ SITE_PRIVACY_PAGE = ROOT / "_site" / "privacy.html"
 SITE_INDEX = ROOT / "_site" / "index.html"
 
 PUBLIC_SOURCE_FILES = [
+    CONTACT_PAGE,
     PAGE,
     PRIORITY_PAGE,
     QUOTE_PAGE,
@@ -89,6 +93,72 @@ def check_forbidden(path, failures):
             failures.append(f"{path.name} must not mention {label}")
 
 
+class Node:
+    def __init__(self, tag, attrs, parent):
+        self.tag, self.attrs, self.parent = tag, dict(attrs), parent
+
+    def within(self, tag, element_id=None):
+        parent = self.parent
+        while parent:
+            if parent.tag == tag and (element_id is None or parent.attrs.get("id") == element_id):
+                return True
+            parent = parent.parent
+        return False
+
+
+class Document(HTMLParser):
+    def __init__(self, text):
+        super().__init__()
+        self.nodes, self.stack = [], []
+        self.feed(text)
+
+    def handle_starttag(self, tag, attrs):
+        node = Node(tag, attrs, self.stack[-1] if self.stack else None)
+        self.nodes.append(node)
+        if tag not in {"input", "br", "hr", "img", "meta", "link", "source", "wbr"}:
+            self.stack.append(node)
+
+    def handle_endtag(self, tag):
+        for i in range(len(self.stack) - 1, -1, -1):
+            if self.stack[i].tag == tag:
+                del self.stack[i:]
+                break
+
+
+def check_scenarios(doc, path, failures):
+    for anchor, subject in [("business-engagements", "Organizational%20project"), ("professional-conversations", "Professional%20conversation"), ("personal-projects", "Personal%20project")]:
+        sections = [n for n in doc.nodes if n.tag == "section" and n.attrs.get("id") == anchor]
+        require(len(sections) == 1, f"{path.name}: missing scenario section {anchor}", failures)
+        href = f"mailto:ssmanji89@gmail.com?subject={subject}%20via%20sulemanji.com"
+        require(any(n.tag == "a" and n.attrs.get("href") == href and n.parent in sections for n in doc.nodes), f"{path.name}: scenario {anchor} must have its direct email action", failures)
+    require(not any(n.tag == "form" for n in doc.nodes), f"{path.name}: contact must not contain a form", failures)
+    require(not any(n.tag == "script" and ("work-with-me.js" in n.attrs.get("src", "") or "turnstile" in n.attrs.get("src", "")) for n in doc.nodes), f"{path.name}: contact must not load intake or CAPTCHA scripts", failures)
+    require(any(n.tag == "a" and n.attrs.get("id") == "work-with-me-intake" and n.attrs.get("href") == "/work-with-me/personal#work-with-me-intake" for n in doc.nodes), f"{path.name}: legacy intake anchor must link to personal intake", failures)
+    require(any(n.tag == "a" and n.attrs.get("href") == "/work-with-me/personal" for n in doc.nodes), f"{path.name}: personal scenario must link to workshop", failures)
+
+
+def check_personal(doc, path, failures):
+    forms = [n for n in doc.nodes if n.tag == "form" and n.attrs.get("id") == "work-with-me-intake"]
+    require(len(forms) == 1, f"{path.name}: requires one intake form", failures)
+    fields = [n for n in doc.nodes if n.tag in {"input", "textarea"} and n.within("form", "work-with-me-intake")]
+    contexts = [n.attrs for n in fields if n.attrs.get("name") == "contextType"]
+    require(len(contexts) == 1 and contexts[0].get("type") == "hidden" and contexts[0].get("value") == "personal", f"{path.name}: context must be hidden personal", failures)
+    categories = [n.attrs.get("value") for n in fields if n.attrs.get("name") == "workshopCategory"]
+    require(sorted(categories) == ["github_codebase_review", "home_personal_automation", "not_sure_other"], f"{path.name}: personal categories must exclude organizational work", failures)
+    require(any(n.attrs.get("name") == "workshopCategory" and n.attrs.get("value") == "not_sure_other" and "checked" in n.attrs for n in fields), f"{path.name}: preserve default category", failures)
+    paths = [n.attrs for n in fields if n.attrs.get("name") == "path"]
+    require(sorted(n.get("value") for n in paths) == ["normal", "priority"] and all(n.get("type") == "radio" and "required" in n and "checked" not in n for n in paths), f"{path.name}: preserve explicit normal/priority selection", failures)
+    require(not any(n.attrs.get("type") == "file" for n in fields), f"{path.name}: no file uploads", failures)
+    expected = {"name", "email", "contextType", "workshopCategory", "problem", "desiredOutcome", "priorAttempts", "sanitizedLinks", "path", "termsAccepted", "website", "turnstileToken"}
+    require(expected <= {n.attrs.get("name") for n in fields}, f"{path.name}: missing payload fields inside intake", failures)
+    for name, attrs in {"name": {"required": None, "minlength": "2", "maxlength": "120"}, "email": {"type": "email", "required": None, "maxlength": "254"}, "problem": {"required": None, "minlength": "40", "maxlength": "6000"}, "desiredOutcome": {"required": None, "minlength": "20", "maxlength": "3000"}, "termsAccepted": {"type": "checkbox", "required": None}, "website": {"class": "honeypot", "tabindex": "-1", "autocomplete": "off", "aria-hidden": "true"}, "turnstileToken": {"type": "hidden"}}.items():
+        require(any(n.attrs.get("name") == name and all(k in n.attrs and (v is None or n.attrs[k] == v) for k, v in attrs.items()) for n in fields), f"{path.name}: {name} validation/security attributes changed", failures)
+    require(any(n.attrs.get("id") == "intake-status" and n.attrs.get("role") == "status" and n.attrs.get("aria-live") == "polite" and n.within("form", "work-with-me-intake") for n in doc.nodes), f"{path.name}: missing live status inside form", failures)
+    for href in ["/work-with-me/terms", "/privacy"]:
+        require(any(n.tag == "a" and n.attrs.get("href") == href and n.within("form", "work-with-me-intake") for n in doc.nodes), f"{path.name}: missing consent link {href}", failures)
+    require(any(n.attrs.get("class") == "cf-turnstile" and n.attrs.get("data-callback") == "onWorkWithMeTurnstile" and n.attrs.get("data-expired-callback") == "onWorkWithMeTurnstileExpired" and n.attrs.get("data-error-callback") == "onWorkWithMeTurnstileExpired" and n.within("form", "work-with-me-intake") for n in doc.nodes), f"{path.name}: missing CAPTCHA callback contract", failures)
+
+
 def main():
     failures = []
     api_base = configured_api_base()
@@ -98,7 +168,7 @@ def main():
     if CNAME.exists():
         require(read(CNAME).strip() == "www.sulemanji.com", "CNAME must remain www.sulemanji.com", failures)
 
-    require(PAGE.exists(), "work-with-me.md is missing", failures)
+    require(PAGE.exists(), "work-with-me-personal.md is missing", failures)
     require(PRIORITY_PAGE.exists(), "work-with-me-priority.md is missing", failures)
     require(QUOTE_PAGE.exists(), "work-with-me-quote.md is missing", failures)
     require(THANKS_PAGE.exists(), "work-with-me-thanks.md is missing", failures)
@@ -114,23 +184,22 @@ def main():
     if PAGE.exists():
         page = read(PAGE)
         lowered = page.lower()
-        require("layout: default" in page, "work-with-me.md must use the default layout", failures)
-        require("title: Work With Me" in page, "work-with-me.md must set title: Work With Me", failures)
-        require("permalink: /work-with-me" in page, "work-with-me.md must publish at /work-with-me", failures)
-        require("hero_eyebrow: Work With Me" in page, "work-with-me.md must set hero_eyebrow", failures)
-        require("work_with_me_form: true" in page, "work-with-me.md must enable the Work With Me form script", failures)
-        require("AI Workflow Clinic" in page, "work-with-me.md must include AI Workflow Clinic", failures)
-        require("Automation / Ops Systems Review" in page, "work-with-me.md must include Automation / Ops Systems Review", failures)
-        require("Build Path / Technical Triage" in page, "work-with-me.md must include Build Path / Technical Triage", failures)
-        require("Bring me a messy problem" in page, "work-with-me.md must include the primary CTA label", failures)
-        require("secrets" in lowered, "work-with-me.md must warn against sending secrets", failures)
-        require("attachments" in lowered, "work-with-me.md must prohibit attachments", failures)
-        require("private third-party data" in lowered, "work-with-me.md must warn against private third-party data", failures)
-        require("production credential" in lowered, "work-with-me.md must say no production credential custody is needed", failures)
-        require("not regulated legal, medical, financial, or compliance advice" in lowered, "work-with-me.md must include regulated-advice boundary language", failures)
-        require("does not guarantee production deployment" in lowered, "work-with-me.md must avoid promising production deployment", failures)
-        require("sanitized examples" in lowered, "work-with-me.md must prefer sanitized examples", failures)
-        require("AI participates" in page or "AI-assisted" in page, "work-with-me.md must disclose AI participation", failures)
+        require("layout: default" in page, "work-with-me-personal.md must use the default layout", failures)
+        require("title: Personal workshop" in page, "work-with-me-personal.md must set title: Personal workshop", failures)
+        require("permalink: /work-with-me/personal" in page, "work-with-me-personal.md must publish at /work-with-me/personal", failures)
+        require("hero_eyebrow: Personal projects" in page, "work-with-me-personal.md must set hero_eyebrow", failures)
+        require("work_with_me_form: true" in page, "work-with-me-personal.md must enable the Work With Me form script", failures)
+        require("AI Workflow Clinic" in page, "work-with-me-personal.md must include AI Workflow Clinic", failures)
+        require("Automation / Ops Systems Review" in page, "work-with-me-personal.md must include Automation / Ops Systems Review", failures)
+        require("Build Path / Technical Triage" in page, "work-with-me-personal.md must include Build Path / Technical Triage", failures)
+        require("secrets" in lowered, "work-with-me-personal.md must warn against sending secrets", failures)
+        require("attachments" in lowered, "work-with-me-personal.md must prohibit attachments", failures)
+        require("private third-party data" in lowered, "work-with-me-personal.md must warn against private third-party data", failures)
+        require("production credential" in lowered, "work-with-me-personal.md must say no production credential custody is needed", failures)
+        require("not regulated legal, medical, financial, or compliance advice" in lowered, "work-with-me-personal.md must include regulated-advice boundary language", failures)
+        require("does not guarantee production deployment" in lowered, "work-with-me-personal.md must avoid promising production deployment", failures)
+        require("sanitized examples" in lowered, "work-with-me-personal.md must prefer sanitized examples", failures)
+        require("AI participates" in page or "AI-assisted" in page, "work-with-me-personal.md must disclose AI participation", failures)
         require_text(page, 'id="work-with-me-intake"', PAGE, failures)
         require_text(page, 'class="intake-form"', PAGE, failures)
         require_text(page, 'data-endpoint="{{ site.work_with_me_api_base }}/v1/intakes"', PAGE, failures)
@@ -140,12 +209,10 @@ def main():
         for phrase in [
             "Pick the closest starting point",
             "GitHub / Codebase Review",
-            "AI Business Operations",
             "Home + Personal Automation",
             "Not sure / Other",
             'name="workshopCategory"',
             'value="github_codebase_review"',
-            'value="ai_business_operations"',
             'value="home_personal_automation"',
             'value="not_sure_other"',
         ]:
@@ -170,7 +237,7 @@ def main():
         require_text(page, 'data-callback="onWorkWithMeTurnstile"', PAGE, failures)
         require_text(page, 'role="status"', PAGE, failures)
         require_text(page, 'aria-live="polite"', PAGE, failures)
-        require('type="file"' not in page.lower(), "work-with-me.md must not include file inputs", failures)
+        require('type="file"' not in page.lower(), "work-with-me-personal.md must not include file inputs", failures)
 
     if PRIORITY_PAGE.exists():
         priority = read(PRIORITY_PAGE)
@@ -278,7 +345,7 @@ def main():
         require("work_with_me_api_base:" in config, "_config.yml must define the Work With Me API base", failures)
         require(api_base.startswith("https://"), "_config.yml Work With Me API base must be an HTTPS URL", failures)
         require("priority_discovery_checkout_ready:" in config, "_config.yml must define the Priority Discovery checkout launch flag", failures)
-        require(checkout_ready in ["true", "false"], "_config.yml Priority Discovery checkout launch flag must be true or false", failures)
+        require(checkout_ready == "false", "Priority Discovery checkout must remain disabled during internal review", failures)
 
     if NAV.exists():
         nav = read(NAV)
@@ -288,48 +355,48 @@ def main():
         )
         require(nav_pattern.search(nav) is not None, "navigation must place Work With Me after Projects and before Beyond Work", failures)
 
-    if INDEX.exists():
-        index = read(INDEX)
-        require("messy" in index.lower(), "index.html Work With Me entry must use messy-problem language", failures)
-        # The homepage nav is data-driven via {% include nav.html %} (shared with
-        # _layouts/default.html), so the literal link/CTA markup lives in the render,
-        # not the source. Require the shared include here and verify its render below.
-        require("{% include nav.html %}" in index, "index.html must render the shared nav.html include", failures)
-
     require(SITE_INDEX.exists(), "_site/index.html is missing; run bundle exec jekyll build", failures)
     if SITE_INDEX.exists():
-        site_index = read(SITE_INDEX)
-        require('href="/work-with-me"' in site_index, "_site/index.html must link to /work-with-me", failures)
-        require("nav-cta" in site_index, "_site/index.html must expose the work-with-me nav CTA", failures)
+        doc = Document(read(SITE_INDEX))
+        require(any(n.tag == "a" and n.attrs.get("href") == "/work-with-me" and n.within("nav") for n in doc.nodes), "rendered homepage navigation must link to contact", failures)
+    for path in [CONTACT_PAGE, SITE_CONTACT_PAGE]:
+        require(path.exists(), f"{path} is missing", failures)
+        if path.exists():
+            check_scenarios(Document(read(path)), path, failures)
+    for path in [PAGE, SITE_PAGE]:
+        if path.exists():
+            check_personal(Document(read(path)), path, failures)
+
+    if SITE_CONTACT_PAGE.exists():
+        check_forbidden(SITE_CONTACT_PAGE, failures)
 
     for path in PUBLIC_SOURCE_FILES:
         check_forbidden(path, failures)
 
-    require(SITE_PAGE.exists(), "_site/work-with-me.html is missing; run bundle exec jekyll build", failures)
+    require(SITE_PAGE.exists(), "_site/work-with-me/personal.html is missing; run bundle exec jekyll build", failures)
     if SITE_PAGE.exists():
         site_text = read(SITE_PAGE)
-        require("AI Workflow Clinic" in site_text, "_site/work-with-me.html must include AI Workflow Clinic", failures)
-        require("Automation / Ops Systems Review" in site_text, "_site/work-with-me.html must include Automation / Ops Systems Review", failures)
-        require("Build Path / Technical Triage" in site_text, "_site/work-with-me.html must include Build Path / Technical Triage", failures)
+        require("AI Workflow Clinic" in site_text, "_site/work-with-me/personal.html must include AI Workflow Clinic", failures)
+        require("Automation / Ops Systems Review" in site_text, "_site/work-with-me/personal.html must include Automation / Ops Systems Review", failures)
+        require("Build Path / Technical Triage" in site_text, "_site/work-with-me/personal.html must include Build Path / Technical Triage", failures)
         for phrase in [
             "Pick the closest starting point",
             "GitHub / Codebase Review",
-            "AI Business Operations",
             "Home + Personal Automation",
             "Not sure / Other",
             'name="workshopCategory"',
         ]:
-            require(phrase in site_text, f"_site/work-with-me.html must include {phrase!r}", failures)
-        require('id="work-with-me-intake"' in site_text, "_site/work-with-me.html must include the native intake form", failures)
+            require(phrase in site_text, f"_site/work-with-me/personal.html must include {phrase!r}", failures)
+        require('id="work-with-me-intake"' in site_text, "_site/work-with-me/personal.html must include the native intake form", failures)
         if api_base:
-            require(f'data-endpoint="{api_base}/v1/intakes"' in site_text, "_site/work-with-me.html must render the configured API base", failures)
-        require("assets/js/work-with-me.js" in site_text, "_site/work-with-me.html must load the Work With Me script", failures)
-        require("https://challenges.cloudflare.com/turnstile/v0/api.js" in site_text, "_site/work-with-me.html must load the Turnstile script", failures)
-        require('class="cf-turnstile"' in site_text, "_site/work-with-me.html must include the Turnstile widget", failures)
-        require('type="file"' not in site_text.lower(), "_site/work-with-me.html must not include file inputs", failures)
+            require(f'data-endpoint="{api_base}/v1/intakes"' in site_text, "_site/work-with-me/personal.html must render the configured API base", failures)
+        require("assets/js/work-with-me.js" in site_text, "_site/work-with-me/personal.html must load the Work With Me script", failures)
+        require("https://challenges.cloudflare.com/turnstile/v0/api.js" in site_text, "_site/work-with-me/personal.html must load the Turnstile script", failures)
+        require('class="cf-turnstile"' in site_text, "_site/work-with-me/personal.html must include the Turnstile widget", failures)
+        require('type="file"' not in site_text.lower(), "_site/work-with-me/personal.html must not include file inputs", failures)
         for pattern, label in FORBIDDEN_PUBLIC_PATTERNS:
             if contains_forbidden(site_text, pattern):
-                failures.append(f"_site/work-with-me.html must not mention {label}")
+                failures.append(f"_site/work-with-me/personal.html must not mention {label}")
 
     for site_file, label in [
         (SITE_PRIORITY_PAGE, "_site/work-with-me/priority.html"),

@@ -46,9 +46,12 @@ defaults:
         alt: Portrait of Suleman Manji
 
 exclude:
+  - AGENTS.md
   - Gemfile
   - Gemfile.lock
+  - blog_automation.log
   - node_modules
+  - scripts/
   - vendor/
   - worker/
   - docs/

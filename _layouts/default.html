@@ -9,37 +9,15 @@
     <link rel="stylesheet" href="{{ "/assets/css/style.css" | relative_url }}">
     {% include head-custom.html %}
   </head>
-  <body>
-    <header class="site-header" data-site-header>
-      <a class="wordmark" href="{{ "/" | relative_url }}" aria-label="{{ site.title }} home">
-        <span class="wordmark-mark" aria-hidden="true">SM</span>
-        <span class="wordmark-text">
-          <span class="wordmark-name">{{ site.title }}</span>
-          <span class="wordmark-role">Sr. Services Engineer</span>
-        </span>
-      </a>
-      <nav class="site-nav" aria-label="Primary navigation">
-        {% include nav.html %}
-      </nav>
-      <div class="header-actions">
-        <button class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
-          <i class="fas fa-moon icon-light" aria-hidden="true"></i><i class="fas fa-sun icon-dark" aria-hidden="true"></i>
-        </button>
-        <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-button>
-          <span class="sr-only">Open navigation</span>
-          <span class="menu-line menu-line-one" aria-hidden="true"></span><span class="menu-line menu-line-two" aria-hidden="true"></span>
-        </button>
-      </div>
-    </header>
+  <body{% if page.body_class %} class="{{ page.body_class | escape }}"{% endif %}>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {% include site-header.html %}
 
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" hidden data-mobile-nav>
-      {% include nav.html %}
-    </nav>
-
+    <main id="main" tabindex="-1" class="container{% if page.wide_content %} container-wide{% endif %}">
     {% if page.hero_title %}
     <section class="hero">
       <div class="hero-inner">
-        <div class="hero-text reveal">
+        <div class="hero-text">
           {% if page.hero_eyebrow %}<p class="kicker">{{ page.hero_eyebrow }}</p>{% endif %}
           <h1>{{ page.hero_title }}</h1>
           <p class="lede">{{ page.hero_lede }}</p>
@@ -60,23 +38,12 @@
     </section>
     {% endif %}
 
-    <main class="container">
       <section class="page{% unless page.hero_title %} has-no-hero{% endunless %}">
         {{ content }}
       </section>
     </main>
 
-    <footer class="site-footer">
-      <div class="container">
-        <p>&copy; <span data-current-year>2026</span> {{ site.title }}</p>
-        <p class="footer-tagline">Currently engineering at <a href="https://www.viyu.net" target="_blank" rel="noopener">Viyu Network Solutions</a></p>
-        <div class="site-social">
-          <a href="https://github.com/{{ site.github_username }}" aria-label="GitHub"><i class="fab fa-github"></i></a>
-          <a href="https://www.linkedin.com/in/{{ site.linkedin_username }}" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
-          <a href="mailto:{{ site.email }}" aria-label="Email"><i class="fas fa-envelope"></i></a>
-        </div>
-      </div>
-    </footer>
+    {% include site-footer.html %}
 
     <script src="{{ "/assets/js/theme-toggle.js" | relative_url }}"></script>
     <script src="{{ "/assets/js/portfolio-rewrite.js" | relative_url }}" defer></script>

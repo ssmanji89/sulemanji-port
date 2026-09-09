@@ -1,0 +1,26 @@
+    <header class="site-header" data-site-header>
+      <a class="wordmark" href="{{ "/" | relative_url }}" aria-label="{{ site.title }} home">
+        <span class="wordmark-mark" aria-hidden="true">SM</span>
+        <span class="wordmark-text">
+          <span class="wordmark-name">{{ site.title }}</span>
+          <span class="wordmark-role">Sr. Services Engineer</span>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        {% include nav.html %}
+      </nav>
+      <div class="header-actions">
+        <button hidden class="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+          <span class="icon-light" aria-hidden="true">◐</span><span class="icon-dark" aria-hidden="true">◑</span>
+        </button>
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="mobile-nav" data-menu-button>
+          <span class="sr-only">Open navigation</span>
+          <span class="menu-line menu-line-one" aria-hidden="true"></span><span class="menu-line menu-line-two" aria-hidden="true"></span>
+        </button>
+      </div>
+    </header>
+
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" data-mobile-nav>
+      {% include nav.html %}
+    </nav>
+

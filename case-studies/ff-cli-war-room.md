@@ -7,6 +7,17 @@ description: "Building a valuation engine, a live auction-night web app, and 240
 
 # ff-cli: an auction war room
 
+<div class="tldr">
+  <p><strong>In brief:</strong> A fantasy-football valuation engine and offline auction war room, built to turn public projections and league rules into budget-aware decisions. The released wheel and container, tests, and synthetic demo show the tool; they do not establish a competitive result.</p>
+</div>
+
+<ul class="jump-links" aria-label="In this case study">
+  <li><a href="#context">Starting point</a></li>
+  <li><a href="#the-build">The build</a></li>
+  <li><a href="#the-demo">Watch the demo</a></li>
+  <li><a href="#what-its-for">What it's for</a></li>
+</ul>
+
 ## Context
 
 I joined a 12-team coworker fantasy football league in 2026 having never played before. That's not a humblebrag — it's the actual starting condition. Everyone else at the table had years of muscle memory for what a player is "worth" at the table versus on paper. I didn't have that instinct, so I built the thing I usually build when I don't have an instinct: a system that turns public data into a defensible number.

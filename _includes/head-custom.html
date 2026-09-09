@@ -1,14 +1,15 @@
+<meta name="theme-color" content="#f7f6f2" id="theme-color-meta">
+
 <!-- No-FOUC theme: set data-theme before first paint -->
 <script>
   (function () {
+    var theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     try {
       var saved = localStorage.getItem('theme');
-      var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var theme = saved ? saved : (prefersDark ? 'dark' : 'light');
-      document.documentElement.setAttribute('data-theme', theme);
-    } catch (e) {
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
+      if (saved === 'light' || saved === 'dark') theme = saved;
+    } catch (e) {}
+    document.documentElement.setAttribute('data-theme', theme);
+    document.getElementById('theme-color-meta').setAttribute('content', theme === 'dark' ? '#17232a' : '#f7f6f2');
   })();
 </script>
 
@@ -20,25 +21,6 @@
 <!-- jQuery (retained: some component CSS/JS relies on it) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-<meta name="theme-color" content="#f5f1e8" id="theme-color-meta">
+<link rel="icon" type="image/png" href="/images/sulemanji-profile.png">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ProfilePage",
-  "name": "{{ site.title }}",
-  "description": "{{ site.description }}",
-  "url": "{{ site.url }}{{ page.url }}",
-  "author": {
-    "@type": "Person",
-    "name": "Suleman Manji",
-    "jobTitle": "Solutions Architect & Automation Engineer",
-    "url": "{{ site.url }}",
-    "sameAs": [
-      "https://github.com/ssmanji89",
-      "https://www.linkedin.com/in/{{ site.linkedin_username }}"
-    ]
-  }
-}
-</script>
+{% include person-schema.html %}

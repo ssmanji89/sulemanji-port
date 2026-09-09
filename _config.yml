@@ -7,7 +7,14 @@ plugins:
   - jekyll-seo-tag
   - jekyll-feed
 
-logo: /images/sulemanji-profile.png
+person:
+  name: Suleman Manji
+  job_title: Sr. Services Engineer
+  employer_name: Viyu Network Solutions
+  employer_url: https://www.viyu.net
+  same_as:
+    - https://github.com/ssmanji89
+    - https://www.linkedin.com/in/suleman-manji-1a46852a0
 show_downloads: false
 
 domain: www.sulemanji.com
@@ -30,12 +37,23 @@ defaults:
       path: ""
     values:
       layout: "default"
+      twitter:
+        card: summary
+      image:
+        path: /images/sulemanji-profile.png
+        width: 201
+        height: 200
+        alt: Portrait of Suleman Manji
 
 exclude:
+  - AGENTS.md
   - Gemfile
   - Gemfile.lock
+  - blog_automation.log
   - node_modules
+  - scripts/
   - vendor/
+  - worker/
   - docs/
   - README.md
   - LICENSE

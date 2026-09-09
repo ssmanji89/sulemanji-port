@@ -1,59 +1,50 @@
 (() => {
   "use strict";
 
-  const body = document.body;
   const menuButton = document.querySelector("[data-menu-button]");
   const mobileNav = document.querySelector("[data-mobile-nav]");
-
-  const closeMenu = () => {
-    if (!menuButton || !mobileNav) return;
-    menuButton.setAttribute("aria-expanded", "false");
-    mobileNav.hidden = true;
-    body.classList.remove("menu-open");
-  };
+  const narrow = window.matchMedia("(max-width: 980px)");
 
   if (menuButton && mobileNav) {
+    const label = menuButton.querySelector(".sr-only");
+    const closeMenu = (restoreFocus = false) => {
+      // Move focus before hiding a focused navigation descendant.
+      if (restoreFocus || mobileNav.contains(document.activeElement)) {
+        if (narrow.matches) menuButton.focus();
+        else document.querySelector(".wordmark")?.focus();
+      }
+      menuButton.setAttribute("aria-expanded", "false");
+      if (label) label.textContent = "Open navigation";
+      mobileNav.hidden = true;
+      document.body.classList.remove("menu-open");
+    };
+
     menuButton.addEventListener("click", () => {
-      const isOpen = menuButton.getAttribute("aria-expanded") === "true";
-      menuButton.setAttribute("aria-expanded", String(!isOpen));
-      mobileNav.hidden = isOpen;
-      body.classList.toggle("menu-open", !isOpen);
+      if (menuButton.getAttribute("aria-expanded") === "true") {
+        closeMenu();
+      } else {
+        mobileNav.hidden = false;
+        menuButton.setAttribute("aria-expanded", "true");
+        if (label) label.textContent = "Close navigation";
+      }
     });
-
     mobileNav.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", closeMenu);
+      link.addEventListener("click", () => closeMenu());
     });
-
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && menuButton.getAttribute("aria-expanded") === "true") {
+        event.preventDefault();
+        closeMenu(true);
+      }
+    });
     window.addEventListener("resize", () => {
-      if (window.innerWidth > 980) closeMenu();
+      if (!narrow.matches) closeMenu();
     });
+
+    // Without these handlers the navigation stays visible on small screens.
+    document.documentElement.classList.add("nav-enhanced");
+    closeMenu();
   }
-
-  const filterButtons = Array.from(document.querySelectorAll("[data-filter]"));
-  const cards = Array.from(document.querySelectorAll("[data-categories]"));
-  const emptyMessage = document.querySelector("[data-filter-empty]");
-
-  filterButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const filter = button.dataset.filter || "all";
-      let visibleCount = 0;
-
-      filterButtons.forEach((candidate) => {
-        const active = candidate === button;
-        candidate.classList.toggle("is-active", active);
-        candidate.setAttribute("aria-pressed", String(active));
-      });
-
-      cards.forEach((card) => {
-        const categories = (card.dataset.categories || "").split(/\s+/);
-        const visible = filter === "all" || categories.includes(filter);
-        card.hidden = !visible;
-        if (visible) visibleCount += 1;
-      });
-
-      if (emptyMessage) emptyMessage.hidden = visibleCount !== 0;
-    });
-  });
 
   const year = document.querySelector("[data-current-year]");
   if (year) year.textContent = String(new Date().getFullYear());

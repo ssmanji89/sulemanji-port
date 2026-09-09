@@ -11,7 +11,7 @@ permalink: /experience
 </div>
 
 <div class="tldr" markdown="0">
-  <p><strong>In brief:</strong> Six employers, fifteen years, one recurring job: find the fragile part of an operation and automate it. Currently a Sr. Services Engineer at Viyu Network Solutions building the AI-assisted systems behind MSP service delivery &mdash; before that, real-estate operations, cloud/.NET engineering, security and identity consulting, multi-site energy operations, and where it started: NOC automation at ERGOS.</p>
+  <p><strong>In brief:</strong> Six employers, fifteen years, one recurring job: find the fragile part of an operation and automate it. Currently a Sr. Services Engineer at Viyu Network Solutions, with migration, security, and infrastructure practice established before the later addition of agent-assisted service-delivery systems. Platform implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and evidence judgment. Earlier work spans real-estate operations, cloud/.NET engineering, security and identity consulting, multi-site energy operations, and where it started: NOC automation at ERGOS.</p>
 </div>
 
 <ul class="jump-links" aria-label="Jump to an employer">

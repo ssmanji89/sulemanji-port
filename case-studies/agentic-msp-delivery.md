@@ -8,8 +8,15 @@ description: "How a senior services engineer re-tooled ticket, migration, billin
 # MSP service delivery using agentic LLMs
 
 <div class="tldr" markdown="0">
-  <p><strong>In brief:</strong> How a solo services engineer re-tooled MSP work &mdash; tickets, migrations, billing, security &mdash; around typed agent CLIs, cross-vendor review, and an approval kernel, with the reconciliation numbers that back it up and the numbers deliberately left out because the evidence doesn't support them.</p>
+  <p><strong>In brief:</strong> How a Sr. Services Engineer re-tooled MSP work &mdash; tickets, migrations, billing, security &mdash; around typed agent CLIs, cross-vendor review, and an approval kernel, with the reconciliation numbers that back it up and the numbers deliberately left out because the evidence doesn't support them.</p>
 </div>
+
+<ul class="jump-links" aria-label="In this case study">
+  <li><a href="#context">Context</a></li>
+  <li><a href="#the-platform">Platform</a></li>
+  <li><a href="#the-method">Review method</a></li>
+  <li><a href="#what-it-changed">Evidence and limits</a></li>
+</ul>
 
 ## Context
 
@@ -19,7 +26,7 @@ Over the past several months I've been re-tooling how that work actually gets do
 
 ## The platform
 
-The core of the system is a set of vendor CLIs, one per platform — Microsoft 365, the ConnectWise suite, Sophos and Cavelo, Meraki, Auvik, VMware vCloud, and the rest. Each CLI is hand-built and self-describing: every command exposes its own argument shape as structured JSON, and a generated-contracts pipeline reads that shape and rebuilds the platform's CLI reference automatically, checked in CI so the documentation can never quietly drift out of sync with the code. As of the most recent count, that's 13 vendor-platform CLIs carrying 141 commands (plus the platform's own CLI), 307 orchestration skills layered on top of them, and 28 named agents — counted from the generated contract and the repository itself in August 2026.
+The core of the system is a set of vendor CLIs, one per platform — Microsoft 365, the ConnectWise suite, Sophos and Cavelo, Meraki, Auvik, VMware vCloud, and the rest. Platform implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and evidence judgment. Each CLI is self-describing: every command exposes its own argument shape as structured JSON, and a generated-contracts pipeline reads that shape and rebuilds the platform's CLI reference automatically, checked in CI so the documentation can never quietly drift out of sync with the code. As of the most recent count, that's 13 vendor-platform CLIs carrying 141 commands (plus the platform's own CLI), 307 orchestration skills layered on top of them, and 28 named agents — counted from the generated contract and the repository itself in August 2026.
 
 That generated-contract pattern exists for a specific reason. An agent calling a vendor API directly, or shelling out to curl, is both unauditable and expensive in tokens — and it hides platform knowledge inside a prompt instead of putting it somewhere reviewable. Routing every agent action through a designated CLI means every action taken against a client system has a name, a typed argument list, and a place in a changelog: the same discipline a good technician's runbook already has, just enforced by the interface instead of hoped for as policy.
 
@@ -54,7 +61,7 @@ flowchart LR
     subgraph Platforms["8 vendor platforms"]
         M365[Microsoft 365] & CW[ConnectWise suite] & SEC[Sophos / Cavelo] & NET[Meraki / Auvik / vCloud]
     end
-    Platforms --> CLIs["13 vendor CLIs · 141 commands\n(generated contracts, CI-gated)"]
+    Platforms --> CLIs["13 vendor-platform CLIs · 141 commands\n(generated contracts, CI-gated)"]
     CLIs --> Skills["307 skills / 28 agents"]
     Skills --> Gate["ops-gate approval kernel\n+ destructive-action gating"]
     Gate --> Work["Tickets · Migrations · Billing · Security ops"]
@@ -62,4 +69,4 @@ flowchart LR
     Review --> GHCP["GitHub control plane\n(proof comments, PRs)"]
 ```
 
-Eight vendor platforms behind thirteen typed CLIs, feeding the skills and agents that do the work; every consequential action passes through the approval kernel before it lands, and every change passes through the review fleet and the GitHub control plane before it counts as done.
+August 2026 repository and generated-contract snapshot: vendor platforms behind 13 vendor-platform CLIs (plus the platform’s own CLI), feeding the skills and agents that do the work; every consequential action passes through the approval kernel before it lands, and every change passes through the review fleet and the GitHub control plane before it counts as done.

@@ -95,7 +95,11 @@ def verify(root):
         check(len(header) == 24 and header[:8] == b'\x89PNG\r\n\x1a\n'
               and struct.unpack('>II', header[16:24]) == (201, 200), '/', 'portrait has declared PNG dimensions')
 
-    check(not (root / 'worker').exists(), '/', 'Worker source/dependencies excluded from public build')
+    private_paths = (
+        'AGENTS.md', 'AGENTS.html', 'blog_automation.log', 'scripts', 'worker',
+    )
+    for relative in private_paths:
+        check(not (root / relative).exists(), '/', f'{relative} excluded from public build')
 
     for route in ROUTES:
         path = resolve(root, route)

@@ -1,0 +1,16 @@
+<p class="proj-meta" data-writing-meta>
+  <span data-article-type="{{ include.article.article_type | escape }}">{{ site.data.writing.article_types[include.article.article_type] | escape }}</span>
+  {% if include.article.published_on %}
+  <span> · Published <time data-published-on datetime="{{ include.article.published_on | escape }}">{{ include.article.published_on | date: "%B %-d, %Y" }}</time></span>
+  {% endif %}
+  {% if include.article.updated_on %}
+    {% unless include.article.updated_on == include.article.published_on %}
+  <span> · Updated <time data-updated-on datetime="{{ include.article.updated_on | escape }}">{{ include.article.updated_on | date: "%B %-d, %Y" }}</time></span>
+    {% endunless %}
+  {% endif %}
+</p>
+<p data-writing-topics>
+  {% for topic in include.article.topics %}
+  <span data-topic="{{ topic | escape }}">{{ site.data.writing.topics[topic] | escape }}</span>{% unless forloop.last %} · {% endunless %}
+  {% endfor %}
+</p>

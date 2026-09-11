@@ -138,8 +138,22 @@ class WritingTest < Minitest::Test
     assert_equal ['/notes/agent-safety'],
                  html('/writing').css('[data-writing-legacy-url]').map { |node| node['data-writing-legacy-url'] }
     assert_empty html('/writing').css('#writing-latest, #writing-legacy time')
+    assert_equal 'A write is a claim, not evidence', html('/notes/agent-safety').at_css('h1').text
     assert_equal before, File.binread(File.join(@source, relative))
     refute_includes html('/writing').text.downcase, 'source reviewed'
+  end
+
+  def test_missing_legacy_rendered_route_fails_release_check
+    relative = 'notes/agent-safety-from-incidents.md'
+    @registry['legacy_paths'] = [relative]
+    save_registry
+    FileUtils.cp(File.join(REPO, relative), File.join(@source, relative))
+    build
+    verify
+
+    WritingContract.output(@site, '/notes/agent-safety').delete
+    error = assert_raises(WritingContract::Error) { verify }
+    assert_match(%r{/notes/agent-safety: rendered route missing}, error.message)
   end
 
   def test_schema_and_field_errors_fail_before_build
@@ -190,6 +204,15 @@ class WritingTest < Minitest::Test
   def test_unknown_legacy_or_unstructured_file_is_not_silently_ignored
     File.write(File.join(@source, 'notes/new.md'), "# Missing metadata\n")
     assert_raises(WritingContract::Error) { catalog }
+  end
+
+  def test_registry_cannot_exempt_a_new_note_as_legacy
+    @registry['legacy_paths'] = ['notes/new.md']
+    save_registry
+    note('new')
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/unrecognized legacy path/, error.message)
   end
 
   def test_nested_and_symlinked_articles_fail

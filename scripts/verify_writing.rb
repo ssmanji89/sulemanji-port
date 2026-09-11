@@ -101,6 +101,15 @@ module WritingContract
     raise Error, "required source file missing: #{e.message}"
   end
 
+  def markdown_h1?(body)
+    lines = body.lines
+    return true if lines.any? { |line| line.match?(/\A {0,3}#(?:[ \t]+|\r?\n?\z)/) }
+
+    lines.each_cons(2).any? do |title, underline|
+      !title.strip.empty? && underline.chomp.match?(/\A {0,3}=+[ \t]*\z/)
+    end
+  end
+
   def catalog(source, as_of:)
     source = Pathname(source).expand_path
     check(as_of.is_a?(Date), 'as_of: Date required')
@@ -166,7 +175,7 @@ module WritingContract
               "#{relative}: raw HTML forbidden in article body")
         check(!body.match?(/\{:\s*[^}\r\n]*\}/),
               "#{relative}: Kramdown attribute lists forbidden in article body")
-        check(body.lines.none? { |line| line.match?(/\A#\s+/) },
+        check(!markdown_h1?(body),
               "#{relative}: article body must begin below H1")
 
         if front['published']
@@ -280,7 +289,7 @@ module WritingContract
 
   def safe_article_href?(href)
     value = href.to_s.strip
-    return false if value.empty?
+    return false if value.empty? || value.match?(/[\x00-\x1F\x7F]/)
     return true if value.start_with?('#')
     return !value.start_with?('//') && !value.include?('\\') if value.start_with?('/')
 

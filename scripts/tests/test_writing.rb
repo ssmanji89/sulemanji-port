@@ -285,6 +285,27 @@ class WritingTest < Minitest::Test
     assert_raises(WritingContract::Error) { verify }
   end
 
+  def test_raw_html_in_article_body_fails_source_gate
+    note(
+      'unsafe-html',
+      body: "## Unsafe markup\n\n<img src=x onerror=\"alert(document.domain)\">\n"
+    )
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/raw HTML forbidden in article body/, error.message)
+  end
+
+  def test_unsafe_rendered_article_link_scheme_fails_release_check
+    note(
+      'unsafe-link',
+      body: "## Unsafe link\n\n[source](javascript:alert(document.domain))\n"
+    )
+    build
+
+    error = assert_raises(WritingContract::Error) { verify }
+    assert_match(/unsafe rendered article link scheme/, error.message)
+  end
+
   def test_wrong_order_and_missing_route_are_detected_from_real_html
     note('alpha')
     note('beta')

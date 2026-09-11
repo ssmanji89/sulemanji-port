@@ -17,11 +17,14 @@ class WritingTest < Minitest::Test
     %w[_config.yml writing.md _layouts _includes _data].each do |entry|
       FileUtils.cp_r(File.join(REPO, entry), File.join(@source, entry))
     end
+    FileUtils.cp(
+      File.join(REPO, 'notes/agent-safety-from-incidents.md'),
+      File.join(@source, 'notes/agent-safety-from-incidents.md')
+    )
     @registry = WritingContract.yaml(
       File.read(File.join(@source, '_data/writing.yml')),
       'registry'
     )
-    @registry['legacy_paths'] = []
     save_registry
   end
 
@@ -88,7 +91,8 @@ class WritingTest < Minitest::Test
     build
     verify
     assert_equal 1, html('/writing').css('#writing-empty').length
-    assert_empty html('/writing').css('#writing-latest, #writing-more, #writing-legacy')
+    assert_empty html('/writing').css('#writing-latest, #writing-more')
+    assert_equal 1, html('/writing').css('#writing-legacy').length
   end
 
   def test_one_article_is_featured_exactly_once
@@ -129,9 +133,6 @@ class WritingTest < Minitest::Test
 
   def test_legacy_url_is_preserved_without_fabricated_date_or_review
     relative = 'notes/agent-safety-from-incidents.md'
-    @registry['legacy_paths'] = [relative]
-    save_registry
-    FileUtils.cp(File.join(REPO, relative), File.join(@source, relative))
     before = File.binread(File.join(@source, relative))
     build
     verify
@@ -144,16 +145,30 @@ class WritingTest < Minitest::Test
   end
 
   def test_missing_legacy_rendered_route_fails_release_check
-    relative = 'notes/agent-safety-from-incidents.md'
-    @registry['legacy_paths'] = [relative]
-    save_registry
-    FileUtils.cp(File.join(REPO, relative), File.join(@source, relative))
     build
     verify
 
     WritingContract.output(@site, '/notes/agent-safety').delete
     error = assert_raises(WritingContract::Error) { verify }
     assert_match(%r{/notes/agent-safety: rendered route missing}, error.message)
+  end
+
+  def test_registry_requires_canonical_legacy_entry_even_when_source_is_deleted
+    @registry['legacy_paths'] = []
+    save_registry
+    File.delete(File.join(@source, 'notes/agent-safety-from-incidents.md'))
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/canonical legacy path required/, error.message)
+  end
+
+  def test_legacy_permalink_is_pinned_to_canonical_route
+    path = File.join(@source, 'notes/agent-safety-from-incidents.md')
+    File.write(path, File.read(path).sub('permalink: /notes/agent-safety',
+                                        'permalink: /notes/moved'))
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/canonical legacy permalink required/, error.message)
   end
 
   def test_schema_and_field_errors_fail_before_build
@@ -227,10 +242,6 @@ class WritingTest < Minitest::Test
   end
 
   def test_legacy_and_new_permalink_collision_fails
-    relative = 'notes/agent-safety-from-incidents.md'
-    @registry['legacy_paths'] = [relative]
-    save_registry
-    FileUtils.cp(File.join(REPO, relative), File.join(@source, relative))
     note('agent-safety')
     assert_raises(WritingContract::Error) { catalog }
   end

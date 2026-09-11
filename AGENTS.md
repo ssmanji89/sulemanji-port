@@ -31,3 +31,14 @@ mobile disclosure after its handlers are attached.
 `_config.yml` must exclude agent instructions, operational logs, repository scripts,
 worker source, documentation, and dependency trees from the generated public site.
 `scripts/verify_portfolio_review.py` enforces this boundary against `_site`.
+
+## Writing ownership
+
+`docs/WRITING-CONTRACT.md` owns the article metadata, legacy exceptions and
+publication-visibility rules. `writing.md`, `_data/writing.yml`, and
+`_includes/writing-{entry,meta}.html` own the Writing index and metadata;
+`_layouts/writing-article.html` inherits the shared default shell and owns the
+article H1. Before changing articles or these consumers, run the Writing source
+and rendered checks plus the five existing site gates. Metadata is not review
+approval. Keep research and private evidence outside the public repository;
+do not add new legacy exemptions to bypass the article contract.

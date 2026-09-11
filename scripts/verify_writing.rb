@@ -19,7 +19,10 @@ module WritingContract
   ].freeze
   MAPS = %w[article_types time_horizons readers topics].freeze
   REGISTRY_FIELDS = (['schema_version', 'legacy_paths'] + MAPS).freeze
-  LEGACY_PATHS = ['notes/agent-safety-from-incidents.md'].freeze
+  LEGACY_ROUTES = {
+    'notes/agent-safety-from-incidents.md' => '/notes/agent-safety'
+  }.freeze
+  LEGACY_PATHS = LEGACY_ROUTES.keys.freeze
 
   module_function
 
@@ -90,6 +93,8 @@ module WritingContract
           'writing registry: invalid legacy path')
     check((legacy - LEGACY_PATHS).empty?,
           'writing registry: unrecognized legacy path')
+    check((LEGACY_PATHS - legacy).empty?,
+          'writing registry: canonical legacy path required')
     data
   rescue Errno::ENOENT => e
     raise Error, "required source file missing: #{e.message}"
@@ -122,7 +127,10 @@ module WritingContract
             "#{relative}: invalid permalink")
 
       legacy = data_registry['legacy_paths'].include?(relative)
-      unless legacy
+      if legacy
+        check(front['permalink'] == LEGACY_ROUTES.fetch(relative),
+              "#{relative}: canonical legacy permalink required")
+      else
         %w[title description].each do |field|
           check(!/[<>]|\{[%{]/.match?(front[field]),
                 "#{relative}: plain #{field} text required")

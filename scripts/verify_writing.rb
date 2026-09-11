@@ -164,6 +164,8 @@ module WritingContract
               "#{relative}: executable Liquid forbidden in article body")
         check(!body.match?(/<(?:!--|\/?[A-Za-z])/),
               "#{relative}: raw HTML forbidden in article body")
+        check(!body.match?(/\{:\s*[^}\r\n]*\}/),
+              "#{relative}: Kramdown attribute lists forbidden in article body")
         check(body.lines.none? { |line| line.match?(/\A#\s+/) },
               "#{relative}: article body must begin below H1")
 
@@ -280,7 +282,7 @@ module WritingContract
     value = href.to_s.strip
     return false if value.empty?
     return true if value.start_with?('#')
-    return !value.start_with?('//') if value.start_with?('/')
+    return !value.start_with?('//') && !value.include?('\\') if value.start_with?('/')
 
     uri = URI.parse(value)
     return true if uri.scheme == 'mailto'

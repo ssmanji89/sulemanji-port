@@ -26,7 +26,8 @@ delivery commitment.
 Use flat `notes/<slug>.md` files. New files use `writing_schema: 1` and
 `layout: writing-article`; their permalink is `/notes/<slug>` with the same
 lowercase kebab-case slug. The layout owns the article H1, so article bodies begin
-at H2. The layout inherits the shared `default` shell.
+at H2. ATX H1s, indented ATX H1s, and Setext H1s are all forbidden in article
+bodies. The layout inherits the shared `default` shell.
 
 Required fields for schema-v1 articles:
 
@@ -50,7 +51,8 @@ be escaped rather than left as template syntax.
 Rendered article-body links may use same-site root-relative paths, same-page
 fragments, `https://` URLs without embedded credentials, or `mailto:` URLs.
 Root-relative paths must use forward slashes only. Protocol-relative URLs,
-backslashes, and all other schemes are rejected by the Writing release gate.
+backslashes, ASCII control characters, and all other schemes are rejected by the
+Writing release gate.
 
 `published` is a real YAML boolean. It controls intended build visibility only; it
 does not attest editorial review or authorize merge. A public Git branch is public

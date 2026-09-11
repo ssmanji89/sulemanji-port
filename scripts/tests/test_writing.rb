@@ -295,6 +295,16 @@ class WritingTest < Minitest::Test
     assert_match(/raw HTML forbidden in article body/, error.message)
   end
 
+  def test_kramdown_attribute_lists_fail_source_gate
+    note(
+      'unsafe-attributes',
+      body: "## Unsafe attributes\n\n[safe](https://example.com){: onclick=\"alert(document.domain)\"}\n"
+    )
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/Kramdown attribute lists forbidden in article body/, error.message)
+  end
+
   def test_unsafe_rendered_article_link_scheme_fails_release_check
     note(
       'unsafe-link',
@@ -304,6 +314,11 @@ class WritingTest < Minitest::Test
 
     error = assert_raises(WritingContract::Error) { verify }
     assert_match(/unsafe rendered article link scheme/, error.message)
+  end
+
+  def test_root_relative_article_links_reject_backslashes
+    assert WritingContract.safe_article_href?('/notes/safe')
+    refute WritingContract.safe_article_href?('/\\evil.example')
   end
 
   def test_wrong_order_and_missing_route_are_detected_from_real_html

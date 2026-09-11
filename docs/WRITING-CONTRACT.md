@@ -42,9 +42,14 @@ Required fields for schema-v1 articles:
 
 `published_on` is required for intended-public articles. `updated_on` is optional.
 No other front-matter fields are accepted in schema v1. Descriptive values are
-plain text without HTML tags or Liquid directives. Executable Liquid is forbidden
-in new article bodies. Literal Liquid examples must be escaped rather than left as
-template syntax.
+plain text without HTML tags or Liquid directives. Executable Liquid and raw HTML
+are forbidden in new article bodies; use Markdown syntax instead. Literal Liquid
+examples must be escaped rather than left as template syntax.
+
+Rendered article-body links may use same-site root-relative paths, same-page
+fragments, `https://` URLs without embedded credentials, or `mailto:` URLs.
+Protocol-relative URLs and all other schemes are rejected by the Writing release
+gate.
 
 `published` is a real YAML boolean. It controls intended build visibility only; it
 does not attest editorial review or authorize merge. A public Git branch is public

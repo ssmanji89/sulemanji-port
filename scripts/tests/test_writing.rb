@@ -36,6 +36,16 @@ class WritingTest < Minitest::Test
     File.write(File.join(@source, '_data/writing.yml'), @registry.to_yaml)
   end
 
+  def reset_notes
+    notes = File.join(@source, 'notes')
+    FileUtils.rm_rf(notes)
+    FileUtils.mkdir_p(notes)
+    FileUtils.cp(
+      File.join(REPO, 'notes/agent-safety-from-incidents.md'),
+      File.join(notes, 'agent-safety-from-incidents.md')
+    )
+  end
+
   def note(slug, overrides = {}, body: "## A synthetic test\n\nThis fixture tests rendering, not an actual engagement.\n")
     data = {
       'writing_schema' => 1,
@@ -195,8 +205,7 @@ class WritingTest < Minitest::Test
       {'extra' => 'nope'}
     ]
     invalid.each_with_index do |override, index|
-      FileUtils.rm_rf(File.join(@source, 'notes'))
-      FileUtils.mkdir_p(File.join(@source, 'notes'))
+      reset_notes
       note('bad', override)
       assert_raises(WritingContract::Error, "#{index}: #{override.inspect}") { catalog }
     end
@@ -270,8 +279,7 @@ class WritingTest < Minitest::Test
     note('template', body: "{{ site.data.writing }}")
     assert_raises(WritingContract::Error) { catalog }
 
-    FileUtils.rm_rf(File.join(@source, 'notes'))
-    FileUtils.mkdir_p(File.join(@source, 'notes'))
+    reset_notes
     note('template', body: "# Duplicate heading\n\nSynthetic text.")
     build
     assert_raises(WritingContract::Error) { verify }

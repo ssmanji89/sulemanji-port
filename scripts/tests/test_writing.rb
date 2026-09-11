@@ -285,6 +285,25 @@ class WritingTest < Minitest::Test
     assert_raises(WritingContract::Error) { verify }
   end
 
+  def test_setext_and_indented_atx_h1_fail_source_gate
+    note(
+      'setext-h1',
+      {'published' => false, 'published_on' => nil},
+      body: "Heading\n=======\n\nSynthetic text.\n"
+    )
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/article body must begin below H1/, error.message)
+
+    reset_notes
+    note(
+      'indented-h1',
+      {'published' => false, 'published_on' => nil},
+      body: "  # Heading\n\nSynthetic text.\n"
+    )
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/article body must begin below H1/, error.message)
+  end
+
   def test_raw_html_in_article_body_fails_source_gate
     note(
       'unsafe-html',
@@ -319,6 +338,13 @@ class WritingTest < Minitest::Test
   def test_root_relative_article_links_reject_backslashes
     assert WritingContract.safe_article_href?('/notes/safe')
     refute WritingContract.safe_article_href?('/\\evil.example')
+  end
+
+  def test_root_relative_article_links_reject_ascii_controls
+    assert WritingContract.safe_article_href?('/notes/safe')
+    ["/\t/evil.example", "/\r/evil.example", "/\n/evil.example"].each do |href|
+      refute WritingContract.safe_article_href?(href), href.inspect
+    end
   end
 
   def test_wrong_order_and_missing_route_are_detected_from_real_html

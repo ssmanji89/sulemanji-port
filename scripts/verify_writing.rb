@@ -19,6 +19,7 @@ module WritingContract
   ].freeze
   MAPS = %w[article_types time_horizons readers topics].freeze
   REGISTRY_FIELDS = (['schema_version', 'legacy_paths'] + MAPS).freeze
+  LEGACY_PATHS = ['notes/agent-safety-from-incidents.md'].freeze
 
   module_function
 
@@ -87,6 +88,8 @@ module WritingContract
           'writing registry: unique legacy paths required')
     check(legacy.all? { |path| path.is_a?(String) && /\Anotes\/[a-z0-9-]+\.md\z/.match?(path) },
           'writing registry: invalid legacy path')
+    check((legacy - LEGACY_PATHS).empty?,
+          'writing registry: unrecognized legacy path')
     data
   rescue Errno::ENOENT => e
     raise Error, "required source file missing: #{e.message}"
@@ -326,6 +329,14 @@ module WritingContract
       check(wrapper.at_css('a[data-writing-back]')&.[]('href') == baseurl + '/writing',
             "#{article.path}: writing back-link mismatch")
       metadata(wrapper, article)
+    end
+
+    records.legacy.each do |article|
+      route = article.data['permalink']
+      page = document(site, route,
+                      origin: origin, baseurl: baseurl, expected_scripts: expected_scripts)
+      check(page.at_css('h1')&.text == article.data['title'],
+            "#{article.path}: legacy title mismatch")
     end
 
     records.drafts.each do |article|

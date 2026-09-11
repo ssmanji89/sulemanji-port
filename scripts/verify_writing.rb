@@ -7,6 +7,7 @@ require 'json'
 require 'optparse'
 require 'pathname'
 require 'psych'
+require 'uri'
 
 module WritingContract
   Error = Class.new(StandardError)
@@ -161,6 +162,8 @@ module WritingContract
         check(!body.strip.empty?, "#{relative}: empty body")
         check(!body.include?('{%') && !body.include?('{{'),
               "#{relative}: executable Liquid forbidden in article body")
+        check(!body.match?(/<(?:!--|\/?[A-Za-z])/),
+              "#{relative}: raw HTML forbidden in article body")
         check(body.lines.none? { |line| line.match?(/\A#\s+/) },
               "#{relative}: article body must begin below H1")
 
@@ -273,6 +276,20 @@ module WritingContract
           "#{article.path}: topics missing/mismatched")
   end
 
+  def safe_article_href?(href)
+    value = href.to_s.strip
+    return false if value.empty?
+    return true if value.start_with?('#')
+    return !value.start_with?('//') if value.start_with?('/')
+
+    uri = URI.parse(value)
+    return true if uri.scheme == 'mailto'
+
+    uri.scheme == 'https' && !uri.host.to_s.empty? && uri.userinfo.nil?
+  rescue URI::InvalidURIError
+    false
+  end
+
   def verify(source:, site:, as_of:, baseurl: '')
     require_nokogiri
     check(baseurl.empty? || /\A\/[a-z0-9-]+(?:\/[a-z0-9-]+)*\z/.match?(baseurl),
@@ -331,9 +348,12 @@ module WritingContract
             "#{article.path}: article title mismatch")
       check(wrapper.at_css('.section-lead')&.text == article.data['description'],
             "#{article.path}: article description mismatch")
-      check(wrapper.at_css('[data-writing-body]') &&
-            !wrapper.at_css('[data-writing-body]').text.strip.empty?,
+      body = wrapper.at_css('[data-writing-body]')
+      check(body && !body.text.strip.empty?,
             "#{article.path}: rendered body missing")
+      unsafe_links = body.css('a[href]').reject { |node| safe_article_href?(node['href']) }
+      check(unsafe_links.empty?,
+            "#{article.path}: unsafe rendered article link scheme")
       check(wrapper.at_css('a[data-writing-back]')&.[]('href') == baseurl + '/writing',
             "#{article.path}: writing back-link mismatch")
       metadata(wrapper, article)

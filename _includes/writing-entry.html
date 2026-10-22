@@ -1,0 +1,5 @@
+<article class="proj" data-writing-url="{{ include.article.url | escape }}">
+  <h3><a href="{{ include.article.url | relative_url | escape }}">{{ include.article.title | escape }}</a></h3>
+  <p>{{ include.article.description | escape }}</p>
+  {% include writing-meta.html article=include.article %}
+</article>

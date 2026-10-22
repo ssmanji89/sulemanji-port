@@ -1,0 +1,24 @@
+schema_version: 1
+legacy_paths:
+  - notes/agent-safety-from-incidents.md
+article_types:
+  analysis: Analysis
+  technical-guide: Technical guide
+  field-note: Field note
+  experiment: Experiment
+time_horizons:
+  timely: Timely
+  durable: Durable
+readers:
+  msp-engineer: MSP engineer
+  it-leader: IT leader
+  architect: Architect
+  service-leader: Service leader
+topics:
+  microsoft-365: Microsoft 365
+  acquisitions: Acquisition integration
+  identity: Identity and access
+  business-applications: Business applications
+  infrastructure: Infrastructure
+  service-operations: Service operations
+  ai-assisted-delivery: AI-assisted delivery

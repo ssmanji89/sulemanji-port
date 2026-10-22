@@ -1,0 +1,17 @@
+---
+layout: default
+---
+<article data-writing-article>
+  <header>
+    <p class="kicker">Writing</p>
+    <h1>{{ page.title | escape }}</h1>
+    <p class="section-lead">{{ page.description | escape }}</p>
+    {% include writing-meta.html article=page %}
+  </header>
+  <div data-writing-body>
+    {{ content }}
+  </div>
+  <footer>
+    <p><a data-writing-back href="{{ '/writing' | relative_url | escape }}">More writing</a></p>
+  </footer>
+</article>

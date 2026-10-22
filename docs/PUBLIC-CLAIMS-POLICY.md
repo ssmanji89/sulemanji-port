@@ -37,6 +37,18 @@ A claim failing any question is either dropped or rewritten until it passes — 
 | 240 tests / 18 commands / released wheel + container (ff-cli) | public repo, freely citable | repo + releases |
 | 2,049 role-typed subagent sessions; 670 independent reviewer runs (May–Aug 2026) | session telemetry, date-bounded | codex-sessions stats |
 
+**Current operational scope approved by the owner, 2026-10-22:** the MSP case
+study describes service investigations, technical scoping, recurring operational
+research, personal and shared memory use, and accountable change verification.
+The owner reviewed the complete conversational draft and authorized publication.
+Supporting provenance includes the existing CLI and service-engineering evidence,
+October operational research records, the memory gateway namespace contract, and
+authenticated retrieval of personal and team records. These support the described
+work and methods, not universal enforcement, organization-wide adoption, or an
+automated end-to-end service. AlgaPSA, historical billing results, old platform
+counts, and unverified releases are excluded from this case study. Historical
+whitelist entries above do not establish current operational use.
+
 **Blocked until validated** (validation-backlog): 641 users/6,543 GB vs EZMig 600+/6,500+ (conflicting sources — print neither; approved fallback: "a multi-terabyte, several-hundred-user migration platform"); any billing dollar figure (say "six-figure monthly"); per-CLI command totals until Task-4 extraction lands.
 **Blocked permanently:** hours-saved/throughput/faster-resolution claims (falsified by the cwm-cli audit — metrics move the wrong direction under mix-shift confounds); trading performance/P&L of any kind; "80% AI cost reduction" as a result (design target only); pre-2025 resume figures may persist as *carried resume claims* but must never be escalated to "verified."
 

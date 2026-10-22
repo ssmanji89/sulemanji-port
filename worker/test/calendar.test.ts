@@ -129,7 +129,7 @@ describe("private quote routes", () => {
         totalCents: 125_000,
         creditCents: 29_500,
         balanceCents: 95_500,
-        expiresAt: "2026-09-11T15:30:00.000Z",
+        expiresAt: quote.expiresAt,
         timeZone: "America/Chicago",
       },
       windows: [
@@ -197,17 +197,18 @@ describe("private quote routes", () => {
 
   const createQuote = async (): Promise<{
     caseId: string;
-    quote: { id: string; publicToken: string };
+    quote: { id: string; publicToken: string; expiresAt: string };
   }> => {
     await seedCase("case_1");
     await seedCredit("case_1", 29_500);
+    const now = new Date();
     const quote = await repository.createSessionQuote({
       caseId: "case_1",
       blueprintVersion: 1,
       durationMinutes: 90,
       totalCents: 125_000,
-      blueprintDeliveredAt: new Date("2026-07-13T15:30:00.000Z"),
-      now: new Date("2026-07-13T16:00:00.000Z"),
+      blueprintDeliveredAt: now,
+      now,
     });
     return { caseId: "case_1", quote };
   };

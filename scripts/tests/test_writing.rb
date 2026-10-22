@@ -304,6 +304,29 @@ class WritingTest < Minitest::Test
     assert_match(/article body must begin below H1/, error.message)
   end
 
+  def test_every_parser_recognized_article_body_h1_fails_source_gate
+    h1_bodies = {
+      'top-level ATX' => "# Heading\n\nSynthetic text.\n",
+      'indented ATX' => "  # Heading\n\nSynthetic text.\n",
+      'top-level Setext' => "Heading\n=======\n\nSynthetic text.\n",
+      'blockquote ATX' => "> # Heading\n",
+      'unordered-list ATX' => "- # Heading\n",
+      'ordered-list ATX' => "1. # Heading\n",
+      'nested container ATX' => "> - # Heading\n",
+      'blockquote Setext' => "> Heading\n> =======\n",
+      'unordered-list Setext' => "- Heading\n  =======\n",
+      'nested container Setext' => "> - Heading\n>   =======\n"
+    }
+
+    h1_bodies.each do |name, body|
+      reset_notes
+      note('container-h1', {'published' => false, 'published_on' => nil}, body: body)
+
+      error = assert_raises(WritingContract::Error, name) { catalog }
+      assert_match(/article body must begin below H1/, error.message, name)
+    end
+  end
+
   def test_raw_html_in_article_body_fails_source_gate
     note(
       'unsafe-html',
@@ -342,7 +365,13 @@ class WritingTest < Minitest::Test
 
   def test_root_relative_article_links_reject_ascii_controls
     assert WritingContract.safe_article_href?('/notes/safe')
-    ["/\t/evil.example", "/\r/evil.example", "/\n/evil.example"].each do |href|
+    [
+      "/\t/evil.example",
+      "/\r/evil.example",
+      "/\n/evil.example",
+      "/notes/safe\t",
+      "\n/notes/safe"
+    ].each do |href|
       refute WritingContract.safe_article_href?(href), href.inspect
     end
   end

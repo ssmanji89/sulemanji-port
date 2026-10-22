@@ -8,6 +8,7 @@ require 'optparse'
 require 'pathname'
 require 'psych'
 require 'uri'
+require 'kramdown'
 
 module WritingContract
   Error = Class.new(StandardError)
@@ -102,12 +103,14 @@ module WritingContract
   end
 
   def markdown_h1?(body)
-    lines = body.lines
-    return true if lines.any? { |line| line.match?(/\A {0,3}#(?:[ \t]+|\r?\n?\z)/) }
+    return true if body.lines.any? { |line| line.match?(/\A {0,3}#(?:[ \t]+|\r?\n?\z)/) }
 
-    lines.each_cons(2).any? do |title, underline|
-      !title.strip.empty? && underline.chomp.match?(/\A {0,3}=+[ \t]*\z/)
+    contains_h1 = lambda do |node|
+      node.type == :header && node.options[:level] == 1 ||
+        node.children.any? { |child| contains_h1.call(child) }
     end
+
+    contains_h1.call(Kramdown::Document.new(body).root)
   end
 
   def catalog(source, as_of:)
@@ -288,8 +291,11 @@ module WritingContract
   end
 
   def safe_article_href?(href)
-    value = href.to_s.strip
-    return false if value.empty? || value.match?(/[\x00-\x1F\x7F]/)
+    raw_value = href.to_s
+    return false if raw_value.match?(/[\x00-\x1F\x7F]/)
+
+    value = raw_value.strip
+    return false if value.empty?
     return true if value.start_with?('#')
     return !value.start_with?('//') && !value.include?('\\') if value.start_with?('/')
 

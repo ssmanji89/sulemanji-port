@@ -22,11 +22,11 @@ The question becomes urgent when disclosure and remediation happen close togethe
 
 ## A critical advisory creates two risks
 
-The October 21 PHP security advisory provides a useful public example. The PHP project said two vulnerabilities could allow unauthenticated remote code execution in installations serving web requests. It released fixed versions and said that updating was the only complete solution. It also published temporary measures while warning that they reduced specific attack paths without making an installation safe.
+The [October 21 PHP security advisory](https://www.php.net/archive/2026.php#2026-10-21-1) provides a useful public example. The PHP project said two vulnerabilities could allow unauthenticated remote code execution in installations serving web requests. It released fixed versions and said that updating was the only complete solution. It also published temporary measures while warning that they reduced specific attack paths without making an installation safe.
 
 That distinction matters. A mitigation can reduce exposure without closing the vulnerability. A patch can close the known vulnerability while introducing availability risk through the change itself. The service decision must track both risks instead of calling either action safe by default.
 
-The PHP project also published an informational update on October 23 for an additional, unusual session configuration. That update did not make the original fixed versions ineffective. It showed why teams must continue reading supplier guidance after the first emergency change. The advisory state can change while deployment is still under way.
+The PHP project also published an [informational update on October 23](https://www.php.net/archive/2026.php#2026-10-23-1) for an additional, unusual session configuration. That update did not make the original fixed versions ineffective. It showed why teams must continue reading supplier guidance after the first emergency change. The advisory state can change while deployment is still under way.
 
 NIST's [enterprise patching guide](https://csrc.nist.gov/pubs/sp/1800/31/final) describes the same operating tension in general terms. Patching can reduce system and service availability, while isolation and other emergency mitigations can provide alternatives when an immediate patch is not practical. The guide treats inventory, routine patching, emergency patching, and temporary mitigation as connected capabilities.
 
@@ -39,7 +39,7 @@ A team makes a better emergency decision when it defines the threshold before an
 3. **Minimum service:** Define the smallest business function that must remain available. This creates options between full operation and a complete shutdown.
 4. **Recovery evidence:** Define what must be observed before normal service returns. A successful deployment job is not enough if the old process still runs or the exposed route still answers.
 
-NIST Cybersecurity Framework 2.0 supports this preparation. It calls for organizations to establish risk tolerance, risk-response options, roles, responsibilities, and authorities. It also calls for critical services and dependencies to be understood. Those are governance outcomes, but they become practical during an emergency: someone must know what can stop, who decides, and which reduced mode still serves the business.
+[NIST Cybersecurity Framework 2.0](https://doi.org/10.6028/NIST.CSWP.29) supports this preparation. It calls for organizations to establish risk tolerance, risk-response options, roles, responsibilities, and authorities. It also calls for critical services and dependencies to be understood. Those are governance outcomes, but they become practical during an emergency: someone must know what can stop, who decides, and which reduced mode still serves the business.
 
 An emergency runbook that lists commands without these decisions is incomplete. It can tell an engineer how to deploy a package while leaving the service leader to invent the outage threshold during the incident.
 

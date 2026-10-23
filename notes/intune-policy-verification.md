@@ -42,7 +42,7 @@ The layers should remain separate in the handoff. A record can say “target con
 
 ## A current status needs a current timestamp
 
-The timestamp is part of the evidence, not decoration. Microsoft Graph exposes `lastSyncDateTime` on the Intune `managedDevice` resource as the last successful Intune sync. A compliant or successful state without its observation time can describe an earlier environment.
+The timestamp is part of the evidence, not decoration. Microsoft Graph exposes `lastSyncDateTime` on the Intune [`managedDevice` resource](https://learn.microsoft.com/en-us/graph/api/resources/intune-devices-manageddevice?view=graph-rest-1.0) as the last successful Intune sync. A compliant or successful state without its observation time can describe an earlier environment.
 
 Microsoft’s [compliance reporting guidance](https://learn.microsoft.com/en-us/intune/device-security/compliance/monitor-policy) explains that reports reflect the most recently known state from device check-in. It also identifies cases where a shared device can show the last user’s state, one device can have more than one report entry, and summary views can update at a different time from detailed views.
 
@@ -52,7 +52,7 @@ Those are not reasons to distrust the platform. They are reasons to state exactl
 
 Intune compliance policies and device configuration policies answer different questions. A configuration policy applies settings. A compliance policy evaluates rules and reports a compliance state. Microsoft Entra Conditional Access can then use that reported compliance state when it decides whether to grant access.
 
-The distinction creates a practical trap. A device can receive a configuration profile while the compliance or access result remains unresolved. The reverse can also mislead: Microsoft documents a tenant setting that can treat devices without an assigned compliance policy as compliant unless the administrator changes the default behavior.
+The distinction creates a practical trap. A device can receive a configuration profile while the compliance or access result remains unresolved. The reverse can also mislead: Microsoft documents a [tenant compliance setting](https://learn.microsoft.com/en-us/intune/device-security/compliance/overview#compliance-policy-settings) that can treat devices without an assigned compliance policy as compliant unless the administrator changes the default behavior.
 
 For an access-control change, I would therefore inspect the configuration state, the compliance state, and the access decision as separate evidence. One green status should not silently stand in for all three.
 
@@ -74,8 +74,8 @@ A concise acceptance record can fit in a ticket or change note:
 - **Outcome:** the service result tested, or the reason it remains open.
 - **Freshness:** the observation time and the source used for each conclusion.
 
-This is an inspection method, not a claim that every Intune workload exposes identical evidence. Different workloads have different reporting paths and delays. Windows Update for Business reports, for example, use client diagnostic data and document their own refresh behavior, so update evidence needs its own freshness check.
+This is an inspection method, not a claim that every Intune workload exposes identical evidence. Different workloads have different reporting paths and delays. [Windows Update for Business reports](https://learn.microsoft.com/en-us/windows/deployment/update/wufb-reports-use#data-latency), for example, use client diagnostic data and document their own refresh behavior, so update evidence needs its own freshness check.
 
 The practical takeaway is narrow: **close the claim you can prove, and keep the remaining claim open.** An assigned policy can be correct while receipt is pending. A succeeded policy can be real while the operational outcome still needs testing. The handoff becomes safer when it preserves those boundaries instead of compressing them into “done.”
 
-*Primary references reviewed October 22, 2026. Product behavior can change; verify the current Microsoft documentation and tenant evidence before using this method for a live change.*
+*Primary references reviewed October 23, 2026. Product behavior can change; verify the current Microsoft documentation and tenant evidence before using this method for a live change.*

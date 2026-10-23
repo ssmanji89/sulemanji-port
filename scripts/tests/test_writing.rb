@@ -1,6 +1,7 @@
 require 'date'
 require 'fileutils'
 require 'minitest/autorun'
+require 'nokogiri'
 require 'tmpdir'
 require 'jekyll'
 require_relative '../verify_writing'
@@ -77,7 +78,8 @@ class WritingTest < Minitest::Test
       'incremental' => false,
       'future' => false
     )
-    Jekyll::Site.new(config).process
+    # Jekyll 3.9 prefers layouts in the current directory over source layouts.
+    Dir.chdir(@source) { Jekyll::Site.new(config).process }
   end
 
   def catalog
@@ -95,6 +97,16 @@ class WritingTest < Minitest::Test
 
   def html(route)
     Nokogiri::HTML(WritingContract.output(@site, route).read)
+  end
+
+  def test_fixture_build_uses_its_own_layouts_outside_the_source_directory
+    note('fixture')
+    Dir.chdir(REPO) { build }
+
+    assert_equal 'Test fixture', html('/notes/fixture').at_css('h1')&.text
+    assert_includes html('/notes/fixture').at_css('[data-writing-body]')&.text.to_s,
+                    'This fixture tests rendering, not an actual engagement.'
+    assert_equal 'Notes on systems and service.', html('/writing').at_css('h1')&.text
   end
 
   def test_empty_index_has_no_feature_or_false_publication
@@ -115,9 +127,9 @@ class WritingTest < Minitest::Test
   end
 
   def test_order_is_publication_desc_then_permalink_asc_not_update_date
-    note('zeta', 'published_on' => '2026-09-10')
-    note('alpha', 'published_on' => '2026-09-10')
-    note('older', 'published_on' => '2026-09-01', 'updated_on' => '2026-09-10')
+    note('zeta', {'published_on' => '2026-09-10'})
+    note('alpha', {'published_on' => '2026-09-10'})
+    note('older', {'published_on' => '2026-09-01', 'updated_on' => '2026-09-10'})
     build
     verify
     assert_equal %w[/notes/alpha /notes/zeta /notes/older],
@@ -127,7 +139,7 @@ class WritingTest < Minitest::Test
   end
 
   def test_unpublished_is_absent_from_index_and_direct_route
-    note('draft', 'published' => false, 'published_on' => nil)
+    note('draft', {'published' => false, 'published_on' => nil})
     build
     verify
     assert_nil WritingContract.output(@site, '/notes/draft')
@@ -135,7 +147,7 @@ class WritingTest < Minitest::Test
   end
 
   def test_unpublished_preview_cannot_pass_release_check
-    note('draft', 'published' => false, 'published_on' => nil)
+    note('draft', {'published' => false, 'published_on' => nil})
     build(unpublished: true)
     error = assert_raises(WritingContract::Error) { verify }
     assert_match(/unpublished route leaked/, error.message)
@@ -257,7 +269,7 @@ class WritingTest < Minitest::Test
 
   def test_front_matter_text_is_escaped_not_executed
     title = 'R&D: "one" & two'
-    note('escape', 'title' => title, 'description' => 'Facts & practical decisions.')
+    note('escape', {'title' => title, 'description' => 'Facts & practical decisions.'})
     build
     verify
     assert_empty html('/writing').css('[data-probe]')

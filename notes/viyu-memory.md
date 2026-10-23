@@ -15,7 +15,7 @@ topics:
 reader: msp-engineer
 ---
 
-**In brief:** I’m a Sr. Services Engineer at Viyu Network Solutions, developing viyu-memory as part of my service-delivery work. The goal is simple: useful engineering context should survive the agent session that produced it. The harder part is making that context portable without turning yesterday’s explanation into today’s truth.
+**In brief:** I’m a Sr. Services Engineer at Viyu Network Solutions. The viyu-memory command-line client is released, and its versioned gateway contract is implemented as part of my service-delivery work. The goal is simple: useful engineering context should survive the agent session that produced it. The harder part is making that context portable without turning yesterday’s explanation into today’s truth.
 
 My [MSP service-delivery case study](/case-studies/agentic-msp-delivery) describes my use of personal and shared memory. This article develops the design question behind that work: memory should live outside any one model, terminal, or chat interface. Implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and evidence judgment.
 
@@ -31,7 +31,7 @@ The problem I’m trying to solve with viyu-memory is therefore not “how do I 
 
 The first design decision is separation. The memory service should not belong to whichever chat interface happens to be open.
 
-The upstream foundation is [Mem0](https://docs.mem0.ai/open-source/overview), whose open-source stack supports self-hosting and configurable model, embedding, and storage components. I’m building the Viyu-specific contracts and access layer around that foundation rather than treating an upstream memory engine as the finished operational system.
+The upstream foundation is [Mem0](https://docs.mem0.ai/open-source/overview), whose open-source stack supports self-hosting and configurable model, embedding, and storage components. The Viyu-specific command-line client is released, and the gateway access contract around that foundation is implemented. Neither component treats an upstream memory engine as the finished operational system.
 
 That distinction matters. A memory engine can store and retrieve information; an MSP engineering environment also needs identity boundaries, provenance, correction behavior, audit decisions, and a way to distinguish remembered context from live evidence.
 
@@ -41,7 +41,7 @@ The October 14, 2026 client release describes setup paths for Claude Code, Codex
 
 Shared memory becomes a security problem as soon as more than one person can use it.
 
-The access model I’m using binds memory ownership to the authenticated caller rather than trusting a user identifier supplied by an agent request. Personal work memory and shared team knowledge are separate scopes, and retrieved results keep that distinction visible.
+The implemented gateway access model binds memory ownership to the authenticated caller rather than trusting a user identifier supplied by an agent request. Personal work memory and shared team knowledge are separate scopes, and retrieved results keep that distinction visible.
 
 The gateway contract includes Authentik-backed OAuth/OIDC for interactive authentication. That describes the supported access model, not a fresh audit of the deployed authentication path. [Authentik’s OAuth2/OIDC provider](https://docs.goauthentik.io/add-secure-apps/providers/oauth2/) supports authorization-code flows, PKCE, token validation, discovery, and related identity controls. On the MCP side, the protocol’s [authorization model](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization) treats a protected HTTP MCP server as an OAuth resource server rather than as the authority that invents user identity for itself.
 
@@ -97,7 +97,7 @@ Mem0’s current [add-memory documentation](https://docs.mem0.ai/core-concepts/m
 
 That can be useful, but it also means an innocent-looking “remember this” operation can have much wider effects than its name suggests.
 
-One of the contracts I’ve been working toward is deliberately narrower: adding context and reconciling existing context are different operations with different consequences. The same principle applies to corrections. A corrected record should not silently erase the fact that earlier guidance existed; the system needs a way to make supersession visible enough that a later retrieval does not present stale guidance as current truth.
+The implemented MCP mutation contract is deliberately narrower: adding context and reconciling existing context are different operations with different consequences. The same principle applies to corrections. A corrected record should not silently erase the fact that earlier guidance existed; the system needs a way to make supersession visible enough that a later retrieval does not present stale guidance as current truth.
 
 The tradeoff is explicit correction work in exchange for a smaller mutation boundary. That boundary is easier to review than an operation whose name hides updates or deletes.
 

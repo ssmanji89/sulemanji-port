@@ -5,7 +5,7 @@ title: An Intune assignment is not proof of application
 description: "A practical acceptance method for Intune changes that separates assignment, check-in, policy status, and endpoint evidence."
 permalink: /notes/intune-policy-verification
 published: true
-published_on: "2026-10-22"
+published_on: "2026-10-23"
 article_type: technical-guide
 time_horizon: durable
 topics:
@@ -76,7 +76,7 @@ A concise acceptance record can fit in a ticket or change note:
 
 This is an inspection method, not a claim that every Intune workload exposes identical evidence. Different workloads have different reporting paths and delays. Windows Update for Business reports, for example, use client diagnostic data and document their own refresh behavior, so update evidence needs its own freshness check.
 
-The broader rule matches my approach to [agent-assisted service delivery](/case-studies/agentic-msp-delivery): configuration is not live state, and a successful control-plane action is not the same as a verified service outcome. It also complements [A write is a claim, not evidence](/notes/agent-safety), where the same distinction applies to agent actions.
+The broader rule also applies to agent actions: a successful control-plane action is not the same as a verified service outcome. [A write is a claim, not evidence](/notes/agent-safety) explains that distinction in a separate context.
 
 The practical takeaway is narrow: **close the claim you can prove, and keep the remaining claim open.** An assigned policy can be correct while receipt is pending. A succeeded policy can be real while the operational outcome still needs testing. The handoff becomes safer when it preserves those boundaries instead of compressing them into “done.”
 

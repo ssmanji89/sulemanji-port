@@ -58,6 +58,26 @@ whitelist entries above do not establish current operational use.
 - **Anonymization pattern:** industry + size ("a commercial lending group, ~96 users"), never name + detail.
 - The 2026-08-04 secret-exposure incident and this audit's own credential-scrub are never referenced publicly.
 
+### Employer intellectual property boundary (owner correction, 2026-10-22)
+
+Evidence that internal work exists is not permission to disclose it. Approval of
+an existing case study applies to that approved content; it does not authorize
+new disclosures of Viyu Network Solutions intellectual property.
+
+Public articles may discuss general concepts supported by public sources without
+mapping those concepts to an employer's internal design. Internal product names,
+architecture, chosen protocols or integrations, control semantics, release or
+readiness details, and future measurement plans require specific owner approval
+for the proposed disclosure. Sanitizing customer identifiers does not remove this
+requirement. Private source records must not be repackaged as public design
+explanations merely because the underlying technologies are public.
+
+This boundary controls when an earlier architecture-idea allowance or operational
+scope statement appears broader. Existing attribution, delivery-state, evidence,
+and confidentiality requirements continue to apply. An independent reviewer must
+check the complete proposed disclosure against this boundary; a mechanical safety
+check cannot grant permission.
+
 ## §5. Style floor for public claims
 
 - Show, don't label. Banned filler: passionate, leverage, robust, seamless, delve, journey, game-changer, revolutionize.

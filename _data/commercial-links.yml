@@ -1,0 +1,17 @@
+version: 1
+suspicious_query_keys:
+  - tag
+  - ref
+  - referral
+  - affiliate
+  - aff
+unresolved_hosts:
+  - amzn.to
+programs:
+  amazon:
+    intent: affiliate
+    hosts:
+      - amazon.com
+    include_subdomains: true
+    required_query: tag
+    disclosure: As an Amazon Associate I earn from qualifying purchases.

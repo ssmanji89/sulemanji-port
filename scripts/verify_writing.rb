@@ -3,6 +3,7 @@
 # A pass is necessary, never evidence of editorial/source/privacy approval.
 
 require 'date'
+require 'digest'
 require 'json'
 require 'optparse'
 require 'pathname'
@@ -12,19 +13,37 @@ require 'kramdown'
 
 module WritingContract
   Error = Class.new(StandardError)
-  Article = Struct.new(:path, :data, :legacy, keyword_init: true)
+  Article = Struct.new(
+    :path,
+    :data,
+    :legacy,
+    :commercial_links,
+    :commercial_disclosures,
+    keyword_init: true
+  )
   Catalog = Struct.new(:active, :drafts, :legacy, :registry, keyword_init: true)
 
-  FIELDS = %w[
+  V1_FIELDS = %w[
     writing_schema layout title description permalink published
     published_on updated_on article_type time_horizon topics reader
   ].freeze
-  MAPS = %w[article_types time_horizons readers topics].freeze
-  REGISTRY_FIELDS = (['schema_version', 'legacy_paths'] + MAPS).freeze
+  V2_FIELDS = %w[
+    writing_schema layout title description permalink published
+    published_on updated_on publication_family commercial_intent
+    disclosure_required time_horizon topics reader
+  ].freeze
+  MAPS = %w[
+    article_types publication_families commercial_intents
+    time_horizons readers topics
+  ].freeze
+  REGISTRY_FIELDS = (['schema_version', 'legacy_paths', 'schema_v1_sha256'] + MAPS).freeze
   LEGACY_ROUTES = {
     'notes/agent-safety-from-incidents.md' => '/notes/agent-safety'
   }.freeze
   LEGACY_PATHS = LEGACY_ROUTES.keys.freeze
+  SPONSORSHIP_DISCLOSURE = /\ASponsor:\s+\S.*\b(?:paid|funded|provided)\b/i.freeze
+  PAID_RECOMMENDATION_DISCLOSURE = /\APaid recommendation:\s+\S.*\bpaid\b/i.freeze
+  OWN_PRODUCT_DISCLOSURE = /\bI (?:created|built) and sell\b/i.freeze
 
   module_function
 
@@ -75,7 +94,7 @@ module WritingContract
     path = Pathname(source) / '_data/writing.yml'
     data = yaml(path.read, 'writing registry')
     check((data.keys - REGISTRY_FIELDS).empty?, 'writing registry: unknown field')
-    check(data['schema_version'] == 1, 'writing registry: unsupported version')
+    check(data['schema_version'] == 2, 'writing registry: unsupported version')
 
     MAPS.each do |key|
       map = data[key]
@@ -97,9 +116,196 @@ module WritingContract
           'writing registry: unrecognized legacy path')
     check((LEGACY_PATHS - legacy).empty?,
           'writing registry: canonical legacy path required')
+
+    frozen = data['schema_v1_sha256']
+    check(frozen.is_a?(Hash), 'writing registry: schema_v1_sha256 mapping required')
+    frozen.each do |path, value|
+      check(path.is_a?(String) && /\Anotes\/[a-z0-9-]+\.md\z/.match?(path),
+            'writing registry: invalid schema-v1 path')
+      check(value.is_a?(String) && /\A[0-9a-f]{64}\z/.match?(value),
+            'writing registry: invalid schema-v1 digest')
+    end
     data
   rescue Errno::ENOENT => e
     raise Error, "required source file missing: #{e.message}"
+  end
+
+  def article_schema(front, relative, data_registry, source_sha256:)
+    schema = front['writing_schema']
+    check(schema.instance_of?(Integer) && [1, 2].include?(schema),
+          "#{relative}: writing_schema must be 1 or 2")
+    return schema if schema == 2
+
+    expected = data_registry['schema_v1_sha256'][relative]
+    check(expected && expected == source_sha256,
+          "#{relative}: schema-v1 source changed; migrate to writing_schema 2")
+    front['publication_family'] = 'professional-analysis'
+    front['commercial_intent'] = 'none'
+    front['disclosure_required'] = false
+    schema
+  end
+
+  def commercial_registry(source)
+    path = Pathname(source) / '_data/commercial-links.yml'
+    data = yaml(path.read, 'commercial link registry')
+    check((data.keys - %w[version suspicious_query_keys unresolved_hosts programs]).empty?,
+          'commercial link registry: unknown field')
+    check(data['version'] == 1, 'commercial link registry: unsupported version')
+    suspicious = data['suspicious_query_keys']
+    check(suspicious.is_a?(Array) && suspicious.uniq == suspicious &&
+          suspicious.all? { |key| key.is_a?(String) && /\A[a-z][a-z0-9_-]*\z/.match?(key) },
+          'commercial link registry: invalid suspicious query keys')
+    unresolved_hosts = data['unresolved_hosts']
+    check(unresolved_hosts.is_a?(Array) && unresolved_hosts.uniq == unresolved_hosts &&
+          unresolved_hosts.all? { |host| host.is_a?(String) && host == host.downcase },
+          'commercial link registry: invalid unresolved hosts')
+    programs = data['programs']
+    check(programs.is_a?(Hash) && !programs.empty?,
+          'commercial link registry: programs required')
+    programs.each do |program, rule|
+      check(program.is_a?(String) && /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/.match?(program),
+            'commercial link registry: invalid program id')
+      check(rule.is_a?(Hash) && %w[affiliate referral own-product].include?(rule['intent']),
+            "commercial link registry: invalid #{program} intent")
+      check(rule['hosts'].is_a?(Array) && !rule['hosts'].empty? &&
+            rule['hosts'].all? { |host| host.is_a?(String) && host == host.downcase },
+            "commercial link registry: invalid #{program} hosts")
+      check([true, false].include?(rule['include_subdomains']),
+            "commercial link registry: invalid #{program} subdomain rule")
+      check(rule['disclosure'].is_a?(String) && !rule['disclosure'].strip.empty?,
+            "commercial link registry: invalid #{program} disclosure")
+    end
+    data
+  rescue Errno::ENOENT => e
+    raise Error, "required source file missing: #{e.message}"
+  end
+
+  def host_matches?(host, allowed, include_subdomains)
+    host == allowed || include_subdomains && host.end_with?(".#{allowed}")
+  end
+
+  def classify_commercial_href(href, data_registry)
+    value = href.to_s.strip
+    uri = URI.parse(value)
+    query = URI.decode_www_form(uri.query.to_s).to_h
+    host = uri.host&.downcase
+    if uri.scheme == 'https' && data_registry['unresolved_hosts'].include?(host)
+      return {'program' => 'unknown', 'intent' => 'unknown', 'href' => value}
+    end
+
+    data_registry['programs'].each do |program, rule|
+      root_match = uri.scheme.nil? && value.start_with?('/') &&
+                   Array(rule['root_paths']).include?(uri.path)
+      https_match = if uri.scheme == 'https' && uri.host
+                      host = uri.host.downcase
+                      rule['hosts'].any? do |allowed|
+                        host_matches?(host, allowed, rule['include_subdomains'])
+                      end
+                    else
+                      false
+                    end
+      next unless root_match || https_match
+      next if rule['required_query'] && query[rule['required_query']].to_s.empty?
+      prefixes = Array(rule['path_prefixes'])
+      next if !prefixes.empty? && prefixes.none? { |prefix| uri.path.start_with?(prefix) }
+
+      return {
+        'program' => program,
+        'intent' => rule['intent'],
+        'disclosure' => rule['disclosure'],
+        'href' => value
+      }
+    end
+
+    suspicious = query.keys & data_registry['suspicious_query_keys']
+    return nil if suspicious.empty?
+
+    {'program' => 'unknown', 'intent' => 'unknown', 'href' => value}
+  rescue URI::InvalidURIError, ArgumentError
+    nil
+  end
+
+  def markdown_links(body)
+    root = Kramdown::Document.new(body).root
+    collect = lambda do |node|
+      current = node.type == :a ? [node.attr['href']] : []
+      current + node.children.flat_map { |child| collect.call(child) }
+    end
+    collect.call(root).compact
+  end
+
+  def markdown_paragraph_texts(body)
+    root = Kramdown::Document.new(body).root
+    visible_text = lambda do |node|
+      own = %i[text codespan].include?(node.type) ? node.value.to_s : ''
+      own + node.children.map { |child| visible_text.call(child) }.join
+    end
+    collect = lambda do |node|
+      current = node.type == :p ? [visible_text.call(node).strip] : []
+      current + node.children.flat_map { |child| collect.call(child) }
+    end
+    collect.call(root).reject(&:empty?)
+  end
+
+  def disclosure_records(paragraphs, classified)
+    records = classified.map do |link|
+      {'intent' => link['intent'], 'text' => link['disclosure']}
+    end
+    records << {'intent' => 'sponsorship', 'pattern' => SPONSORSHIP_DISCLOSURE} if
+      paragraphs.any? { |text| SPONSORSHIP_DISCLOSURE.match?(text) }
+    records << {'intent' => 'paid-recommendation', 'pattern' => PAID_RECOMMENDATION_DISCLOSURE} if
+      paragraphs.any? { |text| PAID_RECOMMENDATION_DISCLOSURE.match?(text) }
+    records << {'intent' => 'own-product', 'pattern' => OWN_PRODUCT_DISCLOSURE} if
+      paragraphs.any? { |text| OWN_PRODUCT_DISCLOSURE.match?(text) }
+    records.uniq { |record| [record['intent'], record['text'], record['pattern']&.source] }
+  end
+
+  def validate_commercial_source(article, body, data_registry)
+    data = article.respond_to?(:data) ? article.data : article
+    relative = article.respond_to?(:path) ? article.path : data.fetch('permalink')
+    classified = markdown_links(body).filter_map do |href|
+      classify_commercial_href(href, data_registry)
+    end
+    check(classified.none? { |link| link['program'] == 'unknown' },
+          "#{relative}: unknown commercial link pattern")
+
+    paragraphs = markdown_paragraph_texts(body)
+    intent = data['commercial_intent']
+    required = data['disclosure_required']
+    disclosures = disclosure_records(paragraphs, classified)
+    relationships = disclosures.map { |record| record['intent'] }.uniq
+
+    if intent == 'none'
+      check(required == false && relationships.empty?,
+            "#{relative}: commercial relationship requires explicit intent")
+      return classified
+    end
+
+    check(required == true, "#{relative}: disclosure_required must be true")
+    classified.each do |link|
+      check(paragraphs.any? { |text| text.include?(link['disclosure']) },
+            "#{relative}: #{link['program']} disclosure missing")
+    end
+
+    case intent
+    when 'affiliate', 'referral'
+      check(relationships.include?(intent) && (relationships - [intent]).empty?,
+            "#{relative}: commercial links do not match #{intent}")
+    when 'sponsorship'
+      check(relationships == ['sponsorship'],
+            "#{relative}: named sponsor disclosure required")
+    when 'paid-recommendation'
+      check(relationships == ['paid-recommendation'],
+            "#{relative}: named paid recommendation disclosure required")
+    when 'own-product'
+      check(relationships.include?('own-product') &&
+            classified.any? { |link| link['intent'] == 'own-product' } &&
+            (relationships - ['own-product']).empty?,
+            "#{relative}: owned product disclosure and offer required")
+    when 'mixed'
+      check(relationships.length >= 2, "#{relative}: mixed intent needs two relationships")
+    end
+    classified
   end
 
   def markdown_h1?(body)
@@ -117,6 +323,7 @@ module WritingContract
     source = Pathname(source).expand_path
     check(as_of.is_a?(Date), 'as_of: Date required')
     data_registry = registry(source)
+    commercial_data_registry = commercial_registry(source)
 
     notes_dir = source / 'notes'
     check(notes_dir.directory?, 'notes: directory required')
@@ -148,9 +355,16 @@ module WritingContract
           check(!/[<>]|\{[%{]/.match?(front[field]),
                 "#{relative}: plain #{field} text required")
         end
-        check((front.keys - FIELDS).empty?, "#{relative}: unknown front matter field")
-        check(front['writing_schema'].instance_of?(Integer) && front['writing_schema'] == 1,
-              "#{relative}: writing_schema must be 1")
+        schema = article_schema(
+          front,
+          relative,
+          data_registry,
+          source_sha256: Digest::SHA256.file(path).hexdigest
+        )
+        fields = schema == 1 ? V1_FIELDS : V2_FIELDS
+        normalized_fields = schema == 1 ? %w[publication_family commercial_intent disclosure_required] : []
+        check((front.keys - fields - normalized_fields).empty?,
+              "#{relative}: unknown front matter field")
         check(front['layout'] == 'writing-article',
               "#{relative}: writing-article layout required")
         check([true, false].include?(front['published']),
@@ -158,11 +372,19 @@ module WritingContract
         check(front['permalink'] == "/notes/#{path.basename('.md')}",
               "#{relative}: slug and permalink must agree")
 
-        {
-          'article_type' => 'article_types',
+        controlled = {
           'time_horizon' => 'time_horizons',
           'reader' => 'readers'
-        }.each do |field, map|
+        }
+        if schema == 1
+          controlled['article_type'] = 'article_types'
+        else
+          controlled['publication_family'] = 'publication_families'
+          controlled['commercial_intent'] = 'commercial_intents'
+          check([true, false].include?(front['disclosure_required']),
+                "#{relative}: disclosure_required must be boolean")
+        end
+        controlled.each do |field, map|
           check(data_registry[map].key?(front[field]), "#{relative}: invalid #{field}")
         end
 
@@ -195,7 +417,19 @@ module WritingContract
         end
       end
 
-      Article.new(path: relative, data: front, legacy: legacy)
+      commercial_links = legacy ? [] : validate_commercial_source(front, body, commercial_data_registry)
+      commercial_disclosures = if legacy
+                                   []
+                                 else
+                                   disclosure_records(markdown_paragraph_texts(body), commercial_links)
+                                 end
+      Article.new(
+        path: relative,
+        data: front,
+        legacy: legacy,
+        commercial_links: commercial_links,
+        commercial_disclosures: commercial_disclosures
+      )
     end
 
     check((data_registry['legacy_paths'] - articles.map(&:path)).empty?,
@@ -238,6 +472,14 @@ module WritingContract
     end
   end
 
+  def jsonld_nodes(document)
+    document.css('script[type="application/ld+json"]').flat_map do |script|
+      nodes(JSON.parse(script.text))
+    end
+  rescue JSON::ParserError
+    raise Error, 'invalid JSON-LD'
+  end
+
   def document(root, route, origin:, baseurl:, expected_scripts:)
     require_nokogiri
     path = output(root, route)
@@ -258,9 +500,7 @@ module WritingContract
     rendered_scripts = scripts.map { |node| [node['src'], node.text.strip] }
     check(rendered_scripts == expected_scripts, "#{route}: unexpected executable script")
 
-    schemas = doc.css('script[type="application/ld+json"]').flat_map do |node|
-      nodes(JSON.parse(node.text))
-    end
+    schemas = jsonld_nodes(doc)
     people = schemas.select { |node| node['@type'] == 'Person' }
     check(people.length == 1 && people[0]['@id'] == origin + baseurl + '/#person',
           "#{route}: shared Person identity missing/duplicated")
@@ -284,8 +524,14 @@ module WritingContract
       end
     check(node.css('time[data-updated-on]').map { |item| item['datetime'] } == expected_update,
           "#{article.path}: update date missing/mismatched")
-    check(node.css('[data-article-type]').map { |item| item['data-article-type'] } ==
-          [front['article_type']], "#{article.path}: type missing/mismatched")
+    if front['writing_schema'] == 2
+      check(node.css('[data-publication-family]').map { |item| item['data-publication-family'] } ==
+            [front['publication_family']],
+            "#{article.path}: publication family missing/mismatched")
+    else
+      check(node.css('[data-article-type]').map { |item| item['data-article-type'] } ==
+            [front['article_type']], "#{article.path}: type missing/mismatched")
+    end
     check(node.css('[data-topic]').map { |item| item['data-topic'] } == front['topics'],
           "#{article.path}: topics missing/mismatched")
   end
@@ -317,6 +563,7 @@ module WritingContract
 
     config = yaml((source / '_config.yml').read, 'site config')
     origin = config.fetch('url').sub(%r{/$}, '')
+    commercial_data_registry = commercial_registry(source)
 
     shared_head = Nokogiri::HTML.fragment((source / '_includes/head-custom.html').read)
     expected_scripts = shared_head.css('script')
@@ -327,6 +574,15 @@ module WritingContract
 
     index = document(site, '/writing',
                      origin: origin, baseurl: baseurl, expected_scripts: expected_scripts)
+    disclosure_page = document(
+      site,
+      '/affiliate-disclosure',
+      origin: origin,
+      baseurl: baseurl,
+      expected_scripts: expected_scripts
+    )
+    check(disclosure_page.text.include?('As an Amazon Associate I earn from qualifying purchases.'),
+          '/affiliate-disclosure: Amazon statement missing')
 
     cards = index.css('[data-writing-url]')
     expected = records.active.map { |article| article.data['permalink'] }
@@ -371,6 +627,78 @@ module WritingContract
       unsafe_links = body.css('a[href]').reject { |node| safe_article_href?(node['href']) }
       check(unsafe_links.empty?,
             "#{article.path}: unsafe rendered article link scheme")
+      rendered_commercial = body.css('a[href]').filter_map do |node|
+        classify_commercial_href(node['href'], commercial_data_registry)
+      end
+      expected_commercial = article.commercial_links
+      check(rendered_commercial == expected_commercial,
+            "#{article.path}: rendered commercial links changed")
+      ordered_nodes = body.xpath('.//*').to_a
+      rendered_commercial.each do |link|
+        link_node = body.css('a[href]').find { |node| node['href'] == link['href'] }
+        disclosure_node = body.css('p').find do |node|
+          node.text.include?(link['disclosure'])
+        end
+        check(disclosure_node && link_node &&
+              !link_node.ancestors.include?(disclosure_node) &&
+              ordered_nodes.index(disclosure_node) < ordered_nodes.index(link_node),
+              "#{article.path}: disclosure must precede first commercial link")
+      end
+      disclosure_nodes = article.commercial_disclosures.map do |record|
+        body.css('p').find do |node|
+          if record['text']
+            node.text.include?(record['text'])
+          else
+            record['pattern'].match?(node.text.strip)
+          end
+        end
+      end
+      check(disclosure_nodes.none?(&:nil?),
+            "#{article.path}: visible commercial disclosure missing")
+      unlinked_relationship = article.commercial_disclosures.any? do |record|
+        %w[sponsorship paid-recommendation].include?(record['intent'])
+      end
+      if unlinked_relationship
+        paragraphs = body.css('p').to_a
+        first_non_disclosure = paragraphs.find { |node| !disclosure_nodes.include?(node) }
+        if first_non_disclosure
+          check(disclosure_nodes.all? do |node|
+                  ordered_nodes.index(node) < ordered_nodes.index(first_non_disclosure)
+                end, "#{article.path}: commercial disclosure must lead article body")
+        end
+      end
+      if article.data['writing_schema'] == 2
+        schemas = jsonld_nodes(page)
+        expected_type = if %w[professional-analysis technical-guide]
+                           .include?(article.data['publication_family'])
+                          'Article'
+                        else
+                          'BlogPosting'
+                        end
+        publications = schemas.select { |node| %w[Article BlogPosting].include?(node['@type']) }
+        check(publications.length == 1 && publications[0]['@type'] == expected_type,
+              "#{article.path}: exactly one #{expected_type} JSON-LD node required")
+        publication = publications[0]
+        expected_jsonld = {
+          '@context' => 'https://schema.org',
+          '@type' => expected_type,
+          '@id' => origin + baseurl + route + '#article',
+          'url' => origin + baseurl + route,
+          'headline' => article.data['title'],
+          'description' => article.data['description'],
+          'datePublished' => article.data['published_on'],
+          'dateModified' => article.data['updated_on'] || article.data['published_on'],
+          'author' => {'@id' => origin + baseurl + '/#person'}
+        }
+        check(publication == expected_jsonld,
+              "#{article.path}: Publication JSON-LD does not match visible content")
+        prohibited_types = %w[Review Product]
+        prohibited_fields = %w[aggregateRating reviewRating ratingValue offers price availability]
+        check(schemas.none? { |node| prohibited_types.include?(node['@type']) },
+              "#{article.path}: prohibited Publication JSON-LD type")
+        check(schemas.none? { |node| (node.keys & prohibited_fields).any? },
+              "#{article.path}: prohibited Publication JSON-LD field")
+      end
       check(wrapper.at_css('a[data-writing-back]')&.[]('href') == baseurl + '/writing',
             "#{article.path}: writing back-link mismatch")
       metadata(wrapper, article)

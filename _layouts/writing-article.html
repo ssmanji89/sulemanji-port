@@ -11,6 +11,9 @@ layout: default
   <div data-writing-body>
     {{ content }}
   </div>
+  {% if page.writing_schema == 2 %}
+    {% include writing-jsonld.html article=page %}
+  {% endif %}
   <footer>
     <p><a data-writing-back href="{{ '/writing' | relative_url | escape }}">More writing</a></p>
   </footer>

@@ -1,11 +1,32 @@
-schema_version: 1
+schema_version: 2
 legacy_paths:
   - notes/agent-safety-from-incidents.md
+schema_v1_sha256:
+  notes/ai-agent-identity-authorization.md: c03108bd27471b88dec830edb14e81b2324e53b514c5d4cfd35ef89324e73a9d
+  notes/ai-vulnerability-triage-evidence.md: 1925d229897f81ae5bef292287c40f54345f07566409e232a11550e4d35a792a
+  notes/emergency-patching-service-decision.md: 441abbe55d661fd33f4d02f6efae96d292c7ba972c8643135cb0ab4419c7df4d
+  notes/intune-policy-verification.md: b21799f9445b9cdd33e1448245581582d6cccba83daa58f1070316b48b010314
+  notes/work-outlasts-agent-session.md: 011d3e3633eddee0c13e94d20fc65dbb0d99248b7120179bdf8f5e548b2864d7
 article_types:
   analysis: Analysis
   technical-guide: Technical guide
   field-note: Field note
   experiment: Experiment
+publication_families:
+  professional-analysis: Professional analysis
+  technical-guide: Technical guide
+  research-note: Research note
+  product-category-guide: Product category guide
+  field-note: Field note
+  experiment: Experiment
+commercial_intents:
+  none: None
+  affiliate: Affiliate
+  referral: Referral
+  sponsorship: Sponsorship
+  paid-recommendation: Paid recommendation
+  own-product: Own product
+  mixed: Mixed
 time_horizons:
   timely: Timely
   durable: Durable

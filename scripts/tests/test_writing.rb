@@ -19,6 +19,8 @@ class WritingTest < Minitest::Test
     %w[_config.yml writing.md _layouts _includes _data].each do |entry|
       FileUtils.cp_r(File.join(REPO, entry), File.join(@source, entry))
     end
+    disclosure = File.join(REPO, 'affiliate-disclosure.md')
+    FileUtils.cp(disclosure, @source) if File.exist?(disclosure)
     FileUtils.cp(
       File.join(REPO, 'notes/agent-safety-from-incidents.md'),
       File.join(@source, 'notes/agent-safety-from-incidents.md')
@@ -293,6 +295,68 @@ class WritingTest < Minitest::Test
       'https://www.amazon.com/dp/B0H4X4X468',
       registry
     )
+  end
+
+  def test_schema_v2_article_renders_once_in_writing_index_with_markdown_image
+    publication_note(
+      'publication-v2',
+      {},
+      body: "## Useful view\n\n![Evidence diagram](https://images.example/evidence.png)\n"
+    )
+
+    build
+    verify
+
+    assert_equal ['/notes/publication-v2'],
+                 html('/writing').css('[data-writing-url="/notes/publication-v2"]')
+                                 .map { |node| node['data-writing-url'] }
+    article = html('/notes/publication-v2')
+    assert_equal ['professional-analysis'],
+                 article.css('[data-publication-family]')
+                        .map { |node| node['data-publication-family'] }
+    assert_equal ['https://images.example/evidence.png'],
+                 article.css('[data-writing-body] img').map { |node| node['src'] }
+  end
+
+  def test_commercial_disclosure_must_precede_first_link
+    publication_note(
+      'late-disclosure',
+      {'commercial_intent' => 'affiliate', 'disclosure_required' => true},
+      body: "## Product\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n\nAs an Amazon Associate I earn from qualifying purchases.\n"
+    )
+    build
+
+    error = assert_raises(WritingContract::Error) { verify }
+    assert_match(/disclosure must precede first commercial link/, error.message)
+  end
+
+  def test_affiliate_disclosure_page_contains_exact_amazon_statement
+    build
+
+    path = WritingContract.output(@site, '/affiliate-disclosure')
+    assert path, 'affiliate disclosure route must render'
+    assert_includes Nokogiri::HTML(path.read).text,
+                    'As an Amazon Associate I earn from qualifying purchases.'
+  end
+
+  def test_publication_jsonld_matches_visible_content
+    publication_note('jsonld-v2', {'updated_on' => '2026-09-10'})
+    build
+    verify
+
+    nodes = html('/notes/jsonld-v2').css('script[type="application/ld+json"]').flat_map do |script|
+      WritingContract.nodes(JSON.parse(script.text))
+    end
+    article = nodes.find { |node| node['@type'] == 'Article' }
+
+    assert article, 'one Article JSON-LD node required'
+    assert_equal 'Test jsonld-v2', article['headline']
+    assert_equal 'Synthetic description jsonld-v2.', article['description']
+    assert_equal 'https://www.sulemanji.com/notes/jsonld-v2', article['url']
+    assert_equal '2026-09-09', article['datePublished']
+    assert_equal '2026-09-10', article['dateModified']
+    assert_equal({'@id' => 'https://www.sulemanji.com/#person'}, article['author'])
+    assert_empty nodes.select { |node| %w[Review Product].include?(node['@type']) }
   end
 
   def test_empty_index_has_no_feature_or_false_publication

@@ -472,8 +472,14 @@ module WritingContract
       end
     check(node.css('time[data-updated-on]').map { |item| item['datetime'] } == expected_update,
           "#{article.path}: update date missing/mismatched")
-    check(node.css('[data-article-type]').map { |item| item['data-article-type'] } ==
-          [front['article_type']], "#{article.path}: type missing/mismatched")
+    if front['writing_schema'] == 2
+      check(node.css('[data-publication-family]').map { |item| item['data-publication-family'] } ==
+            [front['publication_family']],
+            "#{article.path}: publication family missing/mismatched")
+    else
+      check(node.css('[data-article-type]').map { |item| item['data-article-type'] } ==
+            [front['article_type']], "#{article.path}: type missing/mismatched")
+    end
     check(node.css('[data-topic]').map { |item| item['data-topic'] } == front['topics'],
           "#{article.path}: topics missing/mismatched")
   end
@@ -505,6 +511,7 @@ module WritingContract
 
     config = yaml((source / '_config.yml').read, 'site config')
     origin = config.fetch('url').sub(%r{/$}, '')
+    commercial_data_registry = commercial_registry(source)
 
     shared_head = Nokogiri::HTML.fragment((source / '_includes/head-custom.html').read)
     expected_scripts = shared_head.css('script')
@@ -515,6 +522,15 @@ module WritingContract
 
     index = document(site, '/writing',
                      origin: origin, baseurl: baseurl, expected_scripts: expected_scripts)
+    disclosure_page = document(
+      site,
+      '/affiliate-disclosure',
+      origin: origin,
+      baseurl: baseurl,
+      expected_scripts: expected_scripts
+    )
+    check(disclosure_page.text.include?('As an Amazon Associate I earn from qualifying purchases.'),
+          '/affiliate-disclosure: Amazon statement missing')
 
     cards = index.css('[data-writing-url]')
     expected = records.active.map { |article| article.data['permalink'] }
@@ -559,6 +575,22 @@ module WritingContract
       unsafe_links = body.css('a[href]').reject { |node| safe_article_href?(node['href']) }
       check(unsafe_links.empty?,
             "#{article.path}: unsafe rendered article link scheme")
+      rendered_commercial = body.css('a[href]').filter_map do |node|
+        classify_commercial_href(node['href'], commercial_data_registry)
+      end
+      expected_commercial = article.commercial_links
+      check(rendered_commercial == expected_commercial,
+            "#{article.path}: rendered commercial links changed")
+      ordered_nodes = body.xpath('.//*').to_a
+      rendered_commercial.each do |link|
+        link_node = body.css('a[href]').find { |node| node['href'] == link['href'] }
+        disclosure_node = body.css('p').find do |node|
+          node.text.include?(link['disclosure'])
+        end
+        check(disclosure_node && link_node &&
+              ordered_nodes.index(disclosure_node) < ordered_nodes.index(link_node),
+              "#{article.path}: disclosure must precede first commercial link")
+      end
       check(wrapper.at_css('a[data-writing-back]')&.[]('href') == baseurl + '/writing',
             "#{article.path}: writing back-link mismatch")
       metadata(wrapper, article)

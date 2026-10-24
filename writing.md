@@ -10,7 +10,9 @@ permalink: /writing
 Microsoft 365, business applications, infrastructure, service operations, and the decisions involved in keeping organizations running.
 
 {% assign notes = site.pages | where: "dir", "/notes/" %}
-{% assign articles = notes | where: "writing_schema", 1 | where: "published", true %}
+{% assign schema_v1_articles = notes | where: "writing_schema", 1 %}
+{% assign schema_v2_articles = notes | where: "writing_schema", 2 %}
+{% assign articles = schema_v1_articles | concat: schema_v2_articles | where: "published", true %}
 {% assign date_groups = articles | group_by: "published_on" | sort: "name" | reverse %}
 {% assign legacy_notes = notes | sort: "url" %}
 {% assign legacy_count = 0 %}

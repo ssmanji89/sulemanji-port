@@ -1,0 +1,18 @@
+{% assign publication_type = "BlogPosting" %}
+{% if include.article.publication_family == "professional-analysis" or include.article.publication_family == "technical-guide" %}
+  {% assign publication_type = "Article" %}
+{% endif %}
+{% assign publication_author = '/#person' | absolute_url %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": {{ publication_type | jsonify }},
+  "@id": {{ include.article.url | absolute_url | append: "#article" | jsonify }},
+  "url": {{ include.article.url | absolute_url | jsonify }},
+  "headline": {{ include.article.title | jsonify }},
+  "description": {{ include.article.description | jsonify }},
+  "datePublished": {{ include.article.published_on | jsonify }},
+  "dateModified": {{ include.article.updated_on | default: include.article.published_on | jsonify }},
+  "author": { "@id": {{ publication_author | jsonify }} }
+}
+</script>

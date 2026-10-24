@@ -1,5 +1,9 @@
 <p class="proj-meta" data-writing-meta>
+  {% if include.article.publication_family %}
+  <span data-publication-family="{{ include.article.publication_family | escape }}">{{ site.data.writing.publication_families[include.article.publication_family] | escape }}</span>
+  {% else %}
   <span data-article-type="{{ include.article.article_type | escape }}">{{ site.data.writing.article_types[include.article.article_type] | escape }}</span>
+  {% endif %}
   {% if include.article.published_on %}
   <span> · Published <time data-published-on datetime="{{ include.article.published_on | escape }}">{{ include.article.published_on | date: "%B %-d, %Y" }}</time></span>
   {% endif %}

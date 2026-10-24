@@ -17,11 +17,11 @@ topics:
   - infrastructure
 ---
 
-An AI-generated security patch is a candidate change, not evidence that a vulnerability is gone. An architect should accept it only after separate checks show that the vulnerable behavior is reproducible, the patch closes the underlying path, valid behavior still works, and the released artifact contains the reviewed change.
+An AI-generated security patch is a candidate change, not evidence that a vulnerability is gone. An architect should require security, behavior, and provenance evidence before merge; bind the reviewed revision to an artifact before release; and verify the running artifact after deployment before closing deployment acceptance.
 
 I work as a Sr. Services Engineer at Viyu Network Solutions. This guide uses public research and public standards. It does not describe Viyu systems, products, customers, controls, or operating practices.
 
-The practical question is narrow: **what evidence should an architect require before an AI-generated security patch can merge or deploy?** My answer is a four-gate acceptance record. The patch must pass a security gate, a behavior gate, a provenance gate, and a deployment gate. A single proof-of-concept test cannot stand in for all four.
+The practical question is narrow: **what evidence should an architect require before an AI-generated security patch can merge or deploy?** My answer is a staged acceptance record. Security, behavior, and provenance evidence govern merge. Artifact identity governs release. Verification of the running artifact closes deployment acceptance. A single proof-of-concept test cannot stand in for these separate decisions.
 
 ## Why does AI-generated patching need a separate acceptance method?
 
@@ -43,9 +43,9 @@ The useful move is to write each claim separately. “The original proof of conc
 
 The AI label can make that gap harder to see. A fluent explanation can make a narrow guard look like a root-cause repair. A small diff can appear safer than a large one while changing a critical condition. Review should therefore start from the vulnerability mechanism and required behavior, not from the patch's confidence statement or visual neatness.
 
-## Use four gates for patch acceptance
+## Use staged gates for patch acceptance
 
-The four gates below separate the claims that a merge or deployment decision needs. A patch fails acceptance when any required gate lacks evidence, even if the other gates pass.
+The stages below separate evidence that becomes available at different times. Security, behavior, and provenance checks must pass before merge. Before release, the build record must identify an artifact made from the reviewed revision. After deployment, evidence from the running artifact must pass before deployment acceptance closes.
 
 ### 1. Security gate: reproduce, repair, and challenge
 
@@ -71,13 +71,15 @@ NIST's [Secure Software Development Framework](https://csrc.nist.gov/pubs/sp/800
 
 Keep model output as supporting material, not as the decision record. The model can explain why it chose a change, but that explanation does not prove the code has the stated effect.
 
-### 4. Deployment gate: verify the running artifact
+### 4. Release and deployment gates: identify, then verify
 
-Build and release through the normal trusted path. Then verify that the deployed artifact contains the reviewed patch and that the relevant service state changed as intended. A successful pipeline reports execution; it does not alone prove which code is running.
+Before release, build through the normal trusted path and record the artifact identity. Verify that the artifact was made from the exact revision that passed the merge gates. This release evidence does not prove which artifact is running.
+
+After deployment, verify that the running artifact has the recorded identity, contains the reviewed patch, and changed the relevant service state as intended. A successful pipeline reports execution; it does not alone prove which code is running.
 
 Check the released version or artifact identity, repeat the safe security check where appropriate, and test the minimum required service behavior. If production testing would be unsafe, use artifact attestation plus a controlled pre-production test and state that production behavior remains observed rather than exploit-tested.
 
-The deployment gate closes the distance between source review and operational state. My guide to [emergency patching decisions](/notes/emergency-patching-service-decision) covers the separate choice among patching, isolation, and stopping a service when time is limited.
+The post-deployment gate closes the distance between source review and operational state. A failed check blocks deployment acceptance or triggers rollback; it does not retroactively make the pre-merge evidence absent. My guide to [emergency patching decisions](/notes/emergency-patching-service-decision) covers the separate choice among patching, isolation, and stopping a service when time is limited.
 
 ## How should an architect record the decision?
 
@@ -87,7 +89,8 @@ Use one short record with one status for each gate. Each status should name its 
 2. **Security:** Record the original reproduction, patched result, variant tests, and remaining attack paths.
 3. **Behavior:** Record focused regression tests, the normal suite, supported environments, and known gaps.
 4. **Provenance:** Record who or what generated the patch, who reviewed it, and which evidence belongs to this revision.
-5. **Deployment:** Record the released artifact, observation time, running identity, service check, and rollback condition.
+5. **Release:** Record the artifact identity and its binding to the reviewed revision before release.
+6. **Deployment:** After deployment, record the observation time, running identity, service check, and rollback condition.
 
 Do not replace a missing status with a general approval. “Reviewed” does not identify whether the reviewer checked exploit variants, application behavior, or only code style. “Tests passed” does not identify which artifact ran or which behavior the tests covered.
 
@@ -99,6 +102,6 @@ Human review should own the consequence, not merely watch the model work. The re
 
 That does not require a person to perform every mechanical step. An agent can reproduce a failure, generate variants, run tests, compare artifacts, and prepare the acceptance record. Automation is useful because it makes repeated checks cheaper. The accountable reviewer still needs enough domain knowledge and authority to reject a patch that passes narrow tests but fails the system's real constraints.
 
-The durable rule is simple: treat every security patch as a testable claim. AI can shorten the time from finding to candidate fix, but acceptance still needs independent evidence for security, behavior, provenance, and deployment. When those four claims remain separate, faster patch generation can improve response without turning speed into assumed safety.
+The durable rule is simple: treat every security patch as a testable claim. Merge requires independent security, behavior, and provenance evidence. Release requires an artifact identity bound to the reviewed revision. Deployment acceptance closes only after verification of the running artifact. This sequence lets faster patch generation improve response without turning speed into assumed safety.
 
 *Primary sources reviewed October 24, 2026. AI systems and patching research can change; verify current maintainer guidance and reproduce the evidence against the exact revision before use.*

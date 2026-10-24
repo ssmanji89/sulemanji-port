@@ -1,4 +1,5 @@
 require 'date'
+require 'digest'
 require 'fileutils'
 require 'minitest/autorun'
 require 'nokogiri'
@@ -63,6 +64,31 @@ class WritingTest < Minitest::Test
     }.merge(overrides)
     path = File.join(@source, "notes/#{slug}.md")
     File.write(path, data.to_yaml + "---\n\n" + body)
+    if data['writing_schema'] == 1 && @registry.key?('schema_v1_sha256')
+      @registry['schema_v1_sha256']["notes/#{slug}.md"] = Digest::SHA256.file(path).hexdigest
+      save_registry
+    end
+    path
+  end
+
+  def publication_note(slug, overrides = {}, body: "## A synthetic Publication\n\nThis fixture tests schema-v2 behavior.\n")
+    data = {
+      'writing_schema' => 2,
+      'layout' => 'writing-article',
+      'title' => "Test #{slug}",
+      'description' => "Synthetic description #{slug}.",
+      'permalink' => "/notes/#{slug}",
+      'published' => true,
+      'published_on' => '2026-09-09',
+      'publication_family' => 'professional-analysis',
+      'commercial_intent' => 'none',
+      'disclosure_required' => false,
+      'time_horizon' => 'durable',
+      'reader' => 'msp-engineer',
+      'topics' => ['microsoft-365']
+    }.merge(overrides)
+    path = File.join(@source, "notes/#{slug}.md")
+    File.write(path, data.to_yaml + "---\n\n" + body)
     path
   end
 
@@ -107,6 +133,46 @@ class WritingTest < Minitest::Test
     assert_includes html('/notes/fixture').at_css('[data-writing-body]')&.text.to_s,
                     'This fixture tests rendering, not an actual engagement.'
     assert_equal 'Notes on systems and service.', html('/writing').at_css('h1')&.text
+  end
+
+  def test_unchanged_schema_v1_uses_compatibility_defaults
+    note('v1-compatible')
+
+    article = catalog.active.find { |item| item.path == 'notes/v1-compatible.md' }
+
+    assert_equal 'professional-analysis', article.data['publication_family']
+    assert_equal 'none', article.data['commercial_intent']
+    assert_equal false, article.data['disclosure_required']
+  end
+
+  def test_changed_schema_v1_digest_requires_schema_v2
+    path = note('v1-frozen')
+    File.write(path, File.read(path) + "\n")
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/schema-v1 source changed; migrate to writing_schema 2/, error.message)
+  end
+
+  def test_schema_v2_requires_publication_fields
+    publication_note('valid-v2')
+    article = catalog.active.find { |item| item.path == 'notes/valid-v2.md' }
+    assert_equal 'professional-analysis', article.data['publication_family']
+    assert_equal 'none', article.data['commercial_intent']
+    assert_equal false, article.data['disclosure_required']
+
+    invalid = [
+      {'publication_family' => nil},
+      {'publication_family' => 'unknown'},
+      {'commercial_intent' => nil},
+      {'commercial_intent' => 'unknown'},
+      {'disclosure_required' => nil},
+      {'disclosure_required' => 'false'}
+    ]
+    invalid.each_with_index do |override, index|
+      reset_notes
+      publication_note('invalid-v2', override)
+      assert_raises(WritingContract::Error, "#{index}: #{override.inspect}") { catalog }
+    end
   end
 
   def test_empty_index_has_no_feature_or_false_publication

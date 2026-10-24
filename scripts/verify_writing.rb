@@ -3,6 +3,7 @@
 # A pass is necessary, never evidence of editorial/source/privacy approval.
 
 require 'date'
+require 'digest'
 require 'json'
 require 'optparse'
 require 'pathname'
@@ -15,12 +16,20 @@ module WritingContract
   Article = Struct.new(:path, :data, :legacy, keyword_init: true)
   Catalog = Struct.new(:active, :drafts, :legacy, :registry, keyword_init: true)
 
-  FIELDS = %w[
+  V1_FIELDS = %w[
     writing_schema layout title description permalink published
     published_on updated_on article_type time_horizon topics reader
   ].freeze
-  MAPS = %w[article_types time_horizons readers topics].freeze
-  REGISTRY_FIELDS = (['schema_version', 'legacy_paths'] + MAPS).freeze
+  V2_FIELDS = %w[
+    writing_schema layout title description permalink published
+    published_on updated_on publication_family commercial_intent
+    disclosure_required time_horizon topics reader
+  ].freeze
+  MAPS = %w[
+    article_types publication_families commercial_intents
+    time_horizons readers topics
+  ].freeze
+  REGISTRY_FIELDS = (['schema_version', 'legacy_paths', 'schema_v1_sha256'] + MAPS).freeze
   LEGACY_ROUTES = {
     'notes/agent-safety-from-incidents.md' => '/notes/agent-safety'
   }.freeze
@@ -75,7 +84,7 @@ module WritingContract
     path = Pathname(source) / '_data/writing.yml'
     data = yaml(path.read, 'writing registry')
     check((data.keys - REGISTRY_FIELDS).empty?, 'writing registry: unknown field')
-    check(data['schema_version'] == 1, 'writing registry: unsupported version')
+    check(data['schema_version'] == 2, 'writing registry: unsupported version')
 
     MAPS.each do |key|
       map = data[key]
@@ -97,9 +106,33 @@ module WritingContract
           'writing registry: unrecognized legacy path')
     check((LEGACY_PATHS - legacy).empty?,
           'writing registry: canonical legacy path required')
+
+    frozen = data['schema_v1_sha256']
+    check(frozen.is_a?(Hash), 'writing registry: schema_v1_sha256 mapping required')
+    frozen.each do |path, value|
+      check(path.is_a?(String) && /\Anotes\/[a-z0-9-]+\.md\z/.match?(path),
+            'writing registry: invalid schema-v1 path')
+      check(value.is_a?(String) && /\A[0-9a-f]{64}\z/.match?(value),
+            'writing registry: invalid schema-v1 digest')
+    end
     data
   rescue Errno::ENOENT => e
     raise Error, "required source file missing: #{e.message}"
+  end
+
+  def article_schema(front, relative, data_registry, source_sha256:)
+    schema = front['writing_schema']
+    check(schema.instance_of?(Integer) && [1, 2].include?(schema),
+          "#{relative}: writing_schema must be 1 or 2")
+    return schema if schema == 2
+
+    expected = data_registry['schema_v1_sha256'][relative]
+    check(expected && expected == source_sha256,
+          "#{relative}: schema-v1 source changed; migrate to writing_schema 2")
+    front['publication_family'] = 'professional-analysis'
+    front['commercial_intent'] = 'none'
+    front['disclosure_required'] = false
+    schema
   end
 
   def markdown_h1?(body)
@@ -148,9 +181,16 @@ module WritingContract
           check(!/[<>]|\{[%{]/.match?(front[field]),
                 "#{relative}: plain #{field} text required")
         end
-        check((front.keys - FIELDS).empty?, "#{relative}: unknown front matter field")
-        check(front['writing_schema'].instance_of?(Integer) && front['writing_schema'] == 1,
-              "#{relative}: writing_schema must be 1")
+        schema = article_schema(
+          front,
+          relative,
+          data_registry,
+          source_sha256: Digest::SHA256.file(path).hexdigest
+        )
+        fields = schema == 1 ? V1_FIELDS : V2_FIELDS
+        normalized_fields = schema == 1 ? %w[publication_family commercial_intent disclosure_required] : []
+        check((front.keys - fields - normalized_fields).empty?,
+              "#{relative}: unknown front matter field")
         check(front['layout'] == 'writing-article',
               "#{relative}: writing-article layout required")
         check([true, false].include?(front['published']),
@@ -158,11 +198,19 @@ module WritingContract
         check(front['permalink'] == "/notes/#{path.basename('.md')}",
               "#{relative}: slug and permalink must agree")
 
-        {
-          'article_type' => 'article_types',
+        controlled = {
           'time_horizon' => 'time_horizons',
           'reader' => 'readers'
-        }.each do |field, map|
+        }
+        if schema == 1
+          controlled['article_type'] = 'article_types'
+        else
+          controlled['publication_family'] = 'publication_families'
+          controlled['commercial_intent'] = 'commercial_intents'
+          check([true, false].include?(front['disclosure_required']),
+                "#{relative}: disclosure_required must be boolean")
+        end
+        controlled.each do |field, map|
           check(data_registry[map].key?(front[field]), "#{relative}: invalid #{field}")
         end
 

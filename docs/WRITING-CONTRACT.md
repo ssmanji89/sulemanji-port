@@ -115,6 +115,11 @@ Unknown commercial patterns, mismatched intent, missing disclosure, and account
 identifier mutation fail publication. Do not cloak Amazon links, state durable
 prices, or imply seller, manufacturer, or program endorsement.
 
+Known commercial short links, including `amzn.to`, fail until the publisher
+expands and verifies their final destination. General contact routes such as
+`/work-with-me` are not owned products. Register a specific offer route before
+using `own-product` intent.
+
 ## Structured data
 
 Schema-v2 Publication pages emit visible-content JSON-LD. Professional analysis

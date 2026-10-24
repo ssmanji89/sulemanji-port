@@ -204,6 +204,13 @@ class WritingTest < Minitest::Test
       'required_query' => 'ref',
       'disclosure' => 'This article contains affiliate or referral links. I may earn a commission if you buy or sign up through them.'
     }
+    referral_registry['programs']['fixture-owned-offer'] = {
+      'intent' => 'own-product',
+      'hosts' => ['sulemanji.com'],
+      'include_subdomains' => true,
+      'root_paths' => ['/products/fixture'],
+      'disclosure' => 'I created and sell'
+    }
     save_commercial_registry(referral_registry)
 
     cases = [
@@ -212,7 +219,7 @@ class WritingTest < Minitest::Test
       ['referral', true, "## Referral\n\nThis article contains affiliate or referral links. I may earn a commission if you buy or sign up through them.\n\n[Service](https://referral.example/start?ref=suleman)\n"],
       ['sponsorship', true, "## Sponsored\n\nSponsor: Acme paid for this article.\n"],
       ['paid-recommendation', true, "## Recommendation\n\nPaid recommendation: Acme paid me to include this recommendation.\n"],
-      ['own-product', true, "## My product\n\nI created and sell this product. [See it](/work-with-me)\n"],
+      ['own-product', true, "## My product\n\nI created and sell this product.\n\n[See it](/products/fixture)\n"],
       ['mixed', true, "## Mixed\n\nAs an Amazon Associate I earn from qualifying purchases.\n\nSponsor: Acme paid for this article.\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n"]
     ]
 
@@ -295,6 +302,25 @@ class WritingTest < Minitest::Test
       'https://www.amazon.com/dp/B0H4X4X468',
       registry
     )
+    assert_equal 'unknown', WritingContract.classify_commercial_href(
+      'https://amzn.to/fixture',
+      registry
+    )['program']
+    assert_nil WritingContract.classify_commercial_href(
+      '/work-with-me#professional-conversations',
+      registry
+    )
+  end
+
+  def test_hidden_sponsorship_disclosure_is_rejected
+    publication_note(
+      'hidden-sponsor',
+      {'commercial_intent' => 'sponsorship', 'disclosure_required' => true},
+      body: "## Sponsored\n\n[Details](https://example.com \"Sponsor: Acme paid for this article.\")\n"
+    )
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/named sponsor disclosure required/, error.message)
   end
 
   def test_schema_v2_article_renders_once_in_writing_index_with_markdown_image
@@ -330,6 +356,30 @@ class WritingTest < Minitest::Test
     assert_match(/disclosure must precede first commercial link/, error.message)
   end
 
+  def test_commercial_disclosure_must_be_complete_before_link_paragraph
+    publication_note(
+      'same-paragraph-disclosure',
+      {'commercial_intent' => 'affiliate', 'disclosure_required' => true},
+      body: "## Product\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20) As an Amazon Associate I earn from qualifying purchases.\n"
+    )
+    build
+
+    error = assert_raises(WritingContract::Error) { verify }
+    assert_match(/disclosure must precede first commercial link/, error.message)
+  end
+
+  def test_sponsorship_disclosure_must_lead_visible_promotional_copy
+    publication_note(
+      'late-sponsor',
+      {'commercial_intent' => 'sponsorship', 'disclosure_required' => true},
+      body: "## Sponsored\n\nAcme makes the best fixture for this workflow.\n\nSponsor: Acme paid for this article.\n"
+    )
+    build
+
+    error = assert_raises(WritingContract::Error) { verify }
+    assert_match(/commercial disclosure must lead article body/, error.message)
+  end
+
   def test_affiliate_disclosure_page_contains_exact_amazon_statement
     build
 
@@ -357,6 +407,44 @@ class WritingTest < Minitest::Test
     assert_equal '2026-09-10', article['dateModified']
     assert_equal({'@id' => 'https://www.sulemanji.com/#person'}, article['author'])
     assert_empty nodes.select { |node| %w[Review Product].include?(node['@type']) }
+  end
+
+  def test_publication_jsonld_mutations_fail_release_verification
+    publication_note('jsonld-mutated', {'updated_on' => '2026-09-10'})
+    build
+    path = WritingContract.output(@site, '/notes/jsonld-mutated')
+    original = path.read
+
+    mutations = {
+      missing: lambda do |doc|
+        doc.css('script[type="application/ld+json"]').find do |script|
+          WritingContract.nodes(JSON.parse(script.text)).any? { |node| node['@type'] == 'Article' }
+        end.remove
+      end,
+      duplicate: lambda do |doc|
+        script = doc.css('script[type="application/ld+json"]').find do |candidate|
+          WritingContract.nodes(JSON.parse(candidate.text)).any? { |node| node['@type'] == 'Article' }
+        end
+        script.add_next_sibling(script.dup)
+      end,
+      mismatched_headline: lambda do |doc|
+        script = doc.css('script[type="application/ld+json"]').find do |candidate|
+          WritingContract.nodes(JSON.parse(candidate.text)).any? { |node| node['@type'] == 'Article' }
+        end
+        data = JSON.parse(script.text)
+        data['headline'] = 'Wrong title'
+        script.content = JSON.generate(data)
+      end
+    }
+
+    mutations.each do |name, mutate|
+      doc = Nokogiri::HTML(original)
+      mutate.call(doc)
+      File.write(path, doc.to_html)
+      assert_raises(WritingContract::Error, name.to_s) { verify }
+    end
+  ensure
+    File.write(path, original) if path && original
   end
 
   def test_empty_index_has_no_feature_or_false_publication

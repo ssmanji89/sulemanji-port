@@ -82,7 +82,7 @@ A simple plan improves a session more than an extra accessory.
 4. Use binoculars only after you can describe the target and the improvement you want.
 5. Stop if you cannot identify the target. Recheck the chart instead of searching at random through a narrow view.
 
-Never look at the Sun through binoculars or a telescope unless the equipment has a correctly installed solar filter designed for that exact use. NASA's [eclipse viewing safety guide](https://science.nasa.gov/eclipses/safety/) warns that unfiltered optics can cause severe eye injury.
+Never look at the Sun through binoculars or a telescope unless a special-purpose solar filter is securely attached over the front of the optics. Do not use eclipse glasses or handheld solar viewers with binoculars or telescopes. NASA's [eclipse viewing safety guide](https://science.nasa.gov/eclipses/safety/) warns that concentrated sunlight can damage the filter and enter your eyes, causing severe injury.
 
 The rule extends beyond this week: use your eyes for events spread across the sky, binoculars for broad clusters and star fields, and a telescope for smaller details. Equipment should follow the target. Late October 2026 makes that distinction easy to see: the Orionids need an open view, while the Moon and Pleiades give binoculars a useful job.
 

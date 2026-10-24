@@ -1,0 +1,26 @@
+version: 1
+suspicious_query_keys:
+  - tag
+  - ref
+  - referral
+  - affiliate
+  - aff
+programs:
+  amazon:
+    intent: affiliate
+    hosts:
+      - amazon.com
+    include_subdomains: true
+    required_query: tag
+    disclosure: As an Amazon Associate I earn from qualifying purchases.
+  sulemanji-owned-offer:
+    intent: own-product
+    hosts:
+      - sulemanji.com
+      - www.sulemanji.com
+    include_subdomains: false
+    path_prefixes:
+      - /work-with-me
+    root_paths:
+      - /work-with-me
+    disclosure: I created and sell

@@ -38,6 +38,24 @@ class WritingTest < Minitest::Test
     File.write(File.join(@source, '_data/writing.yml'), @registry.to_yaml)
   end
 
+  def commercial_registry
+    path = File.join(@source, '_data/commercial-links.yml')
+    return {
+      'version' => 1,
+      'suspicious_query_keys' => %w[tag ref referral affiliate aff],
+      'programs' => {}
+    } unless File.exist?(path)
+
+    WritingContract.yaml(
+      File.read(path),
+      'commercial link registry'
+    )
+  end
+
+  def save_commercial_registry(data)
+    File.write(File.join(@source, '_data/commercial-links.yml'), data.to_yaml)
+  end
+
   def reset_notes
     notes = File.join(@source, 'notes')
     FileUtils.rm_rf(notes)
@@ -173,6 +191,108 @@ class WritingTest < Minitest::Test
       publication_note('invalid-v2', override)
       assert_raises(WritingContract::Error, "#{index}: #{override.inspect}") { catalog }
     end
+  end
+
+  def test_commercial_intent_matrix_accepts_only_matching_relationships
+    referral_registry = commercial_registry
+    referral_registry['programs']['fixture-referral'] = {
+      'intent' => 'referral',
+      'hosts' => ['referral.example'],
+      'include_subdomains' => false,
+      'required_query' => 'ref',
+      'disclosure' => 'This article contains affiliate or referral links. I may earn a commission if you buy or sign up through them.'
+    }
+    save_commercial_registry(referral_registry)
+
+    cases = [
+      ['none', false, "## Independent analysis\n\nNo commercial relationship applies.\n"],
+      ['affiliate', true, "## Affiliate\n\nAs an Amazon Associate I earn from qualifying purchases.\n\n[Product](https://www.amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n"],
+      ['referral', true, "## Referral\n\nThis article contains affiliate or referral links. I may earn a commission if you buy or sign up through them.\n\n[Service](https://referral.example/start?ref=suleman)\n"],
+      ['sponsorship', true, "## Sponsored\n\nSponsor: Acme paid for this article.\n"],
+      ['paid-recommendation', true, "## Recommendation\n\nPaid recommendation: Acme paid me to include this recommendation.\n"],
+      ['own-product', true, "## My product\n\nI created and sell this product. [See it](/work-with-me)\n"],
+      ['mixed', true, "## Mixed\n\nAs an Amazon Associate I earn from qualifying purchases.\n\nSponsor: Acme paid for this article.\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n"]
+    ]
+
+    cases.each_with_index do |(intent, required, body), index|
+      reset_notes
+      publication_note(
+        "commercial-#{index}",
+        {'commercial_intent' => intent, 'disclosure_required' => required},
+        body: body
+      )
+      catalog
+    end
+  end
+
+  def test_commercial_source_rejects_mismatches_and_missing_disclosures
+    invalid = [
+      [
+        {'commercial_intent' => 'none', 'disclosure_required' => false},
+        "## Hidden affiliate\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n"
+      ],
+      [
+        {'commercial_intent' => 'affiliate', 'disclosure_required' => false},
+        "## Affiliate\n\nAs an Amazon Associate I earn from qualifying purchases.\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n"
+      ],
+      [
+        {'commercial_intent' => 'affiliate', 'disclosure_required' => true},
+        "## Missing disclosure\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n"
+      ],
+      [
+        {'commercial_intent' => 'affiliate', 'disclosure_required' => true},
+        "## Unknown program\n\n[Product](https://merchant.example/item?tag=sullymanji-20)\n"
+      ],
+      [
+        {'commercial_intent' => 'sponsorship', 'disclosure_required' => true},
+        "## Anonymous sponsor\n\nThis article was sponsored.\n"
+      ],
+      [
+        {'commercial_intent' => 'paid-recommendation', 'disclosure_required' => true},
+        "## Anonymous recommendation\n\nThis is a paid recommendation.\n"
+      ],
+      [
+        {'commercial_intent' => 'own-product', 'disclosure_required' => true},
+        "## Product\n\n[See the offer](/work-with-me)\n"
+      ],
+      [
+        {'commercial_intent' => 'mixed', 'disclosure_required' => true},
+        "## Only one relationship\n\nAs an Amazon Associate I earn from qualifying purchases.\n\n[Product](https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20)\n"
+      ]
+    ]
+
+    invalid.each_with_index do |(front, body), index|
+      reset_notes
+      publication_note("invalid-commercial-#{index}", front, body: body)
+      assert_raises(WritingContract::Error, index.to_s) { catalog }
+    end
+  end
+
+  def test_affiliate_link_classifier_requires_configured_host_and_query
+    assert_respond_to WritingContract, :commercial_registry
+    assert_respond_to WritingContract, :classify_commercial_href
+    registry = WritingContract.commercial_registry(@source)
+
+    amazon = WritingContract.classify_commercial_href(
+      'https://www.amazon.com/dp/B0H4X4X468?tag=sullymanji-20',
+      registry
+    )
+    encoded = WritingContract.classify_commercial_href(
+      'https://AMAZON.COM/dp/B0H4X4X468?tag=sullymanji%2D20',
+      registry
+    )
+    unknown = WritingContract.classify_commercial_href(
+      'https://merchant.example/item?tag=sullymanji-20',
+      registry
+    )
+
+    assert_equal 'amazon', amazon['program']
+    assert_equal 'affiliate', encoded['intent']
+    assert_equal 'unknown', unknown['program']
+    assert_nil WritingContract.classify_commercial_href(
+      'https://www.amazon.com/dp/B0H4X4X468',
+      registry
+    )
   end
 
   def test_empty_index_has_no_feature_or_false_publication

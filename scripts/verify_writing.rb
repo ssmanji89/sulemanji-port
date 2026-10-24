@@ -13,7 +13,7 @@ require 'kramdown'
 
 module WritingContract
   Error = Class.new(StandardError)
-  Article = Struct.new(:path, :data, :legacy, keyword_init: true)
+  Article = Struct.new(:path, :data, :legacy, :commercial_links, keyword_init: true)
   Catalog = Struct.new(:active, :drafts, :legacy, :registry, keyword_init: true)
 
   V1_FIELDS = %w[
@@ -135,6 +135,139 @@ module WritingContract
     schema
   end
 
+  def commercial_registry(source)
+    path = Pathname(source) / '_data/commercial-links.yml'
+    data = yaml(path.read, 'commercial link registry')
+    check((data.keys - %w[version suspicious_query_keys programs]).empty?,
+          'commercial link registry: unknown field')
+    check(data['version'] == 1, 'commercial link registry: unsupported version')
+    suspicious = data['suspicious_query_keys']
+    check(suspicious.is_a?(Array) && suspicious.uniq == suspicious &&
+          suspicious.all? { |key| key.is_a?(String) && /\A[a-z][a-z0-9_-]*\z/.match?(key) },
+          'commercial link registry: invalid suspicious query keys')
+    programs = data['programs']
+    check(programs.is_a?(Hash) && !programs.empty?,
+          'commercial link registry: programs required')
+    programs.each do |program, rule|
+      check(program.is_a?(String) && /\A[a-z0-9]+(?:-[a-z0-9]+)*\z/.match?(program),
+            'commercial link registry: invalid program id')
+      check(rule.is_a?(Hash) && %w[affiliate referral own-product].include?(rule['intent']),
+            "commercial link registry: invalid #{program} intent")
+      check(rule['hosts'].is_a?(Array) && !rule['hosts'].empty? &&
+            rule['hosts'].all? { |host| host.is_a?(String) && host == host.downcase },
+            "commercial link registry: invalid #{program} hosts")
+      check([true, false].include?(rule['include_subdomains']),
+            "commercial link registry: invalid #{program} subdomain rule")
+      check(rule['disclosure'].is_a?(String) && !rule['disclosure'].strip.empty?,
+            "commercial link registry: invalid #{program} disclosure")
+    end
+    data
+  rescue Errno::ENOENT => e
+    raise Error, "required source file missing: #{e.message}"
+  end
+
+  def host_matches?(host, allowed, include_subdomains)
+    host == allowed || include_subdomains && host.end_with?(".#{allowed}")
+  end
+
+  def classify_commercial_href(href, data_registry)
+    value = href.to_s.strip
+    uri = URI.parse(value)
+    query = URI.decode_www_form(uri.query.to_s).to_h
+
+    data_registry['programs'].each do |program, rule|
+      root_match = uri.scheme.nil? && value.start_with?('/') &&
+                   Array(rule['root_paths']).include?(uri.path)
+      https_match = if uri.scheme == 'https' && uri.host
+                      host = uri.host.downcase
+                      rule['hosts'].any? do |allowed|
+                        host_matches?(host, allowed, rule['include_subdomains'])
+                      end
+                    else
+                      false
+                    end
+      next unless root_match || https_match
+      next if rule['required_query'] && query[rule['required_query']].to_s.empty?
+      prefixes = Array(rule['path_prefixes'])
+      next if !prefixes.empty? && prefixes.none? { |prefix| uri.path.start_with?(prefix) }
+
+      return {
+        'program' => program,
+        'intent' => rule['intent'],
+        'disclosure' => rule['disclosure'],
+        'href' => value
+      }
+    end
+
+    suspicious = query.keys & data_registry['suspicious_query_keys']
+    return nil if suspicious.empty?
+
+    {'program' => 'unknown', 'intent' => 'unknown', 'href' => value}
+  rescue URI::InvalidURIError, ArgumentError
+    nil
+  end
+
+  def markdown_links(body)
+    root = Kramdown::Document.new(body).root
+    collect = lambda do |node|
+      current = node.type == :a ? [node.attr['href']] : []
+      current + node.children.flat_map { |child| collect.call(child) }
+    end
+    collect.call(root).compact
+  end
+
+  def validate_commercial_source(article, body, data_registry)
+    data = article.respond_to?(:data) ? article.data : article
+    relative = article.respond_to?(:path) ? article.path : data.fetch('permalink')
+    classified = markdown_links(body).filter_map do |href|
+      classify_commercial_href(href, data_registry)
+    end
+    check(classified.none? { |link| link['program'] == 'unknown' },
+          "#{relative}: unknown commercial link pattern")
+
+    intent = data['commercial_intent']
+    required = data['disclosure_required']
+    sponsorship = /Sponsor:\s+\S[^\n]*\b(?:paid|funded|provided)\b/i.match?(body)
+    paid_recommendation = /Paid recommendation:\s+\S[^\n]*\bpaid\b/i.match?(body)
+    own_product = /\bI (?:created|built) and sell\b/i.match?(body)
+    relationships = classified.map { |link| link['intent'] }
+    relationships << 'sponsorship' if sponsorship
+    relationships << 'paid-recommendation' if paid_recommendation
+    relationships << 'own-product' if own_product
+    relationships.uniq!
+
+    if intent == 'none'
+      check(required == false && relationships.empty?,
+            "#{relative}: commercial relationship requires explicit intent")
+      return classified
+    end
+
+    check(required == true, "#{relative}: disclosure_required must be true")
+    classified.each do |link|
+      check(body.include?(link['disclosure']),
+            "#{relative}: #{link['program']} disclosure missing")
+    end
+
+    case intent
+    when 'affiliate', 'referral'
+      check(relationships.include?(intent) && (relationships - [intent]).empty?,
+            "#{relative}: commercial links do not match #{intent}")
+    when 'sponsorship'
+      check(sponsorship && relationships == ['sponsorship'],
+            "#{relative}: named sponsor disclosure required")
+    when 'paid-recommendation'
+      check(paid_recommendation && relationships == ['paid-recommendation'],
+            "#{relative}: named paid recommendation disclosure required")
+    when 'own-product'
+      check(own_product && classified.any? { |link| link['intent'] == 'own-product' } &&
+            (relationships - ['own-product']).empty?,
+            "#{relative}: owned product disclosure and offer required")
+    when 'mixed'
+      check(relationships.length >= 2, "#{relative}: mixed intent needs two relationships")
+    end
+    classified
+  end
+
   def markdown_h1?(body)
     return true if body.lines.any? { |line| line.match?(/\A {0,3}#(?:[ \t]+|\r?\n?\z)/) }
 
@@ -150,6 +283,7 @@ module WritingContract
     source = Pathname(source).expand_path
     check(as_of.is_a?(Date), 'as_of: Date required')
     data_registry = registry(source)
+    commercial_data_registry = commercial_registry(source)
 
     notes_dir = source / 'notes'
     check(notes_dir.directory?, 'notes: directory required')
@@ -243,7 +377,13 @@ module WritingContract
         end
       end
 
-      Article.new(path: relative, data: front, legacy: legacy)
+      commercial_links = legacy ? [] : validate_commercial_source(front, body, commercial_data_registry)
+      Article.new(
+        path: relative,
+        data: front,
+        legacy: legacy,
+        commercial_links: commercial_links
+      )
     end
 
     check((data_registry['legacy_paths'] - articles.map(&:path)).empty?,

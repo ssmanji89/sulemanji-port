@@ -1,13 +1,13 @@
 ---
 layout: default
 title: Writing
-description: "Articles on Microsoft 365, business applications, infrastructure, and the decisions involved in keeping organizations running."
+description: "Evidence-backed writing on engineering, practical tools, product categories, and interests beyond work."
 permalink: /writing
 ---
 
-# Notes on systems and service.
+# Writing on work and beyond.
 
-Microsoft 365, business applications, infrastructure, service operations, and the decisions involved in keeping organizations running.
+Evidence-backed articles on engineering, useful tools, and interests beyond work. Each article starts with a question worth answering. Paid links are disclosed when they appear.
 
 {% assign notes = site.pages | where: "dir", "/notes/" %}
 {% assign schema_v1_articles = notes | where: "writing_schema", 1 %}

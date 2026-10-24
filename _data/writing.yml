@@ -35,6 +35,7 @@ readers:
   it-leader: IT leader
   architect: Architect
   service-leader: Service leader
+  skywatcher: Skywatcher
 topics:
   microsoft-365: Microsoft 365
   acquisitions: Acquisition integration
@@ -43,3 +44,6 @@ topics:
   infrastructure: Infrastructure
   service-operations: Service operations
   ai-assisted-delivery: AI-assisted delivery
+  astronomy: Astronomy
+  skywatching: Skywatching
+  optics: Optics

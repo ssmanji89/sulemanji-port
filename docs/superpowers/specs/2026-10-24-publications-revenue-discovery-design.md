@@ -1,7 +1,7 @@
 # Publications Revenue Discovery System
 
-Date: 2026-10-24  
-Status: Proposed for owner approval  
+Date: 2026-10-24
+Status: Proposed for owner approval
 Owner: Suleman Manji
 
 ## Intent

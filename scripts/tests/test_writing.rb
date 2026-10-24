@@ -152,7 +152,9 @@ class WritingTest < Minitest::Test
     assert_equal 'Test fixture', html('/notes/fixture').at_css('h1')&.text
     assert_includes html('/notes/fixture').at_css('[data-writing-body]')&.text.to_s,
                     'This fixture tests rendering, not an actual engagement.'
-    assert_equal 'Notes on systems and service.', html('/writing').at_css('h1')&.text
+    assert_equal 'Writing on work and beyond.', html('/writing').at_css('h1')&.text
+    assert_includes html('/writing').text, 'interests beyond work'
+    assert_includes html('/writing').text, 'Paid links are disclosed when they appear.'
   end
 
   def test_unchanged_schema_v1_uses_compatibility_defaults

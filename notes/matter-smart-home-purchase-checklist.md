@@ -28,7 +28,7 @@ Matter standardizes secure, local communication across compatible devices and ec
 
 The logo does not mean every ecosystem exposes every feature. The Alliance's own [Matter FAQ](https://csa-iot.org/all-solutions/matter/matter-faq/) says vendor apps can still provide advanced configuration and differentiated features. It also says a device can use Matter's update capability or the manufacturer's own update method. Interoperable control, product-specific features, and long-term maintenance remain separate claims.
 
-Apple's October 2026 Home Collection makes that distinction visible. Apple says the announced accessories support Thread, use Apple Home for setup and control, and require no separate manufacturer account. Apple also lists feature-specific requirements, including compatible home hubs and subscriptions for some camera functions. Those products may simplify one ecosystem, but their announcement does not turn every Matter or Thread product into an equivalent purchase.
+[Apple's October 2026 Home Collection](https://www.apple.com/newsroom/2026/10/introducing-apple-home-collection-a-new-lineup-of-smart-home-accessories/) makes that distinction visible. Apple says the announced accessories support Thread, use Apple Home for setup and control, and require no separate manufacturer account. Apple also lists feature-specific requirements, including compatible home hubs and subscriptions for some camera functions. Those products may simplify one ecosystem, but their announcement does not turn every Matter or Thread product into an equivalent purchase.
 
 ## Separate the four layers
 
@@ -51,7 +51,7 @@ The lifecycle layer lasts longer than setup. NIST's [consumer IoT cybersecurity 
 
 ## What does a Thread border router change?
 
-A Thread accessory needs a route from its low-power mesh to the rest of the home network. A border router provides that route. Apple says a Thread-based accessory in Apple Home needs a compatible Thread-enabled home hub or third-party border router for the full experience, including automation, notifications, and remote control.
+A Thread accessory needs a route from its low-power mesh to the rest of the home network. A border router provides that route. [Apple says](https://support.apple.com/en-ie/102078) a Thread-based accessory in Apple Home needs a compatible Thread-enabled home hub or third-party border router for the full experience, including automation, notifications, and remote control.
 
 That requirement should appear on the purchase checklist before the device arrives. A phone with a Thread radio can help with local setup and control in supported cases, but it is not a fixed, always-powered home service. A home hub or border router remains the stable path for unattended automation and access away from home.
 

@@ -37,7 +37,7 @@ Do not begin by changing every EWS setting. Microsoft documents several controls
 
 The current [EWS access-control documentation](https://learn.microsoft.com/en-us/exchange/client-developer/exchange-web-services/how-to-control-access-to-ews-in-exchange) tells applications to inspect the `X-EWS-Policy-Reason` response header. A value that says EWS is disabled points toward organization or mailbox enablement. A value that says EWS is blocked by policy points toward the application-ID or user-agent policy. The latter message does not identify which policy failed.
 
-An HTTP 403 by itself proves less. Microsoft notes that other access restrictions can also produce 403 responses. Authentication failure, permission failure, throttling, and EWS retirement policy should not be collapsed into one guess because they need different evidence and different fixes.
+An HTTP 403 by itself proves less. Microsoft documents 403 when these EWS access controls block a request, and the response header supplies the diagnostic detail. A bare status therefore cannot identify which access control caused the block. Keep the HTTP status separate from the EWS error payload and response header when recording evidence.
 
 Use a short diagnostic sequence:
 
@@ -47,7 +47,7 @@ Use a short diagnostic sequence:
 4. Match the application ID to an accountable application or vendor before allowing it.
 5. Change the narrowest control that restores the approved dependency, then retest the business workflow.
 
-The last step matters. A successful sign-in or a clean configuration read does not prove that notifications, calendar access, mailbox processing, backup, or another required workflow resumed. The same evidence boundary applies to device policy: [an assignment is not proof of application](/notes/intune-policy-verification).
+The last step matters. A successful sign-in or a clean configuration read does not prove that notifications, calendar access, mailbox processing, backup, or another required workflow resumed.
 
 ## Restore service with a bounded exception
 
@@ -97,7 +97,7 @@ Do not remove EWS access because one Graph request succeeded. Remove it after th
 
 ## Close the loop before removing the exception
 
-The exit record should make one bounded claim: a named application release performs a named workflow without EWS under stated test conditions. Keep deployment and acceptance separate. A vendor update can install successfully while a scheduled mailbox process still fails later. Store the result where the next engineer can check it; [the work should outlast the agent session](/notes/work-outlasts-agent-session).
+The exit record should make one bounded claim: a named application release performs a named workflow without EWS under stated test conditions. Keep deployment and acceptance separate. A vendor update can install successfully while a scheduled mailbox process still fails later. Store the result where the next engineer can check it.
 
 Use this closure sequence:
 

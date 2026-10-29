@@ -34,7 +34,7 @@ The result also has a time boundary. GitHub says scans run once every 24 hours w
 
 ## What does each verdict actually prove?
 
-A reachability verdict answers whether a static call-path analysis found or could rule out a path under its supported model. It does not answer whether an attacker can control the required input, whether the affected component is deployed, or whether exploitation would create material impact.
+A reachability verdict reports whether the static call-path analysis found a path, found no path, or could not determine one under its supported model. It does not answer whether an attacker can control the required input, whether the affected component is deployed, or whether exploitation would create material impact.
 
 | Verdict | Supported conclusion | Required response |
 | --- | --- | --- |
@@ -62,7 +62,7 @@ EPSS is also not a complete risk score. FIRST states that it does not measure lo
 The record should keep unlike evidence separate. This prevents a strong result in one field from silently filling an unknown field elsewhere.
 
 1. **Threat:** Record confirmed exploitation, KEV status, current EPSS probability, public exploit information, and the observation time.
-2. **Reachability:** Record the verdict, analyzed revision, scan completion time, manifest, affected function, and available call-path evidence.
+2. **Reachability:** Record the verdict, analyzed revision, observation time, manifest, affected function, and available call-path evidence.
 3. **Deployment:** Identify the exact package or image digest, dependency relationship, runtime environment, and whether the affected artifact is deployed.
 4. **Consequence:** State what an attacker could gain, which service or data is exposed, and which controls could reduce or detect that outcome.
 5. **Treatment:** Name the owner, action, due date, validation evidence, exception expiration, and triggers that force review.
@@ -109,7 +109,7 @@ The useful boundary is simple: reachability can reorder work when the team still
 
 ## What should happen next?
 
-Select one supported repository with a real dependency-alert backlog. Enable the preview, wait for the initial scan, and export the verdicts with their scan times. For each Reachable, Potentially reachable, and Unavailable result, create the five-part triage record. Manually sample the Unreachable group.
+Select one supported repository with a real dependency-alert backlog. Enable the preview, wait for the initial scan, export the verdicts, and record the export time. For each Reachable, Potentially reachable, and Unavailable result, create the five-part triage record. Manually sample the Unreachable group.
 
 Then compare the old queue with the new decisions. The result should identify which work moved forward, which work moved later, which evidence caused the move, and when each decision expires. If the pilot only produces a smaller alert count, it has measured presentation rather than risk.
 

@@ -49,7 +49,7 @@ The call-path display also shows sample evidence, not a complete proof of every 
 
 ## Why is “unreachable” not a closure rule?
 
-An unreachable verdict is a negative result from one analysis at one time. It can reduce priority, but automatic dismissal asks it to prove more than it measured. Code can change before the next scan. Advisory data can change. Dynamic loading, generated code, runtime configuration, or an unsupported language boundary can sit outside the analyzed path.
+An unreachable verdict is a negative result from one analysis at one time. It can reduce priority, but automatic dismissal asks it to prove more than it measured. Code can change before the next scan. Advisory data can change. The preview also has documented ecosystem, repository-size, runner, and execution-time limits. The verdict remains bounded by the analysis that GitHub completed under those limits.
 
 The feature's own states expose this limit. “Potentially reachable” preserves uncertainty when the analysis cannot rule out a path. “Reachability unavailable” preserves the absence of a result. A sound policy must preserve those distinctions instead of converting every non-reachable label into “not affected.”
 
@@ -62,7 +62,7 @@ EPSS is also not a complete risk score. FIRST states that it does not measure lo
 The record should keep unlike evidence separate. This prevents a strong result in one field from silently filling an unknown field elsewhere.
 
 1. **Threat:** Record confirmed exploitation, KEV status, current EPSS probability, public exploit information, and the observation time.
-2. **Reachability:** Record the verdict, analyzed revision, observation time, manifest, affected function, and available call-path evidence.
+2. **Reachability:** Record the verdict, observation or export time, manifest, affected function, and available call-path evidence.
 3. **Deployment:** Identify the exact package or image digest, dependency relationship, runtime environment, and whether the affected artifact is deployed.
 4. **Consequence:** State what an attacker could gain, which service or data is exposed, and which controls could reduce or detect that outcome.
 5. **Treatment:** Name the owner, action, due date, validation evidence, exception expiration, and triggers that force review.

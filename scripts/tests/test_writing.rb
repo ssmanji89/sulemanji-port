@@ -134,7 +134,10 @@ class WritingTest < Minitest::Test
       'future' => false
     )
     # Jekyll 3.9 prefers layouts in the current directory over source layouts.
-    Dir.chdir(@source) { Jekyll::Site.new(config).process }
+    Dir.chdir(@source) do
+      @jekyll = Jekyll::Site.new(config)
+      @jekyll.process
+    end
   end
 
   def catalog
@@ -552,6 +555,17 @@ class WritingTest < Minitest::Test
                  html('/notes/older').css('time[data-updated-on]').map { |node| node['datetime'] }
   end
 
+  def test_feed_updated_uses_latest_entry_update_without_changing_publication_order
+    note('newest', {'published_on' => '2026-09-09'})
+    note('older', {'published_on' => '2026-09-01', 'updated_on' => '2026-09-10'})
+
+    build
+
+    assert_equal '2026-09-10', @jekyll.data.dig('writing_discovery', 'updated_on').to_s
+    assert_equal %w[/notes/newest /notes/older],
+                 @jekyll.data.dig('writing_discovery', 'articles').map { |article| article.data['permalink'] }
+  end
+
   def test_unpublished_is_absent_from_index_and_direct_route
     note('draft', {'published' => false, 'published_on' => nil})
     build
@@ -583,6 +597,43 @@ class WritingTest < Minitest::Test
     end
     refute_includes html('/writing').text, 'Test future'
     refute_includes html('/writing').text, 'Test hidden'
+  end
+
+  def test_noindex_article_can_keep_known_context_without_rendering_it
+    context = {
+      'version' => 1,
+      'routes' => {
+        '/notes/hidden-context' => {
+          'proof_url' => '/case-studies/agentic-msp-delivery',
+          'proof_label' => 'Synthetic proof link',
+          'proof_status' => 'case study',
+          'cta_label' => 'Synthetic call to action'
+        }
+      }
+    }
+    File.write(File.join(@source, '_data/article-context.yml'), context.to_yaml)
+    publication_note('hidden-context', {'noindex' => true})
+
+    build
+
+    generated = @jekyll.pages.find { |candidate| candidate.path == 'notes/hidden-context.md' }
+    assert_equal true, generated.data['noindex']
+    page = html('/notes/hidden-context')
+    assert_empty page.css('[data-article-context-proof], [data-article-context-cta]')
+  end
+
+  def test_generator_uses_the_verifier_publication_day_at_chicago_midnight
+    publication_note('boundary', {'published_on' => '2026-09-11'})
+
+    Time.stub(:now, Time.utc(2026, 9, 11, 0, 30)) do
+      Date.stub(:today, Date.new(2026, 9, 11)) do
+        build
+      end
+    end
+
+    assert_empty html('/writing').css('[data-writing-url="/notes/boundary"]')
+    generated = @jekyll.pages.find { |candidate| candidate.path == 'notes/boundary.md' }
+    assert_equal true, generated.data['noindex']
   end
 
   def test_legacy_url_is_preserved_without_fabricated_date_or_review

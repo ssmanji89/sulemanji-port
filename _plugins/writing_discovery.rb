@@ -59,10 +59,12 @@ module Jekyll
     priority :highest
 
     def generate(site)
-      catalog = WritingContract.catalog(site.source, as_of: Date.today)
+      catalog = WritingContract.catalog(site.source, as_of: WritingContract.default_as_of)
       contexts = WritingDiscovery.context_registry(site)
-      public_routes = (catalog.active + catalog.legacy).map { |article| article.data['permalink'] }
-      unknown_contexts = contexts.keys - public_routes
+      known_routes = (catalog.active + catalog.drafts + catalog.excluded + catalog.legacy).map do |article|
+        article.data['permalink']
+      end
+      unknown_contexts = contexts.keys - known_routes
       unless unknown_contexts.empty?
         raise WritingContract::Error, "article context: unknown route #{unknown_contexts.first}"
       end
@@ -78,7 +80,14 @@ module Jekyll
       legacy = catalog.legacy.map do |article|
         present(pages.fetch(article.path), article, author, contexts, legacy: true)
       end
-      site.data['writing_discovery'] = {'articles' => active, 'legacy' => legacy}
+      updated_on = catalog.active.map do |article|
+        article.data['updated_on'] || article.data['published_on']
+      end.compact.max
+      site.data['writing_discovery'] = {
+        'articles' => active,
+        'legacy' => legacy,
+        'updated_on' => updated_on
+      }
     rescue KeyError => error
       raise Errors::FatalException, "Writing discovery page missing: #{error.message}"
     rescue WritingContract::Error => error

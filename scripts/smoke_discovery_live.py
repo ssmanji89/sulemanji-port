@@ -3,26 +3,22 @@
 
 import argparse
 from dataclasses import dataclass
+from html.parser import HTMLParser
 import json
+from pathlib import Path
 import re
 import ssl
 import sys
 from urllib.error import HTTPError, URLError
 from urllib.parse import urljoin, urlsplit
-from urllib.request import Request, urlopen
+from urllib.request import HTTPSHandler, HTTPRedirectHandler, Request, build_opener
 import xml.etree.ElementTree as ET
+
+import yaml
 
 
 USER_AGENT = "SulemanjiDiscoveryMonitor/1.0 (+https://www.sulemanji.com/robots.txt)"
-POLICY_AGENTS = (
-    "OAI-SearchBot",
-    "Claude-SearchBot",
-    "PerplexityBot",
-    "ChatGPT-User",
-    "Claude-User",
-    "Perplexity-User",
-    "Google-Agent",
-)
+POLICY_PATH = Path(__file__).resolve().parents[1] / "_data" / "crawler-policy.yml"
 ATOM = {"a": "http://www.w3.org/2005/Atom"}
 SITEMAP = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
 
@@ -35,13 +31,58 @@ class Response:
     headers: dict
 
 
-def fetch_url(url, user_agent=USER_AGENT):
+class ArticleIdentity(HTMLParser):
+    def __init__(self, source):
+        super().__init__(convert_charrefs=True)
+        self.canonicals = []
+        self.article_container = False
+        self.feed(source)
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        rel = (values.get("rel") or "").lower().split()
+        if tag.lower() == "link" and "canonical" in rel:
+            self.canonicals.append(values.get("href"))
+        if tag.lower() == "article" and "data-writing-article" in values:
+            self.article_container = True
+
+
+class UnsafeRedirect(RuntimeError):
+    pass
+
+
+class ApprovedRedirectHandler(HTTPRedirectHandler):
+    def __init__(self, approved_hosts):
+        super().__init__()
+        self.approved_hosts = approved_hosts
+
+    def redirect_request(self, request, file_pointer, code, message, headers, new_url):
+        destination = urljoin(request.full_url, new_url)
+        parsed = urlsplit(destination)
+        if parsed.scheme != "https" or parsed.hostname not in self.approved_hosts:
+            raise UnsafeRedirect("redirect outside approved origins")
+        return super().redirect_request(request, file_pointer, code, message, headers, destination)
+
+
+def load_policy(path=POLICY_PATH):
+    policy = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
+    for key in ("allowed_search_agents", "allowed_user_agents", "restricted_agents"):
+        if not isinstance(policy.get(key), list):
+            raise RuntimeError(f"crawler policy: {key} must be a list")
+    return policy
+
+
+def fetch_url(url, user_agent=USER_AGENT, *, approved_hosts=None):
     request = Request(
         url,
         headers={"User-Agent": user_agent, "Cache-Control": "no-cache"},
     )
+    handlers = [HTTPSHandler(context=ssl.create_default_context())]
+    if approved_hosts is not None:
+        handlers.append(ApprovedRedirectHandler(set(approved_hosts)))
+    opener = build_opener(*handlers)
     try:
-        with urlopen(request, timeout=30, context=ssl.create_default_context()) as response:
+        with opener.open(request, timeout=30) as response:
             body = response.read().decode("utf-8", errors="replace")
             return Response(
                 response.status,
@@ -57,6 +98,8 @@ def fetch_url(url, user_agent=USER_AGENT):
             body,
             {key.lower(): value for key, value in error.headers.items()},
         )
+    except UnsafeRedirect as error:
+        raise RuntimeError(str(error)) from error
     except URLError as error:
         raise RuntimeError(str(error.reason)) from error
 
@@ -66,8 +109,10 @@ def robots_groups(text):
     agents = []
     rules = []
     for raw in text.splitlines() + [""]:
+        if raw.strip().startswith("#"):
+            continue
         line = raw.split("#", 1)[0].strip()
-        if not line or line.startswith("#"):
+        if not line:
             if agents:
                 groups.append((tuple(agents), tuple(rules)))
                 agents, rules = [], []
@@ -110,13 +155,18 @@ def robots_allows(robots_text, agent, path):
     return any(allowed for length, allowed in matching if length == longest)
 
 
-def managed_policy_conflicts(robots_text, label, required_paths):
-    groups = robots_groups(robots_text)
+def managed_policy_conflicts(robots_text, label, required_paths, policy):
     conflicts = []
-    for agent in POLICY_AGENTS:
+    allowed_agents = policy["allowed_search_agents"] + policy["allowed_user_agents"]
+    for agent in allowed_agents:
         for path in required_paths:
             if not robots_allows(robots_text, agent, path):
                 conflicts.append(f"{label}: {agent} disallows {path}")
+    restricted_paths = list(dict.fromkeys(["/", *required_paths]))
+    for agent in policy["restricted_agents"]:
+        for path in restricted_paths:
+            if robots_allows(robots_text, agent, path):
+                conflicts.append(f"{label}: {agent} allows restricted path {path}")
     return conflicts
 
 
@@ -125,10 +175,14 @@ def safe_final_url(response, approved_hosts):
     return parsed.scheme == "https" and parsed.hostname in approved_hosts
 
 
-def check_live(base_url, robots_origin, articles, *, fetcher=fetch_url):
+def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
     base_url = base_url.rstrip("/")
     robots_origin = robots_origin.rstrip("/")
     origins = {urlsplit(base_url).hostname, urlsplit(robots_origin).hostname}
+    policy = policy or load_policy()
+    if fetcher is None:
+        def fetcher(url, user_agent):
+            return fetch_url(url, user_agent, approved_hosts=origins)
     failures = []
     conflicts = []
     observations = []
@@ -153,7 +207,7 @@ def check_live(base_url, robots_origin, articles, *, fetcher=fetch_url):
     for label, origin in (("canonical robots", base_url), ("apex robots", robots_origin)):
         response = fetch(label, origin + "/robots.txt")
         if response and response.status == 200:
-            conflicts.extend(managed_policy_conflicts(response.body, label, required_paths))
+            conflicts.extend(managed_policy_conflicts(response.body, label, required_paths, policy))
             if label == "canonical robots":
                 canonical_robots = response.body
 
@@ -199,8 +253,15 @@ def check_live(base_url, robots_origin, articles, *, fetcher=fetch_url):
 
     for path in expected_paths:
         response = fetch_public(f"article {path}", path)
-        if response and re.search(r'<meta[^>]+(?:name=["\']robots["\'][^>]+noindex|noindex[^>]+name=["\']robots["\'])', response.body, re.I):
-            failures.append(f"article {path}: HTML robots metadata contains noindex")
+        if response:
+            if re.search(r'<meta[^>]+(?:name=["\']robots["\'][^>]+noindex|noindex[^>]+name=["\']robots["\'])', response.body, re.I):
+                failures.append(f"article {path}: HTML robots metadata contains noindex")
+            identity = ArticleIdentity(response.body)
+            expected_canonical = base_url + path
+            if identity.canonicals != [expected_canonical]:
+                failures.append(f"article {path}: canonical mismatch")
+            if not identity.article_container:
+                failures.append(f"article {path}: article container missing")
 
     return {
         "ok": not failures and not conflicts,
@@ -216,9 +277,10 @@ def main():
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--robots-origin", required=True)
     parser.add_argument("--article", action="append", required=True)
+    parser.add_argument("--policy", type=Path, default=POLICY_PATH)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    result = check_live(args.base_url, args.robots_origin, args.article)
+    result = check_live(args.base_url, args.robots_origin, args.article, policy=load_policy(args.policy))
     if args.json:
         json.dump(result, sys.stdout, indent=2, sort_keys=True)
         print()

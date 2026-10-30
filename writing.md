@@ -9,23 +9,11 @@ permalink: /writing
 
 Evidence-backed articles on engineering, useful tools, and interests beyond work. Each article starts with a question worth answering. Paid links are disclosed when they appear.
 
-{% assign notes = site.pages | where: "dir", "/notes/" %}
-{% assign schema_v1_articles = notes | where: "writing_schema", 1 %}
-{% assign schema_v2_articles = notes | where: "writing_schema", 2 %}
-{% assign articles = schema_v1_articles | concat: schema_v2_articles | where: "published", true %}
-{% assign date_groups = articles | group_by: "published_on" | sort: "name" | reverse %}
-{% assign legacy_notes = notes | sort: "url" %}
-{% assign legacy_count = 0 %}
-{% for note in legacy_notes %}
-  {% if site.data.writing.legacy_paths contains note.path %}
-    {% assign legacy_count = legacy_count | plus: 1 %}
-  {% endif %}
-{% endfor %}
+{% assign articles = site.data.writing_discovery.articles %}
+{% assign legacy_notes = site.data.writing_discovery.legacy %}
 
 {% if articles.size > 0 %}
-  {% assign newest_group = date_groups | first %}
-  {% assign newest_group_articles = newest_group.items | sort: "url" %}
-  {% assign featured = newest_group_articles | first %}
+  {% assign featured = articles | first %}
 <section id="writing-latest" aria-labelledby="writing-latest-heading">
   <h2 id="writing-latest-heading">Latest article</h2>
   {% include writing-entry.html article=featured %}
@@ -33,13 +21,8 @@ Evidence-backed articles on engineering, useful tools, and interests beyond work
   {% if articles.size > 1 %}
 <section id="writing-more" aria-labelledby="writing-more-heading">
   <h2 id="writing-more-heading">More articles</h2>
-    {% for date_group in date_groups %}
-      {% assign group_articles = date_group.items | sort: "url" %}
-      {% for article in group_articles %}
-        {% unless article.url == featured.url %}
-          {% include writing-entry.html article=article %}
-        {% endunless %}
-      {% endfor %}
+    {% for article in articles offset:1 %}
+      {% include writing-entry.html article=article %}
     {% endfor %}
 </section>
   {% endif %}
@@ -47,17 +30,16 @@ Evidence-backed articles on engineering, useful tools, and interests beyond work
 <p id="writing-empty">No dated articles are listed yet.</p>
 {% endif %}
 
-{% if legacy_count > 0 %}
+{% if legacy_notes.size > 0 %}
 <section id="writing-legacy" aria-labelledby="writing-legacy-heading">
   <h2 id="writing-legacy-heading">Earlier writing</h2>
   {% for note in legacy_notes %}
-    {% if site.data.writing.legacy_paths contains note.path %}
+{% assign writing_legacy_url = site.baseurl | append: note.url %}
 <article class="proj" data-writing-legacy-url="{{ note.url | escape }}">
-  <h3><a href="{{ note.url | relative_url | escape }}">{{ note.title | escape }}</a></h3>
+  <h3><a href="{{ writing_legacy_url | escape }}">{{ note.title | escape }}</a></h3>
   <p>{{ note.description | escape }}</p>
   <p class="proj-meta">Publication date not recorded</p>
 </article>
-    {% endif %}
   {% endfor %}
 </section>
 {% endif %}

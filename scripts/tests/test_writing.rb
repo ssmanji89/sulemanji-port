@@ -16,9 +16,14 @@ class WritingTest < Minitest::Test
     @source = File.join(@tmp, 'source')
     @site = File.join(@tmp, 'site')
     FileUtils.mkdir_p(File.join(@source, 'notes'))
-    %w[_config.yml writing.md _layouts _includes _data].each do |entry|
+    %w[_config.yml writing.md _layouts _includes _data _plugins].each do |entry|
       FileUtils.cp_r(File.join(REPO, entry), File.join(@source, entry))
     end
+    FileUtils.mkdir_p(File.join(@source, 'scripts'))
+    FileUtils.cp(
+      File.join(REPO, 'scripts/verify_writing.rb'),
+      File.join(@source, 'scripts/verify_writing.rb')
+    )
     disclosure = File.join(REPO, 'affiliate-disclosure.md')
     FileUtils.cp(disclosure, @source) if File.exist?(disclosure)
     FileUtils.cp(
@@ -633,8 +638,8 @@ class WritingTest < Minitest::Test
 
     reset_notes
     note('template', body: "# Duplicate heading\n\nSynthetic text.")
-    build
-    assert_raises(WritingContract::Error) { verify }
+    error = assert_raises(Jekyll::Errors::FatalException) { build }
+    assert_match(/article body must begin below H1/, error.message)
   end
 
   def test_setext_and_indented_atx_h1_fail_source_gate

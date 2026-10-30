@@ -60,3 +60,4 @@ exclude:
   - blog_automation/
   - "*.py"
   - requirements.txt
+  - requirements-seo.txt

@@ -1,0 +1,26 @@
+---
+layout: null
+permalink: /robots.txt
+sitemap: false
+---
+User-agent: *
+Content-Signal: {{ site.data.crawler-policy.content_signal }}
+Allow: /
+
+{% for agent in site.data.crawler-policy.restricted_agents %}
+User-agent: {{ agent }}
+Disallow: /
+
+{% endfor %}
+{% for agent in site.data.crawler-policy.allowed_search_agents %}
+User-agent: {{ agent }}
+Allow: /
+
+{% endfor %}
+{% for agent in site.data.crawler-policy.allowed_user_agents %}
+User-agent: {{ agent }}
+Allow: /
+
+{% endfor %}
+Sitemap: {{ '/sitemap.xml' | absolute_url }}
+

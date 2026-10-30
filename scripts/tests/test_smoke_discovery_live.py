@@ -1,4 +1,9 @@
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import threading
 import unittest
 
@@ -6,6 +11,54 @@ from scripts.smoke_discovery_live import Response, USER_AGENT, check_live, fetch
 
 
 class LiveDiscoverySmokeTests(unittest.TestCase):
+    def test_monitor_starts_without_third_party_python_packages(self):
+        script = Path(__file__).resolve().parents[1] / "smoke_discovery_live.py"
+        result = subprocess.run(
+            [sys.executable, "-S", str(script), "--help"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_policy_loader_accepts_json_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            policy_path = Path(directory) / "crawler-policy.json"
+            policy_path.write_text(
+                json.dumps(
+                    {
+                        "allowed_search_agents": ["OAI-SearchBot", "PerplexityBot"],
+                        "allowed_user_agents": ["ChatGPT-User"],
+                        "restricted_agents": ["GPTBot", "ClaudeBot"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            policy = load_policy(policy_path)
+
+        self.assertEqual(["OAI-SearchBot", "PerplexityBot"], policy["allowed_search_agents"])
+        self.assertEqual(["ChatGPT-User"], policy["allowed_user_agents"])
+        self.assertEqual(["GPTBot", "ClaudeBot"], policy["restricted_agents"])
+
+    def test_policy_loader_rejects_nested_structures(self):
+        with tempfile.TemporaryDirectory() as directory:
+            policy_path = Path(directory) / "crawler-policy.json"
+            policy_path.write_text(
+                json.dumps(
+                    {
+                        "allowed_search_agents": {"metadata": ["OAI-SearchBot"]},
+                        "allowed_user_agents": ["ChatGPT-User"],
+                        "restricted_agents": ["GPTBot"],
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(RuntimeError, "unique, non-empty list"):
+                load_policy(policy_path)
+
     def response_map(self):
         origin = "https://www.sulemanji.com"
         robots_origin = "https://sulemanji.com"

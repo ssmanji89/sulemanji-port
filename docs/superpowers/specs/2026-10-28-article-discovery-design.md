@@ -10,7 +10,7 @@ Keep GitHub Pages as the origin behind Cloudflare.
 
 ## Contracts
 
-1. `_data/crawler-policy.yml` defines allowed search and retrieval clients.
+1. `_data/crawler-policy.json` defines allowed search and retrieval clients.
    It also preserves the 32 restricted client tokens observed before the change.
 2. `_plugins/writing_discovery.rb` consumes `WritingContract.catalog`.
    The Writing page, Atom feed, and sitemap use the validated public catalog.

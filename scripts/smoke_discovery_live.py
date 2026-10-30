@@ -14,11 +14,8 @@ from urllib.parse import urljoin, urlsplit
 from urllib.request import HTTPSHandler, HTTPRedirectHandler, Request, build_opener
 import xml.etree.ElementTree as ET
 
-import yaml
-
-
 USER_AGENT = "SulemanjiDiscoveryMonitor/1.0 (+https://www.sulemanji.com/robots.txt)"
-POLICY_PATH = Path(__file__).resolve().parents[1] / "_data" / "crawler-policy.yml"
+POLICY_PATH = Path(__file__).resolve().parents[1] / "_data" / "crawler-policy.json"
 ATOM = {"a": "http://www.w3.org/2005/Atom"}
 SITEMAP = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
 
@@ -65,10 +62,21 @@ class ApprovedRedirectHandler(HTTPRedirectHandler):
 
 
 def load_policy(path=POLICY_PATH):
-    policy = yaml.safe_load(Path(path).read_text(encoding="utf-8")) or {}
-    for key in ("allowed_search_agents", "allowed_user_agents", "restricted_agents"):
-        if not isinstance(policy.get(key), list):
-            raise RuntimeError(f"crawler policy: {key} must be a list")
+    list_keys = ("allowed_search_agents", "allowed_user_agents", "restricted_agents")
+    try:
+        policy = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as error:
+        raise RuntimeError(f"crawler policy: invalid JSON: {error}") from error
+    if not isinstance(policy, dict):
+        raise RuntimeError("crawler policy: root must be an object")
+    for key in list_keys:
+        agents = policy.get(key)
+        if not isinstance(agents, list) or not agents:
+            raise RuntimeError(f"crawler policy: {key} must be a unique, non-empty list")
+        if any(not isinstance(agent, str) or re.search(r"\s|[\x00-\x1f\x7f]", agent) for agent in agents):
+            raise RuntimeError(f"crawler policy: {key} contains an invalid agent")
+        if len(agents) != len(set(agents)):
+            raise RuntimeError(f"crawler policy: {key} must be a unique, non-empty list")
     return policy
 
 

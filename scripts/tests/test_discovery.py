@@ -1,5 +1,6 @@
 import datetime as dt
 import importlib.util
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -30,12 +31,16 @@ class DiscoveryVerifierTest(unittest.TestCase):
         (self.source / "_data" / "writing.yml").write_text(
             "legacy_paths:\n  - notes/legacy.md\n", encoding="utf-8"
         )
-        (self.source / "_data" / "crawler-policy.yml").write_text(
-            "default_access: allow\n"
-            "content_signal: search=yes,ai-train=no,use=reference\n"
-            "allowed_search_agents: [OAI-SearchBot]\n"
-            "allowed_user_agents: [ChatGPT-User]\n"
-            "restricted_agents: [GPTBot]\n",
+        (self.source / "_data" / "crawler-policy.json").write_text(
+            json.dumps(
+                {
+                    "default_access": "allow",
+                    "content_signal": "search=yes,ai-train=no,use=reference",
+                    "allowed_search_agents": ["OAI-SearchBot"],
+                    "allowed_user_agents": ["ChatGPT-User"],
+                    "restricted_agents": ["GPTBot"],
+                }
+            ),
             encoding="utf-8",
         )
         self.note("dated", published=True, published_on="2026-10-20")

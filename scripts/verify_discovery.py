@@ -4,6 +4,7 @@
 import argparse
 import datetime as dt
 from html.parser import HTMLParser
+import json
 from pathlib import Path
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
@@ -231,7 +232,7 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
         except (ET.ParseError, OSError) as error:
             failures.append(f"sitemap: invalid XML: {error}")
 
-    policy = yaml.safe_load((source / "_data" / "crawler-policy.yml").read_text(encoding="utf-8")) or {}
+    policy = json.loads((source / "_data" / "crawler-policy.json").read_text(encoding="utf-8"))
     robots_path = site / "robots.txt"
     if not robots_path.is_file():
         failures.append("robots: missing")

@@ -5,11 +5,8 @@ sitemap: false
 ---
 <?xml version="1.0" encoding="utf-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  {% assign public_pages = site.pages | sort: "url" %}
-  {% for item in public_pages %}
-    {% unless item.dir == '/notes/' or item.sitemap == false or item.output_ext != '.html' %}
-  <url><loc>{{ item.url | absolute_url }}</loc></url>
-    {% endunless %}
+  {% for item in site.data.discovery-pages.pages %}
+  <url><loc>{{ item.route | absolute_url }}</loc></url>
   {% endfor %}
   {% for article in site.data.writing_discovery.articles %}
   <url><loc>{{ article.url | absolute_url }}</loc><lastmod>{{ article.updated_on | default: article.published_on | date: "%Y-%m-%d" }}</lastmod></url>

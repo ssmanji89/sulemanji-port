@@ -1,0 +1,17 @@
+version: 1
+pages:
+  - {id: home, class: core-profile, route: /}
+  - {id: about, class: core-profile, route: /about}
+  - {id: experience, class: core-profile, route: /experience}
+  - {id: projects, class: core-profile, route: /projects}
+  - {id: beyond, class: core-profile, route: /beyond}
+  - {id: writing, class: core-profile, route: /writing}
+  - {id: resume, class: core-profile, route: /resume}
+  - {id: work-with-me, class: service, route: /work-with-me}
+  - {id: story, class: public-support, route: /story}
+  - {id: privacy, class: public-support, route: /privacy}
+  - {id: affiliate-disclosure, class: public-support, route: /affiliate-disclosure}
+  - {id: agentic-msp-delivery, class: case-study, route: /case-studies/agentic-msp-delivery}
+  - {id: microsoft-365-acquisition-integration, class: case-study, route: /case-studies/microsoft-365-acquisition-integration}
+  - {id: rfms-operations, class: case-study, route: /case-studies/rfms-operations}
+  - {id: ff-cli, class: case-study, route: /case-studies/ff-cli}

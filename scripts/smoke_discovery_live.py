@@ -44,19 +44,39 @@ class ArticleIdentity(HTMLParser):
             self.article_container = True
 
 
+class PageIdentity(HTMLParser):
+    def __init__(self, source):
+        super().__init__(convert_charrefs=True)
+        self.canonicals = []
+        self.main = False
+        self.noindex = False
+        self.feed(source)
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if tag == "link" and "canonical" in (values.get("rel") or "").lower().split():
+            self.canonicals.append(values.get("href"))
+        if tag == "main" and values.get("id") == "main":
+            self.main = True
+        if tag == "meta" and (values.get("name") or "").lower() == "robots":
+            self.noindex |= "noindex" in (values.get("content") or "").lower()
+
+
 class UnsafeRedirect(RuntimeError):
     pass
 
 
 class ApprovedRedirectHandler(HTTPRedirectHandler):
-    def __init__(self, approved_hosts):
+    def __init__(self, approved_origins, *, reject_redirects=False):
         super().__init__()
-        self.approved_hosts = approved_hosts
+        self.approved_origins = approved_origins
+        self.reject_redirects = reject_redirects
 
     def redirect_request(self, request, file_pointer, code, message, headers, new_url):
         destination = urljoin(request.full_url, new_url)
-        parsed = urlsplit(destination)
-        if parsed.scheme != "https" or parsed.hostname not in self.approved_hosts:
+        if self.reject_redirects:
+            raise UnsafeRedirect("page redirect rejected")
+        if origin_of(destination) not in self.approved_origins:
             raise UnsafeRedirect("redirect outside approved origins")
         return super().redirect_request(request, file_pointer, code, message, headers, destination)
 
@@ -80,14 +100,14 @@ def load_policy(path=POLICY_PATH):
     return policy
 
 
-def fetch_url(url, user_agent=USER_AGENT, *, approved_hosts=None):
+def fetch_url(url, user_agent=USER_AGENT, *, approved_origins=None, reject_redirects=False):
     request = Request(
         url,
         headers={"User-Agent": user_agent, "Cache-Control": "no-cache"},
     )
     handlers = [HTTPSHandler(context=ssl.create_default_context())]
-    if approved_hosts is not None:
-        handlers.append(ApprovedRedirectHandler(set(approved_hosts)))
+    if approved_origins is not None:
+        handlers.append(ApprovedRedirectHandler(set(approved_origins), reject_redirects=reject_redirects))
     opener = build_opener(*handlers)
     try:
         with opener.open(request, timeout=30) as response:
@@ -178,28 +198,40 @@ def managed_policy_conflicts(robots_text, label, required_paths, policy):
     return conflicts
 
 
-def safe_final_url(response, approved_hosts):
-    parsed = urlsplit(response.url)
-    return parsed.scheme == "https" and parsed.hostname in approved_hosts
+def origin_of(url):
+    try:
+        parsed = urlsplit(url)
+        if parsed.scheme != "https" or not parsed.hostname:
+            return None
+        return (parsed.scheme, parsed.hostname, 443 if parsed.port is None else parsed.port)
+    except ValueError:
+        return None
 
 
-def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
+def safe_final_url(response, approved_origins):
+    origin = origin_of(response.url)
+    return origin is not None and origin in approved_origins
+
+
+def check_live(base_url, robots_origin, articles, *, pages=(), fetcher=None, policy=None):
     base_url = base_url.rstrip("/")
     robots_origin = robots_origin.rstrip("/")
-    origins = {urlsplit(base_url).hostname, urlsplit(robots_origin).hostname}
+    origins = {origin for url in (base_url, robots_origin) if (origin := origin_of(url)) is not None}
     policy = policy or load_policy()
-    if fetcher is None:
-        def fetcher(url, user_agent):
-            return fetch_url(url, user_agent, approved_hosts=origins)
     failures = []
     conflicts = []
     observations = []
     canonical_robots = None
-    required_paths = ["/writing", "/feed.xml", "/sitemap.xml", *articles]
+    required_paths = ["/writing", "/feed.xml", "/sitemap.xml", *articles, *pages]
 
-    def fetch(label, url):
+    configured_pages = set(pages)
+
+    def fetch(label, url, *, configured_page=False):
         try:
-            response = fetcher(url, USER_AGENT)
+            if fetcher is None:
+                response = fetch_url(url, USER_AGENT, approved_origins=origins, reject_redirects=configured_page)
+            else:
+                response = fetcher(url, USER_AGENT)
         except Exception as error:  # Network failures become bounded smoke evidence.
             failures.append(f"{label}: request failed: {error}")
             return None
@@ -214,7 +246,7 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
 
     for label, origin in (("canonical robots", base_url), ("apex robots", robots_origin)):
         response = fetch(label, origin + "/robots.txt")
-        if response and response.status == 200:
+        if response and response.status == 200 and safe_final_url(response, origins):
             conflicts.extend(managed_policy_conflicts(response.body, label, required_paths, policy))
             if label == "canonical robots":
                 canonical_robots = response.body
@@ -222,10 +254,13 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
     monitor_agent = USER_AGENT.split("/", 1)[0]
 
     def fetch_public(label, path):
+        if path in configured_pages and canonical_robots is None:
+            failures.append(f"page {path}: canonical robots unavailable; request skipped")
+            return None
         if canonical_robots is not None and not robots_allows(canonical_robots, monitor_agent, path):
             conflicts.append(f"canonical robots: monitor disallowed {path}")
             return None
-        return fetch(label, base_url + path)
+        return fetch(label, base_url + path, configured_page=path in configured_pages)
 
     writing = fetch_public("writing", "/writing")
     feed = fetch_public("feed", "/feed.xml")
@@ -253,7 +288,7 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
         try:
             root = ET.fromstring(sitemap.body)
             sitemap_urls = [node.text for node in root.findall("s:url/s:loc", SITEMAP)]
-            for url in expected_urls:
+            for url in list(dict.fromkeys([*expected_urls, *(base_url + path for path in pages)])):
                 if sitemap_urls.count(url) != 1:
                     failures.append(f"sitemap: {url} missing or duplicated")
         except ET.ParseError as error:
@@ -271,6 +306,17 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
             if not identity.article_container:
                 failures.append(f"article {path}: article container missing")
 
+    for path in dict.fromkeys(pages):
+        response = writing if path == "/writing" else fetch_public(f"page {path}", path)
+        if response:
+            identity = PageIdentity(response.body)
+            if identity.canonicals != [base_url + path]:
+                failures.append(f"page {path}: canonical mismatch")
+            if not identity.main:
+                failures.append(f"page {path}: main#main missing")
+            if identity.noindex:
+                failures.append(f"page {path}: HTML robots metadata contains noindex")
+
     return {
         "ok": not failures and not conflicts,
         "user_agent": USER_AGENT,
@@ -285,10 +331,11 @@ def main():
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--robots-origin", required=True)
     parser.add_argument("--article", action="append", required=True)
+    parser.add_argument("--page", action="append", default=[])
     parser.add_argument("--policy", type=Path, default=POLICY_PATH)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    result = check_live(args.base_url, args.robots_origin, args.article, policy=load_policy(args.policy))
+    result = check_live(args.base_url, args.robots_origin, args.article, pages=args.page, policy=load_policy(args.policy))
     if args.json:
         json.dump(result, sys.stdout, indent=2, sort_keys=True)
         print()

@@ -60,4 +60,3 @@ in a terminal state, and monitoring status is explicit.
 - The astronomy article uses its existing attributed image and no business pitch.
 - `--baseurl /preview` applies exactly once.
 - Cloudflare readback preserves training and security restrictions.
-

@@ -18,4 +18,3 @@ sitemap: false
   <url><loc>{{ article.url | absolute_url }}</loc></url>
   {% endfor %}
 </urlset>
-

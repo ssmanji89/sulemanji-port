@@ -56,4 +56,3 @@ the live publication receipt.
 HTTP success does not prove crawler access, indexing, rankings, citations, or leads. Use Search
 Console and actual crawler or event evidence when available. Record those outcomes as unknown
 when that evidence is unavailable.
-

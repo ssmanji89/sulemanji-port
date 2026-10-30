@@ -36,4 +36,3 @@ Keep GitHub Pages as the origin behind Cloudflare.
 
 Run source, production build, rendered, discovery, safety, site, Ruby, Python, Worker,
 base URL, image-dimension, and live smoke checks. Obtain an independent branch review.
-

@@ -7,12 +7,14 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
+from zoneinfo import ZoneInfo
 
 import yaml
 
 
 ATOM = {"a": "http://www.w3.org/2005/Atom"}
 SITEMAP = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+PUBLICATION_TIMEZONE = ZoneInfo("America/Chicago")
 PRIVATE_ARTIFACTS = (
     "AGENTS.md",
     "docs",
@@ -97,6 +99,13 @@ def route(baseurl, permalink):
     return normalized_baseurl(baseurl) + (permalink if permalink.startswith("/") else "/" + permalink)
 
 
+def publication_day(now=None):
+    instant = now or dt.datetime.now(dt.timezone.utc)
+    if instant.tzinfo is None:
+        instant = instant.replace(tzinfo=dt.timezone.utc)
+    return instant.astimezone(PUBLICATION_TIMEZONE).date()
+
+
 def robots_groups(text):
     groups = []
     agents = []
@@ -133,13 +142,20 @@ def resolve_writing(site):
 def verify(source, site, *, origin, baseurl="", as_of=None):
     source = Path(source).resolve()
     site = Path(site).resolve()
-    day = dt.date.fromisoformat(as_of) if isinstance(as_of, str) else as_of or dt.date.today()
+    day = dt.date.fromisoformat(as_of) if isinstance(as_of, str) else as_of or publication_day()
     failures = []
     dated, legacy = article_inventory(source, day)
     article_paths = [route(baseurl, item["permalink"]) for item in dated]
     legacy_paths = [route(baseurl, item["permalink"]) for item in legacy]
     expected_all = article_paths + legacy_paths
     expected_urls = [origin.rstrip("/") + path for path in article_paths]
+    expected_feed = {
+        origin.rstrip("/") + route(baseurl, item["permalink"]): {
+            "published": f'{item["published_on"]}T00:00:00Z',
+            "updated": f'{item["updated_on"]}T00:00:00Z',
+        }
+        for item in dated
+    }
 
     writing_path = resolve_writing(site)
     if writing_path is None:
@@ -165,6 +181,25 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
                 failures.append("feed: article catalog or order mismatch")
             if any(url.endswith("/notes/legacy") for url in feed_urls):
                 failures.append("feed: legacy note must remain excluded")
+            entries = root.findall("a:entry", ATOM)
+            for entry in entries:
+                entry_id = entry.findtext("a:id", namespaces=ATOM)
+                expected = expected_feed.get(entry_id)
+                if expected is None:
+                    continue
+                link = entry.find("a:link", ATOM)
+                if link is None or link.get("href") != entry_id:
+                    failures.append(f"feed: entry link mismatch for {entry_id}")
+                if entry.findtext("a:published", namespaces=ATOM) != expected["published"]:
+                    failures.append(f"feed: publication date mismatch for {entry_id}")
+                if entry.findtext("a:updated", namespaces=ATOM) != expected["updated"]:
+                    failures.append(f"feed: update date mismatch for {entry_id}")
+            expected_updated = max(
+                (metadata["updated"] for metadata in expected_feed.values()),
+                default=None,
+            )
+            if root.findtext("a:updated", namespaces=ATOM) != expected_updated:
+                failures.append("feed: overall updated timestamp mismatch")
         except (ET.ParseError, OSError) as error:
             failures.append(f"feed: invalid XML: {error}")
 
@@ -180,6 +215,17 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
                 failures.append("sitemap: duplicate canonical URL")
             expected_article_urls = {origin.rstrip("/") + path for path in expected_all}
             sitemap_article_urls = [url for url in urls if url in expected_article_urls]
+            permitted_origin = urlsplit(origin)
+            notes_prefix = normalized_baseurl(baseurl) + "/notes/"
+            for url in urls:
+                parsed = urlsplit(url)
+                off_origin = (parsed.scheme, parsed.netloc) != (
+                    permitted_origin.scheme,
+                    permitted_origin.netloc,
+                )
+                unexpected_article = parsed.path.startswith(notes_prefix) and url not in expected_article_urls
+                if off_origin or unexpected_article:
+                    failures.append(f"sitemap: unexpected URL {url}")
             if set(sitemap_article_urls) != expected_article_urls:
                 failures.append("sitemap: public article catalog mismatch")
         except (ET.ParseError, OSError) as error:

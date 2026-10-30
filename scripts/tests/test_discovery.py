@@ -1,3 +1,4 @@
+import datetime as dt
 import importlib.util
 import tempfile
 import unittest
@@ -101,6 +102,12 @@ class DiscoveryVerifierTest(unittest.TestCase):
         self.assertEqual([], failures)
         self.assertEqual({"articles": 2, "feed": 1, "sitemap_articles": 2}, counts)
 
+    def test_publication_day_uses_chicago_before_local_midnight(self):
+        verifier = load_verifier()
+        instant = dt.datetime(2026, 9, 11, 0, 30, tzinfo=dt.timezone.utc)
+
+        self.assertEqual(dt.date(2026, 9, 10), verifier.publication_day(instant))
+
     def test_verifier_rejects_duplicate_feed_entries(self):
         verifier = load_verifier()
         self.assertIsNotNone(verifier, "discovery verifier must exist")
@@ -130,6 +137,61 @@ class DiscoveryVerifierTest(unittest.TestCase):
         )
         self.assertIn("public artifact: scripts must be excluded", failures)
         self.assertIn("robots: GPTBot must be restricted", failures)
+
+    def test_verifier_rejects_unexpected_sitemap_urls_and_bad_feed_metadata(self):
+        verifier = load_verifier()
+        self.assertIsNotNone(verifier, "discovery verifier must exist")
+        self.write_outputs()
+
+        feed = self.site / "feed.xml"
+        feed.write_text(
+            feed.read_text(encoding="utf-8")
+            .replace(
+                "<updated>2026-10-20T00:00:00Z</updated>",
+                "<updated>2026-10-19T00:00:00Z</updated>",
+                1,
+            )
+            .replace(
+                '<link href="https://example.test/preview/notes/dated"/>',
+                '<link href="https://example.test/preview/notes/wrong"/>',
+            )
+            .replace(
+                "<published>2026-10-20T00:00:00Z</published>",
+                "<published>2026-10-19T00:00:00Z</published>",
+            )
+            .replace(
+                "<updated>2026-10-20T00:00:00Z</updated>",
+                "<updated>2026-10-18T00:00:00Z</updated>",
+            ),
+            encoding="utf-8",
+        )
+
+        sitemap = self.site / "sitemap.xml"
+        sitemap.write_text(
+            sitemap.read_text(encoding="utf-8").replace(
+                "</urlset>",
+                "<url><loc>https://example.test/preview/notes/draft</loc></url>"
+                "<url><loc>https://attacker.example/notes/dated</loc></url>"
+                "</urlset>",
+            ),
+            encoding="utf-8",
+        )
+
+        failures, _ = verifier.verify(
+            self.source,
+            self.site,
+            origin="https://example.test",
+            baseurl="/preview",
+            as_of="2026-10-30",
+        )
+
+        joined = "\n".join(failures)
+        self.assertIn("feed: entry link mismatch", joined)
+        self.assertIn("feed: publication date mismatch", joined)
+        self.assertIn("feed: update date mismatch", joined)
+        self.assertIn("feed: overall updated timestamp mismatch", joined)
+        self.assertIn("sitemap: unexpected URL https://example.test/preview/notes/draft", joined)
+        self.assertIn("sitemap: unexpected URL https://attacker.example/notes/dated", joined)
 
 
 if __name__ == "__main__":

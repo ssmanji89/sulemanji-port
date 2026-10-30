@@ -9,8 +9,7 @@ sitemap: false
   <id>{{ '/feed.xml' | absolute_url }}</id>
   <link href="{{ '/feed.xml' | absolute_url }}" rel="self" />
   <link href="{{ '/writing' | absolute_url }}" />
-  {% assign newest = site.data.writing_discovery.articles | first %}
-  {% if newest %}<updated>{{ newest.updated_on | default: newest.published_on | date: "%Y-%m-%dT00:00:00Z" }}</updated>{% endif %}
+  {% if site.data.writing_discovery.updated_on %}<updated>{{ site.data.writing_discovery.updated_on | date: "%Y-%m-%dT00:00:00Z" }}</updated>{% endif %}
   {% for article in site.data.writing_discovery.articles %}
   <entry>
     <title>{{ article.title | xml_escape }}</title>

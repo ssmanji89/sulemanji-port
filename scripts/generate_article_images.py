@@ -10,9 +10,9 @@ import tempfile
 from PIL import Image, ImageDraw, ImageFont
 
 try:
-    from scripts.verify_discovery import article_inventory
+    from scripts.verify_discovery import article_inventory, publication_day
 except ModuleNotFoundError:
-    from verify_discovery import article_inventory
+    from verify_discovery import article_inventory, publication_day
 
 
 WIDTH = 1200
@@ -122,7 +122,7 @@ def generate(source, *, as_of, check=False):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[1])
-    parser.add_argument("--as-of", type=dt.date.fromisoformat, default=dt.date.today())
+    parser.add_argument("--as-of", type=dt.date.fromisoformat, default=publication_day())
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
     failures = generate(args.source, as_of=args.as_of, check=args.check)

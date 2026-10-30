@@ -24,6 +24,10 @@ class WritingTest < Minitest::Test
       File.join(REPO, 'scripts/verify_writing.rb'),
       File.join(@source, 'scripts/verify_writing.rb')
     )
+    File.write(
+      File.join(@source, '_data/article-context.yml'),
+      {'version' => 1, 'routes' => {}}.to_yaml
+    )
     disclosure = File.join(REPO, 'affiliate-disclosure.md')
     FileUtils.cp(disclosure, @source) if File.exist?(disclosure)
     FileUtils.cp(
@@ -200,6 +204,25 @@ class WritingTest < Minitest::Test
       publication_note('invalid-v2', override)
       assert_raises(WritingContract::Error, "#{index}: #{override.inspect}") { catalog }
     end
+  end
+
+  def test_optional_social_image_metadata_is_strict
+    publication_note(
+      'bad-social-image',
+      {
+        'published' => false,
+        'published_on' => nil,
+        'social_image' => {
+          'path' => '/../private.png',
+          'alt' => '<script>',
+          'width' => 600,
+          'height' => 315
+        }
+      }
+    )
+
+    error = assert_raises(WritingContract::Error) { catalog }
+    assert_match(/invalid social_image path/, error.message)
   end
 
   def test_commercial_intent_matrix_accepts_only_matching_relationships
@@ -416,6 +439,52 @@ class WritingTest < Minitest::Test
     assert_empty nodes.select { |node| %w[Review Product].include?(node['@type']) }
   end
 
+  def test_public_article_presentation_and_paid_link_contract
+    context = {
+      'version' => 1,
+      'routes' => {
+        '/notes/presentation' => {
+          'proof_url' => '/case-studies/agentic-msp-delivery',
+          'proof_label' => 'MSP service delivery using agentic LLMs',
+          'proof_status' => 'case study',
+          'cta_label' => 'Discuss a business engagement'
+        }
+      }
+    }
+    File.write(File.join(@source, '_data/article-context.yml'), context.to_yaml)
+    paid = 'https://amazon.com/dp/B0H4X4X468?tag=sullymanji-20'
+    publication_note(
+      'presentation',
+      {'commercial_intent' => 'affiliate', 'disclosure_required' => true},
+      body: "## Product\n\nAs an Amazon Associate I earn from qualifying purchases.\n\n[First](#{paid})\n\n[Second](#{paid})\n"
+    )
+    publication_note('unlisted')
+
+    build
+    page = html('/notes/presentation')
+
+    assert_equal '/about', page.at_css('[data-writing-author-name]')['href']
+    assert_equal 'article', page.at_css('meta[property="og:type"]')['content']
+    assert_equal 'summary_large_image', page.at_css('meta[name="twitter:card"]')['content']
+    assert_equal page.at_css('meta[property="og:image"]')['content'],
+                 page.at_css('meta[property="twitter:image"]')['content']
+    assert_equal 'Social card for "Test presentation" by Suleman Manji',
+                 page.at_css('meta[property="og:image:alt"]')['content']
+    assert page.css("a[href='#{paid}']").all? do |link|
+      link['rel'].split.sort == ['nofollow', 'sponsored']
+    end
+    preserved = WritingDiscovery.qualify_commercial_links(
+      %(<a href="#{paid}" rel="noopener">Product</a>),
+      WritingContract.commercial_registry(@source)
+    )
+    assert_equal ['nofollow', 'noopener', 'sponsored'],
+                 Nokogiri::HTML.fragment(preserved).at_css('a')['rel'].split.sort
+    assert_equal 1, page.css('[data-article-context]').length
+    assert_includes page.at_css('[data-article-context]').text,
+                    'Business delivery is through Viyu Network Solutions.'
+    assert_empty html('/notes/unlisted').css('[data-article-context]')
+  end
+
   def test_publication_jsonld_mutations_fail_release_verification
     publication_note('jsonld-mutated', {'updated_on' => '2026-09-10'})
     build
@@ -508,6 +577,15 @@ class WritingTest < Minitest::Test
     assert_empty html('/writing').css('#writing-latest, #writing-legacy time')
     assert_equal 'A write is a claim, not evidence', html('/notes/agent-safety').at_css('h1').text
     assert_equal before, File.binread(File.join(@source, relative))
+    page = html('/notes/agent-safety')
+    assert_equal '/about', page.at_css('[data-writing-author-name]')['href']
+    nodes = page.css('script[type="application/ld+json"]').flat_map do |script|
+      WritingContract.nodes(JSON.parse(script.text))
+    end
+    article = nodes.find { |node| %w[Article BlogPosting].include?(node['@type']) }
+    assert article
+    refute article.key?('datePublished')
+    refute article.key?('dateModified')
     refute_includes html('/writing').text.downcase, 'source reviewed'
   end
 

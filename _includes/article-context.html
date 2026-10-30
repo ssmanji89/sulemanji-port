@@ -1,0 +1,7 @@
+{% if include.context %}
+<aside class="article-context" data-article-context aria-label="Related work and next step">
+  <h2>Related work and next step</h2>
+  <p><a data-article-context-proof href="{{ include.context.proof_url | relative_url | escape }}">{{ include.context.proof_label | escape }}</a> <span class="proj-meta">· {{ include.context.proof_status | escape }}</span></p>
+  <p><a data-article-context-cta href="{{ '/work-with-me#business-engagements' | relative_url | escape }}">{{ include.context.cta_label | escape }}</a>. Business delivery is through Viyu Network Solutions.</p>
+</aside>
+{% endif %}

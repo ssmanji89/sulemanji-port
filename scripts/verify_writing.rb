@@ -30,7 +30,7 @@ module WritingContract
   V2_FIELDS = %w[
     writing_schema layout title description permalink published
     published_on updated_on publication_family commercial_intent
-    disclosure_required time_horizon topics reader
+    disclosure_required time_horizon topics reader social_image
   ].freeze
   MAPS = %w[
     article_types publication_families commercial_intents
@@ -178,6 +178,46 @@ module WritingContract
     data
   rescue Errno::ENOENT => e
     raise Error, "required source file missing: #{e.message}"
+  end
+
+  def article_context_registry(data)
+    check(data.is_a?(Hash) && (data.keys - %w[version routes]).empty?,
+          'article context: unknown field')
+    check(data['version'] == 1, 'article context: unsupported version')
+    routes = data['routes']
+    check(routes.is_a?(Hash), 'article context: routes mapping required')
+    routes.each do |route, context|
+      check(route.is_a?(String) && /\A\/notes\/[a-z0-9]+(?:-[a-z0-9]+)*\z/.match?(route),
+            'article context: invalid route')
+      check(context.is_a?(Hash) &&
+            context.keys.sort == %w[cta_label proof_label proof_status proof_url],
+            "article context: #{route} invalid fields")
+      check(context['proof_url'].is_a?(String) &&
+            /\A\/(?:case-studies|projects)(?:\/[a-z0-9-]+)?(?:#[a-z0-9-]+)?\z/.match?(context['proof_url']),
+            "article context: #{route} invalid proof_url")
+      %w[proof_label cta_label].each do |field|
+        check(context[field].is_a?(String) && !context[field].strip.empty? &&
+              !/[<>]/.match?(context[field]),
+              "article context: #{route} invalid #{field}")
+      end
+      check(%w[case\ study planning\ note].include?(context['proof_status']),
+            "article context: #{route} invalid proof_status")
+    end
+    routes
+  end
+
+  def validate_social_image(value, relative)
+    return unless value
+
+    check(value.is_a?(Hash) && value.keys.sort == %w[alt height path width],
+          "#{relative}: invalid social_image fields")
+    check(value['path'].is_a?(String) &&
+          /\A\/assets\/images\/articles\/[a-z0-9-]+\.(?:png|webp)\z/.match?(value['path']),
+          "#{relative}: invalid social_image path")
+    check(value['alt'].is_a?(String) && !value['alt'].strip.empty? && !/[<>]/.match?(value['alt']),
+          "#{relative}: invalid social_image alt")
+    check(value['width'] == 1200 && value['height'] == 630,
+          "#{relative}: social_image must be 1200x630")
   end
 
   def host_matches?(host, allowed, include_subdomains)
@@ -365,6 +405,7 @@ module WritingContract
         normalized_fields = schema == 1 ? %w[publication_family commercial_intent disclosure_required] : []
         check((front.keys - fields - normalized_fields).empty?,
               "#{relative}: unknown front matter field")
+        validate_social_image(front['social_image'], relative)
         check(front['layout'] == 'writing-article',
               "#{relative}: writing-article layout required")
         check([true, false].include?(front['published']),
@@ -553,6 +594,101 @@ module WritingContract
     false
   end
 
+  def social_image(article)
+    return article.data['social_image'] if article.data['social_image']
+    if article.data['permalink'] == '/notes/late-october-skywatching-binoculars-telescope'
+      return {
+        'path' => '/assets/images/articles/late-october-skywatching-binoculars-01.webp',
+        'width' => 1200,
+        'height' => 630,
+        'alt' => 'A skywatcher under stars, illustrating late-October observing'
+      }
+    end
+
+    slug = article.data['permalink'].split('/').last
+    {
+      'path' => "/assets/images/articles/#{slug}-social.png",
+      'width' => 1200,
+      'height' => 630,
+      'alt' => "Social card for \"#{article.data['title']}\" by Suleman Manji"
+    }
+  end
+
+  def publication_type(article)
+    return 'BlogPosting' if article.legacy
+    return 'Article' if %w[professional-analysis technical-guide]
+                        .include?(article.data['publication_family'])
+
+    'BlogPosting'
+  end
+
+  def verify_presentation(page, article, origin:, baseurl:, person:, context:)
+    route = article.data['permalink']
+    image = social_image(article)
+    image_url = origin + baseurl + image['path']
+    author = page.at_css('[data-writing-author-name]')
+    check(author && author['href'] == baseurl + '/about' && author.text == person['name'],
+          "#{article.path}: visible author identity mismatch")
+    check(page.at_css('meta[property="og:type"]')&.[]('content') == 'article',
+          "#{article.path}: Open Graph type must be article")
+    check(page.at_css('meta[name="twitter:card"]')&.[]('content') == 'summary_large_image',
+          "#{article.path}: Twitter card must be summary_large_image")
+    check(page.at_css('meta[property="og:image"]')&.[]('content') == image_url &&
+          page.at_css('meta[property="twitter:image"]')&.[]('content') == image_url,
+          "#{article.path}: social image URL mismatch")
+    check(page.at_css('meta[property="og:image:width"]')&.[]('content') == image['width'].to_s &&
+          page.at_css('meta[property="og:image:height"]')&.[]('content') == image['height'].to_s,
+          "#{article.path}: social image dimensions mismatch")
+    check(page.at_css('meta[property="og:image:alt"]')&.[]('content') == image['alt'] &&
+          page.at_css('meta[name="twitter:image:alt"]')&.[]('content') == image['alt'],
+          "#{article.path}: social image alt mismatch")
+
+    schemas = jsonld_nodes(page)
+    expected_type = publication_type(article)
+    publications = schemas.select { |node| %w[Article BlogPosting].include?(node['@type']) }
+    check(publications.length == 1 && publications[0]['@type'] == expected_type,
+          "#{article.path}: exactly one #{expected_type} JSON-LD node required")
+    expected_jsonld = {
+      '@context' => 'https://schema.org',
+      '@type' => expected_type,
+      '@id' => origin + baseurl + route + '#article',
+      'url' => origin + baseurl + route,
+      'headline' => article.data['title'],
+      'description' => article.data['description'],
+      'image' => {
+        '@type' => 'ImageObject',
+        'url' => image_url,
+        'width' => image['width'],
+        'height' => image['height']
+      },
+      'author' => {'@id' => origin + baseurl + '/#person'}
+    }
+    unless article.legacy
+      expected_jsonld['datePublished'] = article.data['published_on']
+      expected_jsonld['dateModified'] = article.data['updated_on'] || article.data['published_on']
+    end
+    check(publications[0] == expected_jsonld,
+          "#{article.path}: Publication JSON-LD does not match visible content")
+    prohibited_types = %w[Review Product]
+    prohibited_fields = %w[aggregateRating reviewRating ratingValue offers price availability]
+    check(schemas.none? { |node| prohibited_types.include?(node['@type']) },
+          "#{article.path}: prohibited Publication JSON-LD type")
+    check(schemas.none? { |node| (node.keys & prohibited_fields).any? },
+          "#{article.path}: prohibited Publication JSON-LD field")
+
+    section = page.at_css('[data-article-context]')
+    if context
+      check(section &&
+            section.at_css('[data-article-context-proof]')&.[]('href') == baseurl + context['proof_url'] &&
+            section.at_css('[data-article-context-cta]')&.[]('href') ==
+              baseurl + '/work-with-me#business-engagements' &&
+            section.text.include?('Business delivery is through Viyu Network Solutions.'),
+            "#{article.path}: article context mismatch")
+    else
+      check(section.nil?, "#{article.path}: unlisted article context rendered")
+    end
+  end
+
   def verify(source:, site:, as_of:, baseurl: '')
     require_nokogiri
     check(baseurl.empty? || /\A\/[a-z0-9-]+(?:\/[a-z0-9-]+)*\z/.match?(baseurl),
@@ -564,6 +700,9 @@ module WritingContract
     config = yaml((source / '_config.yml').read, 'site config')
     origin = config.fetch('url').sub(%r{/$}, '')
     commercial_data_registry = commercial_registry(source)
+    context_data = yaml((source / '_data/article-context.yml').read, 'article context')
+    contexts = article_context_registry(context_data)
+    person = config.fetch('person')
 
     shared_head = Nokogiri::HTML.fragment((source / '_includes/head-custom.html').read)
     expected_scripts = shared_head.css('script')
@@ -633,6 +772,13 @@ module WritingContract
       expected_commercial = article.commercial_links
       check(rendered_commercial == expected_commercial,
             "#{article.path}: rendered commercial links changed")
+      body.css('a[href]').each do |link_node|
+        next unless classify_commercial_href(link_node['href'], commercial_data_registry)
+
+        tokens = link_node['rel'].to_s.split
+        check((%w[sponsored nofollow] - tokens).empty?,
+              "#{article.path}: commercial link rel qualification missing")
+      end
       ordered_nodes = body.xpath('.//*').to_a
       rendered_commercial.each do |link|
         link_node = body.css('a[href]').find { |node| node['href'] == link['href'] }
@@ -667,38 +813,8 @@ module WritingContract
                 end, "#{article.path}: commercial disclosure must lead article body")
         end
       end
-      if article.data['writing_schema'] == 2
-        schemas = jsonld_nodes(page)
-        expected_type = if %w[professional-analysis technical-guide]
-                           .include?(article.data['publication_family'])
-                          'Article'
-                        else
-                          'BlogPosting'
-                        end
-        publications = schemas.select { |node| %w[Article BlogPosting].include?(node['@type']) }
-        check(publications.length == 1 && publications[0]['@type'] == expected_type,
-              "#{article.path}: exactly one #{expected_type} JSON-LD node required")
-        publication = publications[0]
-        expected_jsonld = {
-          '@context' => 'https://schema.org',
-          '@type' => expected_type,
-          '@id' => origin + baseurl + route + '#article',
-          'url' => origin + baseurl + route,
-          'headline' => article.data['title'],
-          'description' => article.data['description'],
-          'datePublished' => article.data['published_on'],
-          'dateModified' => article.data['updated_on'] || article.data['published_on'],
-          'author' => {'@id' => origin + baseurl + '/#person'}
-        }
-        check(publication == expected_jsonld,
-              "#{article.path}: Publication JSON-LD does not match visible content")
-        prohibited_types = %w[Review Product]
-        prohibited_fields = %w[aggregateRating reviewRating ratingValue offers price availability]
-        check(schemas.none? { |node| prohibited_types.include?(node['@type']) },
-              "#{article.path}: prohibited Publication JSON-LD type")
-        check(schemas.none? { |node| (node.keys & prohibited_fields).any? },
-              "#{article.path}: prohibited Publication JSON-LD field")
-      end
+      verify_presentation(page, article, origin: origin, baseurl: baseurl,
+                          person: person, context: contexts[route])
       check(wrapper.at_css('a[data-writing-back]')&.[]('href') == baseurl + '/writing',
             "#{article.path}: writing back-link mismatch")
       metadata(wrapper, article)
@@ -710,6 +826,8 @@ module WritingContract
                       origin: origin, baseurl: baseurl, expected_scripts: expected_scripts)
       check(page.at_css('h1')&.text == article.data['title'],
             "#{article.path}: legacy title mismatch")
+      verify_presentation(page, article, origin: origin, baseurl: baseurl,
+                          person: person, context: contexts[route])
     end
 
     records.drafts.each do |article|

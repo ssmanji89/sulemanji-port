@@ -44,6 +44,24 @@ class ArticleIdentity(HTMLParser):
             self.article_container = True
 
 
+class PageIdentity(HTMLParser):
+    def __init__(self, source):
+        super().__init__(convert_charrefs=True)
+        self.canonicals = []
+        self.main = False
+        self.noindex = False
+        self.feed(source)
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        if tag == "link" and "canonical" in (values.get("rel") or "").lower().split():
+            self.canonicals.append(values.get("href"))
+        if tag == "main" and values.get("id") == "main":
+            self.main = True
+        if tag == "meta" and (values.get("name") or "").lower() == "robots":
+            self.noindex |= "noindex" in (values.get("content") or "").lower()
+
+
 class UnsafeRedirect(RuntimeError):
     pass
 
@@ -183,7 +201,7 @@ def safe_final_url(response, approved_hosts):
     return parsed.scheme == "https" and parsed.hostname in approved_hosts
 
 
-def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
+def check_live(base_url, robots_origin, articles, *, pages=(), fetcher=None, policy=None):
     base_url = base_url.rstrip("/")
     robots_origin = robots_origin.rstrip("/")
     origins = {urlsplit(base_url).hostname, urlsplit(robots_origin).hostname}
@@ -195,7 +213,7 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
     conflicts = []
     observations = []
     canonical_robots = None
-    required_paths = ["/writing", "/feed.xml", "/sitemap.xml", *articles]
+    required_paths = ["/writing", "/feed.xml", "/sitemap.xml", *articles, *pages]
 
     def fetch(label, url):
         try:
@@ -214,7 +232,7 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
 
     for label, origin in (("canonical robots", base_url), ("apex robots", robots_origin)):
         response = fetch(label, origin + "/robots.txt")
-        if response and response.status == 200:
+        if response and response.status == 200 and safe_final_url(response, origins):
             conflicts.extend(managed_policy_conflicts(response.body, label, required_paths, policy))
             if label == "canonical robots":
                 canonical_robots = response.body
@@ -253,7 +271,7 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
         try:
             root = ET.fromstring(sitemap.body)
             sitemap_urls = [node.text for node in root.findall("s:url/s:loc", SITEMAP)]
-            for url in expected_urls:
+            for url in list(dict.fromkeys([*expected_urls, *(base_url + path for path in pages)])):
                 if sitemap_urls.count(url) != 1:
                     failures.append(f"sitemap: {url} missing or duplicated")
         except ET.ParseError as error:
@@ -271,6 +289,20 @@ def check_live(base_url, robots_origin, articles, *, fetcher=None, policy=None):
             if not identity.article_container:
                 failures.append(f"article {path}: article container missing")
 
+    for path in dict.fromkeys(pages):
+        if canonical_robots is None:
+            failures.append(f"page {path}: canonical robots unavailable; request skipped")
+            continue
+        response = fetch_public(f"page {path}", path)
+        if response:
+            identity = PageIdentity(response.body)
+            if identity.canonicals != [base_url + path]:
+                failures.append(f"page {path}: canonical mismatch")
+            if not identity.main:
+                failures.append(f"page {path}: main#main missing")
+            if identity.noindex:
+                failures.append(f"page {path}: HTML robots metadata contains noindex")
+
     return {
         "ok": not failures and not conflicts,
         "user_agent": USER_AGENT,
@@ -285,10 +317,11 @@ def main():
     parser.add_argument("--base-url", required=True)
     parser.add_argument("--robots-origin", required=True)
     parser.add_argument("--article", action="append", required=True)
+    parser.add_argument("--page", action="append", default=[])
     parser.add_argument("--policy", type=Path, default=POLICY_PATH)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    result = check_live(args.base_url, args.robots_origin, args.article, policy=load_policy(args.policy))
+    result = check_live(args.base_url, args.robots_origin, args.article, pages=args.page, policy=load_policy(args.policy))
     if args.json:
         json.dump(result, sys.stdout, indent=2, sort_keys=True)
         print()

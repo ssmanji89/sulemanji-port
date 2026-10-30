@@ -6,11 +6,101 @@ import sys
 import tempfile
 import threading
 import unittest
+from unittest.mock import patch
 
 from scripts.smoke_discovery_live import Response, USER_AGENT, check_live, fetch_url, load_policy
 
 
 class LiveDiscoverySmokeTests(unittest.TestCase):
+    def test_configured_pages_are_requested_and_identity_checked(self):
+        origin = "https://www.sulemanji.com"
+        pages = ["/", "/about", "/work-with-me"]
+        responses = self.response_map()
+        sitemap_url = origin + "/sitemap.xml"
+        entries = "".join(f"<url><loc>{origin}{path}</loc></url>" for path in pages)
+        responses[sitemap_url] = Response(200, sitemap_url, responses[sitemap_url].body.replace("</urlset>", entries + "</urlset>"), {})
+        for path in pages:
+            url = origin + path
+            responses[url] = Response(200, url, f'<link rel="canonical" href="{url}"><main id="main"></main>', {})
+        requested = []
+
+        def fetch(url, _agent):
+            requested.append(url)
+            return responses[url]
+
+        result = check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=pages, fetcher=fetch)
+        self.assertTrue(result["ok"], result)
+        for path in pages:
+            self.assertEqual(1, requested.count(origin + path))
+        for body in ('<main id="main"></main>', '<link rel="canonical" href="https://wrong.example/"><main id="main"></main>', '<link rel="canonical" href="https://www.sulemanji.com/about">', '<link rel="canonical" href="https://www.sulemanji.com/about"><meta name="robots" content="noindex"><main id="main"></main>'):
+            with self.subTest(body=body):
+                responses[origin + "/about"] = Response(200, origin + "/about", body, {})
+                self.assertFalse(check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=pages, fetcher=fetch)["ok"])
+
+    def test_disallowed_configured_page_is_never_requested(self):
+        origin = "https://www.sulemanji.com"
+        responses = self.response_map()
+        url = origin + "/robots.txt"
+        responses[url] = Response(200, url, responses[url].body + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /about\n", {})
+        requested = []
+
+        def fetch(url, _agent):
+            requested.append(url)
+            return responses[url]
+
+        result = check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=["/about"], fetcher=fetch)
+        self.assertFalse(result["ok"])
+        self.assertNotIn(origin + "/about", requested)
+
+    def test_unavailable_robots_prevents_configured_page_request(self):
+        origin = "https://www.sulemanji.com"
+        responses = self.response_map()
+        url = origin + "/robots.txt"
+        responses[url] = Response(200, "https://attacker.example/robots.txt", "User-agent: *\nAllow: /", {})
+        requested = []
+
+        def fetch(url, _agent):
+            requested.append(url)
+            return responses[url]
+
+        result = check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=["/about"], fetcher=fetch)
+        self.assertFalse(result["ok"])
+        self.assertNotIn(origin + "/about", requested)
+
+    def test_configured_page_redirect_is_rejected_before_external_request(self):
+        requested = []
+
+        class RedirectHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                requested.append(self.path)
+                self.send_response(302)
+                self.send_header("Location", f"http://localhost:{self.server.server_port}/target")
+                self.end_headers()
+
+            def log_message(self, _format, *_args):
+                return
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), RedirectHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        responses = self.response_map()
+        original_fetch = fetch_url
+
+        def transport(url, user_agent, *, approved_hosts):
+            if url.endswith("/about"):
+                return original_fetch(f"http://127.0.0.1:{server.server_port}/about", user_agent, approved_hosts={"127.0.0.1"})
+            return responses[url]
+
+        try:
+            with patch("scripts.smoke_discovery_live.fetch_url", side_effect=transport):
+                result = check_live("https://www.sulemanji.com", "https://sulemanji.com", ["/notes/example"], pages=["/about"])
+        finally:
+            server.shutdown()
+            thread.join(timeout=2)
+            server.server_close()
+        self.assertIn("redirect outside approved origins", " ".join(result["failures"]))
+        self.assertEqual(["/about"], requested)
+
     def test_monitor_starts_without_third_party_python_packages(self):
         script = Path(__file__).resolve().parents[1] / "smoke_discovery_live.py"
         result = subprocess.run(

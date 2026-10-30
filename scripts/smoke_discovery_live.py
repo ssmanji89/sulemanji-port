@@ -96,12 +96,18 @@ def robots_allows(robots_text, agent, path):
         for directive, value in rules:
             if directive not in {"allow", "disallow"} or not value:
                 continue
-            if path.startswith(value):
-                matching.append((len(value), directive == "allow"))
+            terminal = value.endswith("$")
+            pattern = value[:-1] if terminal else value
+            expression = "^" + re.escape(pattern).replace(r"\*", ".*")
+            if terminal:
+                expression += "$"
+            if re.search(expression, path):
+                specificity = len(pattern.replace("*", ""))
+                matching.append((specificity, directive == "allow"))
     if not matching:
         return True
     longest = max(length for length, _allowed in matching)
-    return all(allowed for length, allowed in matching if length == longest)
+    return any(allowed for length, allowed in matching if length == longest)
 
 
 def managed_policy_conflicts(robots_text, label, required_paths):

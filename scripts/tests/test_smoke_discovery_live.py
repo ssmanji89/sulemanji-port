@@ -71,7 +71,10 @@ Allow: /
         responses[url] = Response(
             200,
             url,
-            responses[url].body + "\nUser-agent: OAI-SearchBot\nDisallow: /\n",
+            responses[url].body.replace(
+                "User-agent: OAI-SearchBot\nAllow: /",
+                "User-agent: OAI-SearchBot\nDisallow: /",
+            ),
             {},
         )
 
@@ -84,6 +87,28 @@ Allow: /
 
         self.assertFalse(result["ok"])
         self.assertIn("OAI-SearchBot", " ".join(result["managed_policy_conflicts"]))
+
+    def test_robots_wildcards_and_terminal_match_are_enforced(self):
+        responses = self.response_map()
+        robots_url = "https://www.sulemanji.com/robots.txt"
+        responses[robots_url] = Response(
+            200,
+            robots_url,
+            responses[robots_url].body
+            + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /*.xml$\n",
+            {},
+        )
+
+        result = check_live(
+            "https://www.sulemanji.com",
+            "https://sulemanji.com",
+            ["/notes/example"],
+            fetcher=lambda url, _ua: responses[url],
+        )
+
+        conflicts = " ".join(result["managed_policy_conflicts"])
+        self.assertIn("monitor disallowed /feed.xml", conflicts)
+        self.assertIn("monitor disallowed /sitemap.xml", conflicts)
 
     def test_redirect_outside_requested_hosts_fails(self):
         responses = self.response_map()

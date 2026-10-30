@@ -36,6 +36,24 @@ class SocialCardTests(unittest.TestCase):
 
             self.assertIn("decoded dimensions", validate_custom_image(source, article))
 
+    def test_custom_image_rejects_truncated_content(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            target = source / "assets" / "images" / "articles" / "custom.png"
+            target.parent.mkdir(parents=True)
+            Image.new("RGB", (1200, 630)).save(target)
+            target.write_bytes(target.read_bytes()[: len(target.read_bytes()) // 2])
+            article = {
+                "permalink": "/notes/custom",
+                "social_image": {
+                    "path": "/assets/images/articles/custom.png",
+                    "width": 1200,
+                    "height": 630,
+                },
+            }
+
+            self.assertIn("invalid", validate_custom_image(source, article))
+
 
 if __name__ == "__main__":
     unittest.main()

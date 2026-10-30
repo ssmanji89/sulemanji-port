@@ -31,6 +31,7 @@ def validate_custom_image(source, article):
     try:
         with Image.open(path) as image:
             actual = image.size
+            image.verify()
     except (OSError, ValueError) as error:
         return f"{article['permalink']}: custom social image is invalid: {error}"
     expected = (metadata["width"], metadata["height"])

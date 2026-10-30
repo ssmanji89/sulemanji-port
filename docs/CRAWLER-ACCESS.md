@@ -1,6 +1,6 @@
 # Crawler access and verification
 
-`_data/crawler-policy.yml` is the source policy for origin `robots.txt` generation and
+`_data/crawler-policy.json` is the source policy for origin `robots.txt` generation and
 release verification. It permits the named search and user-retrieval clients. It preserves
 the 32 existing restricted client tokens without claiming that every token has one purpose.
 The content signal permits search and reference use while reserving AI training use.

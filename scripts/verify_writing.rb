@@ -21,7 +21,7 @@ module WritingContract
     :commercial_disclosures,
     keyword_init: true
   )
-  Catalog = Struct.new(:active, :drafts, :legacy, :registry, keyword_init: true)
+  Catalog = Struct.new(:active, :drafts, :excluded, :legacy, :registry, keyword_init: true)
 
   V1_FIELDS = %w[
     writing_schema layout title description permalink published
@@ -30,7 +30,7 @@ module WritingContract
   V2_FIELDS = %w[
     writing_schema layout title description permalink published
     published_on updated_on publication_family commercial_intent
-    disclosure_required time_horizon topics reader social_image
+    disclosure_required time_horizon topics reader social_image noindex
   ].freeze
   MAPS = %w[
     article_types publication_families commercial_intents
@@ -406,6 +406,8 @@ module WritingContract
         check((front.keys - fields - normalized_fields).empty?,
               "#{relative}: unknown front matter field")
         validate_social_image(front['social_image'], relative)
+        check([nil, true, false].include?(front['noindex']),
+              "#{relative}: noindex must be boolean")
         check(front['layout'] == 'writing-article',
               "#{relative}: writing-article layout required")
         check([true, false].include?(front['published']),
@@ -446,10 +448,9 @@ module WritingContract
 
         if front['published']
           published = iso(front['published_on'], "#{relative}: published_on")
-          check(published <= as_of, "#{relative}: future publication date")
           if front['updated_on']
             updated = iso(front['updated_on'], "#{relative}: updated_on")
-            check(updated >= published && updated <= as_of,
+            check(updated >= published && (published > as_of || updated <= as_of),
                   "#{relative}: invalid update chronology")
           end
         else
@@ -479,13 +480,20 @@ module WritingContract
     check(urls.uniq == urls, 'notes: duplicate permalink')
 
     nonlegacy = articles.reject(&:legacy)
-    active = nonlegacy.select { |article| article.data['published'] }.sort_by do |article|
+    active = nonlegacy.select do |article|
+      article.data['published'] &&
+        Date.iso8601(article.data['published_on']) <= as_of &&
+        !article.data['noindex']
+    end.sort_by do |article|
       [-Date.iso8601(article.data['published_on']).jd, article.data['permalink']]
     end
+    drafts = nonlegacy.reject { |article| article.data['published'] }
+    excluded = nonlegacy - active - drafts
 
     Catalog.new(
       active: active,
-      drafts: nonlegacy.reject { |article| article.data['published'] },
+      drafts: drafts,
+      excluded: excluded,
       legacy: articles.select(&:legacy).sort_by { |article| article.data['permalink'] },
       registry: data_registry
     )
@@ -818,6 +826,15 @@ module WritingContract
       check(wrapper.at_css('a[data-writing-back]')&.[]('href') == baseurl + '/writing',
             "#{article.path}: writing back-link mismatch")
       metadata(wrapper, article)
+    end
+
+    records.excluded.each do |article|
+      path = output(site, article.data['permalink'])
+      next unless path
+
+      page = Nokogiri::HTML(path.read)
+      check(page.at_css('meta[name="robots"]')&.[]('content') == 'noindex,follow',
+            "#{article.path}: excluded route must render noindex")
     end
 
     records.legacy.each do |article|

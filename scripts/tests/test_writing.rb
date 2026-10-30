@@ -567,6 +567,24 @@ class WritingTest < Minitest::Test
     assert_match(/unpublished route leaked/, error.message)
   end
 
+  def test_future_and_noindex_articles_are_excluded_and_noindexed
+    note('future', {'published_on' => '2099-09-11'})
+    publication_note('hidden', {'noindex' => true})
+
+    records = catalog
+    assert_empty records.active
+    assert_equal %w[notes/future.md notes/hidden.md], records.excluded.map(&:path).sort
+
+    build
+    verify
+    %w[/notes/future /notes/hidden].each do |route|
+      page = html(route)
+      assert_equal 'noindex,follow', page.at_css('meta[name="robots"]')&.[]('content')
+    end
+    refute_includes html('/writing').text, 'Test future'
+    refute_includes html('/writing').text, 'Test hidden'
+  end
+
   def test_legacy_url_is_preserved_without_fabricated_date_or_review
     relative = 'notes/agent-safety-from-incidents.md'
     before = File.binread(File.join(@source, relative))
@@ -626,9 +644,9 @@ class WritingTest < Minitest::Test
       {'published_on' => nil},
       {'published_on' => '2026-02-30'},
       {'published_on' => Date.new(2026, 9, 9)},
-      {'published_on' => '2026-09-11'},
       {'updated_on' => '2026-09-08'},
       {'updated_on' => '2026-09-11'},
+      {'noindex' => 'true'},
       {'layout' => 'default'},
       {'permalink' => '/notes/wrong'},
       {'article_type' => 'unknown'},

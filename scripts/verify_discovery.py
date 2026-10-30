@@ -77,6 +77,7 @@ def article_inventory(source, as_of):
             "title": data.get("title", ""),
             "published_on": value,
             "updated_on": updated,
+            "social_image": data.get("social_image"),
         })
     dated.sort(key=lambda item: (item["published_on"], item["permalink"]), reverse=True)
     # Equal dates use ascending permalink order.

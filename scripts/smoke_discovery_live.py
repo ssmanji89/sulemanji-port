@@ -87,16 +87,30 @@ def robots_groups(text):
     return groups
 
 
-def managed_policy_conflicts(robots_text, label):
+def robots_allows(robots_text, agent, path):
+    groups = robots_groups(robots_text)
+    exact = [rules for agents, rules in groups if agent.lower() in {value.lower() for value in agents}]
+    selected = exact or [rules for agents, rules in groups if "*" in agents]
+    matching = []
+    for rules in selected:
+        for directive, value in rules:
+            if directive not in {"allow", "disallow"} or not value:
+                continue
+            if path.startswith(value):
+                matching.append((len(value), directive == "allow"))
+    if not matching:
+        return True
+    longest = max(length for length, _allowed in matching)
+    return all(allowed for length, allowed in matching if length == longest)
+
+
+def managed_policy_conflicts(robots_text, label, required_paths):
     groups = robots_groups(robots_text)
     conflicts = []
     for agent in POLICY_AGENTS:
-        exact = [rules for agents, rules in groups if agent in agents]
-        rules = [rule for group in exact for rule in group]
-        if ("disallow", "/") in rules:
-            conflicts.append(f"{label}: {agent} has a site-wide disallow")
-        elif ("allow", "/") not in rules:
-            conflicts.append(f"{label}: {agent} lacks the required allow rule")
+        for path in required_paths:
+            if not robots_allows(robots_text, agent, path):
+                conflicts.append(f"{label}: {agent} disallows {path}")
     return conflicts
 
 
@@ -112,6 +126,8 @@ def check_live(base_url, robots_origin, articles, *, fetcher=fetch_url):
     failures = []
     conflicts = []
     observations = []
+    canonical_robots = None
+    required_paths = ["/writing", "/feed.xml", "/sitemap.xml", *articles]
 
     def fetch(label, url):
         try:
@@ -131,11 +147,21 @@ def check_live(base_url, robots_origin, articles, *, fetcher=fetch_url):
     for label, origin in (("canonical robots", base_url), ("apex robots", robots_origin)):
         response = fetch(label, origin + "/robots.txt")
         if response and response.status == 200:
-            conflicts.extend(managed_policy_conflicts(response.body, label))
+            conflicts.extend(managed_policy_conflicts(response.body, label, required_paths))
+            if label == "canonical robots":
+                canonical_robots = response.body
 
-    writing = fetch("writing", base_url + "/writing")
-    feed = fetch("feed", base_url + "/feed.xml")
-    sitemap = fetch("sitemap", base_url + "/sitemap.xml")
+    monitor_agent = USER_AGENT.split("/", 1)[0]
+
+    def fetch_public(label, path):
+        if canonical_robots is not None and not robots_allows(canonical_robots, monitor_agent, path):
+            conflicts.append(f"canonical robots: monitor disallowed {path}")
+            return None
+        return fetch(label, base_url + path)
+
+    writing = fetch_public("writing", "/writing")
+    feed = fetch_public("feed", "/feed.xml")
+    sitemap = fetch_public("sitemap", "/sitemap.xml")
     expected_paths = list(dict.fromkeys(articles))
     expected_urls = [base_url + path for path in expected_paths]
 
@@ -166,7 +192,7 @@ def check_live(base_url, robots_origin, articles, *, fetcher=fetch_url):
             failures.append(f"sitemap: invalid XML: {error}")
 
     for path in expected_paths:
-        response = fetch(f"article {path}", base_url + path)
+        response = fetch_public(f"article {path}", path)
         if response and re.search(r'<meta[^>]+(?:name=["\']robots["\'][^>]+noindex|noindex[^>]+name=["\']robots["\'])', response.body, re.I):
             failures.append(f"article {path}: HTML robots metadata contains noindex")
 

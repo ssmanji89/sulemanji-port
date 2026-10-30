@@ -114,6 +114,56 @@ Allow: /
         self.assertIn("feed:", " ".join(result["failures"]))
         self.assertIn("missing or duplicated", " ".join(result["failures"]))
 
+    def test_path_specific_disallow_blocks_monitor_fetch(self):
+        responses = self.response_map()
+        robots_url = "https://www.sulemanji.com/robots.txt"
+        responses[robots_url] = Response(
+            200,
+            robots_url,
+            responses[robots_url].body
+            + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /feed.xml\n",
+            {},
+        )
+        requested = []
+
+        def fetch(url, _user_agent):
+            requested.append(url)
+            return responses[url]
+
+        result = check_live(
+            "https://www.sulemanji.com",
+            "https://sulemanji.com",
+            ["/notes/example"],
+            fetcher=fetch,
+        )
+
+        self.assertFalse(result["ok"])
+        self.assertIn("monitor disallowed /feed.xml", " ".join(result["managed_policy_conflicts"]))
+        self.assertNotIn("https://www.sulemanji.com/feed.xml", requested)
+
+    def test_named_crawler_path_disallow_is_reported(self):
+        responses = self.response_map()
+        robots_url = "https://www.sulemanji.com/robots.txt"
+        responses[robots_url] = Response(
+            200,
+            robots_url,
+            responses[robots_url].body.replace(
+                "User-agent: OAI-SearchBot\nAllow: /",
+                "User-agent: OAI-SearchBot\nAllow: /\nDisallow: /notes/example",
+            ),
+            {},
+        )
+
+        result = check_live(
+            "https://www.sulemanji.com",
+            "https://sulemanji.com",
+            ["/notes/example"],
+            fetcher=lambda url, _ua: responses[url],
+        )
+
+        self.assertFalse(result["ok"])
+        self.assertIn("OAI-SearchBot disallows /notes/example", " ".join(result["managed_policy_conflicts"]))
+
 
 if __name__ == "__main__":
     unittest.main()

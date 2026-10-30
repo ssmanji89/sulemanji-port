@@ -21,6 +21,24 @@ SKY_ROUTE = "/notes/late-october-skywatching-binoculars-telescope"
 SKY_IMAGE = "late-october-skywatching-binoculars-01.webp"
 
 
+def validate_custom_image(source, article):
+    metadata = article.get("social_image")
+    if not metadata:
+        return None
+    path = source / metadata["path"].lstrip("/")
+    if not path.is_file():
+        return f"{article['permalink']}: custom social image is missing"
+    try:
+        with Image.open(path) as image:
+            actual = image.size
+    except (OSError, ValueError) as error:
+        return f"{article['permalink']}: custom social image is invalid: {error}"
+    expected = (metadata["width"], metadata["height"])
+    if actual != expected or actual != (WIDTH, HEIGHT):
+        return f"{article['permalink']}: custom social image decoded dimensions must be 1200x630"
+    return None
+
+
 def font_path(name):
     roots = [
         Path(os.environ.get("DEJAVU_FONT_DIR", "")),
@@ -81,6 +99,11 @@ def generate(source, *, as_of, check=False):
     with tempfile.TemporaryDirectory(prefix="article-cards-") as temporary:
         for article in dated + legacy:
             route = article["permalink"]
+            custom_failure = validate_custom_image(source, article)
+            if article.get("social_image"):
+                if custom_failure:
+                    failures.append(custom_failure)
+                continue
             if route == SKY_ROUTE:
                 path = output_dir / SKY_IMAGE
                 if not path.is_file() or Image.open(path).size != (WIDTH, HEIGHT):

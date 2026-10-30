@@ -68,6 +68,10 @@ module Jekyll
       end
       author = site.config.fetch('person').fetch('name')
       pages = site.pages.each_with_object({}) { |page, index| index[page.path] = page }
+      catalog.excluded.each do |article|
+        page = pages[article.path]
+        page.data['noindex'] = true if page
+      end
       active = catalog.active.map do |article|
         present(pages.fetch(article.path), article, author, contexts)
       end

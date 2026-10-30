@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from scripts.generate_article_images import render_card
+from scripts.generate_article_images import render_card, validate_custom_image
 
 
 class SocialCardTests(unittest.TestCase):
@@ -18,6 +18,23 @@ class SocialCardTests(unittest.TestCase):
             self.assertEqual(first.read_bytes(), second.read_bytes())
             with Image.open(first) as image:
                 self.assertEqual((1200, 630), image.size)
+
+    def test_custom_image_decodes_declared_dimensions(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            target = source / "assets" / "images" / "articles" / "custom.png"
+            target.parent.mkdir(parents=True)
+            Image.new("RGB", (640, 480)).save(target)
+            article = {
+                "permalink": "/notes/custom",
+                "social_image": {
+                    "path": "/assets/images/articles/custom.png",
+                    "width": 1200,
+                    "height": 630,
+                },
+            }
+
+            self.assertIn("decoded dimensions", validate_custom_image(source, article))
 
 
 if __name__ == "__main__":

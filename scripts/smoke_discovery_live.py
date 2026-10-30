@@ -66,7 +66,7 @@ def robots_groups(text):
     agents = []
     rules = []
     for raw in text.splitlines() + [""]:
-        line = raw.strip()
+        line = raw.split("#", 1)[0].strip()
         if not line or line.startswith("#"):
             if agents:
                 groups.append((tuple(agents), tuple(rules)))

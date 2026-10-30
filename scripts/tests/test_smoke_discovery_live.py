@@ -95,7 +95,7 @@ Allow: /
             200,
             robots_url,
             responses[robots_url].body
-            + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /*.xml$\n",
+            + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /*.xml$ # discovery XML\n",
             {},
         )
 

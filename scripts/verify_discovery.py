@@ -7,7 +7,7 @@ from html.parser import HTMLParser
 import json
 import re
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 import xml.etree.ElementTree as ET
 from zoneinfo import ZoneInfo
 
@@ -42,6 +42,33 @@ class WritingLinks(HTMLParser):
             self.current.append(values["data-writing-url"])
         if "data-writing-legacy-url" in values:
             self.legacy.append(values["data-writing-legacy-url"])
+
+
+class RenderedSignals(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.canonicals = []
+        self.feeds = []
+        self.local_links = []
+
+    def handle_starttag(self, tag, attrs):
+        values = dict(attrs)
+        rel = (values.get("rel") or "").lower().split()
+        if tag == "link" and "canonical" in rel:
+            self.canonicals.append(values.get("href"))
+        if tag == "link" and "alternate" in rel and (values.get("type") or "").lower() == "application/atom+xml":
+            self.feeds.append(values.get("href"))
+        if tag == "a" and "href" in values:
+            self.local_links.append(values["href"])
+
+
+def rendered_output(site: Path, route: str) -> Path | None:
+    path = unquote(route).lstrip("/")
+    parts = Path(path).parts
+    if any(part in ("..", ".") for part in parts) or "\\" in path:
+        return None
+    candidates = (site / path, site / (path + ".html"), site / path / "index.html")
+    return next((candidate for candidate in candidates if candidate.is_file() and candidate.resolve().is_relative_to(site.resolve())), None)
 
 
 def frontmatter(path):
@@ -196,6 +223,32 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
         for item in dated
     }
 
+    base = normalized_baseurl(baseurl)
+    for page_route in [page["route"] for page in pages] + expected_all:
+        relative_route = page_route[len(base):] if base and page_route.startswith(base + "/") else page_route
+        output = rendered_output(site, relative_route)
+        if output is None:
+            failures.append(f"rendered: missing page {page_route}")
+            continue
+        signals = RenderedSignals()
+        signals.feed(output.read_text(encoding="utf-8"))
+        if signals.canonicals != [origin.rstrip("/") + page_route]:
+            failures.append(f"rendered: canonical mismatch for {page_route}")
+        if signals.feeds != [origin.rstrip("/") + route(baseurl, "/feed.xml")]:
+            failures.append(f"rendered: feed link mismatch for {page_route}")
+        for link in signals.local_links:
+            if link is None or any(ord(char) < 32 or ord(char) == 127 for char in link) or "\\" in link or link.startswith("//"):
+                failures.append(f"rendered: invalid link {link!r} on {page_route}")
+                continue
+            parsed = urlsplit(link)
+            if parsed.scheme or parsed.netloc or not parsed.path.startswith("/"):
+                continue
+            target = parsed.path
+            if base and (target == base or target.startswith(base + "/")):
+                target = target[len(base):] or "/"
+            if rendered_output(site, target) is None:
+                failures.append(f"rendered: missing local target {link} on {page_route}")
+
     writing_path = resolve_writing(site)
     if writing_path is None:
         failures.append("writing: rendered page missing")
@@ -259,16 +312,8 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
             for url in sorted(expected_page_urls - set(sitemap_page_urls)):
                 failures.append(f"sitemap: missing configured page {url}")
             sitemap_article_urls = [url for url in urls if url in expected_article_urls]
-            permitted_origin = urlsplit(origin)
-            notes_prefix = normalized_baseurl(baseurl) + "/notes/"
             for url in urls:
-                parsed = urlsplit(url)
-                off_origin = (parsed.scheme, parsed.netloc) != (
-                    permitted_origin.scheme,
-                    permitted_origin.netloc,
-                )
-                unexpected_article = parsed.path.startswith(notes_prefix) and url not in expected_article_urls
-                if off_origin or unexpected_article:
+                if url not in expected_article_urls | expected_page_urls:
                     failures.append(f"sitemap: unexpected URL {url}")
             if set(sitemap_article_urls) != expected_article_urls:
                 failures.append("sitemap: public article catalog mismatch")

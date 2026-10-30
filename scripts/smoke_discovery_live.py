@@ -203,7 +203,7 @@ def origin_of(url):
         parsed = urlsplit(url)
         if parsed.scheme != "https" or not parsed.hostname:
             return None
-        return (parsed.scheme, parsed.hostname, parsed.port or 443)
+        return (parsed.scheme, parsed.hostname, 443 if parsed.port is None else parsed.port)
     except ValueError:
         return None
 

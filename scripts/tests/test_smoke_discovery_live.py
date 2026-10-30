@@ -36,6 +36,16 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
                 handler.redirect_request(Request("https://www.sulemanji.com/about"), None, 302, "Found", {}, response.url)
             follow.assert_not_called()
 
+    def test_explicit_port_zero_is_not_the_default_origin(self):
+        origin = ("https", "www.sulemanji.com", 443)
+        destination = "https://www.sulemanji.com:0/private"
+        self.assertFalse(safe_final_url(Response(200, destination, "", {}), {origin}))
+        handler = ApprovedRedirectHandler({origin})
+        with patch.object(HTTPRedirectHandler, "redirect_request") as follow:
+            with self.assertRaisesRegex(RuntimeError, "redirect outside approved origins"):
+                handler.redirect_request(Request("https://www.sulemanji.com/about"), None, 302, "Found", {}, destination)
+            follow.assert_not_called()
+
     def test_configured_pages_are_requested_and_identity_checked(self):
         origin = "https://www.sulemanji.com"
         pages = ["/", "/about", "/work-with-me"]

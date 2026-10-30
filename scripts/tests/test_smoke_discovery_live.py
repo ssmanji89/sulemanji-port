@@ -48,14 +48,14 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
 
     def test_configured_pages_are_requested_and_identity_checked(self):
         origin = "https://www.sulemanji.com"
-        pages = ["/", "/about", "/work-with-me"]
+        pages = ["/", "/about", "/work-with-me", "/writing"]
         responses = self.response_map()
         sitemap_url = origin + "/sitemap.xml"
         entries = "".join(f"<url><loc>{origin}{path}</loc></url>" for path in pages)
         responses[sitemap_url] = Response(200, sitemap_url, responses[sitemap_url].body.replace("</urlset>", entries + "</urlset>"), {})
         for path in pages:
             url = origin + path
-            responses[url] = Response(200, url, f'<link rel="canonical" href="{url}"><main id="main"></main>', {})
+            responses[url] = Response(200, url, f'<link rel="canonical" href="{url}"><main id="main"><article data-writing-url="/notes/example"></article></main>', {})
         requested = []
 
         def fetch(url, _agent):
@@ -75,16 +75,19 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
         origin = "https://www.sulemanji.com"
         responses = self.response_map()
         url = origin + "/robots.txt"
-        responses[url] = Response(200, url, responses[url].body + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /about\n", {})
+        responses[url] = Response(200, url, responses[url].body + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /about\nDisallow: /writing\n", {})
         requested = []
 
         def fetch(url, _agent):
             requested.append(url)
             return responses[url]
 
-        result = check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=["/about"], fetcher=fetch)
-        self.assertFalse(result["ok"])
-        self.assertNotIn(origin + "/about", requested)
+        for path in ("/about", "/writing"):
+            with self.subTest(path=path):
+                requested.clear()
+                result = check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=[path], fetcher=fetch)
+                self.assertFalse(result["ok"])
+                self.assertNotIn(origin + path, requested)
 
     def test_unavailable_robots_prevents_configured_page_request(self):
         origin = "https://www.sulemanji.com"
@@ -97,9 +100,12 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
             requested.append(url)
             return responses[url]
 
-        result = check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=["/about"], fetcher=fetch)
-        self.assertFalse(result["ok"])
-        self.assertNotIn(origin + "/about", requested)
+        for path in ("/about", "/writing"):
+            with self.subTest(path=path):
+                requested.clear()
+                result = check_live(origin, "https://sulemanji.com", ["/notes/example"], pages=[path], fetcher=fetch)
+                self.assertFalse(result["ok"])
+                self.assertNotIn(origin + path, requested)
 
     def test_configured_page_redirect_is_rejected_before_external_request(self):
         requested = []
@@ -123,19 +129,23 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
         original_fetch = fetch_url
 
         def transport(url, user_agent, *, approved_origins, reject_redirects=False):
-            if url.endswith("/about"):
-                return original_fetch(f"http://127.0.0.1:{server.server_port}/about", user_agent, approved_origins=approved_origins, reject_redirects=reject_redirects)
+            if url.endswith(path):
+                return original_fetch(f"http://127.0.0.1:{server.server_port}{path}", user_agent, approved_origins=approved_origins, reject_redirects=reject_redirects)
             return responses[url]
 
         try:
-            with patch("scripts.smoke_discovery_live.fetch_url", side_effect=transport):
-                result = check_live("https://www.sulemanji.com", "https://sulemanji.com", ["/notes/example"], pages=["/about"])
+            with patch("scripts.smoke_discovery_live.fetch_url", side_effect=transport), patch.object(HTTPRedirectHandler, "redirect_request") as follow:
+                for path in ("/about", "/writing"):
+                    with self.subTest(path=path):
+                        requested.clear()
+                        result = check_live("https://www.sulemanji.com", "https://sulemanji.com", ["/notes/example"], pages=[path])
+                        self.assertIn("page redirect rejected", " ".join(result["failures"]))
+                        self.assertEqual([path], requested)
+                        follow.assert_not_called()
         finally:
             server.shutdown()
             thread.join(timeout=2)
             server.server_close()
-        self.assertIn("page redirect rejected", " ".join(result["failures"]))
-        self.assertEqual(["/about"], requested)
 
     def test_monitor_starts_without_third_party_python_packages(self):
         script = Path(__file__).resolve().parents[1] / "smoke_discovery_live.py"

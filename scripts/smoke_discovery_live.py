@@ -224,10 +224,12 @@ def check_live(base_url, robots_origin, articles, *, pages=(), fetcher=None, pol
     canonical_robots = None
     required_paths = ["/writing", "/feed.xml", "/sitemap.xml", *articles, *pages]
 
-    def fetch(label, url):
+    configured_pages = set(pages)
+
+    def fetch(label, url, *, configured_page=False):
         try:
             if fetcher is None:
-                response = fetch_url(url, USER_AGENT, approved_origins=origins, reject_redirects=label.startswith("page "))
+                response = fetch_url(url, USER_AGENT, approved_origins=origins, reject_redirects=configured_page)
             else:
                 response = fetcher(url, USER_AGENT)
         except Exception as error:  # Network failures become bounded smoke evidence.
@@ -252,10 +254,13 @@ def check_live(base_url, robots_origin, articles, *, pages=(), fetcher=None, pol
     monitor_agent = USER_AGENT.split("/", 1)[0]
 
     def fetch_public(label, path):
+        if path in configured_pages and canonical_robots is None:
+            failures.append(f"page {path}: canonical robots unavailable; request skipped")
+            return None
         if canonical_robots is not None and not robots_allows(canonical_robots, monitor_agent, path):
             conflicts.append(f"canonical robots: monitor disallowed {path}")
             return None
-        return fetch(label, base_url + path)
+        return fetch(label, base_url + path, configured_page=path in configured_pages)
 
     writing = fetch_public("writing", "/writing")
     feed = fetch_public("feed", "/feed.xml")
@@ -302,10 +307,7 @@ def check_live(base_url, robots_origin, articles, *, pages=(), fetcher=None, pol
                 failures.append(f"article {path}: article container missing")
 
     for path in dict.fromkeys(pages):
-        if canonical_robots is None:
-            failures.append(f"page {path}: canonical robots unavailable; request skipped")
-            continue
-        response = fetch_public(f"page {path}", path)
+        response = writing if path == "/writing" else fetch_public(f"page {path}", path)
         if response:
             identity = PageIdentity(response.body)
             if identity.canonicals != [base_url + path]:

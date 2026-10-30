@@ -1,0 +1,46 @@
+version: 1
+content_signal: "search=yes,ai-train=no,use=reference"
+default_access: allow
+allowed_search_agents:
+  - OAI-SearchBot
+  - Claude-SearchBot
+  - PerplexityBot
+allowed_user_agents:
+  - ChatGPT-User
+  - Claude-User
+  - Perplexity-User
+  - Google-Agent
+restricted_agents:
+  - Amazonbot
+  - Applebot-Extended
+  - Bytespider
+  - CCBot
+  - ClaudeBot
+  - Diffbot
+  - Google-Extended
+  - GPTBot
+  - omgili
+  - anthropic-ai
+  - Claude-Web
+  - cohere-ai
+  - MistralAI-Training
+  - meta-externalagent
+  - GoogleOther
+  - Baiduspider
+  - PetalBot
+  - AwarioSmartBot
+  - AwarioRssBot
+  - Google-CloudVertexBot
+  - QualifiedBot
+  - Cotoyogi
+  - ICC-Crawler
+  - atlassian-bot
+  - FishBot
+  - BorderxBot
+  - NavuBot
+  - SemrushBot-SWA
+  - WARDBot
+  - magpie-crawler
+  - KimiBot
+  - CitibotSiteCrawler
+

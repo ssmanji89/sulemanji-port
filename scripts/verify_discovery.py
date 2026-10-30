@@ -5,6 +5,7 @@ import argparse
 import datetime as dt
 from html.parser import HTMLParser
 import json
+import re
 from pathlib import Path
 from urllib.parse import urlsplit
 import xml.etree.ElementTree as ET
@@ -100,6 +101,39 @@ def route(baseurl, permalink):
     return normalized_baseurl(baseurl) + (permalink if permalink.startswith("/") else "/" + permalink)
 
 
+def load_discovery_pages(source, baseurl):
+    try:
+        data = yaml.safe_load((source / "_data" / "discovery-pages.yml").read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as error:
+        raise ValueError(f"cannot read inventory: {error}") from error
+    if not isinstance(data, dict) or type(data.get("version")) is not int or data["version"] != 1:
+        raise ValueError("version must be 1")
+    if not isinstance(data.get("pages"), list):
+        raise ValueError("pages must be a list")
+    ids, paths, pages = set(), set(), []
+    excluded = {"/404.html"} | {f"/work-with-me/{name}" for name in ("personal", "priority", "quote", "thanks", "terms")}
+    for item in data["pages"]:
+        if not isinstance(item, dict) or set(item) != {"id", "class", "route"}:
+            raise ValueError("record keys must be id, class, and route")
+        ident, kind, path = item["id"], item["class"], item["route"]
+        if not isinstance(ident, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", ident):
+            raise ValueError(f"invalid id {ident!r}")
+        if ident in ids:
+            raise ValueError(f"duplicate id {ident}")
+        if kind not in ("core-profile", "service", "public-support", "case-study"):
+            raise ValueError(f"invalid class {kind!r}")
+        if not isinstance(path, str) or not path.startswith("/") or path.startswith("//") or urlsplit(path).query or urlsplit(path).fragment or urlsplit(path).path != path or "//" in path or any(part in (".", "..") for part in path.split("/")):
+            raise ValueError(f"invalid route {path!r}")
+        if path.rstrip("/") in excluded:
+            raise ValueError(f"excluded route {path}")
+        if path in paths:
+            raise ValueError(f"duplicate route {path}")
+        ids.add(ident)
+        paths.add(path)
+        pages.append({**item, "route": route(baseurl, path)})
+    return pages
+
+
 def publication_day(now=None):
     instant = now or dt.datetime.now(dt.timezone.utc)
     if instant.tzinfo is None:
@@ -145,6 +179,10 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
     site = Path(site).resolve()
     day = dt.date.fromisoformat(as_of) if isinstance(as_of, str) else as_of or publication_day()
     failures = []
+    try:
+        pages = load_discovery_pages(source, baseurl)
+    except ValueError as error:
+        return [f"discovery pages: {error}"], {"articles": 0, "feed": 0, "sitemap_articles": 0, "sitemap_pages": 0}
     dated, legacy = article_inventory(source, day)
     article_paths = [route(baseurl, item["permalink"]) for item in dated]
     legacy_paths = [route(baseurl, item["permalink"]) for item in legacy]
@@ -205,6 +243,7 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
             failures.append(f"feed: invalid XML: {error}")
 
     sitemap_article_urls = []
+    sitemap_page_urls = []
     sitemap_path = site / "sitemap.xml"
     if not sitemap_path.is_file():
         failures.append("sitemap: missing")
@@ -215,6 +254,10 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
             if len(urls) != len(set(urls)):
                 failures.append("sitemap: duplicate canonical URL")
             expected_article_urls = {origin.rstrip("/") + path for path in expected_all}
+            expected_page_urls = {origin.rstrip("/") + page["route"] for page in pages}
+            sitemap_page_urls = [url for url in urls if url in expected_page_urls]
+            for url in sorted(expected_page_urls - set(sitemap_page_urls)):
+                failures.append(f"sitemap: missing configured page {url}")
             sitemap_article_urls = [url for url in urls if url in expected_article_urls]
             permitted_origin = urlsplit(origin)
             notes_prefix = normalized_baseurl(baseurl) + "/notes/"
@@ -260,6 +303,7 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
         "articles": len(expected_all),
         "feed": len(feed_urls),
         "sitemap_articles": len(sitemap_article_urls),
+        "sitemap_pages": len(sitemap_page_urls),
     }
     return failures, counts
 
@@ -286,7 +330,7 @@ def main():
     print(
         "PASS discovery: "
         f"{counts['articles']} public articles, {counts['feed']} feed entries, "
-        f"{counts['sitemap_articles']} sitemap article URLs"
+        f"{counts['sitemap_articles']} sitemap article URLs, {counts['sitemap_pages']} sitemap page URLs"
     )
     return 0
 

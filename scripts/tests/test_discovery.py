@@ -31,6 +31,7 @@ class DiscoveryVerifierTest(unittest.TestCase):
         (self.source / "_data" / "writing.yml").write_text(
             "legacy_paths:\n  - notes/legacy.md\n", encoding="utf-8"
         )
+        self.inventory("  - {id: home, class: core-profile, route: /}\n  - {id: about, class: core-profile, route: /about}\n")
         (self.source / "_data" / "crawler-policy.json").write_text(
             json.dumps(
                 {
@@ -49,6 +50,11 @@ class DiscoveryVerifierTest(unittest.TestCase):
 
     def tearDown(self):
         self.tmp.cleanup()
+
+    def inventory(self, pages):
+        (self.source / "_data" / "discovery-pages.yml").write_text(
+            "version: 1\npages:\n" + pages, encoding="utf-8"
+        )
 
     def note(self, slug, published=False, published_on=None, legacy=False):
         lines = [
@@ -76,6 +82,8 @@ class DiscoveryVerifierTest(unittest.TestCase):
         (self.site / "sitemap.xml").write_text(
             '<?xml version="1.0"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
             f"<url><loc>{dated}</loc></url>"
+            "<url><loc>https://example.test/preview/</loc></url>"
+            "<url><loc>https://example.test/preview/about</loc></url>"
             "<url><loc>https://example.test/preview/notes/legacy</loc></url>"
             "</urlset>",
             encoding="utf-8",
@@ -105,7 +113,34 @@ class DiscoveryVerifierTest(unittest.TestCase):
             as_of="2026-10-30",
         )
         self.assertEqual([], failures)
-        self.assertEqual({"articles": 2, "feed": 1, "sitemap_articles": 2}, counts)
+        self.assertEqual({"articles": 2, "feed": 1, "sitemap_articles": 2, "sitemap_pages": 2}, counts)
+
+    def test_verifier_requires_configured_pages_with_baseurl(self):
+        self.write_outputs()
+        sitemap = self.site / "sitemap.xml"
+        full = sitemap.read_text(encoding="utf-8")
+        for url in ("https://example.test/preview/", "https://example.test/preview/about"):
+            sitemap.write_text(full.replace(f"<url><loc>{url}</loc></url>", ""), encoding="utf-8")
+            failures, counts = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
+            self.assertIn(f"sitemap: missing configured page {url}", failures)
+            self.assertEqual(1, counts["sitemap_pages"])
+        sitemap.write_text(full, encoding="utf-8")
+        failures, counts = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
+        self.assertEqual([], failures)
+        self.assertEqual(2, counts["sitemap_pages"])
+
+    def test_page_inventory_rejects_duplicates_unknown_fields_and_transaction_routes(self):
+        cases = [
+            ("  - {id: home, class: core-profile, route: /}\n  - {id: home, class: core-profile, route: /about}\n", "duplicate id"),
+            ("  - {id: home, class: core-profile, route: /}\n  - {id: about, class: core-profile, route: /}\n", "duplicate route"),
+            ("  - {id: home, class: core-profile, route: /, extra: true}\n", "record keys"),
+            ("  - {id: quote, class: service, route: /work-with-me/quote}\n", "excluded route"),
+        ]
+        for pages, expected in cases:
+            with self.subTest(expected=expected):
+                self.inventory(pages)
+                failures, _ = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
+                self.assertTrue(any(failure.startswith("discovery pages:") and expected in failure for failure in failures), failures)
 
     def test_publication_day_uses_chicago_before_local_midnight(self):
         verifier = load_verifier()

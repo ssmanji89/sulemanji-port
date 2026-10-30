@@ -55,6 +55,8 @@ class RenderedSignals(HTMLParser):
     def handle_starttag(self, tag, attrs):
         if tag == "head":
             self.in_head = True
+        elif tag == "body":
+            self.in_head = False
         values = dict(attrs)
         rel = (values.get("rel") or "").lower().split()
         if self.in_head and tag == "link" and "canonical" in rel:

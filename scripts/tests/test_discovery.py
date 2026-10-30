@@ -177,6 +177,19 @@ class DiscoveryVerifierTest(unittest.TestCase):
         failures, _ = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
         self.assertTrue(any("/about" in failure for failure in failures), failures)
 
+    def test_verifier_rejects_body_discovery_links_when_head_closes_implicitly(self):
+        self.write_outputs()
+        home = self.site / "index.html"
+        original = home.read_text(encoding="utf-8")
+        canonical = '<link rel="canonical" href="https://example.test/preview/">'
+        feed = '<link rel="alternate" type="application/atom+xml" href="https://example.test/preview/feed.xml">'
+        for signal, name in ((canonical, "canonical"), (feed, "feed")):
+            with self.subTest(signal=name):
+                html = original.replace(signal, "").replace("</head>", "").replace("<body>", "<body>" + signal)
+                home.write_text(html, encoding="utf-8")
+                failures, _ = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
+                self.assertTrue(any(name in failure for failure in failures), failures)
+
     def test_verifier_accepts_agreeing_catalog_with_baseurl_and_legacy_exception(self):
         verifier = load_verifier()
         self.assertIsNotNone(verifier, "discovery verifier must exist")

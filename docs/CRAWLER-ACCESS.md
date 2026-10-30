@@ -40,6 +40,19 @@ Run `scripts/smoke_discovery_live.py` with an honest client identity. The script
 canonical hosts, effective robots, Writing, Atom, sitemap, and a selected article. It reports
 denials and managed-policy conflicts. It does not spoof a crawler or bypass a challenge.
 
+```bash
+python3 scripts/smoke_discovery_live.py \
+  --base-url https://www.sulemanji.com \
+  --robots-origin https://sulemanji.com \
+  --article /notes/late-october-skywatching-binoculars-telescope \
+  --json
+```
+
+The existing private publisher calls this command during live publication verification when
+the script exists in its current repository state. It records `UNAVAILABLE` before this source
+change merges. After the script exists, a denial, policy conflict, or discovery mismatch blocks
+the live publication receipt.
+
 HTTP success does not prove crawler access, indexing, rankings, citations, or leads. Use Search
 Console and actual crawler or event evidence when available. Record those outcomes as unknown
 when that evidence is unavailable.

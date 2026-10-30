@@ -76,8 +76,9 @@ class DiscoveryVerifierTest(unittest.TestCase):
             output.parent.mkdir(parents=True, exist_ok=True)
             route = "/" if path == "index.html" else "/" + path.removesuffix(".html")
             output.write_text(
-                f'<link rel="canonical" href="https://example.test/preview{route}">'
-                '<link rel="alternate" type="application/atom+xml" href="https://example.test/preview/feed.xml">',
+                f'<html><head><link rel="canonical" href="https://example.test/preview{route}">'
+                '<link rel="alternate" type="application/atom+xml" href="https://example.test/preview/feed.xml">'
+                '</head><body></body></html>',
                 encoding="utf-8",
             )
         dated = "https://example.test/preview/notes/dated"
@@ -156,9 +157,25 @@ class DiscoveryVerifierTest(unittest.TestCase):
                 home.write_text(original + f'<a href="{link}">bad</a>', encoding="utf-8")
                 failures, _ = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
                 self.assertTrue(any("invalid link" in failure for failure in failures), failures)
-        home.write_text(original + '<a href="/preview/projects">Projects</a>', encoding="utf-8")
+
+    def test_verifier_rejects_discovery_links_only_in_body(self):
+        self.write_outputs()
+        home = self.site / "index.html"
+        original = home.read_text(encoding="utf-8")
+        canonical = '<link rel="canonical" href="https://example.test/preview/">'
+        feed = '<link rel="alternate" type="application/atom+xml" href="https://example.test/preview/feed.xml">'
+        for signal, name in ((canonical, "canonical"), (feed, "feed")):
+            with self.subTest(signal=name):
+                home.write_text(original.replace(signal, "").replace("<body>", "<body>" + signal), encoding="utf-8")
+                failures, _ = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
+                self.assertTrue(any(name in failure for failure in failures), failures)
+
+    def test_verifier_rejects_root_link_outside_baseurl(self):
+        self.write_outputs()
+        home = self.site / "index.html"
+        home.write_text(home.read_text(encoding="utf-8").replace("</body>", '<a href="/about">About</a></body>'), encoding="utf-8")
         failures, _ = load_verifier().verify(self.source, self.site, origin="https://example.test", baseurl="/preview", as_of="2026-10-30")
-        self.assertTrue(any("projects" in failure for failure in failures), failures)
+        self.assertTrue(any("/about" in failure for failure in failures), failures)
 
     def test_verifier_accepts_agreeing_catalog_with_baseurl_and_legacy_exception(self):
         verifier = load_verifier()

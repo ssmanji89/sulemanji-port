@@ -50,16 +50,23 @@ class RenderedSignals(HTMLParser):
         self.canonicals = []
         self.feeds = []
         self.local_links = []
+        self.in_head = False
 
     def handle_starttag(self, tag, attrs):
+        if tag == "head":
+            self.in_head = True
         values = dict(attrs)
         rel = (values.get("rel") or "").lower().split()
-        if tag == "link" and "canonical" in rel:
+        if self.in_head and tag == "link" and "canonical" in rel:
             self.canonicals.append(values.get("href"))
-        if tag == "link" and "alternate" in rel and (values.get("type") or "").lower() == "application/atom+xml":
+        if self.in_head and tag == "link" and "alternate" in rel and (values.get("type") or "").lower() == "application/atom+xml":
             self.feeds.append(values.get("href"))
         if tag == "a" and "href" in values:
             self.local_links.append(values["href"])
+
+    def handle_endtag(self, tag):
+        if tag == "head":
+            self.in_head = False
 
 
 def rendered_output(site: Path, route: str) -> Path | None:
@@ -244,7 +251,10 @@ def verify(source, site, *, origin, baseurl="", as_of=None):
             if parsed.scheme or parsed.netloc or not parsed.path.startswith("/"):
                 continue
             target = parsed.path
-            if base and (target == base or target.startswith(base + "/")):
+            if base and not (target == base or target.startswith(base + "/")):
+                failures.append(f"rendered: local target outside baseurl {link} on {page_route}")
+                continue
+            if base:
                 target = target[len(base):] or "/"
             if rendered_output(site, target) is None:
                 failures.append(f"rendered: missing local target {link} on {page_route}")

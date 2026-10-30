@@ -67,14 +67,16 @@ class UnsafeRedirect(RuntimeError):
 
 
 class ApprovedRedirectHandler(HTTPRedirectHandler):
-    def __init__(self, approved_hosts):
+    def __init__(self, approved_origins, *, reject_redirects=False):
         super().__init__()
-        self.approved_hosts = approved_hosts
+        self.approved_origins = approved_origins
+        self.reject_redirects = reject_redirects
 
     def redirect_request(self, request, file_pointer, code, message, headers, new_url):
         destination = urljoin(request.full_url, new_url)
-        parsed = urlsplit(destination)
-        if parsed.scheme != "https" or parsed.hostname not in self.approved_hosts:
+        if self.reject_redirects:
+            raise UnsafeRedirect("page redirect rejected")
+        if origin_of(destination) not in self.approved_origins:
             raise UnsafeRedirect("redirect outside approved origins")
         return super().redirect_request(request, file_pointer, code, message, headers, destination)
 
@@ -98,14 +100,14 @@ def load_policy(path=POLICY_PATH):
     return policy
 
 
-def fetch_url(url, user_agent=USER_AGENT, *, approved_hosts=None):
+def fetch_url(url, user_agent=USER_AGENT, *, approved_origins=None, reject_redirects=False):
     request = Request(
         url,
         headers={"User-Agent": user_agent, "Cache-Control": "no-cache"},
     )
     handlers = [HTTPSHandler(context=ssl.create_default_context())]
-    if approved_hosts is not None:
-        handlers.append(ApprovedRedirectHandler(set(approved_hosts)))
+    if approved_origins is not None:
+        handlers.append(ApprovedRedirectHandler(set(approved_origins), reject_redirects=reject_redirects))
     opener = build_opener(*handlers)
     try:
         with opener.open(request, timeout=30) as response:
@@ -196,19 +198,26 @@ def managed_policy_conflicts(robots_text, label, required_paths, policy):
     return conflicts
 
 
-def safe_final_url(response, approved_hosts):
-    parsed = urlsplit(response.url)
-    return parsed.scheme == "https" and parsed.hostname in approved_hosts
+def origin_of(url):
+    try:
+        parsed = urlsplit(url)
+        if parsed.scheme != "https" or not parsed.hostname:
+            return None
+        return (parsed.scheme, parsed.hostname, parsed.port or 443)
+    except ValueError:
+        return None
+
+
+def safe_final_url(response, approved_origins):
+    origin = origin_of(response.url)
+    return origin is not None and origin in approved_origins
 
 
 def check_live(base_url, robots_origin, articles, *, pages=(), fetcher=None, policy=None):
     base_url = base_url.rstrip("/")
     robots_origin = robots_origin.rstrip("/")
-    origins = {urlsplit(base_url).hostname, urlsplit(robots_origin).hostname}
+    origins = {origin for url in (base_url, robots_origin) if (origin := origin_of(url)) is not None}
     policy = policy or load_policy()
-    if fetcher is None:
-        def fetcher(url, user_agent):
-            return fetch_url(url, user_agent, approved_hosts=origins)
     failures = []
     conflicts = []
     observations = []
@@ -217,7 +226,10 @@ def check_live(base_url, robots_origin, articles, *, pages=(), fetcher=None, pol
 
     def fetch(label, url):
         try:
-            response = fetcher(url, USER_AGENT)
+            if fetcher is None:
+                response = fetch_url(url, USER_AGENT, approved_origins=origins, reject_redirects=label.startswith("page "))
+            else:
+                response = fetcher(url, USER_AGENT)
         except Exception as error:  # Network failures become bounded smoke evidence.
             failures.append(f"{label}: request failed: {error}")
             return None

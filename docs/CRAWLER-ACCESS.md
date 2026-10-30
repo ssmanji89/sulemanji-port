@@ -43,6 +43,8 @@ Use repeatable `--page` arguments to monitor configured pages. The monitor check
 permission before each request. It requires HTTP 200, an approved final origin, an exact
 canonical URL, no `noindex` directive, and a `main` element with id `main`. It also requires
 each configured page URL exactly once in the sitemap.
+Configured page redirects are rejected before the monitor requests their destinations.
+Approved origins include the HTTPS scheme, hostname, and port.
 
 ```bash
 python3 scripts/smoke_discovery_live.py \

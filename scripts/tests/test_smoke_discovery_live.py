@@ -7,11 +7,35 @@ import tempfile
 import threading
 import unittest
 from unittest.mock import patch
+from urllib.request import HTTPRedirectHandler, Request
 
-from scripts.smoke_discovery_live import Response, USER_AGENT, check_live, fetch_url, load_policy
+from scripts.smoke_discovery_live import ApprovedRedirectHandler, Response, USER_AGENT, check_live, fetch_url, load_policy, safe_final_url
 
 
 class LiveDiscoverySmokeTests(unittest.TestCase):
+    def test_page_redirect_to_disallowed_path_is_not_followed(self):
+        origin = ("https", "www.sulemanji.com", 443)
+        handler = ApprovedRedirectHandler({origin}, reject_redirects=True)
+        with patch.object(HTTPRedirectHandler, "redirect_request") as follow:
+            with self.assertRaisesRegex(RuntimeError, "redirect"):
+                handler.redirect_request(Request("https://www.sulemanji.com/about"), None, 302, "Found", {}, "https://www.sulemanji.com/private")
+            follow.assert_not_called()
+
+    def test_other_port_is_not_an_approved_origin(self):
+        responses = self.response_map()
+        url = "https://www.sulemanji.com/notes/example"
+        responses[url] = Response(200, "https://www.sulemanji.com:8443/notes/example", responses[url].body, {})
+        result = check_live("https://www.sulemanji.com", "https://sulemanji.com", ["/notes/example"], fetcher=lambda url, _agent: responses[url])
+        self.assertIn("redirected outside approved origins", " ".join(result["failures"]))
+        origin = ("https", "www.sulemanji.com", 443)
+        response = Response(200, "https://www.sulemanji.com:8443/about", "", {})
+        self.assertFalse(safe_final_url(response, {origin}))
+        handler = ApprovedRedirectHandler({origin})
+        with patch.object(HTTPRedirectHandler, "redirect_request") as follow:
+            with self.assertRaisesRegex(RuntimeError, "redirect outside approved origins"):
+                handler.redirect_request(Request("https://www.sulemanji.com/about"), None, 302, "Found", {}, response.url)
+            follow.assert_not_called()
+
     def test_configured_pages_are_requested_and_identity_checked(self):
         origin = "https://www.sulemanji.com"
         pages = ["/", "/about", "/work-with-me"]
@@ -74,7 +98,7 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
             def do_GET(self):
                 requested.append(self.path)
                 self.send_response(302)
-                self.send_header("Location", f"http://localhost:{self.server.server_port}/target")
+                self.send_header("Location", "https://www.sulemanji.com/private")
                 self.end_headers()
 
             def log_message(self, _format, *_args):
@@ -84,11 +108,13 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         responses = self.response_map()
+        robots_url = "https://www.sulemanji.com/robots.txt"
+        responses[robots_url] = Response(200, robots_url, responses[robots_url].body + "\nUser-agent: SulemanjiDiscoveryMonitor\nDisallow: /private\n", {})
         original_fetch = fetch_url
 
-        def transport(url, user_agent, *, approved_hosts):
+        def transport(url, user_agent, *, approved_origins, reject_redirects=False):
             if url.endswith("/about"):
-                return original_fetch(f"http://127.0.0.1:{server.server_port}/about", user_agent, approved_hosts={"127.0.0.1"})
+                return original_fetch(f"http://127.0.0.1:{server.server_port}/about", user_agent, approved_origins=approved_origins, reject_redirects=reject_redirects)
             return responses[url]
 
         try:
@@ -98,7 +124,7 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
             server.shutdown()
             thread.join(timeout=2)
             server.server_close()
-        self.assertIn("redirect outside approved origins", " ".join(result["failures"]))
+        self.assertIn("page redirect rejected", " ".join(result["failures"]))
         self.assertEqual(["/about"], requested)
 
     def test_monitor_starts_without_third_party_python_packages(self):
@@ -425,7 +451,7 @@ class LiveDiscoverySmokeTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "redirect outside approved origins"):
                 fetch_url(
                     f"http://127.0.0.1:{server.server_port}/start",
-                    approved_hosts={"127.0.0.1"},
+                    approved_origins={("https", "127.0.0.1", 443)},
                 )
         finally:
             server.shutdown()

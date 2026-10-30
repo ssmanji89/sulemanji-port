@@ -1,6 +1,9 @@
 name: Deploy Jekyll site to GitHub Pages
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -8,12 +11,10 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
-# Allow one concurrent deployment, don't cancel in-progress runs
+# Production runs share one lock. Pull requests validate independently.
 concurrency:
-  group: "pages"
+  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages-production' }}
   cancel-in-progress: false
 
 jobs:
@@ -36,9 +37,16 @@ jobs:
           cache: npm
           cache-dependency-path: worker/package-lock.json
 
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install discovery dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes fonts-dejavu-core
+          python -m pip install --requirement requirements-seo.txt
 
       - name: Install Worker dependencies
         run: npm ci --prefix worker
@@ -46,10 +54,30 @@ jobs:
       - name: Check Worker
         run: npm run check --prefix worker
 
+      - name: Verify Writing source
+        run: bundle exec ruby scripts/verify_writing.rb --source-only
+
+      - name: Verify generated article images
+        run: python scripts/generate_article_images.py --check
+
       - name: Build with Jekyll
-        run: bundle exec jekyll build --baseurl "${{ steps.pages.outputs.base_path }}"
+        run: |
+          bundle exec jekyll clean
+          bundle exec jekyll build
         env:
           JEKYLL_ENV: production
+
+      - name: Verify Writing output
+        run: bundle exec ruby scripts/verify_writing.rb
+
+      - name: Verify discovery output
+        run: python scripts/verify_discovery.py
+
+      - name: Run Writing tests
+        run: bundle exec ruby -I scripts/tests -e 'Dir["scripts/tests/test_*.rb"].sort.each { |path| require_relative path }'
+
+      - name: Run discovery tests
+        run: python -m unittest discover -s scripts/tests -p 'test_*.py' -v
 
       - name: Verify Work With Me content
         run: python3 scripts/verify_work_with_me.py
@@ -60,12 +88,23 @@ jobs:
       - name: Verify public safety
         run: python3 scripts/verify_public_safety.py
 
+      - name: Verify portfolio review
+        run: python3 scripts/verify_portfolio_review.py
+
+      - name: Verify Priority Discovery plan
+        run: python3 scripts/verify_priority_discovery_plan.py
+
       - name: Upload artifact
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/upload-pages-artifact@v3
 
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

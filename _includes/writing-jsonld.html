@@ -1,8 +1,9 @@
 {% assign publication_type = "BlogPosting" %}
-{% if include.article.publication_family == "professional-analysis" or include.article.publication_family == "technical-guide" %}
+{% if include.article.publication_family == "professional-analysis" or include.article.publication_family == "technical-guide" or include.article.article_type == "analysis" or include.article.article_type == "technical-guide" %}
   {% assign publication_type = "Article" %}
 {% endif %}
 {% assign publication_author = '/#person' | absolute_url %}
+{% assign publication_image = include.article.image.path | absolute_url %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -11,8 +12,16 @@
   "url": {{ include.article.url | absolute_url | jsonify }},
   "headline": {{ include.article.title | jsonify }},
   "description": {{ include.article.description | jsonify }},
+  "image": {
+    "@type": "ImageObject",
+    "url": {{ publication_image | jsonify }},
+    "width": {{ include.article.image.width | jsonify }},
+    "height": {{ include.article.image.height | jsonify }}
+  },
+  {% unless include.article.writing_legacy %}
   "datePublished": {{ include.article.published_on | jsonify }},
   "dateModified": {{ include.article.updated_on | default: include.article.published_on | jsonify }},
+  {% endunless %}
   "author": { "@id": {{ publication_author | jsonify }} }
 }
 </script>

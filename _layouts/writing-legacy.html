@@ -1,0 +1,14 @@
+---
+layout: default
+---
+<article data-writing-article data-writing-legacy>
+  <div data-writing-body>
+    {{ content }}
+  </div>
+  {% include writing-author.html %}
+  {% include article-context.html context=page.article_context %}
+  {% include writing-jsonld.html article=page %}
+  <footer>
+    <p><a data-writing-back href="{{ '/writing' | relative_url | escape }}">More writing</a></p>
+  </footer>
+</article>

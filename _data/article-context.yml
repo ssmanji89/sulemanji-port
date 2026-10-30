@@ -1,0 +1,97 @@
+version: 1
+routes:
+  /notes/ai-agent-identity-authorization:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/ai-application-scanning-pilot:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/ai-security-patch-acceptance:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/ai-vulnerability-triage-evidence:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/cyber-risk-register-executive-decision:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/dependency-reachability-priority-signal:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/digital-sovereignty-workload-decision:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/dotnet-8-end-of-support-readiness:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/emergency-patching-service-decision:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/github-actions-lockfile-trust-decision:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/github-ssh-change-client-test:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/github-webhook-ip-range-authentication:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/package-version-artifact-identity:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/post-quantum-migration-dependency-map:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/seasonal-outlook-test-calendar:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/work-outlasts-agent-session:
+    proof_url: /case-studies/agentic-msp-delivery
+    proof_label: MSP service delivery using agentic LLMs
+    proof_status: case study
+    cta_label: Discuss a business engagement
+  /notes/ews-reprieve-migration-evidence:
+    proof_url: /case-studies/microsoft-365-acquisition-integration
+    proof_label: Microsoft 365 acquisition integration
+    proof_status: planning note
+    cta_label: Discuss a Microsoft 365 engagement
+  /notes/intune-policy-verification:
+    proof_url: /case-studies/microsoft-365-acquisition-integration
+    proof_label: Microsoft 365 acquisition integration
+    proof_status: planning note
+    cta_label: Discuss a Microsoft 365 engagement
+  /notes/targeted-release-retirement-validation-ring:
+    proof_url: /case-studies/microsoft-365-acquisition-integration
+    proof_label: Microsoft 365 acquisition integration
+    proof_status: planning note
+    cta_label: Discuss a Microsoft 365 engagement

@@ -56,7 +56,8 @@ Required fields for schema-v2 Publications:
 - one to four unique `topics`
 
 `published_on` is required for intended-public articles. `updated_on` is optional.
-No other front-matter fields are accepted in schema v2. Descriptive values are
+`social_image` and boolean `noindex` are optional. No other front-matter fields
+are accepted in schema v2. Descriptive values are
 plain text without HTML tags or Liquid directives. Executable Liquid, raw HTML,
 and Kramdown inline/block attribute-list syntax (`{: ...}`) are forbidden in new
 article bodies; use ordinary Markdown syntax instead. Literal Liquid examples must
@@ -75,10 +76,13 @@ history even when a page has `published: false`.
 
 `published_on` and `updated_on` are quoted ISO `YYYY-MM-DD` strings. Never
 substitute generation, research, commit, or review time for publication time.
-Intended-public articles cannot be future-dated. Updates cannot precede publication
-or exceed the validation date. Unpublished drafts have null or absent publication
-dates. The source gate defaults to the current America/Chicago date; `--as-of`
-freezes a validation date.
+Future-dated articles remain excluded from Writing, feed, and sitemap discovery
+until their publication date. The build marks any rendered future route as
+`noindex,follow`. An article with `noindex: true` remains excluded and receives the
+same rendered robots metadata. Updates cannot precede publication. Updates for an
+active article cannot exceed the validation date. Unpublished drafts have null or
+absent publication dates. The source gate defaults to the current America/Chicago
+date; `--as-of` freezes a validation date.
 
 Allowed labels live in `_data/writing.yml`. Expanding the vocabulary is a reviewed
 data change, not a reason to introduce archives or filtering UI.

@@ -5,7 +5,7 @@ title: A locked ChatGPT conversation is not a compliance boundary
 description: Separate locked-chat privacy from retention, compliance access, related data, and recovery before employees use the feature.
 permalink: /notes/chatgpt-locked-chats-compliance-boundary
 published: true
-published_on: "2026-10-31"
+published_on: "2026-11-01"
 publication_family: technical-guide
 commercial_intent: none
 disclosure_required: false

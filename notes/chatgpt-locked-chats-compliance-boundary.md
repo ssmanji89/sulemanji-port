@@ -5,7 +5,7 @@ title: A locked ChatGPT conversation is not a compliance boundary
 description: Separate locked-chat privacy from retention, compliance access, related data, and recovery before employees use the feature.
 permalink: /notes/chatgpt-locked-chats-compliance-boundary
 published: true
-published_on: "2026-11-01"
+published_on: "2026-11-02"
 publication_family: technical-guide
 commercial_intent: none
 disclosure_required: false
@@ -19,7 +19,7 @@ topics:
 
 Locking a ChatGPT conversation can protect it from casual access in the normal interface, but it does not make the conversation private from an organization that manages the workspace. An IT leader should treat the lock as a user-interface privacy control, then evaluate retention, compliance access, files, memory, shared links, and account recovery as separate boundaries.
 
-I work as a Sr. Services Engineer at Viyu Network Solutions. I developed this guide with agent-assisted research, then checked it against the public OpenAI sources linked below. It does not describe Viyu systems, products, customers, controls, vendors, architecture, or operating practices.
+I work as a Sr. Services Engineer at Viyu Network Solutions. I developed this guide through agent-assisted research checked against the public OpenAI sources linked below. It does not describe Viyu systems, products, customers, controls, vendors, architecture, or operating practices.
 
 The question for an Enterprise or Edu workspace is not whether a four-digit PIN works. The useful question is: **what must the organization establish before employees use locked chats for work?** My answer is a short control statement, a test of each separate boundary, and user guidance that never promises secrecy the feature does not provide.
 
@@ -94,4 +94,4 @@ The feature can still be useful under those limits. It gives a user a deliberate
 
 Adopt the feature when that narrow benefit solves a real problem. Pair it with a clear data-handling rule, role-specific compliance access, a recovery warning, and a boundary test. The result is not a hidden organizational record. It is a saved conversation with less casual visibility and with the rest of the governance model still attached.
 
-*Primary OpenAI sources reviewed October 31, 2026. Locked chats are rolling out gradually, and OpenAI can change availability, supported clients, data behavior, and administrative controls. Recheck the current documentation before rollout.*
+*Primary OpenAI sources reviewed November 2, 2026. Locked chats are rolling out gradually, and OpenAI can change availability, supported clients, data behavior, and administrative controls. Recheck the current documentation before rollout.*

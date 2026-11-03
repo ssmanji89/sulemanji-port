@@ -92,7 +92,7 @@ def render_card(title, author, output):
     image.save(output, format="PNG", optimize=False, compress_level=9)
 
 
-def generate(source, *, as_of, check=False):
+def generate(source, *, as_of, check=False, write_missing=False):
     source = Path(source).resolve()
     output_dir = source / "assets" / "images" / "articles"
     dated, legacy = article_inventory(source, as_of)
@@ -112,6 +112,8 @@ def generate(source, *, as_of, check=False):
                 continue
             name = route.rsplit("/", 1)[-1] + "-social.png"
             target = output_dir / name
+            if write_missing and target.is_file():
+                continue
             generated = Path(temporary) / name if check else target
             render_card(article["title"], "Suleman Manji", generated)
             if check and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
@@ -123,9 +125,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument("--as-of", type=dt.date.fromisoformat, default=publication_day())
-    parser.add_argument("--check", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--check", action="store_true")
+    mode.add_argument("--write-missing", action="store_true")
     args = parser.parse_args()
-    failures = generate(args.source, as_of=args.as_of, check=args.check)
+    failures = generate(args.source, as_of=args.as_of, check=args.check, write_missing=args.write_missing)
     if failures:
         print("\n".join("FAIL " + failure for failure in failures))
         return 1

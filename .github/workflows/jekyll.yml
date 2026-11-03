@@ -57,6 +57,9 @@ jobs:
       - name: Verify Writing source
         run: bundle exec ruby scripts/verify_writing.rb --source-only
 
+      - name: Generate missing article images
+        run: python scripts/generate_article_images.py --write-missing
+
       - name: Verify generated article images
         run: python scripts/generate_article_images.py --check
 

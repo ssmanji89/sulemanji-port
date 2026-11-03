@@ -1,13 +1,32 @@
+import datetime as dt
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image
 
-from scripts.generate_article_images import render_card, validate_custom_image
+from scripts.generate_article_images import generate, render_card, validate_custom_image
 
 
 class SocialCardTests(unittest.TestCase):
+    def test_write_missing_creates_only_absent_cards(self):
+        article = {"permalink": "/notes/example", "title": "Example", "social_image": None}
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            target = source / "assets" / "images" / "articles" / "example-social.png"
+            def fake_render(title, author, output):
+                output = Path(output)
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_bytes(b"generated")
+            with patch("scripts.generate_article_images.article_inventory", return_value=([article], [])), patch("scripts.generate_article_images.render_card", side_effect=fake_render) as render:
+                generate(source, as_of=dt.date(2026, 11, 2), write_missing=True)
+                self.assertEqual(b"generated", target.read_bytes())
+                target.write_bytes(b"preserve existing")
+                generate(source, as_of=dt.date(2026, 11, 2), write_missing=True)
+                self.assertEqual(b"preserve existing", target.read_bytes())
+                self.assertEqual(1, render.call_count)
+
     def test_card_is_deterministic_1200_by_630(self):
         with tempfile.TemporaryDirectory() as temp:
             first = Path(temp) / "first.png"

@@ -60,6 +60,26 @@ jobs:
       - name: Verify generated article images
         run: python scripts/generate_article_images.py --check
 
+      - name: Capture generated card for recovery
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from scripts.generate_article_images import render_card
+          from scripts.verify_discovery import frontmatter
+
+          article = frontmatter(Path("notes/chatgpt-locked-chats-compliance-boundary.md"))
+          render_card(article["title"], "Suleman Manji", Path("/tmp/chatgpt-locked-chats-compliance-boundary-social.png"))
+          PY
+
+      - name: Upload generated card for recovery
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chatgpt-locked-chats-social-card
+          path: /tmp/chatgpt-locked-chats-compliance-boundary-social.png
+          if-no-files-found: error
+
       - name: Build with Jekyll
         run: |
           bundle exec jekyll clean

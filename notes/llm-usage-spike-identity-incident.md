@@ -2,7 +2,7 @@
 writing_schema: 2
 layout: writing-article
 title: Treat an LLM usage spike as a possible identity incident, not only a billing anomaly
-description: Treat unauthorized model use as cloud identity compromise, then verify containment, persistence removal, and cost recovery separately.
+description: Treat unauthorized model use as evidence of possible cloud identity compromise, then verify containment, persistence removal, and cost recovery separately.
 permalink: /notes/llm-usage-spike-identity-incident
 published: true
 published_on: "2026-11-02"

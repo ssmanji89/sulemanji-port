@@ -5,7 +5,7 @@ title: "Build an AI Kill Switch with Defender or Sophos and Agentic Ops"
 description: "Combine endpoint response, identity controls, and a bounded operations workflow to stop a misbehaving AI agent with tools your organization already runs."
 permalink: /notes/build-an-ai-kill-switch-defender-sophos-agentic-ops
 published: true
-published_on: 2026-11-03
+published_on: "2026-11-03"
 publication_family: technical-guide
 commercial_intent: none
 disclosure_required: false
@@ -40,7 +40,7 @@ One product may cover several controls. Most organizations will need more than o
 | --- | --- | --- |
 | Stop execution | Defender for Endpoint Live Response can remediate supported processes. Sophos Live Response supports endpoint investigation and remediation; Sophos MDR lists process termination for supported Sophos Agent and Sophos Sensor deployments. | Resolve the endpoint and process, choose an approved response, and check whether the process stopped or restarted. |
 | Contain the host | Defender for Endpoint can isolate a device through its portal or API. Sophos Central can isolate one endpoint or submit a bulk isolation request through its Endpoint API. | Select the narrow target, obtain approval when impact is high, and confirm each device's final isolation state. |
-| Revoke identity | Microsoft Entra can disable an application service principal or revoke a user's sign-in sessions. Sophos Fusion can block Microsoft 365 sign-in or revoke sessions for configured MDR customers. These are native actions for different supported identity types and configurations. | Coordinate the approved native action for the affected identity, then verify the final state in the enforcing system. |
+| Revoke identity | Microsoft Entra can disable an application service principal or revoke a user's sign-in sessions. Sophos Fusion can block Microsoft 365 sign-in or revoke sessions for configured MDR customers. | Coordinate the selected native identity action, then verify its final state in the enforcing system. |
 | Block routes | Use the AI gateway, API controls, proxy, firewall, or application policy that governs model and tool traffic. | Identify alternate routes and coordinate the smallest change that blocks them. |
 | Preserve control | Keep response actions in the endpoint, identity, network, or cloud product that owns each control. | Collect evidence, enforce approval boundaries, monitor action status, and retain the recovery record. |
 

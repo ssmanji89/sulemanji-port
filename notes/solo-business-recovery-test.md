@@ -11,6 +11,11 @@ commercial_intent: none
 disclosure_required: false
 time_horizon: durable
 reader: it-leader
+social_image:
+  path: /assets/images/articles/solo-business-recovery-test-social.png
+  width: 1200
+  height: 630
+  alt: "Social card for A Solo Business Needs a Recovery Test, Not a Tool Stack"
 topics:
   - service-operations
   - identity

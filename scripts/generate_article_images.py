@@ -5,6 +5,7 @@ import argparse
 import datetime as dt
 import os
 from pathlib import Path
+import shutil
 import tempfile
 
 from PIL import Image, ImageDraw, ImageFont
@@ -112,11 +113,12 @@ def generate(source, *, as_of, check=False, write_missing=False):
                 continue
             name = route.rsplit("/", 1)[-1] + "-social.png"
             target = output_dir / name
-            if write_missing and target.is_file():
-                continue
-            generated = Path(temporary) / name if check else target
+            generated = Path(temporary) / name if check or write_missing else target
             render_card(article["title"], "Suleman Manji", generated)
-            if check and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
+            if write_missing and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(generated, target)
+            elif check and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
                 failures.append(f"{route}: generated social card is stale or missing")
     return failures
 

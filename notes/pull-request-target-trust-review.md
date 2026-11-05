@@ -5,7 +5,7 @@ title: Do not allow pull_request_target before a trust review
 description: Review each pull_request_target workflow before GitHub blocks the trigger, then allow only the narrow paths that need privileged access.
 permalink: /notes/pull-request-target-trust-review
 published: true
-published_on: "2026-11-03"
+published_on: "2026-11-04"
 publication_family: technical-guide
 commercial_intent: none
 disclosure_required: false
@@ -19,7 +19,7 @@ topics:
 
 GitHub will block `pull_request_target` by default in affected public repositories on December 2, 2026. An architect should not answer that deadline with a broad allow rule. Use the warning period to prove which workflows need privileged pull-request access, remove the trigger where they do not, and allow only a reviewed workflow path with a bounded job.
 
-I work as a Sr. Services Engineer at Viyu Network Solutions. I developed this guide with agent-assisted research, then checked it against the public GitHub sources linked below. It does not describe Viyu systems, products, customers, controls, vendors, architecture, or operating practices.
+I work as a Sr. Services Engineer at Viyu Network Solutions. This guide uses agent-assisted research and the public GitHub sources linked below. It does not describe Viyu systems, products, customers, controls, vendors, architecture, or operating practices.
 
 The practical question is: **when should a public repository allow `pull_request_target` after GitHub's default block takes effect?** My answer is only when the workflow needs base-repository authority, never executes contributor-controlled code or data as instructions, and has a written reason that survives review. A passing workflow is not evidence that this trust boundary is sound.
 

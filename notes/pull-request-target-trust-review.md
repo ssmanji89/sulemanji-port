@@ -5,7 +5,7 @@ title: Do not allow pull_request_target before a trust review
 description: Review each pull_request_target workflow before GitHub blocks the trigger, then allow only the narrow paths that need privileged access.
 permalink: /notes/pull-request-target-trust-review
 published: true
-published_on: "2026-11-04"
+published_on: "2026-11-05"
 publication_family: technical-guide
 commercial_intent: none
 disclosure_required: false

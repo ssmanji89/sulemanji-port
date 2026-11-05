@@ -10,7 +10,7 @@ from scripts.generate_article_images import generate, render_card, validate_cust
 
 
 class SocialCardTests(unittest.TestCase):
-    def test_write_missing_creates_only_absent_cards(self):
+    def test_write_missing_creates_absent_and_refreshes_stale_cards(self):
         article = {"permalink": "/notes/example", "title": "Example", "social_image": None}
         with tempfile.TemporaryDirectory() as temp:
             source = Path(temp)
@@ -22,10 +22,10 @@ class SocialCardTests(unittest.TestCase):
             with patch("scripts.generate_article_images.article_inventory", return_value=([article], [])), patch("scripts.generate_article_images.render_card", side_effect=fake_render) as render:
                 generate(source, as_of=dt.date(2026, 11, 2), write_missing=True)
                 self.assertEqual(b"generated", target.read_bytes())
-                target.write_bytes(b"preserve existing")
+                target.write_bytes(b"stale")
                 generate(source, as_of=dt.date(2026, 11, 2), write_missing=True)
-                self.assertEqual(b"preserve existing", target.read_bytes())
-                self.assertEqual(1, render.call_count)
+                self.assertEqual(b"generated", target.read_bytes())
+                self.assertEqual(2, render.call_count)
 
     def test_card_is_deterministic_1200_by_630(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -26,7 +26,7 @@ This article summarizes public Microsoft documentation and LazyAdmin’s practit
 
 A monthly notice may help users understand why Outlook looks different. In a shared desktop environment, it may also interrupt a task or prompt support requests from users who did not expect a change. That support impact is an operational judgment, not a Microsoft claim.
 
-For help desks, predictable communication can matter more than suppressing the dialog for everyone. Decide how users will learn about expected interface changes and where they should report unexpected ones. For a related guide to staged Microsoft 365 rollout validation, see [rebuilding the Targeted Release validation ring](/notes/targeted-release-retirement-validation-ring/).
+For help desks, predictable communication can matter more than suppressing the dialog for everyone. Decide how users will learn about expected interface changes and where they should report unexpected ones. For a related guide to staged Microsoft 365 rollout validation, see [rebuilding the Targeted Release validation ring](/notes/targeted-release-retirement-validation-ring).
 
 ## What does the suppression policy control?
 
@@ -39,7 +39,7 @@ Microsoft documents this per-user registry value:
 
 The value hides the What’s New dialog and its ribbon button. It does **not** stop the visual refresh. Because the setting is under `HKEY_CURRENT_USER`, validate it with the user profiles and policy method in your RDS environment before broad deployment. ([Microsoft’s configuration details](https://learn.microsoft.com/en-us/microsoft-365-apps/outlook/user-interface/whats-new-classic-outlook-windows))
 
-For a separate example of checking assigned policy state, see [the Intune policy verification guide](/notes/intune-policy-verification/). Its checks apply to Intune, not to Outlook’s registry policy.
+For a separate example of checking assigned policy state, see [the Intune policy verification guide](/notes/intune-policy-verification). Its checks apply to Intune, not to Outlook’s registry policy.
 
 ## What should the help desk do next?
 

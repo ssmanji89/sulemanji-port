@@ -49,7 +49,7 @@ def _public_https(url: object) -> bool:
         return False
     try:
         p = urlsplit(url)
-        if p.scheme != "https" or not p.hostname or p.username or p.password or p.port not in (None, 443):
+        if p.scheme != "https" or not p.hostname or p.username or p.password or p.port not in (None, 443) or p.query:
             return False
         h = p.hostname.lower()
         if h in {"localhost", "localhost.localdomain"} or h.endswith((".local", ".lan", ".internal", ".corp", ".test")):
@@ -100,12 +100,12 @@ def validate_manifest(data: object) -> list[str]:
                 urls.add(url)
             if source.get("visibility") != "public" or source.get("approved_for_public") is not True:
                 errors.append(f"{label} must explicitly be public and approved")
-            if source.get("asset_rights") not in ALLOWED_RIGHTS:
+            if not isinstance(source.get("asset_rights"), str) or source["asset_rights"] not in ALLOWED_RIGHTS:
                 errors.append(f"{label}.asset_rights must be an allowed rights class")
             digest = source.get("evidence_digest")
             if digest is not None and (not isinstance(digest, str) or not DIGEST_PATTERN.fullmatch(digest)):
                 errors.append(f"{label}.evidence_digest must be null or SHA-256 hex")
-    if isinstance(article, dict) and article.get("url") not in urls:
+    if isinstance(article, dict) and (not isinstance(article.get("url"), str) or article["url"] not in urls):
         errors.append("source_article.url must also be listed in sources")
 
     claims = data.get("claims")
@@ -119,7 +119,7 @@ def validate_manifest(data: object) -> list[str]:
                 continue
             if not isinstance(claim.get("text"), str) or not 8 <= len(claim["text"].strip()) <= 320:
                 errors.append(f"{label}.text must be 8–320 characters")
-            if claim.get("kind") not in ALLOWED_CLAIMS:
+            if not isinstance(claim.get("kind"), str) or claim["kind"] not in ALLOWED_CLAIMS:
                 errors.append(f"{label}.kind must be sourced_fact, interpretation, or hypothesis")
             refs = claim.get("source_urls")
             if not isinstance(refs, list) or not refs or any(not isinstance(u, str) or u not in urls for u in refs):
@@ -145,7 +145,7 @@ def validate_manifest(data: object) -> list[str]:
             if not isinstance(fmt, dict):
                 continue
             name = fmt.get("id")
-            if name not in FORMATS:
+            if not isinstance(name, str) or name not in FORMATS:
                 errors.append(f"{label}.id must be explainer or short")
                 continue
             if name in observed:

@@ -1,4 +1,3 @@
-import copy
 import json
 import subprocess
 import sys
@@ -98,6 +97,24 @@ class FieldNotesManifestTests(unittest.TestCase):
     def test_article_must_be_published(self):
         self.data["source_article"]["published"] = False
         self.assertRejected("must be marked published")
+
+    def test_malformed_field_types_reject_without_crashing(self):
+        import copy
+        for section, index, field, value in (
+            ("sources", 0, "asset_rights", []),
+            ("claims", 0, "kind", {}),
+            ("formats", 0, "id", []),
+        ):
+            with self.subTest(section=section, field=field):
+                data = copy.deepcopy(self.data)
+                data[section][index][field] = value
+                self.assertTrue(validate_manifest(data))
+        self.data["source_article"]["url"] = []
+        self.assertRejected("source_article.url")
+
+    def test_query_strings_not_permitted_in_source_urls(self):
+        self.data["sources"][1]["url"] = "https://example.com/path?token=secret"
+        self.assertRejected("public HTTPS hostname")
 
     def test_cli_reports_preflight_only(self):
         process = subprocess.run([sys.executable, str(ROOT / "scripts" / "msp_field_notes.py"), str(FIXTURE)], capture_output=True, text=True, check=False)

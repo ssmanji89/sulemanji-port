@@ -18,7 +18,7 @@ topics:
 
 GitHub's stateless installation tokens change the shape of a credential, not the decisions that grant or stop access. Platform architects need one runbook for format compatibility and a separate runbook for credential response. Combining them can produce an integration that accepts the new token while remaining unclear about how to contain a compromised key or installation.
 
-I work as a Sr. Services Engineer at Viyu Network Solutions. I developed this guide with agent-assisted research and checked its factual core against the public GitHub sources linked below. It does not describe Viyu systems, products, customers, controls, vendors, architecture, or operating practices.
+I work as a Sr. Services Engineer at Viyu Network Solutions. This guide uses agent-assisted research. Its factual core was checked against the public GitHub sources linked below. It does not describe Viyu systems, products, customers, controls, vendors, architecture, or operating practices.
 
 The practical question is: **what should a platform architect change after GitHub's stateless installation-token rollout?** My answer is to test every interface that carries the longer token, then rehearse credential response by incident layer. The new format creates a migration deadline. It does not merge token revocation, private-key rotation, and installation containment into one action.
 

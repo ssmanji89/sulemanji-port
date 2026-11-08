@@ -34,7 +34,7 @@ The useful question is not whether a person can spot every synthetic voice or im
 
 ## Why is deepfake detection not the complete control?
 
-Detection can produce a useful warning, but it should not become the authority to release funds. A detector can miss manipulated media, flag authentic media, or lose accuracy as generation methods change. None of those outcomes proves whether a real executive had authority to approve the specific recipient, account, amount, and purpose.
+Detection can produce a useful warning, but it should not become the authority to release funds. A result about whether the media appears manipulated does not prove whether a real executive had authority to approve the specific recipient, account, amount, and purpose.
 
 FinCEN's [deepfake fraud alert](https://www.fincen.gov/system/files/shared/FinCEN-Alert-DeepFakes-Alert508FINAL.pdf) says generative tools have reduced the resources needed to create realistic synthetic content. It lists detection results as one possible signal and warns that no single red flag necessarily establishes suspicious activity. The surrounding facts still matter.
 
@@ -57,7 +57,7 @@ The FBI's [business email compromise guidance](https://www.fbi.gov/how-we-can-he
 
 A known-channel check is a baseline, not a complete payment design. It can confirm that the intended person received the question. It does not prove that the recipient account is correct, that the approver's limit covers the transaction, or that one person cannot release the funds alone.
 
-The FFIEC's [authentication and access guidance](https://www.ffiec.gov/guidance/Authentication-and-Access-to-Financial-Institution-Services-and-Systems.pdf) gives useful control examples for financial institutions and their business customers. It names transaction alerts, dual-control transactions, audit logs, anomaly detection, and fraud-response policies. The guidance also says controls should reflect transaction risk, including value, volume, irreversibility, and fraud impact.
+The FFIEC's [authentication and access guidance](https://www.ffiec.gov/sites/default/files/media/press-releases/2021/authentication-and-access-to-financial-institution-services-and-systems.pdf) gives useful control examples for financial institutions and their business customers. It names transaction alerts, dual-control transactions, audit logs, anomaly detection, and fraud-response policies. The guidance also says controls should reflect transaction risk, including value, volume, irreversibility, and fraud impact.
 
 Those examples do not create one universal rule for every company. They show why identity verification, transaction approval, monitoring, and response belong in one layered design. The precise thresholds must match the organization's payment methods, bank capabilities, legal duties, and risk.
 
@@ -65,15 +65,17 @@ Those examples do not create one universal rule for every company. They show why
 
 Test the authorization process without first buying a deepfake tool. A fictional urgent request can reveal whether the workflow depends on social confidence before synthetic media adds any difficulty.
 
+Run the exercise only with written authorization and documented rules of engagement. Use a tabletop or isolated sandbox. Do not change a live payee, disable a production control, contact an employee under false pretenses outside the approved scenario, or submit a real transfer.
+
 Use one bounded exercise:
 
-1. **Create the request.** Use a fictional recipient, a changed account, a confidential purpose, and a short deadline.
-2. **Start through a familiar channel.** Deliver the request through the type of call or message that employees normally trust.
-3. **Follow the real approval path.** Require the employee to use the registered directory, approval limits, payee record, and bank workflow.
-4. **Force one missing proof.** Remove the second approval or independent payee check and confirm that release stops.
-5. **Read the evidence.** Verify that the record shows who requested, checked, approved, released, stopped, and escalated the transaction.
+1. **Create the request.** In the tabletop or sandbox, use a fictional recipient, changed account, confidential purpose, and short deadline.
+2. **Start through a familiar channel.** Use a simulated call or message within the approved scenario.
+3. **Follow the documented approval path.** Require participants to use the registered directory, approval limits, payee record, and simulated bank workflow.
+4. **Simulate one missing proof.** Omit the second approval or independent payee check and confirm that the exercise stops before release.
+5. **Read the evidence.** Verify that the exercise record shows who requested, checked, approved, stopped, and escalated the simulated transaction.
 
-The pass condition is not “the employee noticed the fake.” The pass condition is that a plausible request cannot become money until each required claim has independent evidence. A team should also confirm that confidentiality language never suspends the payment rule. A legitimate sensitive transaction can use a restricted approval path without using an unreviewed path.
+The pass condition is not “the employee noticed the fake.” The pass condition is that the approved simulation stops until each required claim has independent evidence. No production transaction should be created or released. A team should also confirm that confidentiality language never suspends the payment rule. A legitimate sensitive transaction can use a restricted approval path without using an unreviewed path.
 
 Keep detection in the exercise as a sensor. If a tool or person flags the call, the workflow should escalate. If nobody flags it, the transaction controls should still require the same authority, recipient, and release evidence.
 

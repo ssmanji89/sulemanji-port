@@ -31,10 +31,10 @@ The cluster matters because it crosses several trust boundaries:
 | Operation | Publicly documented failure mode | Immediate question |
 | --- | --- | --- |
 | Recursive clone | A crafted repository can redirect a submodule gitfile toward malicious configuration or hooks, leading to code execution. | Which tools or jobs clone untrusted repositories with submodules? |
-| Clone from a server | A malicious server can advertise a path-traversing unborn `HEAD`, creating a later write outside the intended reference directory. | Which clients clone from servers outside an approved trust boundary? |
-| Merge or mergeability check | Crafted attributes or signatures can trigger memory corruption or a crash. | Which endpoints or services merge user-controlled repository content? |
-| Binary patch application | A compressed patch can expand beyond the checked size and cause an out-of-bounds read. | Which automated paths accept or apply binary patches? |
-| Fast import | Stream features can read from or write to paths outside the repository unless the caller explicitly enables unsafe features. | Which migration or ingestion tools accept fast-import streams? |
+| Clone from a server | A malicious server can advertise a [path-traversing unborn `HEAD`](https://gitlab.com/gitlab-org/git/-/work_items/809), creating a later write outside the intended reference directory. | Which clients clone from servers outside an approved trust boundary? |
+| Merge or mergeability check | Crafted [attributes or signatures](https://gitlab.com/gitlab-org/git/-/work_items/810), or a [sufficiently large merge](https://gitlab.com/gitlab-org/git/-/work_items/814), can trigger memory corruption or a crash. | Which endpoints or services merge user-controlled repository content? |
+| Binary patch application | A [compressed patch](https://gitlab.com/gitlab-org/git/-/work_items/811) can expand beyond the checked size and cause an out-of-bounds read. | Which automated paths accept or apply binary patches? |
+| Fast import | [Stream features](https://gitlab.com/gitlab-org/git/-/work_items/812) can read from or write to paths outside the repository unless the caller explicitly enables unsafe features. | Which migration or ingestion tools accept fast-import streams? |
 
 The individual [recursive-clone advisory](https://github.com/git/git/security/advisories/GHSA-vp2w-7xxj-jvxr) rated that issue High at publication. The source set reviewed here establishes the vulnerabilities and fixed releases; it does not establish confirmed exploitation in the wild. Do not turn severity, a proof of concept, or a plausible attack path into an exploitation claim.
 

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="portfolio-diagram" viewBox="0 0 792 512" role="img" aria-labelledby="market-system-title market-system-desc" style="max-width:100%;height:auto">
+<title id="market-system-title">Separating market analysis from action</title>
+<desc id="market-system-desc">A conceptual market workflow separates data, analysis, proposed actions, authority, external actions, and recorded results, with review informing the next analysis.</desc>
+<defs>
+<marker id="market-system-arrow" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#6d756e"/></marker>
+<marker id="market-system-arrow-accent" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#b85d3e"/></marker>
+<marker id="market-system-arrow-link" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#244c3d"/></marker>
+<marker id="market-system-arrow-soft" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#c9d0c5"/></marker>
+</defs>
+<rect width="792" height="512" fill="#f4f2ec"/>
+<path data-connector="true" d="M248 180H296" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#market-system-arrow)"/>
+<path data-connector="true" d="M496 180H544" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#market-system-arrow)"/>
+<path data-connector="true" d="M644 232V320" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#market-system-arrow)"/>
+<path data-connector="true" d="M544 372H496" fill="none" stroke="#b85d3e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#market-system-arrow-accent)"/>
+<path data-connector="true" d="M296 372H248" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#market-system-arrow)"/>
+<path data-connector="true" d="M48 372H32Q24 372 24 364V80Q24 72 32 72H388Q396 72 396 80V128" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6" marker-end="url(#market-system-arrow)"/>
+<rect x="276" y="40" width="240" height="24" rx="2" fill="#f4f2ec"/>
+<text id="market-system-text-1" x="396.0" y="57" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="600" text-anchor="middle" style="letter-spacing:1.3px">REVIEW / RETRY</text>
+<g data-node-id="market-system-node-1"><rect x="48" y="128" width="200" height="104" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="market-system-text-2" x="66" y="152" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">01</text>
+<text id="market-system-text-3" x="148.0" y="181.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Market</text>
+<text id="market-system-text-4" x="148.0" y="209.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">data</text>
+<g data-node-id="market-system-node-2"><rect x="296" y="128" width="200" height="104" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="market-system-text-5" x="314" y="152" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">02</text>
+<text id="market-system-text-6" x="396.0" y="195.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Analysis</text>
+<g data-node-id="market-system-node-3"><rect x="544" y="128" width="200" height="104" rx="6" fill="#e1e7dc" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="market-system-text-7" x="562" y="152" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">03</text>
+<text id="market-system-text-8" x="644.0" y="181.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Proposed</text>
+<text id="market-system-text-9" x="644.0" y="209.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">action</text>
+<g data-node-id="market-system-node-4"><rect x="544" y="320" width="200" height="104" rx="6" fill="#f2e6dc" stroke="#b85d3e" stroke-width="1.5"/></g>
+<text id="market-system-text-10" x="562" y="344" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">04</text>
+<text id="market-system-text-11" x="644.0" y="373.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Review &amp;</text>
+<text id="market-system-text-12" x="644.0" y="401.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">authority</text>
+<g data-node-id="market-system-node-5"><rect x="296" y="320" width="200" height="104" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5" stroke-dasharray="6 5"/></g>
+<text id="market-system-text-13" x="314" y="344" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">05</text>
+<text id="market-system-text-14" x="396.0" y="373.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">External</text>
+<text id="market-system-text-15" x="396.0" y="401.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">action</text>
+<g data-node-id="market-system-node-6"><rect x="48" y="320" width="200" height="104" rx="6" fill="#244c3d" stroke="#244c3d" stroke-width="1.5"/></g>
+<text id="market-system-text-16" x="66" y="344" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">06</text>
+<text id="market-system-text-17" x="148.0" y="373.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Recorded</text>
+<text id="market-system-text-18" x="148.0" y="401.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">result</text>
+<line x1="40" y1="468" x2="752" y2="468" stroke="#c9d0c5"/>
+<text id="market-system-text-19" x="40" y="494" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="start" style="">Conceptual workflow. Checks and execution vary by project.</text>
+</svg>

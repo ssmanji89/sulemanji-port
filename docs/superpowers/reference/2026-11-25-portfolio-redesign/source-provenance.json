@@ -1,0 +1,81 @@
+{
+  "prepared_date": "2026-11-25",
+  "preview_source_revision": "159ce931d6aaa43b3fcd5dddcaad1c7fe6bb7eb3",
+  "production_snapshot_used_by_preview": "e12229f07dfabb9287a944200955f451bc83fc9c",
+  "current_production_revision_inspected_for_handoff": "5ab5122b61a16ed0bb72067b8a346c67f3091bfa",
+  "scope": "Selected safe public copy, conceptual diagrams, and one frozen visual reference. These files do not replace production content or its Jekyll pipeline.",
+  "transformations": {
+    "content.json": "Final preview case and About data. Historical ff-cli and service-delivery evidence links now use pinned public GitHub source at the inspected production revision, because their former routes redirect to the new cases.",
+    "retained.json": "Exact copy of the final corrected career and retained-page data. Privacy and retirement redirects require production reconciliation.",
+    "diagrams/*.svg": "Exact copies of the final seven accessible preview diagrams.",
+    "home-reference.html": "Frozen preview Home with embedded CSS, fonts and public portrait; no scripts; internal links use the private preview; added reference banner; metadata reduced.",
+    "Noto-Sans-OFL.txt": "Upstream Google Fonts Noto Sans SIL Open Font License, fetched from https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt on 2026-11-25."
+  },
+  "files": [
+    {
+      "path": "Noto-Sans-OFL.txt",
+      "sha256": "cee9892f9f0cc8fe882c9e9537ee6a89621d86ee7ceaf70b02e2b2b1c25c061a",
+      "bytes": 4396
+    },
+    {
+      "path": "README.md",
+      "sha256": "9bc1f3c4c3e07a50c6268a905480dc94018af03db1b87284dc2d3c95970c42ac",
+      "bytes": 5158
+    },
+    {
+      "path": "content.json",
+      "sha256": "14c9b170ebfcfe0842b83fc69d645239abe5e01dae41421944ce3fb1f9c513b0",
+      "bytes": 37324
+    },
+    {
+      "path": "diagram-manifest.json",
+      "sha256": "4a11fd54d79ebbedfae0dbacecac1e9f13e49342a51a9b1e6999613b9ff8f07d",
+      "bytes": 4195
+    },
+    {
+      "path": "diagrams/decision-horizons.svg",
+      "sha256": "154b27782bada49d03e52e1f62337ccf6e12ac9e8780b658f580e5002c40c033",
+      "bytes": 6057
+    },
+    {
+      "path": "diagrams/integration-boundary.svg",
+      "sha256": "3dfc10d924878af5a2a4bd701ad54e4335ec238f7ae2b1d0608448ad97fad2de",
+      "bytes": 6713
+    },
+    {
+      "path": "diagrams/knowledge-cycle.svg",
+      "sha256": "03a045e35d4510ab3a31ec0fda09e71a7f949c2a7d4b5c9f76800f9c2c7d66a3",
+      "bytes": 7471
+    },
+    {
+      "path": "diagrams/market-system.svg",
+      "sha256": "4237e6d3469593c6e45936cff4b7c4d5b1d3bb654ff6a823997c01170c736d50",
+      "bytes": 7940
+    },
+    {
+      "path": "diagrams/operations-loop.svg",
+      "sha256": "7f42620f45063cf06e4b63f27a3868066203b5846d9703078bb4b4613ac2a3c6",
+      "bytes": 7505
+    },
+    {
+      "path": "diagrams/system-map.svg",
+      "sha256": "ba96626e11ee2ec5488f916b5376a557bb81dccea4452dfb8d1953906ac3d975",
+      "bytes": 7034
+    },
+    {
+      "path": "diagrams/verification-paths.svg",
+      "sha256": "d563a707faf47b59197f9c4c071664332641782c25184217938b26b19c236a36",
+      "bytes": 5988
+    },
+    {
+      "path": "home-reference.html",
+      "sha256": "1918bc29113e3322097f532d72d91f0f4ca9aac3894678c492571a0af16e795d",
+      "bytes": 173925
+    },
+    {
+      "path": "retained.json",
+      "sha256": "c43367df7b780d691ffeeda3b963ea0e4a02919bd54c830cc9a62391e0371ecf",
+      "bytes": 19359
+    }
+  ]
+}

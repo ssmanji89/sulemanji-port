@@ -38,8 +38,6 @@ Microsoft also states that Change Optics shows samples rather than an exhaustive
 
 The report is a discovery surface, not acceptance evidence. Use it to identify sending patterns, then test the named senders and trace representative messages through the route they will use after the change.
 
-This distinction is especially important when the report itself is unavailable or incomplete. The GA announcement's public discussion contains reports of intermittent errors and missing results. Those comments are practitioner signals, not proof of a service-wide defect, but they are enough to reject "the report looked empty" as a universal readiness test.
-
 ## How should an admin stage the migration?
 
 Treat each observed Direct Send pattern as a small migration with an owner and a disposition.

@@ -108,7 +108,7 @@ If a reporter marks a submission as AI-assisted, treat that marker as provenance
 
 The rollout should end with a decision-rights matrix and observed test evidence, not a screenshot of a role name. The matrix explains the intended governance. The tests show whether GitHub's effective access matches it.
 
-Two related practices reinforce the same principle. A [GitHub Actions log-secret response](/notes/github-actions-log-secret-response/) needs explicit incident decisions rather than a generic alert role, and [GitHub's stateless tokens](/notes/github-stateless-tokens-two-runbooks/) need separate operational paths rather than one broad credential procedure. In each case, the useful boundary follows the decision being made.
+Two related practices reinforce the same principle. A [GitHub Actions log-secret response](/notes/github-actions-log-secret-response) needs explicit incident decisions rather than a generic alert role, and [GitHub's stateless tokens](/notes/github-stateless-tokens-two-runbooks) need separate operational paths rather than one broad credential procedure. In each case, the useful boundary follows the decision being made.
 
 GitHub's new permissions let organizations delegate advisory work without recreating administrator access for every participant. The durable design is to map each permission to a lifecycle decision, account for additive access and prerequisites, preserve the residual private-fork merge boundary, and prove that neighboring decisions remain denied.
 

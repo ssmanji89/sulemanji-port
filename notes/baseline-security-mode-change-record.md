@@ -56,7 +56,7 @@ An impact report answers what the product observed through that reporting path a
 
 Those examples are not a universal test list. They show why each proposed control needs a dependency question. A tenant may have none of those paths and still have a critical add-in, automation, device, guest workflow, or administrative process that an aggregate report does not exercise.
 
-A useful rollout record therefore has two verdicts, not one: whether the setting improves the intended security boundary, and whether the affected business path still works. An impact report informs the first decision and helps find candidates for the second. It does not replace a test that performs the real read, write, sign-in, sharing, approval, or recovery action and observes the result.
+A useful rollout record therefore has two verdicts, not one: whether the setting improves the intended security boundary, and whether the affected business path still works. The setting's security rationale and control-specific allow/deny tests support the first verdict. An impact report contributes dependency and potential-impact evidence to identify which paths need testing; it cannot establish security effectiveness or replace a test that performs the real read, write, sign-in, sharing, approval, or recovery action and observes the result.
 
 NIST's security-focused configuration-management guidance provides the larger frame: configuration should be managed and monitored to reduce risk while supporting required business functions and services. A secure recommendation and a functioning service are not competing goals; both belong in the acceptance decision. ([NIST SP 800-128](https://csrc.nist.gov/pubs/sp/800/128/upd1/final))
 

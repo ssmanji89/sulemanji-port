@@ -44,6 +44,11 @@ class ReleaseWorkflowTests(unittest.TestCase):
         pages = self.workflow.split("  deploy-pages:", 1)[1].split("  deploy-cloudflare-staging:", 1)[0]
         self.assertIn("inputs.deploy_environment == 'production'", pages)
 
+    def test_runner_temp_is_not_used_in_job_level_environment(self):
+        self.assertNotIn("DEPLOYMENT_RECEIPT_PATH: ${{ runner.temp }}", self.workflow)
+        deploy_script = (ROOT / "scripts" / "deploy_site.sh").read_text(encoding="utf-8")
+        self.assertIn("RUNNER_TEMP:-${TMPDIR:-/tmp}", deploy_script)
+
 
 if __name__ == "__main__":
     unittest.main()

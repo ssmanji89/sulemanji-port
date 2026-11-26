@@ -1,7 +1,7 @@
 # Whole-branch review
 
 Review point: `origin/main` at `634948ca25602ac6ad908126a58a252dec27b1ac`.
-Reviewed branch head: `760a335` plus the local T11 correction-persistence follow-up.
+Reviewed branch head: `f40e54b`; T11 correction-persistence changes were reviewed and tested before commit.
 
 ## Standards
 
@@ -14,3 +14,7 @@ No confirmed violation of `AGENTS.md`, the public claims policy, the Writing con
 3. **T11 is still partial.** Scoped correction persistence and a signed operator action are now implemented and locally tested. Workflow-driven repair and regression follow-up remain unqualified.
 
 No unrequested behavior or scope creep was identified. The review was read-only and did not independently rerun tests or a live runtime; gate evidence is recorded in `EXECUTION.md` and `EXECUTION-03-maintenance.md`.
+
+## Follow-up after review
+
+GitHub rejected a manual workflow dispatch because the Cloudflare jobs referenced `runner.temp` in job-level environment fields. Those fields were removed so the deploy script uses the runner-provided `RUNNER_TEMP`. The focused release-workflow suite now passes 6/6; a branch dispatch is the next hosted check.

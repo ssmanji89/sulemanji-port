@@ -1,5 +1,21 @@
 # Codex Goal — Sulemanji portfolio redesign
 
+## Owner correction — 2026-11-25
+
+The owner confirms that this site no longer uses Stripe or Cloudflare.
+The earlier provider reauthentication and operational-reconciliation requirements are withdrawn as release prerequisites.
+Existing Worker and payment source does not establish current service use.
+
+The owner explicitly authorizes merging PR #97 and publication through the existing GitHub Pages workflow.
+PR #97 is merged at `4261833004eaedf93ec0c6f41b846a20fcc1485d`.
+Do not request Stripe or Cloudflare reconnection for this release.
+Verify the actual Pages deployment and public site through the existing publication workflow.
+
+This decision supersedes conflicting release gates in the original Goal, kickoff contract, plans, acceptance matrix, and execution record.
+Earlier provider-access failures remain historical observations.
+They do not establish a current blocker or a verified live-provider state.
+The original implementation evidence below remains a record of its earlier execution, including its pre-authorization merge status.
+
 Use the associated planning PR as the repository entry point. Read its current head or merged successor.
 Read the [kickoff contract](../specs/2026-11-25-portfolio-redesign.codex-kickoff.md), [design](../specs/2026-11-25-portfolio-redesign-design.md), and [plan index](../plans/2026-11-25-portfolio-redesign/README.md).
 

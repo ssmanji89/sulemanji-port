@@ -67,15 +67,15 @@ The preview's 41-article snapshot was not used; the source baseline and current 
 | T05 — Qualification and release safety | Engineering checks pass; live evidence gated | Production build and verifiers pass; current Stripe/Cloudflare read-only access needs reauthentication |
 | T06 — Automation and safety verification | Done | Discovery, public-safety, Viyu positioning, offer-retirement, portfolio, and Priority Discovery verifiers pass |
 | T07 — Build and browser qualification | Done | Production build and local browser review pass; local preview retained on port 4000 |
-| T08 — Independent review and implementation PR | In progress | Independent review passes on `e3f5e689`; exact-head checks pass; branch publication and PR creation pending |
+| T08 — Independent review and implementation PR | Done | Independent review passes on the implementation; PR #97 is open against `main`; GitHub build passed at head `42caff1e`; deploy job skipped |
 
 ## Overall state
 
 - Package published: PR #96 is open as a draft; it is not merged.
 - Goal acknowledged: yes, this local implementation run is active.
-- Source implemented: yes, in the isolated worktree; not yet published.
-- Tests passed: yes, current checks listed above.
-- Independent review: pass on `e3f5e689`; final status will be read back on the published PR head.
-- Implementation PR: not yet created.
+- Source implemented: yes, in the isolated worktree and published on the implementation branch.
+- Tests passed: yes; current local qualification is listed above and GitHub build passed at PR head `42caff1e`.
+- Independent review: pass; the reviewer confirmed no Critical or Important issue on the implementation and rechecked the final source candidate.
+- Implementation PR: open, [#97](https://github.com/ssmanji89/sulemanji-port/pull/97), base `main`, branch `codex/portfolio-redesign-2026-11-25`.
 - Merged: no; merge is outside this authorization.
 - Production verified: no.

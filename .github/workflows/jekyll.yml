@@ -8,11 +8,11 @@ on:
   workflow_dispatch:
     inputs:
       deploy_environment:
-        description: Cloudflare destination when SITE_DEPLOY_TARGET is cloudflare
+        description: Validate only, or deploy to Cloudflare staging or production
         required: true
         type: choice
-        options: [staging, production]
-        default: staging
+        options: [validate, staging, production]
+        default: validate
 
 permissions:
   contents: read

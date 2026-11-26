@@ -49,6 +49,14 @@ class ReleaseWorkflowTests(unittest.TestCase):
         deploy_script = (ROOT / "scripts" / "deploy_site.sh").read_text(encoding="utf-8")
         self.assertIn("RUNNER_TEMP:-${TMPDIR:-/tmp}", deploy_script)
 
+    def test_manual_workflow_dispatch_defaults_to_validation_without_deployment(self):
+        self.assertIn("options: [validate, staging, production]", self.workflow)
+        self.assertIn("default: validate", self.workflow)
+        staging = self.workflow.split("  deploy-cloudflare-staging:", 1)[1].split("  deploy-cloudflare:", 1)[0]
+        production = self.workflow.split("  deploy-cloudflare:", 1)[1]
+        self.assertIn("inputs.deploy_environment == 'staging'", staging)
+        self.assertIn("inputs.deploy_environment == 'production'", production)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -51,7 +51,7 @@ Staging, production, merge, publisher cutover, and schedule activation: not star
 
 - Branch `codex/sulemanji-rebuild-2026-11-26` is pushed at `f40e54bdf054ebe1967ccf39a035dfc72ec0d779`. Draft PR [#102](https://github.com/ssmanji89/sulemanji-port/pull/102) is open against `main` at `634948ca25602ac6ad908126a58a252dec27b1ac`, with no requested review and no merge.
 - GitHub Actions created push run `45912826099` at the branch head, but it completed with failure before creating any jobs (`jobs: []`, no logs). The PR reports no checks. Treat hosted CI as unavailable for this revision, not as a source/test failure.
-- A safe manual `workflow_dispatch` was rejected before job creation: the staging and production jobs referenced `runner.temp` in job-level `env`, where GitHub Actions does not expose that context. The invalid overrides are removed; `scripts/deploy_site.sh` already falls back to the runner-provided `RUNNER_TEMP`. Regression coverage passes 6/6. Retry a staging-input dispatch on this branch after push; current repository variables/secrets list is empty, so its deploy job stays disabled.
+- A manual `workflow_dispatch` was rejected before job creation: staging and production referenced `runner.temp` in job-level `env`, where GitHub Actions does not expose that context. The invalid overrides are removed; `scripts/deploy_site.sh` falls back to `RUNNER_TEMP`. A validation-only dispatch option now defaults to no deployment; staging and production require explicit choices. Regression coverage passes 7/7. Dispatch validation on this branch after push.
 
 ## Release gate
 

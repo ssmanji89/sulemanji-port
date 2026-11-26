@@ -17,4 +17,4 @@ No unrequested behavior or scope creep was identified. The review was read-only 
 
 ## Follow-up after review
 
-GitHub rejected a manual workflow dispatch because the Cloudflare jobs referenced `runner.temp` in job-level environment fields. Those fields were removed so the deploy script uses the runner-provided `RUNNER_TEMP`. The focused release-workflow suite now passes 6/6; a branch dispatch is the next hosted check.
+GitHub rejected a manual workflow dispatch because the Cloudflare jobs referenced `runner.temp` in job-level environment fields. Those fields were removed so the deploy script uses the runner-provided `RUNNER_TEMP`. A validation-only dispatch now defaults to no deployment. The focused release-workflow suite passes 7/7; a branch dispatch is the next hosted check.

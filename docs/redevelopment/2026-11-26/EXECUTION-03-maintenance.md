@@ -20,3 +20,11 @@
 - Editorial Worker configs: separate staging and production bindings dry-run.
 - `bash scripts/check_site_release.sh`: stopped before release qualification because the working tree was dirty; rerun after commit. Earlier clean-main Writing fixture failures remain recorded in `EXECUTION.md` and must be retested.
 - Generated `test-results/` remains untracked and intentionally preserved.
+
+## T12 acceptance and owner review
+
+- Full local preview reviewed and approved by the owner: Home, Explore, Writing, About/Career, Contact.
+- Browser suite: 24/24 pass after aligning Playwright's base URL and server port at 4174 and disabling reuse of stale servers.
+- Acceptance verifier unit tests: 2/2 pass; built-site verifier passes against the 55-article baseline.
+- Activation proposal is recorded in `ACTIVATION-PROPOSAL.md`. It does not grant spending, account access, provider configuration, schedule activation, or production cutover.
+- Generated `test-results/` remains untracked and preserved.

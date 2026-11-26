@@ -26,6 +26,15 @@ T06: release workflow, one-build qualification script, artifact validation, rout
 
 Staging, production, merge, publisher cutover, and schedule activation: not started. Existing local publisher and article work remain untouched. Owner preview is the next product decision; after local gates and concrete Cloudflare configuration are prepared, request one material decision only if access or owner review remains necessary.
 
+## Maintenance implementation continuation
+
+- T07–T10 implementation files are present in the current working tree. `npm run check` in `cloudflare` passes TypeScript, 58 tests (4 skipped), the built-site integration (229 assets / 55 preserved articles), and both static Worker dry-runs. Separate editorial staging/production Worker configs also pass Wrangler dry-run with distinct D1 and Workflow bindings.
+- T10 is partial: the guarded provider, exact review binding, deterministic GitHub publication adapter and public HTML/feed/sitemap readback are implemented, but the scheduled Workflow is not integrated from discovery through readback. It now durably records `HELD_PIPELINE_UNCONFIGURED`; no slot is reported as a successful run.
+- T11 is partial: scoped correction, authored-field protections, original-date preservation checks, withdrawal dependency invalidation, and five focused tests are added. D1 correction storage and workflow/operator integration remain open.
+- `bash scripts/check_site_release.sh` was attempted with a dirty tree and stopped at the manifest guard before release qualification. Rerun on a clean committed tree. The previously observed Writing fixture failures were reproduced on clean `origin/main`; they remain a release gate until the rerun establishes current evidence.
+- Generated `test-results/` remains untracked and preserved. The local publisher, in-flight article, and existing publication worktree remain untouched.
+- Live Cloudflare access still requires reauthentication; no live resource read, deployment, secret write, cutover, or schedule activation occurred. Public preview owner review is outstanding.
+
 ## Release gate
 
 Reconnect Cloudflare access for exact account/resource readback and staging. Keep the public DNS/certificate untouched unless account evidence identifies a requirement. Continue with T06–T13 preparation while the live read is unavailable; do not claim production qualification or schedule evidence without live receipts.

@@ -1,0 +1,22 @@
+# Plan: docs/superpowers/plans/2026-11-26-sulemanji-rebuild/03-maintenance.md
+
+| Task | State | Evidence | Remaining |
+|---|---|---|---|
+| T07 | Implementation partial | Focused knowledge/import tests and D1 dry-run pass. | Actual authorized Viyu derivative, deployed endpoint, durable live receipt and renewal observation. |
+| T08 | Implementation partial | 58 Cloudflare tests pass; public source parsers and deterministic relevance are present. | Live source-read qualification and complete end-to-end candidate runner. |
+| T09 | Implementation partial | Atomic budget, Chicago slot, durable claims/outbox, operator controls tested. | Live D1/Workflow resources and resumed durable execution. |
+| T10 | Implementation partial | Provider schema, author/reviewer separation, bounded review, GitHub publisher, deployment readback. `npm run check`: pass (58 passed, 4 skipped); site build: 229 assets / 55 preserved articles; editorial and site Worker dry-runs pass. | Full Workflow integration from discovery through public readback; configured authorized provider; hosted checks and live verification. |
+| T11 | Implementation partial | `maintenance.test.ts`: 5 passed; scoped correction, dependency invalidation and protected-field helpers added. | D1 correction store, workflow/operator integration, wider correction and independent-candidate cases. |
+
+## Current rulings
+
+- A durable slot receipt must not imply the scheduled content pipeline ran. Until discovery, review, publication, and public readback are wired, an active slot is recorded as `HELD_PIPELINE_UNCONFIGURED`.
+- Keep staging and production maintenance bindings separate and paused. Current Cloudflare connection is unauthorized, so do not replace placeholder resource IDs or set model/publisher secrets.
+- Article publication remains blocked if policy, knowledge, source, base revision, owner epoch, exact review receipt, or allowed paths do not match at effect time.
+
+## Latest gate result
+
+- `npm run check` in `cloudflare`: PASS, 58 passed / 4 skipped; 229 built assets; 55 preserved articles; both static Worker configs dry-run.
+- Editorial Worker configs: separate staging and production bindings dry-run.
+- `bash scripts/check_site_release.sh`: stopped before release qualification because the working tree was dirty; rerun after commit. Earlier clean-main Writing fixture failures remain recorded in `EXECUTION.md` and must be retested.
+- Generated `test-results/` remains untracked and intentionally preserved.

@@ -15,5 +15,9 @@
     "typescript": "5.9.3",
     "vitest": "4.1.12",
     "wrangler": "4.168.0"
+  },
+  "dependencies": {
+    "marked": "18.3.0",
+    "parse5": "8.0.1"
   }
 }

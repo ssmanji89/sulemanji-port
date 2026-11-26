@@ -1,0 +1,30 @@
+export type CandidateState = 'DISCOVERED' | 'ELIGIBLE' | 'DRAFTED' | 'REVIEWED' | 'SOURCE_PUBLISHED' | 'DEPLOYED' | 'VERIFIED' | 'NO_CHANGE' | 'NEEDS_OWNER' | 'HELD' | 'FAILED';
+
+export async function transitionCandidate(db: D1Database, id: string, from: CandidateState, to: CandidateState, revision: string): Promise<boolean> {
+  const result = await db.prepare('UPDATE editorial_candidates SET state = ?, revision = ?, updated_at = ? WHERE id = ? AND state = ? AND revision = ?')
+    .bind(to, `${revision}:${to}`, new Date().toISOString(), id, from, revision).run();
+  return (result.meta.changes ?? 0) === 1;
+}
+
+export async function recordModelCall(db: D1Database, candidateId: string, maximum = 6): Promise<boolean> {
+  const result = await db.prepare('UPDATE editorial_candidates SET model_calls = model_calls + 1, updated_at = ? WHERE id = ? AND model_calls < ?')
+    .bind(new Date().toISOString(), candidateId, maximum).run();
+  return (result.meta.changes ?? 0) === 1;
+}
+
+export async function recordReviewRound(db: D1Database, candidateId: string, maximum = 3): Promise<boolean> {
+  const result = await db.prepare('UPDATE editorial_candidates SET review_rounds = review_rounds + 1, updated_at = ? WHERE id = ? AND review_rounds < ?')
+    .bind(new Date().toISOString(), candidateId, maximum).run();
+  return (result.meta.changes ?? 0) === 1;
+}
+
+export async function readControl(db: D1Database): Promise<{ paused: boolean; owner_epoch: number }> {
+  const row = await db.prepare('SELECT paused, owner_epoch FROM editorial_control WHERE singleton = 1').first<{ paused: number; owner_epoch: number }>();
+  return row ? { paused: row.paused === 1, owner_epoch: row.owner_epoch } : { paused: true, owner_epoch: 0 };
+}
+
+export async function setPaused(db: D1Database, paused: boolean, now = new Date()): Promise<{ paused: boolean; owner_epoch: number }> {
+  await db.prepare('UPDATE editorial_control SET paused = ?, owner_epoch = owner_epoch + 1, updated_at = ? WHERE singleton = 1')
+    .bind(paused ? 1 : 0, now.toISOString()).run();
+  return readControl(db);
+}

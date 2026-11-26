@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="portfolio-diagram" viewBox="0 0 720 680" role="img" aria-labelledby="system-map-title system-map-desc" style="max-width:100%;height:auto">
+<title id="system-map-title">Sully’s work connects operations and independent tools</title>
+<desc id="system-map-desc">A conceptual practice map connects dependable operations, useful automation, market questions, and preserved knowledge around Sully’s direction and review.</desc>
+<defs>
+<marker id="system-map-arrow" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#6d756e"/></marker>
+<marker id="system-map-arrow-accent" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#b85d3e"/></marker>
+<marker id="system-map-arrow-link" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#244c3d"/></marker>
+<marker id="system-map-arrow-soft" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#c9d0c5"/></marker>
+</defs>
+<rect width="720" height="680" fill="#f4f2ec"/>
+<rect x="20" y="24" width="680" height="624" rx="0" fill="none" stroke="#c9d0c5" stroke-width="1"/>
+<circle cx="360" cy="336" r="112" fill="#e1e7dc"/>
+<circle cx="360" cy="336" r="92" fill="none" stroke="#244c3d" stroke-width="1.5"/>
+<path data-connector="true" d="M264 152H456" fill="none" stroke="#244c3d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#system-map-arrow-link)"/>
+<path data-connector="true" d="M568 216V456" fill="none" stroke="#244c3d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#system-map-arrow-link)"/>
+<path data-connector="true" d="M456 520H264" fill="none" stroke="#244c3d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#system-map-arrow-link)"/>
+<path data-connector="true" d="M152 456V216" fill="none" stroke="#244c3d" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#system-map-arrow-link)"/>
+<g data-node-id="system-map-node-1"><rect x="40" y="88" width="224" height="128" rx="6" fill="#244c3d" stroke="#244c3d" stroke-width="1.5"/></g>
+<text id="system-map-text-1" x="58" y="112" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">THE DAILY WORK</text>
+<text id="system-map-text-2" x="152.0" y="153.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Operations</text>
+<text id="system-map-text-3" x="152.0" y="181.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">keep work dependable</text>
+<g data-node-id="system-map-node-2"><rect x="456" y="88" width="224" height="128" rx="6" fill="#e1e7dc" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="system-map-text-4" x="474" y="112" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">THE USEFUL TOOLS</text>
+<text id="system-map-text-5" x="568.0" y="153.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Automation</text>
+<text id="system-map-text-6" x="568.0" y="181.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">remove repeated effort</text>
+<g data-node-id="system-map-node-3"><rect x="456" y="456" width="224" height="128" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="system-map-text-7" x="474" y="480" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">THE INDEPENDENT WORK</text>
+<text id="system-map-text-8" x="568.0" y="521.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Markets</text>
+<text id="system-map-text-9" x="568.0" y="549.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">test a difficult question</text>
+<g data-node-id="system-map-node-4"><rect x="40" y="456" width="224" height="128" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="system-map-text-10" x="58" y="480" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="500" text-anchor="start" style="letter-spacing:1.8px">THE CONTINUITY</text>
+<text id="system-map-text-11" x="152.0" y="521.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Knowledge</text>
+<text id="system-map-text-12" x="152.0" y="549.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">keep what we learn</text>
+<text id="system-map-text-13" x="360" y="330" fill="#244c3d" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="48" font-weight="500" text-anchor="middle" style="">Sully</text>
+<text id="system-map-text-14" x="360" y="366" fill="#244c3d" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="12" font-weight="600" text-anchor="middle" style="letter-spacing:1.3px">DIRECTION + REVIEW</text>
+<rect x="276" y="116" width="168" height="24" rx="2" fill="#f4f2ec"/>
+<text id="system-map-text-15" x="360.0" y="133" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="600" text-anchor="middle" style="letter-spacing:1.3px">MAKE IT REPEAT</text>
+<rect x="276" y="540" width="168" height="24" rx="2" fill="#f4f2ec"/>
+<text id="system-map-text-16" x="360.0" y="557" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="600" text-anchor="middle" style="letter-spacing:1.3px">KEEP THE LESSON</text>
+<text id="system-map-text-17" x="360" y="628" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="16" font-weight="400" text-anchor="middle" style="">A practice shaped by work and curiosity.</text>
+</svg>

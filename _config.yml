@@ -61,3 +61,6 @@ exclude:
   - "*.py"
   - requirements.txt
   - requirements-seo.txt
+  - assets/SulemanManji_Resume.pdf
+  - assets/resume/Suleman-Manji-Resume.pdf
+  - assets/js/work-with-me.js

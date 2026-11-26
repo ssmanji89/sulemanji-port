@@ -97,6 +97,7 @@ describe("private quote routes", () => {
     Object.assign(testEnv, {
       SITE_ORIGIN,
       GOOGLE_CALENDAR_ID: "primary",
+      PUBLIC_OFFER_MODE: "active",
     });
 
     repository = new D1CaseRepository(testEnv.DB);
@@ -143,6 +144,7 @@ describe("private quote routes", () => {
 
   it("creates a hold and balance Checkout from the authoritative quote balance", async () => {
     const { caseId, quote } = await createQuote();
+    Object.assign(testEnv, { PUBLIC_OFFER_MODE: "retired" });
 
     const response = await app.fetch(
       new Request(`${API_ORIGIN}/v1/quotes/${quote.publicToken}/holds`, {
@@ -172,6 +174,33 @@ describe("private quote routes", () => {
       }),
     ]);
     await expect(caseStatus(caseId)).resolves.toBe("slot_held");
+  });
+
+  it("keeps expired paid quotes unavailable while public offers are retired", async () => {
+    const { caseId, quote } = await createQuote();
+    Object.assign(testEnv, { PUBLIC_OFFER_MODE: "retired" });
+    await testEnv.DB.prepare(
+      "UPDATE session_quotes SET expires_at = ? WHERE id = ?",
+    )
+      .bind("2026-07-01T00:00:00.000Z", quote.id)
+      .run();
+
+    const response = await app.fetch(
+      new Request(`${API_ORIGIN}/v1/quotes/${quote.publicToken}/holds`, {
+        method: "POST",
+        headers: { "content-type": "application/json", origin: SITE_ORIGIN },
+        body: JSON.stringify({
+          startsAt: "2026-07-14T15:00:00.000Z",
+          endsAt: "2026-07-14T16:30:00.000Z",
+        }),
+      }),
+      testEnv,
+    );
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toEqual({ error: "quote_unavailable" });
+    expect(stripe.balanceRequests).toHaveLength(0);
+    await expect(caseStatus(caseId)).resolves.toBe("priority_scheduling");
   });
 
   it("rejects holds for unavailable calendar windows before Stripe is called", async () => {

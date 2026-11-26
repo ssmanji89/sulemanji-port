@@ -3,6 +3,8 @@ layout: default
 title: Work With Me Request Received
 description: Confirmation for Work With Me intake submissions.
 permalink: /work-with-me/thanks
+noindex: true
+sitemap: false
 ---
 
 # Request received

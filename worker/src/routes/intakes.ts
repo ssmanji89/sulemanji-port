@@ -12,6 +12,16 @@ export const createIntakeRoutes = () => {
       return c.json({ error: "forbidden_origin" }, 403);
     }
 
+    if (c.env.PUBLIC_OFFER_MODE !== "active") {
+      return c.json(
+        {
+          error: "offer_retired",
+          contactUrl: "https://viyu.net/contact-support/contact-us/",
+        },
+        410,
+      );
+    }
+
     const body = await readBoundedJson(c.req.raw);
     if (body === "too_large") {
       return c.json({ error: "request_too_large" }, 413);

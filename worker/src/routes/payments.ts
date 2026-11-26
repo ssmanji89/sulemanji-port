@@ -57,6 +57,16 @@ export const createPaymentRoutes = (
       return c.json({ error: "forbidden_origin" }, 403);
     }
 
+    if (c.env.PUBLIC_OFFER_MODE !== "active") {
+      return c.json(
+        {
+          error: "offer_retired",
+          contactUrl: "https://viyu.net/contact-support/contact-us/",
+        },
+        410,
+      );
+    }
+
     const repository = new D1CaseRepository(c.env.DB);
     const publicCase = await repository.getByPublicToken(c.req.param("token"));
 

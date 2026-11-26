@@ -3,6 +3,8 @@ layout: default
 title: Work With Me Service Terms
 description: Public service terms for Work With Me and Priority Discovery.
 permalink: /work-with-me/terms
+noindex: true
+sitemap: false
 ---
 
 # Work With Me Service Terms

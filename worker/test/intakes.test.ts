@@ -1,8 +1,10 @@
 /// <reference types="@cloudflare/vitest-pool-workers/types" />
 
 import { env, SELF } from "cloudflare:test";
+import { Hono } from "hono";
 import { beforeEach, describe, expect, it } from "vitest";
 import type { Env } from "../src/env";
+import { createIntakeRoutes } from "../src/routes/intakes";
 
 const SITE_ORIGIN = "https://www.sulemanji.com";
 const testEnv = env as unknown as Env;
@@ -28,6 +30,7 @@ describe("intake routes", () => {
   beforeEach(async () => {
     Object.assign(testEnv, {
       TURNSTILE_TEST_BYPASS: "test-pass",
+      PUBLIC_OFFER_MODE: "active",
     });
     await resetDatabase();
   });
@@ -169,6 +172,49 @@ describe("intake routes", () => {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(valid),
+    });
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({ error: "forbidden_origin" });
+    await expect(caseCount()).resolves.toBe(0);
+  });
+
+  it.each([undefined, "future-value"])(
+    "retires intake when public offer mode is %s",
+    async (mode) => {
+      Object.assign(testEnv, { PUBLIC_OFFER_MODE: mode });
+      const request = new Request("https://api.example/v1/intakes", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: SITE_ORIGIN,
+        },
+        body: "{not-json",
+      });
+
+      const app = new Hono<{ Bindings: Env }>();
+      app.route("/v1", createIntakeRoutes());
+      const response = await app.fetch(request, testEnv);
+
+      expect(response.status).toBe(410);
+      await expect(response.json()).resolves.toEqual({
+        error: "offer_retired",
+        contactUrl: "https://viyu.net/contact-support/contact-us/",
+      });
+      expect(request.bodyUsed).toBe(false);
+      await expect(caseCount()).resolves.toBe(0);
+    },
+  );
+
+  it("checks origin before returning the retired intake response", async () => {
+    Object.assign(testEnv, { PUBLIC_OFFER_MODE: "retired" });
+    const response = await SELF.fetch("https://api.example/v1/intakes", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "https://attacker.example",
+      },
+      body: "{not-json",
     });
 
     expect(response.status).toBe(403);

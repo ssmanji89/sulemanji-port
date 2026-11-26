@@ -1,363 +1,75 @@
 ---
 layout: default
-title: Professional Experience — Hands-On Technologist
-description: "Suleman Manji's professional history — a hands-on, analytical career across NOC automation, cloud and security engineering, Microsoft 365, and service-delivery process automation."
-permalink: /experience
+title: "Professional Experience"
+description: "My career across managed IT, infrastructure, identity, security, migrations, and practical automation."
+permalink: /experience/
+hero_eyebrow: "Career"
+hero_title: "Professional Experience"
+hero_lede: "My career across managed IT, infrastructure, identity, security, migrations, and practical automation."
 ---
 
-<div class="experience-header animate-on-scroll">
-    <h1 class="section-title">Professional Experience</h1>
-    <p class="section-subtitle">Fifteen years, one job description: find the manual, fragile, or broken part of an operation and make it hold. The <a href="/story">story</a> has the why; this is the what.</p>
-</div>
-
-<div class="tldr" markdown="0">
-  <p><strong>In brief:</strong> Six employers, fifteen years, one recurring job: find the fragile part of an operation and automate it. Currently a Sr. Services Engineer at Viyu Network Solutions, with migration, security, and infrastructure practice established before the later addition of agent-assisted service-delivery systems. Platform implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and evidence judgment. Earlier work spans real-estate operations, cloud/.NET engineering, security and identity consulting, multi-site energy operations, and where it started: NOC automation at ERGOS.</p>
-</div>
-
-<ul class="jump-links" aria-label="Jump to an employer">
-  <li><a href="#viyu">Viyu &middot; 2025&ndash;now</a></li>
-  <li><a href="#zg-companies">ZG Companies &middot; 2023&ndash;25</a></li>
-  <li><a href="#stackadvisors">StackAdvisors &middot; 2023</a></li>
-  <li><a href="#fulcrum">Fulcrum &middot; 2021&ndash;23</a></li>
-  <li><a href="#sugar-land-petroleum">Sugar Land Petroleum &middot; 2017&ndash;20</a></li>
-  <li><a href="#ergos">ERGOS &middot; 2011&ndash;17</a></li>
+<p>My background spans about fifteen years in managed IT, infrastructure, security, migrations, and service operations. <a href="/about/">About</a> explains the personal background.</p>
+<p>I use agents for implementation and research. My responsibility includes direction, technical scoping, review, verification, and a useful handoff.</p>
+<h2 id="viyu">Viyu Network Solutions</h2>
+<p><strong>Sr. Services Engineer</strong><br>July 2025 – Present</p>
+<p>My work spans service investigations, Microsoft 365, identity, infrastructure, migration planning, and technical scoping.</p>
+<ul>
+<li><strong>Service investigations:</strong> Establish the affected environment, compare available records, and connect the technical question to the business task.</li>
+<li><strong>Planning and scope:</strong> Make dependencies, responsibilities, access requirements, and acceptance conditions clear before a change.</li>
+<li><strong>Agent-assisted work:</strong> Use agents for information gathering, record comparison, research, and draft preparation.</li>
+<li><strong>Engineering responsibility:</strong> Review proposed changes, verify resulting conditions, and explain completed work and remaining dependencies.</li>
 </ul>
-
-<div class="timeline animate-on-scroll">
-
-    <!-- Viyu Network Solutions -->
-    <div class="timeline-item" id="viyu">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-            <div class="timeline-date">
-                <span><i class="far fa-calendar-alt"></i> July 2025 - Present</span>
-            </div>
-            <h3 class="timeline-title">Sr. Services Engineer</h3>
-            <h4 class="timeline-subtitle">Viyu Network Solutions</h4>
-
-            <p class="timeline-description">
-                Currently acting as a solutions architect and automation engineer across Microsoft 365 migration work, professional-services scoping, service-delivery automation, operational reporting, and governed AI-assisted internal workflows.
-            </p>
-
-            <div class="timeline-highlights">
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Migration & Operations Support:</strong> Helped turn large Microsoft 365 migration work into safer, more verifiable processes with clearer tracking, evidence, and execution checkpoints across users, SharePoint, OneDrive, mailboxes, and devices.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Service Delivery Automation:</strong> Built internal tooling that makes recurring service work more repeatable: intake, documentation, SOW support, project-discovery handoffs, reporting, and review gates.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Operational Review Artifacts:</strong> Developed workflows that turn tickets, notes, agreements, usage data, and operational evidence into review-ready packets for account, project, invoice-review, PBR/QBR, and service-delivery conversations.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Governed AI-Assisted Workflows:</strong> Designed AI-assisted operations patterns around scoped actions, human review, evidence trails, and preview-before-write gates instead of uncontrolled automation.</div>
-                </div>
-            </div>
-
-            <div class="timeline-technologies">
-                <span class="timeline-tech"><i class="fab fa-microsoft"></i> Microsoft 365 migration</span>
-                <span class="timeline-tech"><i class="fas fa-diagram-project"></i> Service delivery automation</span>
-                <span class="timeline-tech"><i class="fas fa-file-signature"></i> SOW / PBR support</span>
-                <span class="timeline-tech"><i class="fas fa-clipboard-check"></i> Review gates</span>
-                <span class="timeline-tech"><i class="fas fa-chart-line"></i> Operational reporting</span>
-                <span class="timeline-tech"><i class="fas fa-user-check"></i> Governed AI workflows</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ZG Companies -->
-    <div class="timeline-item" id="zg-companies">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-            <div class="timeline-date">
-                <span><i class="far fa-calendar-alt"></i> December 2023 - March 2025</span>
-            </div>
-            <h3 class="timeline-title">Senior Technical Consultant</h3>
-            <h4 class="timeline-subtitle">ZG Companies</h4>
-            
-            <p class="timeline-description">
-                Broad and operational: I locked down a real-estate group's Microsoft 365, then automated the parts of running a property portfolio nobody wants to do by hand &mdash; reconciliation, inspections, payroll, reporting.
-            </p>
-            
-            <div class="timeline-highlights">
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>M365 Governance & Security:</strong> Increased M365 Secure Score to 88.8%, standardized Teams/SharePoint governance, enforced DLP/MDM policies.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>IT Infrastructure & Operations:</strong> Implemented Alarm.com (23 properties), designed/piloted WISP (18 properties), deployed Atera IT management.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Process Automation & BI:</strong> Automated financial reconciliation (Expensify/Power Automate), developed 70+ Power Automate Flows, built SharePoint property walkthrough system.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Strategic Consulting:</strong> Technical leadership, researched Dynamics 365 HR/Viva, optimized call center ops (KnockCRM), led due diligence audits (SharePoint/HUD).</div>
-                </div>
-            </div>
-            
-            <div class="timeline-technologies">
-                <span class="timeline-tech"><i class="fas fa-cloud"></i> Microsoft 365</span>
-                <span class="timeline-tech"><i class="fas fa-cogs"></i> Power Automate</span>
-                <span class="timeline-tech"><i class="fab fa-windows"></i> SharePoint</span>
-                <span class="timeline-tech"><i class="fas fa-shield-alt"></i> Alarm.com</span>
-                <span class="timeline-tech"><i class="fas fa-tools"></i> Atera</span>
-                <span class="timeline-tech"><i class="fas fa-file-invoice-dollar"></i> Expensify</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- StackAdvisors, LLC -->
-    <div class="timeline-item" id="stackadvisors">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-            <div class="timeline-date">
-                <span><i class="far fa-calendar-alt"></i> March 2023 – August 2023</span>
-            </div>
-            <h3 class="timeline-title">Integrations Manager | Interim Azure C# .NET Engineer</h3>
-            <h4 class="timeline-subtitle">StackAdvisors, LLC</h4>
-            
-            <p class="timeline-description">
-                A short, intense interim stint on the engineering side of the wall &mdash; cutting cloud spend, building real CI/CD, and chasing down why a .NET Blazor app kept throwing 500s until it stopped.
-            </p>
-            
-            <div class="timeline-highlights">
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Cloud Optimization:</strong> Reduced Azure hosting costs by 40%, improved CI/CD deployment speed by 50% (Azure DevOps), enhanced monitoring/logging.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Software Engineering:</strong> Led integration projects, resolved architectural issues (.NET C# Blazor), designed scalable Azure microservices.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Automation:</strong> Developed PowerShell scripts for monitoring/deployment, streamlined partner onboarding, improved reliability via error detection.</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Technical Leadership:</strong> Acted as SME for cloud scalability, conducted Azure DevOps training, provided strategic cloud adoption guidance.</div>
-                </div>
-            </div>
-            
-            <div class="timeline-technologies">
-                <span class="timeline-tech"><i class="fab fa-microsoft"></i> Azure</span>
-                <span class="timeline-tech"><i class="devicon-csharp-plain"></i> C# .NET Blazor</span>
-                <span class="timeline-tech"><i class="devicon-azuredevops-plain"></i> Azure DevOps</span>
-                <span class="timeline-tech"><i class="fas fa-terminal"></i> PowerShell</span>
-                <span class="timeline-tech"><i class="fas fa-code-branch"></i> CI/CD</span>
-                 <span class="timeline-tech"><i class="fas fa-network-wired"></i> Microservices</span>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Fulcrum Technology Solutions (FTSC) -->
-    <div class="timeline-item" id="fulcrum">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-            <div class="timeline-date">
-                <span><i class="far fa-calendar-alt"></i> December 2021 - March 2023</span>
-            </div>
-            <h3 class="timeline-title">Technical SME | Architect | Engineer | Project Manager</h3>
-            <h4 class="timeline-subtitle">Fulcrum Technology Solutions (FTSC)</h4>
-            
-            <p class="timeline-description">
-                The security-and-architecture hired gun across a run of client engagements &mdash; privileged access, a ransomware recovery, and compliance-driven Azure migrations for healthcare, energy, and Fortune 500 environments.
-            </p>
-            
-            <div class="timeline-highlights">
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Enterprise Security & PAM:</strong> Led KeePass to CyberArk Privilege Cloud migration (Fortune 500), optimized CyberArk EPM, designed PowerShell/vCenter security reporting.</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Azure & Cloud Security:</strong> Spearheaded Azure GDPR compliance, provided infrastructure support for 100k+ Azure identities.</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Infrastructure Engineering:</strong> Led Enterprise Directory Services engagement (Azure AD), developed scalable hybrid identity solutions.</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Technical Leadership:</strong> Advised on cloud security/IT governance, collaborated on secure/scalable solutions, provided strategic guidance.</div>
-                </div>
-            </div>
-            
-            <div class="timeline-technologies">
-                 <span class="timeline-tech"><i class="fas fa-shield-alt"></i> CyberArk PAM</span>
-                 <span class="timeline-tech"><i class="fab fa-microsoft"></i> Azure</span>
-                 <span class="timeline-tech"><i class="fas fa-lock"></i> Azure AD</span>
-                 <span class="timeline-tech"><i class="fas fa-terminal"></i> PowerShell</span>
-                 <span class="timeline-tech"><i class="devicon-vmware-plain"></i> vCenter</span>
-                 <span class="timeline-tech"><i class="fas fa-user-check"></i> GDPR</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Sugar Land Petroleum, LLC -->
-    <div class="timeline-item" id="sugar-land-petroleum">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-            <div class="timeline-date">
-                <span><i class="far fa-calendar-alt"></i> April 2017 - March 2020</span>
-            </div>
-            <h3 class="timeline-title">Technical Consultant | Systems Administrator</h3>
-            <h4 class="timeline-subtitle">Sugar Land Petroleum, LLC</h4>
-            
-            <p class="timeline-description">
-                Client-side at a multi-site energy company &mdash; stabilizing aging infrastructure, standing up disaster recovery that didn't exist yet, and digitizing the paperwork that was eating people's days.
-            </p>
-            
-            <div class="timeline-highlights">
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Infrastructure & Network:</strong> Led network remediation (17 sites), optimized VPNs/sync/remote support, deployed global intranet/portal, built/maintained VDI.</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Cloud & Systems Admin:</strong> Managed Azure resources (HQ/Datacenter/Remote), ensured HA/uptime, implemented security standards/policies.</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Application & POS Support:</strong> Supported PDI, Passport, RADIANT PoS, Gilbarco Veeder-root; resolved escalations; coordinated POS upgrades/compliance (TCEQ).</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Technical Leadership:</strong> Onboarded/trained international teams, integrated Atera IT management, provided strategic IT/cloud consulting.</div>
-                </div>
-            </div>
-            
-            <div class="timeline-technologies">
-                <span class="timeline-tech"><i class="fab fa-microsoft"></i> Azure</span>
-                <span class="timeline-tech"><i class="fas fa-network-wired"></i> VPN</span>
-                <span class="timeline-tech"><i class="fas fa-desktop"></i> VDI</span>
-                <span class="timeline-tech"><i class="fas fa-gas-pump"></i> POS Systems</span>
-                <span class="timeline-tech"><i class="fas fa-tools"></i> Atera</span>
-            </div>
-        </div>
-    </div>
-
-     <!-- ERGOS Technology Partners -->
-    <div class="timeline-item" id="ergos">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-            <div class="timeline-date">
-                <span><i class="far fa-calendar-alt"></i> December 2011 – April 2017</span>
-            </div>
-            <h3 class="timeline-title">Senior Automation Architect / Network Operations Manager / Consultant Roles</h3>
-            <h4 class="timeline-subtitle">ERGOS Technology Partners</h4>
-            
-            <p class="timeline-description">
-                Where it started in tech. Progressed from intern to Senior Automation Architect across NOC management, service delivery optimization, and technical consulting &mdash; and where the automation instinct first took hold. Among the early wins: a reproducible &ldquo;New User Device Onboarding&rdquo; playbook for secure, repeatable provisioning, built before the industry had the SOAR vocabulary for it.
-            </p>
-            
-            <div class="timeline-highlights">
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Senior Automation Architect (May 2015 – Apr 2017):</strong> Led incident response, oversaw NOC evolution, enhanced service delivery automation (15k workstations, 2.5k servers), represented ERGOS externally.</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Network Operations Manager (May 2015 – Nov 2016):</strong> Developed/implemented security/compliance monitoring & remediation (1,100 clients), designed proactive monitoring/response automation, mentored junior engineers.</div>
-                </div>
-                 <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Network Operations & Automation Consultant (Sep 2013 – May 2015):</strong> Implemented 'Escalation Intervention' training, spearheaded LIVE Desk efficiency initiatives, developed SOPs/KB articles (vBulletin intranet).</div>
-                </div>
-                <div class="timeline-highlight">
-                    <i class="fas fa-check-circle"></i>
-                    <div><strong>Technical / Remote Support Consultant Roles (Dec 2011 – Sep 2013):</strong> Resolved complex service requests, conducted IT audits, standardized solutions, provided escalation support, refined LIVE Desk KPIs, provided T1/T2 support.</div>
-                </div>
-            </div>
-            
-            <div class="timeline-technologies">
-                <span class="timeline-tech"><i class="fas fa-cogs"></i> Automation</span>
-                <span class="timeline-tech"><i class="fas fa-network-wired"></i> NOC</span>
-                <span class="timeline-tech"><i class="fas fa-shield-alt"></i> Security Monitoring</span>
-                <span class="timeline-tech"><i class="fas fa-headset"></i> Service Desk</span>
-                <span class="timeline-tech"><i class="fas fa-book"></i> SOPs/KB</span>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<div class="education-section animate-on-scroll mt-5">
-    <h2 class="section-title">Education</h2>
-    
-    <div class="education-card">
-        <div class="education-logo">
-            <i class="fas fa-university"></i>
-        </div>
-        <div class="education-content">
-            <h3 class="education-degree">Bachelor of Business Administration in Management Information Systems</h3>
-            <h4 class="education-institution">University of Houston, C.T. Bauer College of Business, Houston, TX</h4>
-            <div class="education-date">January 2009 – May 2013</div>
-            <p class="education-description">
-                Developed a strong foundation in information systems, combining business acumen with technical proficiency.
-            </p>
-        </div>
-    </div>
-    
-    <div class="education-card">
-        <div class="education-logo">
-            <i class="fas fa-certificate"></i>
-        </div>
-        <div class="education-content">
-            <h3 class="education-degree">Certificate in Corporate Entrepreneurship</h3>
-            <h4 class="education-institution">University of Houston, Houston, TX</h4>
-            <div class="education-date">June 2011 – January 2012</div>
-            <p class="education-description">
-                 Focused on innovative business practices and entrepreneurial strategies within corporate environments.
-            </p>
-        </div>
-    </div>
-
-    <div class="education-card">
-        <div class="education-logo">
-            <i class="fas fa-certificate"></i>
-        </div>
-        <div class="education-content">
-            <h3 class="education-degree">Certificate in Corporate Intrapreneurship</h3>
-            <h4 class="education-institution">University of Houston, Houston, TX</h4>
-            <div class="education-date">January 2012 – June 2012</div>
-            <p class="education-description">
-                 Emphasized fostering innovation and entrepreneurial thinking within existing organizations.
-            </p>
-        </div>
-    </div>
-</div>
-
-
-<div class="experience-cta animate-on-scroll mt-5">
-    <a href="/resume" class="btn btn-primary">View Resume</a>
-    <a href="/projects" class="btn btn-outline">Explore Projects</a>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Animation for elements when they come into view
-    const animatedElements = document.querySelectorAll('.animate-on-scroll');
-    
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('in-view');
-            }
-        });
-    }, {
-        threshold: 0.1
-    });
-    
-    animatedElements.forEach(element => {
-        observer.observe(element);
-    });
-});
-</script>
+<p><a href="/work/service-operations/">Read about my service-delivery practice</a>. Business delivery is through Viyu Network Solutions.</p>
+<h2 id="zg-companies">ZG Companies</h2>
+<p><strong>Senior Technical Consultant</strong><br>December 2023 – March 2025</p>
+<p>Technology and operations work for a real-estate group, including Microsoft 365, property systems, and business-process automation.</p>
+<ul>
+<li>Microsoft 365 security, Teams and SharePoint governance, data protection, and device management.</li>
+<li>Property infrastructure, wireless planning, physical security systems, and IT management tools.</li>
+<li>Power Automate workflows, financial reconciliation, property walkthroughs, and operational reporting.</li>
+<li>Technical leadership, business-system research, and coordination across property operations.</li>
+</ul>
+<h2 id="stackadvisors">StackAdvisors, LLC</h2>
+<p><strong>Integrations Manager | Interim Azure C# .NET Engineer</strong><br>March 2023 – August 2023</p>
+<p>Application and cloud engineering work across Azure-hosted services, integration, monitoring, and deployment processes.</p>
+<ul>
+<li>Azure hosting review, cost optimization, monitoring, and logging.</li>
+<li>C# .NET Blazor troubleshooting and application integration.</li>
+<li>Azure DevOps delivery workflows and PowerShell automation.</li>
+<li>Technical guidance, developer support, and partner onboarding.</li>
+</ul>
+<h2 id="fulcrum">Fulcrum Technology Solutions (FTSC)</h2>
+<p><strong>Technical SME | Architect | Engineer | Project Manager</strong><br>December 2021 – March 2023</p>
+<p>Consulting engagements across privileged access, cloud infrastructure, identity, security reporting, and recovery work.</p>
+<ul>
+<li>CyberArk privileged-access and endpoint-privilege projects.</li>
+<li>Azure migration planning and cloud-security work.</li>
+<li>Directory services, hybrid identity, and infrastructure engineering.</li>
+<li>PowerShell automation, VMware reporting, and technical coordination.</li>
+</ul>
+<h2 id="sugar-land-petroleum">Sugar Land Petroleum, LLC</h2>
+<p><strong>Technical Consultant | Systems Administrator</strong><br>April 2017 – March 2020</p>
+<p>IT operations for a business with several locations, including network services, remote access, business applications, and local support.</p>
+<ul>
+<li>Network remediation, VPNs, remote support, and virtual desktop infrastructure.</li>
+<li>Azure administration, systems maintenance, and recovery planning.</li>
+<li>Point-of-sale application support, vendor coordination, and upgrade planning.</li>
+<li>Team onboarding, technical documentation, and operational consulting.</li>
+</ul>
+<h2 id="ergos">ERGOS Technology Partners</h2>
+<p><strong>Senior Automation Architect / Network Operations Manager / Consultant Roles</strong><br>December 2011 – April 2017</p>
+<p>My early IT career spans support, network operations, automation, and technical consulting.</p>
+<ul>
+<li><strong>Senior Automation Architect, May 2015 – April 2017:</strong> Incident response, network-operations development, service-delivery automation, and technical representation.</li>
+<li><strong>Network Operations Manager, May 2015 – November 2016:</strong> Monitoring, remediation workflows, operational coordination, and mentoring.</li>
+<li><strong>Network Operations &amp; Automation Consultant, September 2013 – May 2015:</strong> Escalation support, service-desk processes, operating procedures, and knowledge documentation.</li>
+<li><strong>Technical / Remote Support Consultant Roles, December 2011 – September 2013:</strong> Service requests, troubleshooting, IT reviews, and technical support.</li>
+</ul>
+<h2 id="education">Education</h2>
+<h3 id="bachelor-of-business-administration-in-management-information-systems">Bachelor of Business Administration in Management Information Systems</h3>
+<p>University of Houston, C.T. Bauer College of Business, Houston, TX<br>January 2009 – May 2013</p>
+<h3 id="certificate-in-corporate-entrepreneurship">Certificate in Corporate Entrepreneurship</h3>
+<p>University of Houston, Houston, TX<br>June 2011 – January 2012</p>
+<h3 id="certificate-in-corporate-intrapreneurship">Certificate in Corporate Intrapreneurship</h3>
+<p>University of Houston, Houston, TX<br>January 2012 – June 2012</p>
+<p><a href="/resume/">View résumé</a> · <a href="/work/">Explore work</a></p>

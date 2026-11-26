@@ -1,19 +1,19 @@
 ---
 layout: default
 title: Privacy Notice
-description: Privacy notice for sulemanji.com and Work With Me intake.
+description: Privacy notice for sulemanji.com and continuing service of previously submitted Work With Me cases.
 permalink: /privacy
 ---
 
 # Privacy Notice
 
-Version: 2026-07-11
+Version: 2026-11-25
 
-This notice covers the public portfolio site and Work With Me intake.
+This notice covers the public portfolio site and continuing service or retention obligations for cases submitted through Work With Me before new submissions were closed. New Work With Me intake is not available.
 
-## Work With Me data
+## Previously submitted Work With Me data
 
-AI participates in discovery and blueprint generation, and Suleman may review any thread.
+For cases submitted before intake closed, AI participates in discovery and blueprint generation, and Suleman may review any thread.
 
 Customers must not submit secrets, credentials, attachments, regulated records, sensitive third-party data, or material they lack authority to share.
 

@@ -1,17 +1,19 @@
 version: 1
 pages:
   - {id: home, class: core-profile, route: /}
-  - {id: about, class: core-profile, route: /about}
-  - {id: experience, class: core-profile, route: /experience}
-  - {id: projects, class: core-profile, route: /projects}
-  - {id: beyond, class: core-profile, route: /beyond}
+  - {id: about, class: core-profile, route: /about/}
+  - {id: experience, class: core-profile, route: /experience/}
+  - {id: work, class: core-profile, route: /work/}
+  - {id: contact, class: public-support, route: /contact/}
   - {id: writing, class: core-profile, route: /writing}
-  - {id: resume, class: core-profile, route: /resume}
-  - {id: work-with-me, class: service, route: /work-with-me}
-  - {id: story, class: public-support, route: /story}
+  - {id: resume, class: core-profile, route: /resume/}
   - {id: privacy, class: public-support, route: /privacy}
   - {id: affiliate-disclosure, class: public-support, route: /affiliate-disclosure}
-  - {id: agentic-msp-delivery, class: case-study, route: /case-studies/agentic-msp-delivery}
+  - {id: service-operations, class: case-study, route: /work/service-operations/}
+  - {id: market-systems, class: case-study, route: /work/market-systems/}
+  - {id: integrations, class: case-study, route: /work/integrations/}
+  - {id: knowledge-tools, class: case-study, route: /work/knowledge-tools/}
+  - {id: ff-cli, class: case-study, route: /work/ff-cli/}
+  - {id: mathematical-verification, class: case-study, route: /work/mathematical-verification/}
   - {id: microsoft-365-acquisition-integration, class: case-study, route: /case-studies/microsoft-365-acquisition-integration}
   - {id: rfms-operations, class: case-study, route: /case-studies/rfms-operations}
-  - {id: ff-cli, class: case-study, route: /case-studies/ff-cli}

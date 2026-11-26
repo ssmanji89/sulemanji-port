@@ -1,16 +1,8 @@
-- title: Home
-  url: /
-- title: About
-  url: /about
-- title: Experience
-  url: /experience
-- title: Projects
-  url: /projects
-- title: Contact
-  url: /work-with-me
-- title: Beyond Work
-  url: /beyond
+- title: Work
+  url: /work/
 - title: Writing
   url: /writing
-- title: Resume
-  url: /resume
+- title: About
+  url: /about/
+- title: Contact
+  url: /contact/

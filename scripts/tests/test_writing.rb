@@ -164,9 +164,9 @@ class WritingTest < Minitest::Test
     assert_equal 'Test fixture', html('/notes/fixture').at_css('h1')&.text
     assert_includes html('/notes/fixture').at_css('[data-writing-body]')&.text.to_s,
                     'This fixture tests rendering, not an actual engagement.'
-    assert_equal 'Writing on work and beyond.', html('/writing').at_css('h1')&.text
-    assert_includes html('/writing').text, 'interests beyond work'
-    assert_includes html('/writing').text, 'Paid links are disclosed when they appear.'
+    assert_equal 'Notes from the work and the questions around it.', html('/writing').at_css('h1')&.text
+    assert_includes html('/writing').text, 'Current articles remain available as ordinary links.'
+    assert_equal 'other', html('/writing').at_css('[data-writing-url="/notes/fixture"]')['data-category']
   end
 
   def test_unchanged_schema_v1_uses_compatibility_defaults
@@ -530,17 +530,17 @@ class WritingTest < Minitest::Test
     build
     verify
     assert_equal 1, html('/writing').css('#writing-empty').length
-    assert_empty html('/writing').css('#writing-latest, #writing-more')
+    assert_empty html('/writing').css('[data-writing-url]')
     assert_equal 1, html('/writing').css('#writing-legacy').length
   end
 
-  def test_one_article_is_featured_exactly_once
+  def test_one_article_is_rendered_once_without_a_featured_duplicate
     note('one')
     build
     verify
     assert_equal ['/notes/one'],
                  html('/writing').css('[data-writing-url]').map { |node| node['data-writing-url'] }
-    assert_empty html('/writing').css('#writing-more')
+    assert_equal 1, html('/writing').css('#writing-results').length
   end
 
   def test_order_is_publication_desc_then_permalink_asc_not_update_date
@@ -643,7 +643,7 @@ class WritingTest < Minitest::Test
     verify
     assert_equal ['/notes/agent-safety'],
                  html('/writing').css('[data-writing-legacy-url]').map { |node| node['data-writing-legacy-url'] }
-    assert_empty html('/writing').css('#writing-latest, #writing-legacy time')
+    assert_empty html('/writing').css('#writing-legacy time')
     assert_equal 'A write is a claim, not evidence', html('/notes/agent-safety').at_css('h1').text
     assert_equal before, File.binread(File.join(@source, relative))
     page = html('/notes/agent-safety')

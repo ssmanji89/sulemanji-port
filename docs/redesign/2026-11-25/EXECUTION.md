@@ -8,7 +8,7 @@ Updated: 2026-11-25
 - Fresh `origin/main`: `5ab5122b61a16ed0bb72067b8a346c67f3091bfa`.
 - Planning PR #96: open draft, head `fed5f8c7d82b1397f01805803742d788a1abff63`.
 - Implementation branch: `codex/portfolio-redesign-2026-11-25`.
-- Isolated worktree: `/Users/sully/Documents/GitHub/sulemanji/.worktrees/portfolio-redesign-2026-11-25`.
+- Implementation ran in a dedicated worktree isolated from the authenticated source checkout.
 - The branch started from fresh main. Only the 25 paths added by PR #96 were imported; no planning ancestry was merged.
 - Original checkout remains on `hotfix/pages-calendar-quote-fixture`. Its pre-existing changes remain untouched: `.DS_Store`, `case-studies/agentic-msp-delivery.md`, `docs/PUBLIC-CLAIMS-POLICY.md`, and untracked `backlog.md`. The same checkout has active article worktrees; none was reused.
 - Open PRs observed: #9, #61, #67, #71, #84, #85, #86, #90, and #96. No PR was merged, closed, or absorbed.
@@ -47,11 +47,12 @@ The first Ruby/Python test attempts exposed local environment assumptions; the c
 ## Implementation qualification
 
 - The current production Jekyll build passes. `bundle exec ruby scripts/verify_writing.rb` confirms 52 public articles, 0 drafts, and 1 legacy article. Discovery confirms 53 public article URLs, 52 feed entries, 53 article sitemap URLs, and 17 page sitemap URLs.
-- Ruby tests pass: 48 tests, 230 assertions. Python tests pass: 52 tests. Worker TypeScript check and tests pass: 16 files, 130 tests. Article social-card check and all policy/portfolio verifiers pass.
+- Ruby tests pass: 48 tests, 230 assertions. Python tests pass: 55 tests. Worker TypeScript check and tests pass: 16 files, 131 tests. Article social-card check and all policy/portfolio verifiers pass.
 - Browser preview at `http://127.0.0.1:4000/` confirms the homepage positioning, all six work-case routes, Viyu business destination, navigation disclosure, and Writing category + AND text filtering. The filter query/category restore after reload. Preview is local and does not prove production deployment.
 - Browser review caught a crowded header at tablet width. The responsive header now moves navigation into a disclosure menu at 1280px; opening it exposes Work, Writing, About, and Contact. The disclosure has a visible focus target and all items remain accessible.
 - `jekyll serve` is unavailable in the local Ruby install because `webrick` is missing. The production-built `_site` is being served locally with a path-aware Python preview server; no repository dependency was added.
 - Remaining live release gate: Stripe and Cloudflare read-only connectors require reauthentication, so no live session, payment, callback, database, or Worker state was returned. Owner: Suleman or designated release operator. Exact next action: reauthenticate both connections for the intended Sulemanji account, then read and reconcile existing paid cases, unpaid hosted Checkout Sessions/Payment Links, pending callbacks, scheduled work, refunds/disputes, and retention. Record only sanitized disposition and a private evidence reference. Do not change records or settings in this step.
+- Independent review of `0ab98ae..b40e53a` found no Critical issue. The reviewer’s privacy, source-config, legacy-CTA, and generated-output findings were fixed. The alleged missing quote servicing test was withdrawn after confirming `worker/test/calendar.test.ts` already proves a valid retired-mode case can complete a balance checkout; an expired-quote denial regression test was added. Final-head review is pending.
 
 The preview's 41-article snapshot was not used; the source baseline and current catalog drive Writing output.
 
@@ -62,11 +63,11 @@ The preview's 41-article snapshot was not used; the source baseline and current 
 | T01 — Source and decision reconciliation | Done | Fresh-main worktree and SHAs recorded; baseline manifest complete; policy decision applied and safety checks pass; checkpoint commit `0ab98ae` |
 | T02 — Jekyll portfolio redesign | Implemented; reviewed next | Shared shell, homepage, About, Contact, six work cases, seven accessible diagrams, retained profile pages and route aliases |
 | T03 — Offer retirement | Implemented; live disposition gated | Admission endpoints return 410 before parsing/writes/provider calls unless explicitly active; paid-case servicing and callbacks remain; unit tests pass |
-| T04 — Writing preservation and browsing | Implemented | Server-rendered eligible catalog preserved, article URLs unchanged, categories/search layered progressively; 48 Ruby tests and 52 Python tests pass |
+| T04 — Writing preservation and browsing | Implemented | Server-rendered eligible catalog preserved, article URLs unchanged, categories/search layered progressively; 48 Ruby tests and 55 Python tests pass |
 | T05 — Qualification and release safety | Engineering checks pass; live evidence gated | Production build and verifiers pass; current Stripe/Cloudflare read-only access needs reauthentication |
 | T06 — Automation and safety verification | Done | Discovery, public-safety, Viyu positioning, offer-retirement, portfolio, and Priority Discovery verifiers pass |
 | T07 — Build and browser qualification | Done | Production build and local browser review pass; local preview retained on port 4000 |
-| T08 — Independent review and implementation PR | In progress | Review pending on committed implementation head; PR will follow reviewer fixes and exact-head requalification |
+| T08 — Independent review and implementation PR | In progress | First read-only review completed; fixes and requalification pass; final-head review and PR publication pending |
 
 ## Overall state
 
@@ -74,7 +75,7 @@ The preview's 41-article snapshot was not used; the source baseline and current 
 - Goal acknowledged: yes, this local implementation run is active.
 - Source implemented: yes, in the isolated worktree; not yet published.
 - Tests passed: yes, current checks listed above.
-- Independent review: not yet.
+- Independent review: first pass done; final-head recheck pending.
 - Implementation PR: not yet created.
 - Merged: no; merge is outside this authorization.
 - Production verified: no.

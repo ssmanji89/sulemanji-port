@@ -26,6 +26,16 @@ def public_files():
                 yield p
 
 
+def public_output_files(site_root=None):
+    site_root = Path(site_root) if site_root is not None else ROOT / "_site"
+    if not site_root.is_dir():
+        return
+    text_suffixes = {".css", ".html", ".js", ".json", ".md", ".txt", ".xml", ".yaml", ".yml"}
+    for path in site_root.rglob("*"):
+        if path.is_file() and path.suffix.lower() in text_suffixes:
+            yield path
+
+
 def scan_files(paths):
     failures = []
     for path in paths:
@@ -38,7 +48,7 @@ def scan_files(paths):
 
 
 def main():
-    failures = scan_files(public_files())
+    failures = scan_files([*public_files(), *public_output_files()])
     if failures:
         print("Public-safety verification failed:")
         for f in failures:

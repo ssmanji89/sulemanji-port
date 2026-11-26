@@ -8,7 +8,7 @@ from html.parser import HTMLParser
 from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
-from scripts.verify_public_safety import scan_files
+from scripts.verify_public_safety import public_output_files, scan_files
 
 
 class WritingEntries(HTMLParser):
@@ -30,6 +30,13 @@ class RedesignShellTests(unittest.TestCase):
         self.assertEqual(labels, ["Work", "Writing", "About", "Contact"])
         header = (ROOT / "_includes/site-header.html").read_text()
         self.assertIn("https://viyu.net/contact-support/contact-us/", header)
+
+    def test_legacy_business_case_calls_go_directly_to_viyu(self):
+        destination = "https://viyu.net/contact-support/contact-us/"
+        for name in ("microsoft-365-acquisition-integration", "rfms-operations"):
+            source = (ROOT / "case-studies" / f"{name}.md").read_text()
+            self.assertIn(destination, source)
+            self.assertNotIn("](/contact/)", source)
 
     def test_shared_redirect_fallback_has_no_javascript_dependency(self):
         head = (ROOT / "_includes/head-custom.html").read_text()
@@ -86,6 +93,24 @@ class RedesignShellTests(unittest.TestCase):
             findings = scan_files([fixture])
         self.assertEqual(len(findings), 1)
         self.assertIn("client name", findings[0])
+
+    def test_generated_public_output_is_scanned(self):
+        with tempfile.TemporaryDirectory() as directory:
+            site = Path(directory) / "_site"
+            fixture = site / "work" / "case" / "index.html"
+            fixture.parent.mkdir(parents=True)
+            fixture.write_text("saved 20 hours")
+            output_files = list(public_output_files(site))
+            findings = scan_files(output_files)
+        self.assertEqual(output_files, [fixture])
+        self.assertEqual(len(findings), 1)
+        self.assertIn("unsupported hours-saved claim", findings[0])
+
+    def test_privacy_notice_limits_intake_to_previously_submitted_cases(self):
+        notice = (ROOT / "privacy.md").read_text()
+        self.assertIn("New Work With Me intake is not available.", notice)
+        self.assertIn("cases submitted before intake closed", notice)
+        self.assertIn("90 days after case closure", notice)
 
     def test_stale_resume_assets_are_absent_from_public_output(self):
         site = ROOT / "_site"

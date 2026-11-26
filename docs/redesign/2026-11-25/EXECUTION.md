@@ -52,7 +52,7 @@ The first Ruby/Python test attempts exposed local environment assumptions; the c
 - Browser review caught a crowded header at tablet width. The responsive header now moves navigation into a disclosure menu at 1280px; opening it exposes Work, Writing, About, and Contact. The disclosure has a visible focus target and all items remain accessible.
 - `jekyll serve` is unavailable in the local Ruby install because `webrick` is missing. The production-built `_site` is being served locally with a path-aware Python preview server; no repository dependency was added.
 - Remaining live release gate: Stripe and Cloudflare read-only connectors require reauthentication, so no live session, payment, callback, database, or Worker state was returned. Owner: Suleman or designated release operator. Exact next action: reauthenticate both connections for the intended Sulemanji account, then read and reconcile existing paid cases, unpaid hosted Checkout Sessions/Payment Links, pending callbacks, scheduled work, refunds/disputes, and retention. Record only sanitized disposition and a private evidence reference. Do not change records or settings in this step.
-- Independent review of `0ab98ae..b40e53a` found no Critical issue. The reviewer’s privacy, source-config, legacy-CTA, and generated-output findings were fixed. The alleged missing quote servicing test was withdrawn after confirming `worker/test/calendar.test.ts` already proves a valid retired-mode case can complete a balance checkout; an expired-quote denial regression test was added. Final-head review is pending.
+- Independent review of `0ab98ae..e3f5e68` found no Critical or Important issue. The reviewer’s privacy, source-config, legacy-CTA, and generated-output findings were fixed. The alleged missing quote servicing test was withdrawn after confirming `worker/test/calendar.test.ts` already proves a valid retired-mode case can complete a balance checkout; an expired-quote denial regression test was added.
 
 The preview's 41-article snapshot was not used; the source baseline and current catalog drive Writing output.
 
@@ -67,7 +67,7 @@ The preview's 41-article snapshot was not used; the source baseline and current 
 | T05 — Qualification and release safety | Engineering checks pass; live evidence gated | Production build and verifiers pass; current Stripe/Cloudflare read-only access needs reauthentication |
 | T06 — Automation and safety verification | Done | Discovery, public-safety, Viyu positioning, offer-retirement, portfolio, and Priority Discovery verifiers pass |
 | T07 — Build and browser qualification | Done | Production build and local browser review pass; local preview retained on port 4000 |
-| T08 — Independent review and implementation PR | In progress | First read-only review completed; fixes and requalification pass; final-head review and PR publication pending |
+| T08 — Independent review and implementation PR | In progress | Independent review passes on `e3f5e689`; exact-head checks pass; branch publication and PR creation pending |
 
 ## Overall state
 
@@ -75,7 +75,7 @@ The preview's 41-article snapshot was not used; the source baseline and current 
 - Goal acknowledged: yes, this local implementation run is active.
 - Source implemented: yes, in the isolated worktree; not yet published.
 - Tests passed: yes, current checks listed above.
-- Independent review: first pass done; final-head recheck pending.
+- Independent review: pass on `e3f5e689`; final status will be read back on the published PR head.
 - Implementation PR: not yet created.
 - Merged: no; merge is outside this authorization.
 - Production verified: no.

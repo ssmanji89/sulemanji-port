@@ -3,6 +3,10 @@
   "name": "sulemanji-site",
   "main": "src/site/index.ts",
   "compatibility_date": "2026-11-26",
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "www.sulemanji.com/*", "zone_name": "sulemanji.com" }
+  ],
   "assets": {
     "directory": "../_site",
     "binding": "ASSETS",

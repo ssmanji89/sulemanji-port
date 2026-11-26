@@ -46,6 +46,8 @@ def font_path(name):
         Path(os.environ.get("DEJAVU_FONT_DIR", "")),
         Path("/usr/share/fonts/truetype/dejavu"),
         Path("/usr/local/share/fonts"),
+        Path.home() / "Library" / "Fonts",
+        Path.home() / ".local" / "share" / "fonts",
     ]
     for root in roots:
         candidate = root / name
@@ -93,6 +95,14 @@ def render_card(title, author, output):
     image.save(output, format="PNG", optimize=False, compress_level=9)
 
 
+def cards_match(first, second):
+    try:
+        with Image.open(first) as expected, Image.open(second) as actual:
+            return expected.size == actual.size and expected.convert("RGBA").tobytes() == actual.convert("RGBA").tobytes()
+    except (OSError, ValueError):
+        return False
+
+
 def generate(source, *, as_of, check=False, write_missing=False):
     source = Path(source).resolve()
     output_dir = source / "assets" / "images" / "articles"
@@ -115,10 +125,10 @@ def generate(source, *, as_of, check=False, write_missing=False):
             target = output_dir / name
             generated = Path(temporary) / name if check or write_missing else target
             render_card(article["title"], "Suleman Manji", generated)
-            if write_missing and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
+            if write_missing and (not target.is_file() or not cards_match(generated, target)):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(generated, target)
-            elif check and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
+            elif check and (not target.is_file() or not cards_match(generated, target)):
                 failures.append(f"{route}: generated social card is stale or missing")
     return failures
 

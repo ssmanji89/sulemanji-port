@@ -1,6 +1,7 @@
 import datetime as dt
 import tempfile
 import unittest
+from PIL.PngImagePlugin import PngInfo
 from pathlib import Path
 from unittest.mock import patch
 
@@ -26,6 +27,21 @@ class SocialCardTests(unittest.TestCase):
                 generate(source, as_of=dt.date(2026, 11, 2), write_missing=True)
                 self.assertEqual(b"generated", target.read_bytes())
                 self.assertEqual(2, render.call_count)
+
+    def test_check_accepts_equivalent_pixels_with_different_png_metadata(self):
+        article = {"permalink": "/notes/example", "title": "Example", "social_image": None}
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            target = source / "assets" / "images" / "articles" / "example-social.png"
+            target.parent.mkdir(parents=True)
+            render_card("Example", "Suleman Manji", target)
+            with Image.open(target) as image:
+                equivalent = image.copy()
+            metadata = PngInfo()
+            metadata.add_text("generator", "different encoder")
+            equivalent.save(target, pnginfo=metadata)
+            with patch("scripts.generate_article_images.article_inventory", return_value=([article], [])):
+                self.assertEqual([], generate(source, as_of=dt.date(2026, 11, 2), check=True))
 
     def test_card_is_deterministic_1200_by_630(self):
         with tempfile.TemporaryDirectory() as temp:

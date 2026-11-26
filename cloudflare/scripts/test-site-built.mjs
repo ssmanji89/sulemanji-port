@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -8,8 +8,9 @@ import { fileURLToPath } from 'node:url';
 const here = fileURLToPath(new URL('.', import.meta.url));
 const cloudflareDir = resolve(here, '..');
 const root = resolve(cloudflareDir, '..');
-const temp = await mkdtemp(join(tmpdir(), 'sulemanji-site-built-'));
-const site = join(temp, 'site');
+const suppliedSite = process.env.SITE_BUILD_PATH ? resolve(process.env.SITE_BUILD_PATH) : null;
+const temp = suppliedSite ? null : await mkdtemp(join(tmpdir(), 'sulemanji-site-built-'));
+const site = suppliedSite || join(temp, 'site');
 const config = join(cloudflareDir, `.wrangler-site-built-${process.pid}.jsonc`);
 let worker;
 
@@ -28,8 +29,11 @@ async function freePort() {
 }
 
 try {
-  run('bundle', ['exec', 'jekyll', 'build', '--destination', site, '--quiet'], { env: { ...process.env, JEKYLL_ENV: 'production' } });
-  run('python3', ['scripts/build_site_manifest.py', '--site-root', site, '--baseline', 'docs/redevelopment/2026-11-26/article-baseline.json', '--allow-dirty', '--output', join(site, 'release.json')]);
+  if (!suppliedSite) {
+    run('bundle', ['exec', 'jekyll', 'build', '--destination', site, '--quiet'], { env: { ...process.env, JEKYLL_ENV: 'production' } });
+    run('python3', ['scripts/build_site_manifest.py', '--site-root', site, '--baseline', 'docs/redevelopment/2026-11-26/article-baseline.json', '--allow-dirty', '--output', join(site, 'release.json')]);
+  }
+  try { await stat(join(site, 'release.json')); } catch { throw new Error(`release.json is missing under ${site}`); }
   const release = JSON.parse(await readFile(join(site, 'release.json'), 'utf8'));
   const configData = {
     name: 'sulemanji-site-test',
@@ -72,5 +76,5 @@ try {
 } finally {
   if (worker && worker.exitCode === null) worker.kill('SIGTERM');
   await rm(config, { force: true });
-  await rm(temp, { recursive: true, force: true });
+  if (temp) await rm(temp, { recursive: true, force: true });
 }

@@ -52,7 +52,7 @@ The FBI's [holiday-scams guidance](https://www.fbi.gov/how-we-can-help-you/scams
 
 No single field creates a universal pass. HTTPS protects the connection to a domain; it does not prove that the operator behind that domain is honest. A real phone number does not prove inventory. A favorable review does not rewrite the refund policy. The decision is whether the independent evidence forms one consistent chain.
 
-## How do you run a five-minute prepayment check?
+## How do you run the prepayment check?
 
 Start a new path instead of continuing from the ad. The point is to prevent the same potentially misleading surface from supplying the identity, route, offer, and payment instructions you are trying to verify.
 
@@ -79,8 +79,6 @@ Do not treat a dramatic discount as proof of fraud or proof of opportunity. Trea
 Act on the payment path first. The FBI advises contacting the credit-card company or bank to dispute suspicious charges and reporting holiday scams to the [Internet Crime Complaint Center](https://www.ic3.gov/). The FTC accepts scam reports at [ReportFraud.ftc.gov](https://reportfraud.ftc.gov/).
 
 Preserve the ad, URL, product page, order confirmation, payment record, messages, and promised delivery date before pages or accounts disappear. Contact the financial institution through a number or app you retrieve independently, not through the suspicious seller's page or message.
-
-If you disclosed a reused password, change it anywhere it was reused and enable multifactor authentication where available. If you supplied financial or identity information, follow the institution's instructions and the FTC's recovery guidance for the information involved. Do not pay a second party that promises guaranteed recovery.
 
 ## When is this guide intentionally conservative?
 

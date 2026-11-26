@@ -82,6 +82,12 @@ module Sulemanji
       errors
     end
 
+    def topics_with_items(topics:, items:)
+      topics.select do |topic_id, _label|
+        items.any? { |item| Array(item['topics']).include?(topic_id) }
+      end
+    end
+
     def build(site)
       root = site.source
       read = ->(name) { YAML.safe_load(File.read(File.join(root, '_data', name)), aliases: false) || [] }
@@ -120,7 +126,7 @@ module Sulemanji
       page.data['sitemap'] = false
       page.content = JSON.pretty_generate(schema_version: 1, items: catalog['items'], topics: catalog['topics'], relations: catalog['relations'])
       site.pages << page
-      catalog['topics'].each do |topic_id, label|
+      ContentCatalog.topics_with_items(topics: catalog['topics'], items: catalog['items']).each do |topic_id, label|
         topic_page = Jekyll::PageWithoutAFile.new(site, site.source, 'explore/topics', "#{topic_id}.html")
         topic_page.data['layout'] = 'content-topic'
         topic_page.data['title'] = label

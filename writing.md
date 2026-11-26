@@ -12,6 +12,11 @@ hero_lede: "Current articles remain available as ordinary links. Search titles a
 {% assign articles = site.data.writing_discovery.articles %}
 {% assign legacy_notes = site.data.writing_discovery.legacy %}
 
+<section class="writing-discover" aria-label="Explore related work">
+  <p>Writing moves between professional practice, research, and independent interests.</p>
+  <a class="text-link" href="{{ '/explore/' | relative_url }}">Explore projects, subjects, and related paths</a>
+</section>
+
 <section class="writing-browser" data-writing-browser aria-label="Browse writing">
   <div class="writing-controls" data-writing-controls hidden>
     <label for="writing-query">Search articles</label>

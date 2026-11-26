@@ -52,7 +52,7 @@ REQUIRED_BY_FILE = {
         "Management Information Systems",
     ],
     "index.html": [
-        "Dependable operations. Practical automation.",
+        "I’m a Sr. Services Engineer at Viyu Network Solutions.",
         "contact-support/contact-us/",
     ],
     "contact.md": [

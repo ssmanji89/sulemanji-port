@@ -552,6 +552,9 @@ html[data-theme="dark"] .field-error { color: #ffb3aa; }
 .work-layout .case-page { margin-top: .5rem; }
 .work-layout .case-diagram { margin: 2rem auto; padding: 1rem; background: var(--surface); border: 1px solid var(--border); }
 .work-layout .case-diagram figcaption { margin-top: .75rem; color: var(--text-muted); font-size: .9rem; }
+.work-layout .figure-description { margin-top: .75rem; color: var(--text-muted); font-size: .9rem; }
+.work-layout .figure-description summary { color: var(--text); cursor: pointer; font-weight: 650; }
+.work-layout .figure-description p { max-width: 72ch; margin: .65rem 0 .25rem; }
 .about .work-card h3 a { color: var(--text); text-decoration-color: var(--border-strong); }
 .about-career { max-width: 74ch; margin: 3rem auto; padding-top: 2rem; border-top: 1px solid var(--border-strong); }
 .about-career h2 { margin: 0 0 .7rem; padding: 0; border: 0; }

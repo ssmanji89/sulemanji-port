@@ -1,9 +1,10 @@
 ---
-layout: work-case
+layout: work-tool
 title: "Learning fantasy football by building a tool"
 description: "League-specific valuation, draft preparation, and decisions that change with the time horizon."
 permalink: /work/ff-cli/
 case_slug: ff-cli
+content_id: ff-cli
 hero_eyebrow: "Personal decision tools"
 hero_title: "Learning fantasy football by building a tool"
 description: "League-specific valuation, draft preparation, and decisions that change with the time horizon."

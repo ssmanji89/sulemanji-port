@@ -1,0 +1,1137 @@
+{
+  "baseline_main_sha": "5ab5122b61a16ed0bb72067b8a346c67f3091bfa",
+  "planning_pr_head_sha": "fed5f8c7d82b1397f01805803742d788a1abff63",
+  "as_of": "2026-11-25",
+  "eligible_count": 52,
+  "legacy_count": 1,
+  "articles": [
+    {
+      "source_path": "notes/accessibility-statement-maintenance-contract.md",
+      "canonical_url": "/notes/accessibility-statement-maintenance-contract",
+      "title": "An accessibility statement is a maintenance contract, not a badge",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-10",
+        "time_horizon": "durable",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "6f52e211f849d1fcaa1532a9f2782a2de29086facacfd097ae5a6a8f9ec7ab0f"
+    },
+    {
+      "source_path": "notes/agent-safety-from-incidents.md",
+      "canonical_url": "/notes/agent-safety",
+      "title": "A write is a claim, not evidence",
+      "classification": "legacy",
+      "metadata": {
+      },
+      "sha256": "47bc780cfef5b0ca8b7dc51fb1041fd408bb8e665be0dfe277b51f63fc4ffa78"
+    },
+    {
+      "source_path": "notes/ai-acceleration-estimate-capacity-plan.md",
+      "canonical_url": "/notes/ai-acceleration-estimate-capacity-plan",
+      "title": "An AI acceleration estimate is not a capacity plan",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-07",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "ai-assisted-delivery",
+          "service-operations"
+        ]
+      },
+      "sha256": "b8f4d3176b48e9510e10621f1cad30ed5d46753c18c0e624aacfcb804a209b91"
+    },
+    {
+      "source_path": "notes/ai-agent-identity-authorization.md",
+      "canonical_url": "/notes/ai-agent-identity-authorization",
+      "title": "An AI agent identity is not an authorization decision",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 1,
+        "article_type": "analysis",
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-24",
+        "time_horizon": "durable",
+        "reader": "architect",
+        "topics": [
+          "identity",
+          "ai-assisted-delivery",
+          "service-operations"
+        ]
+      },
+      "sha256": "c03108bd27471b88dec830edb14e81b2324e53b514c5d4cfd35ef89324e73a9d"
+    },
+    {
+      "source_path": "notes/ai-application-scanning-pilot.md",
+      "canonical_url": "/notes/ai-application-scanning-pilot",
+      "title": "Pilot AI application scanning as a sensor, not a gate",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-30",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "ai-assisted-delivery",
+          "service-operations"
+        ]
+      },
+      "sha256": "0dced416c012fef3460a53cdc16724fc5ecb97959efa8b0bca0dc6eb4e44d4fc"
+    },
+    {
+      "source_path": "notes/ai-protein-binding-evidence-ladder.md",
+      "canonical_url": "/notes/ai-protein-binding-evidence-ladder",
+      "title": "A protein binder is not a medicine",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "research-note",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-24",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "ai-assisted-delivery"
+        ]
+      },
+      "sha256": "425e9c042793a50930fb694830351c89a3b7e1e5298519ae2f97d4b95a1a3a60"
+    },
+    {
+      "source_path": "notes/ai-security-patch-acceptance.md",
+      "canonical_url": "/notes/ai-security-patch-acceptance",
+      "title": "An AI security patch is a testable claim",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-24",
+        "time_horizon": "durable",
+        "reader": "architect",
+        "topics": [
+          "ai-assisted-delivery",
+          "service-operations",
+          "infrastructure"
+        ]
+      },
+      "sha256": "fb3f3b2f23893610230097803ecdae2485ce23dc484318b4ff173d0b1c239004"
+    },
+    {
+      "source_path": "notes/ai-vulnerability-triage-evidence.md",
+      "canonical_url": "/notes/ai-vulnerability-triage-evidence",
+      "title": "AI changes the patch clock, not the evidence",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 1,
+        "article_type": "analysis",
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-23",
+        "time_horizon": "durable",
+        "reader": "it-leader",
+        "topics": [
+          "ai-assisted-delivery",
+          "service-operations",
+          "infrastructure"
+        ]
+      },
+      "sha256": "1925d229897f81ae5bef292287c40f54345f07566409e232a11550e4d35a792a"
+    },
+    {
+      "source_path": "notes/baseline-security-mode-change-record.md",
+      "canonical_url": "/notes/baseline-security-mode-change-record",
+      "title": "Baseline Security Mode needs a change record, not a bulk switch",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-25",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "microsoft-365",
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "de2a3d34ea4a0d5de00e380812bded17e89520c10a7c48ea9199dd13dcdcce56"
+    },
+    {
+      "source_path": "notes/bepicolombo-milestone-success-ranges.md",
+      "canonical_url": "/notes/bepicolombo-milestone-success-ranges",
+      "title": "BepiColombo shows why milestone success needs ranges",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-25",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "astronomy",
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "faaa1ee8349160a9bc33c58332a0c23a0642a90d2a54a0ee87a4a1f736ff257d"
+    },
+    {
+      "source_path": "notes/blockntlmv1sso-exit-plan.md",
+      "canonical_url": "/notes/blockntlmv1sso-exit-plan",
+      "title": "BlockNtlmv1SSO needs an exit plan, not a patch rollback",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-09",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "identity",
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "bd8b136292a9b946a926e870e3f8e57c0b1448354cd1b61019f47d81f8eba59a"
+    },
+    {
+      "source_path": "notes/build-an-ai-kill-switch-defender-sophos-agentic-ops.md",
+      "canonical_url": "/notes/build-an-ai-kill-switch-defender-sophos-agentic-ops",
+      "title": "Build an AI Kill Switch with Defender or Sophos and Agentic Ops",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-03",
+        "time_horizon": "durable",
+        "reader": "it-leader",
+        "topics": [
+          "identity",
+          "ai-assisted-delivery",
+          "service-operations"
+        ]
+      },
+      "sha256": "a578453d282354165f86574731f60e41ee5634549ba867a6b659fbd54ac24694"
+    },
+    {
+      "source_path": "notes/chatgpt-locked-chats-compliance-boundary.md",
+      "canonical_url": "/notes/chatgpt-locked-chats-compliance-boundary",
+      "title": "A locked ChatGPT conversation is not a compliance boundary",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-02",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "ai-assisted-delivery",
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "5952e96e31d141da1c85bd16cc69bfff907092fc370a79da898be92ef98eb71a"
+    },
+    {
+      "source_path": "notes/classic-outlook-november-change-rds-help-desks.md",
+      "canonical_url": "/notes/classic-outlook-november-change-rds-help-desks",
+      "title": "Classic Outlook’s November change for RDS help desks",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-06",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "microsoft-365",
+          "service-operations"
+        ]
+      },
+      "sha256": "b321b19af9532a389ebe04dfbe7643a9a0b4bf97efc9153c9280ccb993e37481"
+    },
+    {
+      "source_path": "notes/copilot-adoption-metrics-data-quality-gate.md",
+      "canonical_url": "/notes/copilot-adoption-metrics-data-quality-gate",
+      "title": "Copilot adoption metrics need a data-quality gate",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-08",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "ai-assisted-delivery",
+          "service-operations"
+        ]
+      },
+      "sha256": "2792b7d3ded258f8a323642e4931526b478204f3fab7839b8b5dbc5312242474"
+    },
+    {
+      "source_path": "notes/cyber-risk-register-executive-decision.md",
+      "canonical_url": "/notes/cyber-risk-register-executive-decision",
+      "title": "A cyber risk register is not an executive decision",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-26",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "8bfbecbf4f3ca4e9d8c6efd6d448126b1ec7ab8a4cc4affb3e80fde0439b8778"
+    },
+    {
+      "source_path": "notes/dependency-reachability-priority-signal.md",
+      "canonical_url": "/notes/dependency-reachability-priority-signal",
+      "title": "Reachability is a priority signal, not a closure rule",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-29",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "f8c5fe678d539663f3d5403803ce275f67f0ddda3336bf394a3e7d9a95fffb84"
+    },
+    {
+      "source_path": "notes/digital-sovereignty-workload-decision.md",
+      "canonical_url": "/notes/digital-sovereignty-workload-decision",
+      "title": "A sovereign cloud label is not a workload decision",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-27",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "43334d033cfb47fb1cff179b8ce19567b0704e8032508a6a22cdfa2b79867320"
+    },
+    {
+      "source_path": "notes/dotnet-8-end-of-support-readiness.md",
+      "canonical_url": "/notes/dotnet-8-end-of-support-readiness",
+      "title": "The .NET 8 deadline needs more than a runtime inventory",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-26",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "business-applications",
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "0adae698308e92ccf264fa234bd341d084c096ed6a2d083bd635da77d55191f2"
+    },
+    {
+      "source_path": "notes/emergency-patching-service-decision.md",
+      "canonical_url": "/notes/emergency-patching-service-decision",
+      "title": "Emergency patching is a service decision",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 1,
+        "article_type": "analysis",
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-23",
+        "time_horizon": "durable",
+        "reader": "service-leader",
+        "topics": [
+          "service-operations",
+          "infrastructure"
+        ]
+      },
+      "sha256": "441abbe55d661fd33f4d02f6efae96d292c7ba972c8643135cb0ab4419c7df4d"
+    },
+    {
+      "source_path": "notes/ercot-data-center-disclosure-project-state.md",
+      "canonical_url": "/notes/ercot-data-center-disclosure-project-state",
+      "title": "Treat ERCOT disclosure as a project-state release",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-25",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "db32b4eb0dbc1a81ad5b39632c1702323425b88eece4a9ca65e1b9f05273543c"
+    },
+    {
+      "source_path": "notes/escapade-designed-wait-state.md",
+      "canonical_url": "/notes/escapade-designed-wait-state",
+      "title": "ESCAPADE turns waiting into a designed mission state",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-07",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "astronomy",
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "196aa17b958b7a875ebb5827018db351a6655feb010639c8067ae084b8ceb2e2"
+    },
+    {
+      "source_path": "notes/ews-reprieve-migration-evidence.md",
+      "canonical_url": "/notes/ews-reprieve-migration-evidence",
+      "title": "Treat the EWS reprieve as borrowed time",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-26",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "microsoft-365",
+          "business-applications",
+          "service-operations"
+        ]
+      },
+      "sha256": "fd842f54b755404ecc04468e254de7f0ec15ae976cac59188fc60cb1b48b33a4"
+    },
+    {
+      "source_path": "notes/executive-call-payment-authorization.md",
+      "canonical_url": "/notes/executive-call-payment-authorization",
+      "title": "A convincing executive call is not payment authorization",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-08",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "e9acda92473709446f1b5e7400a994d83ce5519a7d6b4811a3a14655e82ee96a"
+    },
+    {
+      "source_path": "notes/git-security-patch-execution-surfaces.md",
+      "canonical_url": "/notes/git-security-patch-execution-surfaces",
+      "title": "A Git security patch is not a workstation update",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-11",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "97ad3ca3b320e9d5177ad90ec39a6bb8337f07dc8f19d0ecf87d280822e78ff2"
+    },
+    {
+      "source_path": "notes/github-actions-lockfile-trust-decision.md",
+      "canonical_url": "/notes/github-actions-lockfile-trust-decision",
+      "title": "A GitHub Actions lockfile is not a trust decision",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-30",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "555917a2cc5797e46202bf1163401f38f2af94a909bb23d196b6a70fb0222c34"
+    },
+    {
+      "source_path": "notes/github-actions-log-secret-response.md",
+      "canonical_url": "/notes/github-actions-log-secret-response",
+      "title": "A GitHub Actions log secret is an incident, not an alert",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-10",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "identity",
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "5b41eeb30b2802e8784875858521a313b4e1e4cfbd7ad20481d6da6187a47132"
+    },
+    {
+      "source_path": "notes/github-notification-reason-work-queue.md",
+      "canonical_url": "/notes/github-notification-reason-work-queue",
+      "title": "A GitHub notification reason is not a work queue",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-24",
+        "time_horizon": "timely",
+        "reader": "service-leader",
+        "topics": [
+          "service-operations"
+        ]
+      },
+      "sha256": "8086ef4d87d534cfd311f715cf5f2e77cd417b8ed15ca98483c0a09234fb5233"
+    },
+    {
+      "source_path": "notes/github-security-advisory-decision-rights.md",
+      "canonical_url": "/notes/github-security-advisory-decision-rights",
+      "title": "Delegate GitHub security advisories by decision, not title",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-25",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "identity",
+          "service-operations",
+          "infrastructure"
+        ]
+      },
+      "sha256": "fde0648cf318100d3b9f0d9bcc378e46572efea13a87798d95b910b27d0b4f81"
+    },
+    {
+      "source_path": "notes/github-ssh-change-client-test.md",
+      "canonical_url": "/notes/github-ssh-change-client-test",
+      "title": "GitHub's SSH change is a client test, not a key count",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-27",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "6188aaa26485976908af5e5bac57dfd9fb96e983eb64f835bab1f010e2514c3e"
+    },
+    {
+      "source_path": "notes/github-stateless-tokens-two-runbooks.md",
+      "canonical_url": "/notes/github-stateless-tokens-two-runbooks",
+      "title": "GitHub's stateless tokens need two runbooks",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-07",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "identity",
+          "infrastructure"
+        ]
+      },
+      "sha256": "6246362ce1d9215c39ec08c13180c51adff09b914265fc75905624bbf0c72ff6"
+    },
+    {
+      "source_path": "notes/github-user-id-usage-report-migration.md",
+      "canonical_url": "/notes/github-user-id-usage-report-migration",
+      "title": "Treat GitHub's new user ID as a schema migration",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-24",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "7a97d26191538ee990d8c79b1c89fd0da0da04da1dbf86c0c9c9ce225bd64cbb"
+    },
+    {
+      "source_path": "notes/github-webhook-ip-range-authentication.md",
+      "canonical_url": "/notes/github-webhook-ip-range-authentication",
+      "title": "A webhook IP range is not sender authentication",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-30",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "56c3fb827d1943c42a2fb9c1e66ad9b1cdbdc8e9bd21823bd8774a93f9837d8e"
+    },
+    {
+      "source_path": "notes/google-workspace-agent-interface-inventory.md",
+      "canonical_url": "/notes/google-workspace-agent-interface-inventory",
+      "title": "Google Workspace agent governance starts with an interface inventory",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-25",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "identity",
+          "service-operations",
+          "ai-assisted-delivery"
+        ]
+      },
+      "sha256": "1578cb42f460a6227bebbdc7d52dae77a6353b3c23af9a5337f598063d39cd83"
+    },
+    {
+      "source_path": "notes/intune-policy-verification.md",
+      "canonical_url": "/notes/intune-policy-verification",
+      "title": "An Intune assignment is not proof of application",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 1,
+        "article_type": "technical-guide",
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-23",
+        "time_horizon": "durable",
+        "reader": "msp-engineer",
+        "topics": [
+          "microsoft-365",
+          "service-operations",
+          "identity"
+        ]
+      },
+      "sha256": "b21799f9445b9cdd33e1448245581582d6cccba83daa58f1070316b48b010314"
+    },
+    {
+      "source_path": "notes/late-october-skywatching-binoculars-telescope.md",
+      "canonical_url": "/notes/late-october-skywatching-binoculars-telescope",
+      "title": "What to use for late-October skywatching",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "product-category-guide",
+        "commercial_intent": "affiliate",
+        "disclosure_required": true,
+        "published": true,
+        "published_on": "2026-10-24",
+        "time_horizon": "timely",
+        "reader": "skywatcher",
+        "topics": [
+          "astronomy",
+          "skywatching",
+          "optics"
+        ]
+      },
+      "sha256": "a746fd48ae16e206c6152f846ba5fddd5f7c71b7d7bb2681cfa423dea36faa47"
+    },
+    {
+      "source_path": "notes/llm-usage-spike-identity-incident.md",
+      "canonical_url": "/notes/llm-usage-spike-identity-incident",
+      "title": "Treat an LLM usage spike as a possible identity incident, not only a billing anomaly",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-02",
+        "time_horizon": "timely",
+        "reader": "service-leader",
+        "topics": [
+          "identity",
+          "infrastructure",
+          "service-operations",
+          "ai-assisted-delivery"
+        ]
+      },
+      "sha256": "853d96f21098ff87fe5cea7ee6f6a166599e7299c3d72f9e0ab22f3efc57b275"
+    },
+    {
+      "source_path": "notes/matter-smart-home-purchase-checklist.md",
+      "canonical_url": "/notes/matter-smart-home-purchase-checklist",
+      "title": "Matter compatibility is not a complete smart-home plan",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-25",
+        "time_horizon": "durable",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "identity"
+        ]
+      },
+      "sha256": "4f6d3ca007e39d8572c7d77f1addaf02e97836d29f25d231f24f59454f3081c8"
+    },
+    {
+      "source_path": "notes/microsoft-to-do-retirement-workflow-inventory.md",
+      "canonical_url": "/notes/microsoft-to-do-retirement-workflow-inventory",
+      "title": "Microsoft To Do retirement needs a workflow inventory",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-24",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "microsoft-365",
+          "service-operations"
+        ]
+      },
+      "sha256": "f5057811c0f28bbbf7699b5e58eed0d75249dd32e52cfccb4a4e24ad047f8998"
+    },
+    {
+      "source_path": "notes/package-version-artifact-identity.md",
+      "canonical_url": "/notes/package-version-artifact-identity",
+      "title": "A package version is not an artifact identity",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-25",
+        "time_horizon": "durable",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "7bc4ff605054bf3ae9c53f81925d84f34469eaa8f2e1221d415f3cda760d75f4"
+    },
+    {
+      "source_path": "notes/post-quantum-migration-dependency-map.md",
+      "canonical_url": "/notes/post-quantum-migration-dependency-map",
+      "title": "Post-quantum migration is a dependency map, not an algorithm swap",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-29",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "infrastructure",
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "9b7b315618d40c7bfb246c3700f91ca989f939f9fc92c6f32d5a1e824bfd8971"
+    },
+    {
+      "source_path": "notes/ppfl-testbed-privacy-verdict.md",
+      "canonical_url": "/notes/ppfl-testbed-privacy-verdict",
+      "title": "A privacy testbed is not a privacy verdict",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "research-note",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-08",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "ai-assisted-delivery",
+          "infrastructure"
+        ]
+      },
+      "sha256": "11c07c8daa335a5e06b61b7c9c94c0ce1d4184e0c89cdc946855cdae615dbcfa"
+    },
+    {
+      "source_path": "notes/pre-draft-cryptography-review-inventory.md",
+      "canonical_url": "/notes/pre-draft-cryptography-review-inventory",
+      "title": "A pre-draft cryptography review is an inventory deadline",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-06",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "identity"
+        ]
+      },
+      "sha256": "7f8225de27f9e4a0792f08163d44d2a94e6d09d850144cc6244d51bb4d4cc077"
+    },
+    {
+      "source_path": "notes/pull-request-target-trust-review.md",
+      "canonical_url": "/notes/pull-request-target-trust-review",
+      "title": "Do not allow pull_request_target before a trust review",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-05",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "infrastructure",
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "11f2551077eae941f014fc342e090c6469dfdc6c3bb299f646726e76b751c4bc"
+    },
+    {
+      "source_path": "notes/reject-direct-send-sender-migration.md",
+      "canonical_url": "/notes/reject-direct-send-sender-migration",
+      "title": "Reject Direct Send is a sender migration, not a toggle",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-24",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "microsoft-365",
+          "service-operations"
+        ]
+      },
+      "sha256": "4fbb5b72f6ca0bf14a8666a2bee3d0a4f9aba9a80427d3d5e277a33594eda506"
+    },
+    {
+      "source_path": "notes/seasonal-outlook-test-calendar.md",
+      "canonical_url": "/notes/seasonal-outlook-test-calendar",
+      "title": "A seasonal outlook is a test calendar, not an incident forecast",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-29",
+        "time_horizon": "timely",
+        "reader": "service-leader",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "976a90fb2ee01dcd14498b4dd738469741a8e377c0fc1029f3ba7816d3924952"
+    },
+    {
+      "source_path": "notes/targeted-release-retirement-validation-ring.md",
+      "canonical_url": "/notes/targeted-release-retirement-validation-ring",
+      "title": "Targeted Release is retiring: rebuild the validation ring",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-25",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "microsoft-365",
+          "service-operations"
+        ]
+      },
+      "sha256": "8bbd60f12700cf78348f7187b370564d3c8a10f3c62adc98f268e15714520487"
+    },
+    {
+      "source_path": "notes/trading-dashboard-asset-existence.md",
+      "canonical_url": "/notes/trading-dashboard-asset-existence",
+      "title": "A trading dashboard is not proof that your assets exist",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-24",
+        "time_horizon": "timely",
+        "reader": "it-leader",
+        "topics": [
+          "identity",
+          "service-operations"
+        ]
+      },
+      "sha256": "10d34b912d354387f9b3d1254951904d174740c7c3d1615e0fde9eb401a70b02"
+    },
+    {
+      "source_path": "notes/voyager-one-light-day-latency.md",
+      "canonical_url": "/notes/voyager-one-light-day-latency",
+      "title": "Voyager 1 makes latency a systems requirement",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-28",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "astronomy",
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "425c0adc3100b9376c54a48c07496e161596249310348e87231007a8f01c131c"
+    },
+    {
+      "source_path": "notes/windows-11-23h2-exception-register.md",
+      "canonical_url": "/notes/windows-11-23h2-exception-register",
+      "title": "Windows 11 23H2 needs an exception register before November 10",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-06",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "b7b165e765937298f674a7668fab1749c5290acb645e24428be02662a558d051"
+    },
+    {
+      "source_path": "notes/windows-update-certificate-recovery-test.md",
+      "canonical_url": "/notes/windows-update-certificate-recovery-test",
+      "title": "A Windows Update certificate deadline needs a recovery test",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "technical-guide",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-09",
+        "time_horizon": "timely",
+        "reader": "msp-engineer",
+        "topics": [
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "ce31aed97fe8a68029db9118e5474bc4bd538af97a81e26e4bf2331404ab148a"
+    },
+    {
+      "source_path": "notes/work-outlasts-agent-session.md",
+      "canonical_url": "/notes/work-outlasts-agent-session",
+      "title": "The work should outlast the agent session",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 1,
+        "article_type": "analysis",
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-10-22",
+        "updated_on": "2026-10-22",
+        "time_horizon": "durable",
+        "reader": "msp-engineer",
+        "topics": [
+          "service-operations",
+          "ai-assisted-delivery"
+        ]
+      },
+      "sha256": "011d3e3633eddee0c13e94d20fc65dbb0d99248b7120179bdf8f5e548b2864d7"
+    },
+    {
+      "source_path": "notes/zero-data-retention-route-acceptance.md",
+      "canonical_url": "/notes/zero-data-retention-route-acceptance",
+      "title": "Zero data retention is a route property, not a provider label",
+      "classification": "eligible",
+      "metadata": {
+        "writing_schema": 2,
+        "publication_family": "professional-analysis",
+        "commercial_intent": "none",
+        "disclosure_required": false,
+        "published": true,
+        "published_on": "2026-11-24",
+        "time_horizon": "timely",
+        "reader": "architect",
+        "topics": [
+          "ai-assisted-delivery",
+          "infrastructure",
+          "service-operations"
+        ]
+      },
+      "sha256": "42277b448d743523c51e71bbfc13edb69c48ff88f882da7014c013b50f6d5fd7"
+    }
+  ]
+}

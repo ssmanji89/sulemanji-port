@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "program": "portfolio-redesign",
+  "date": "2026-11-25",
+  "repository": "ssmanji89/sulemanji-port",
+  "inspected_main_sha": "5ab5122b61a16ed0bb72067b8a346c67f3091bfa",
+  "status": "planned",
+  "spec": "../../specs/2026-11-25-portfolio-redesign-design.md",
+  "acceptance_matrix": "ACCEPTANCE_MATRIX.md",
+  "source_ledger": "SOURCE_LEDGER.md",
+  "tasks": [
+    {
+      "id": "T01",
+      "title": "Source and decision reconciliation",
+      "status": "planned",
+      "depends_on": [],
+      "plan": "01-jekyll-redesign.md#task-t01-source-and-decision-reconciliation",
+      "acceptance": ["A01", "A02", "A03", "A04", "A05", "A06"],
+      "write_owner": "reconciliation",
+      "output": "Fresh-main baseline, policy reconciliation, and execution checkpoint"
+    },
+    {
+      "id": "T02",
+      "title": "Shared shell and main pages",
+      "status": "planned",
+      "depends_on": ["T01"],
+      "plan": "01-jekyll-redesign.md#task-t02-shared-shell-and-main-pages",
+      "acceptance": ["A07", "A08", "A09", "A10", "A11", "A12"],
+      "write_owner": "shared-presentation",
+      "output": "Home, About, Contact, navigation, and shared presentation"
+    },
+    {
+      "id": "T03",
+      "title": "Work cases and public content boundaries",
+      "status": "planned",
+      "depends_on": ["T02"],
+      "plan": "01-jekyll-redesign.md#task-t03-work-cases-and-public-content-boundaries",
+      "acceptance": ["A13", "A14", "A15", "A16", "A17", "A18", "A19"],
+      "write_owner": "work-content",
+      "output": "Six case routes, seven diagrams, corrected career copy, and public-safety coverage"
+    },
+    {
+      "id": "T04",
+      "title": "Writing discovery and controls",
+      "status": "planned",
+      "depends_on": ["T01", "T02"],
+      "plan": "01-jekyll-redesign.md#task-t04-writing-discovery-and-controls",
+      "acceptance": ["A20", "A21", "A22", "A23", "A24", "A25", "A26"],
+      "write_owner": "writing-discovery",
+      "output": "Current article catalog, search, categories, and continuity tests"
+    },
+    {
+      "id": "T05",
+      "title": "Public routes and existing obligations",
+      "status": "planned",
+      "depends_on": ["T01", "T02"],
+      "plan": "02-offer-retirement.md#task-t05-public-routes-and-existing-obligations",
+      "acceptance": ["A27", "A28", "A29", "A30", "A31"],
+      "write_owner": "offer-retirement",
+      "output": "Retired public entry routes and a sanitized obligation disposition record"
+    },
+    {
+      "id": "T06",
+      "title": "Worker admission control",
+      "status": "planned",
+      "depends_on": ["T01", "T05"],
+      "plan": "02-offer-retirement.md#task-t06-worker-admission-control",
+      "acceptance": ["A32", "A33", "A34", "A35", "A36", "A37", "A38"],
+      "write_owner": "worker-retirement",
+      "output": "Explicit admission retirement and preserved existing paid-case servicing"
+    },
+    {
+      "id": "T07",
+      "title": "Integrated qualification",
+      "status": "planned",
+      "depends_on": ["T03", "T04", "T05", "T06"],
+      "plan": "03-qualification-release.md#task-t07-integrated-qualification",
+      "acceptance": ["A39", "A40", "A41", "A42", "A43"],
+      "write_owner": "integration",
+      "output": "Production-build qualification, current-source continuity, and working implementation preview"
+    },
+    {
+      "id": "T08",
+      "title": "Reviewed release handoff",
+      "status": "planned",
+      "depends_on": ["T07"],
+      "plan": "03-qualification-release.md#task-t08-reviewed-release-handoff",
+      "acceptance": ["A44", "A45", "A46", "A47", "A48"],
+      "write_owner": "release-handoff",
+      "output": "Independent review, real implementation PR, release runbook, and finite status"
+    }
+  ],
+  "coordination": {
+    "shared_templates": "Single owner coordinates layout, navigation, and shared stylesheet changes.",
+    "parallel_work": "T03 and T04 may overlap after T02 when file ownership is separate. T06 may overlap with article work.",
+    "external_gate": "Unavailable operational evidence blocks release claims, not unrelated authorized engineering."
+  },
+  "completion": {
+    "engineering": "Implemented source, meaningful verification, independent review, working preview, and implementation PR exist.",
+    "release": "Separate authority controls merge, main, deployment, live settings, payments, messages, and data destruction.",
+    "states": ["package_published", "goal_acknowledged", "source_implemented", "tests_passed", "review_passed", "pr_open", "merged", "production_verified"]
+  }
+}

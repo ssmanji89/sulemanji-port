@@ -1,0 +1,587 @@
+{
+  "cases": [
+    {
+      "slug": "market-systems",
+      "category": "Independent work",
+      "title": "Market automation and decision systems",
+      "dek": "Years of experiments with market data, recurring jobs, models, interfaces, and the decisions that connect them.",
+      "status": "A continuing project family",
+      "intro": [
+        "My botStuff work brings together problems I enjoy: probability, software, incomplete information, and decisions with consequences.",
+        "The work grows across several projects. botStuff, finBots, robinBots, a market dashboard, and newer agent tools explore different parts of the problem. Together, they show how my attention moves from getting data to understanding what a system can reasonably do with it."
+      ],
+      "sections": [
+        {
+          "title": "Start with the whole job",
+          "paragraphs": [
+            "An indicator calculation occupies a small part of an automated workflow. The program also needs data, a schedule, error handling, useful records, and a way to handle an interrupted run.",
+            "botStuff brings those concerns together in stock and cryptocurrency scripts. The source contains recurring jobs, analysis, order and cancellation functions, logging, and historical evaluation routines. Docker and shell launchers support the surrounding execution work.",
+            "I use established libraries for broker access, data analysis, and scheduling. My work connects those pieces and develops the application behavior around them. The broker library remains someone else’s contribution."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Follow an idea through several implementations",
+          "paragraphs": [
+            "finBots carries that experimentation into indicator services, scheduled work, model experiments, and trade records. Different branches preserve different approaches, so the project makes more sense as a development history than as one finished product.",
+            "robinBots continues part of that work in a more explicit project structure. Its main module shares code with a finBots service. The plans and dependency files also show a direct connection between those two repositories.",
+            "Other projects explore different questions. The market dashboard adds a Flask backend and React interface for analysis and a trade ledger. Its trade-entry route records an entry in the database. It does not place that order with a broker."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Make a proposed action inspectable",
+          "paragraphs": [
+            "More recent work asks how an agent can research a market without making its conclusion sufficient authority to act.",
+            "My TradingAgents-RH work extends the attributed TradingAgents framework with broker integration, decision records, replay, and a separate approval interface. The application distinguishes a proposed action from the checks needed before an external action.",
+            "A smaller public TradingAgents branch explores auxiliary information. It represents an observation, its source quality, timing, and confirmation. A deterministic score and explicit checks decide whether the proposed action qualifies.",
+            "That public branch contains utilities and tests. Connecting those utilities to the full agent workflow remains separate work. A useful scoring function does not become a complete trading system simply because it has a name."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "What I keep from the experiments",
+          "paragraphs": [
+            "The recurring questions become more useful than any one model. Can I reconstruct the inputs? Can I explain why a decision changes? Can I distinguish a recorded intention from an action that actually happens?",
+            "Those questions also shape the interface. A person needs to see the important conditions, compare alternatives, and understand what remains uncertain. More information helps only when the interface makes it usable.",
+            "I keep the historical implementations because they make those changes in thinking visible. Some remain prototypes. Some contain direct broker operations. Each project needs its own description and current state.",
+            "This collection documents engineering work and research. It makes no claim about investment returns. I judge the software by what I can inspect and reproduce, while treating market performance as a separate question."
+          ],
+          "bullets": []
+        }
+      ],
+      "projects": [
+        {
+          "name": "botStuff",
+          "description": "My long-running stock and cryptocurrency automation experiments, including recurring jobs, analysis, order handling, and research variants.",
+          "state": "Private source; historical project family",
+          "href": null
+        },
+        {
+          "name": "finBots",
+          "description": "Indicator services, scheduling, model experiments, and trade records across several development branches.",
+          "state": "Public historical source",
+          "href": "https://github.com/ssmanji89/finBots/tree/2f26fc4dd1ee6f1da389fc81425fa3c60ec7535f"
+        },
+        {
+          "name": "robinBots",
+          "description": "A later project structure that carries forward part of the finBots implementation.",
+          "state": "Public historical source",
+          "href": "https://github.com/ssmanji89/robinBots/tree/6cb76cf2ddf0771101df98d93911af8e4a4253fd"
+        },
+        {
+          "name": "TradingAgents-RH",
+          "description": "Extensions to TradingAgents for broker integration, decision records, replay, and human review.",
+          "state": "Private implementation; upstream framework credited",
+          "href": null
+        },
+        {
+          "name": "Auxiliary-signal experiments",
+          "description": "Typed signal records, deterministic scoring, confirmation checks, and expiry routing in a TradingAgents branch.",
+          "state": "Public extension prototype",
+          "href": "https://github.com/ssmanji89/TradingAgents/tree/8ed800abe44c7d5108edc48699c93c5453078bd4"
+        }
+      ],
+      "sources": [
+        {
+          "label": "finBots source snapshot",
+          "href": "https://github.com/ssmanji89/finBots/tree/2f26fc4dd1ee6f1da389fc81425fa3c60ec7535f"
+        },
+        {
+          "label": "robinBots source snapshot",
+          "href": "https://github.com/ssmanji89/robinBots/tree/6cb76cf2ddf0771101df98d93911af8e4a4253fd"
+        },
+        {
+          "label": "Public TradingAgents extension",
+          "href": "https://github.com/ssmanji89/TradingAgents/compare/7e9e7b83c7fcc18d941300b253c6ed24d985788d...8ed800abe44c7d5108edc48699c93c5453078bd4"
+        },
+        {
+          "label": "TradingAgents upstream project",
+          "href": "https://github.com/TauricResearch/TradingAgents"
+        }
+      ],
+      "diagram": "market-system"
+    },
+    {
+      "slug": "integrations",
+      "category": "Public tools",
+      "title": "Useful connections between systems",
+      "dek": "Published packages and integration work for service platforms, security workflows, databases, and reporting.",
+      "status": "Published packages and ongoing builds",
+      "intro": [
+        "A service team can have plenty of software and still spend too much time moving information between it. I build integrations around the specific job someone needs to complete.",
+        "My public work includes HaloPSA workflow tools, a ConnectWise Manage package, Cavelo nodes for n8n, and PostgreSQL tools. A newer Toast project explores reporting with the same attention to clear inputs and useful results."
+      ],
+      "sections": [
+        {
+          "title": "Give an API a useful working interface",
+          "paragraphs": [
+            "An API exposes operations. A useful integration also explains which operation to use, what information it needs, and what the result means.",
+            "In halopsa-workflows-mcp, I expose HaloPSA workflow operations through the Model Context Protocol. The package supports authenticated workflow listing, detail, creation, and deletion. It also handles token reuse around those requests.",
+            "The integration lets an agent work with named tools and structured arguments. That keeps the task visible to the person directing it. The HaloPSA API remains responsible for the underlying platform behavior.",
+            "The package gives the caller a defined set of workflow operations. The public source also shows how I separate the API client, tools, configuration, and server."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Choose what an agent can reach",
+          "paragraphs": [
+            "mcp-connectwise-manage derives tools from OpenAPI operations. Exposing an entire service API at once creates a different experience from exposing the operations needed for one task.",
+            "The package includes operation allowlists, profile filters, schema validation, and paging defaults. It also contains confirmation and dry-run paths for changes.",
+            "These choices make the integration easier to reason about. A tool should have a defined purpose, predictable arguments, and a result that a caller can understand.",
+            "The published package makes that implementation available to inspect and use. Its scope centers on the operations a person chooses to expose."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Connect security information to a workflow",
+          "paragraphs": [
+            "n8n-nodes-cavelo brings Cavelo resource operations into n8n. The package covers vulnerabilities, personal-information findings, access audits, and benchmarks.",
+            "Pagination and polling matter here. A workflow needs a complete collection when it asks for one, and it needs a consistent way to notice new information.",
+            "The implementation includes request handling, pagination helpers, polling triggers, and rule-based enrichment. These are the details that make a connector useful beyond a single successful request.",
+            "The package connects systems. Whether a finding needs action still depends on the environment and the people responsible for it."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Make reporting calculations explainable",
+          "paragraphs": [
+            "toast-pos-mcp is a newer public implementation for reporting. It separates Standard API reporting tools from the Analytics request lifecycle.",
+            "The code pays particular attention to decimal arithmetic and shared tool registration. Financial totals need consistent calculation. A reporting tool also needs the same behavior across its entry points.",
+            "The project includes tests against an installed package using synthetic fixtures. Live compatibility and public package release remain unfinished. I describe it as a build in progress, while keeping the implementation available to inspect."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "What these projects have in common",
+          "paragraphs": [
+            "I tend to spend time at the connection between a request and its meaning. That includes authentication, argument validation, paging, error messages, and the difference between reading information and changing it.",
+            "A package release makes code available. It does not tell me how another team uses it or establish a support arrangement.",
+            "For business work, the useful conversation starts with the workflow, the systems involved, and the person who owns the result. I work through those questions with Viyu."
+          ],
+          "bullets": []
+        }
+      ],
+      "projects": [
+        {
+          "name": "halopsa-workflows-mcp",
+          "description": "Authenticated HaloPSA workflow operations exposed as MCP tools.",
+          "state": "Published npm package",
+          "href": "https://www.npmjs.com/package/halopsa-workflows-mcp"
+        },
+        {
+          "name": "mcp-connectwise-manage",
+          "description": "OpenAPI-derived tools with operation selection, schema checks, paging defaults, and change controls.",
+          "state": "Published npm package",
+          "href": "https://www.npmjs.com/package/mcp-connectwise-manage"
+        },
+        {
+          "name": "n8n-nodes-cavelo",
+          "description": "Cavelo resource operations, polling, pagination, and enrichment for n8n workflows.",
+          "state": "Published npm package",
+          "href": "https://www.npmjs.com/package/n8n-nodes-cavelo"
+        },
+        {
+          "name": "toast-pos-mcp",
+          "description": "Reporting tools with exact decimal accumulation and separate Standard and Analytics paths.",
+          "state": "Public implementation; package release pending",
+          "href": "https://github.com/ssmanji89/toast-pos-mcp"
+        }
+      ],
+      "sources": [
+        {
+          "label": "HaloPSA workflow package",
+          "href": "https://www.npmjs.com/package/halopsa-workflows-mcp"
+        },
+        {
+          "label": "HaloPSA workflow source",
+          "href": "https://github.com/ssmanji89/halopsa-workflows-mcp"
+        },
+        {
+          "label": "ConnectWise Manage package",
+          "href": "https://www.npmjs.com/package/mcp-connectwise-manage"
+        },
+        {
+          "label": "Cavelo package",
+          "href": "https://www.npmjs.com/package/n8n-nodes-cavelo"
+        },
+        {
+          "label": "Cavelo node source",
+          "href": "https://github.com/viyusmanji/n8n-cavelo-nodes"
+        },
+        {
+          "label": "Toast reporting source",
+          "href": "https://github.com/ssmanji89/toast-pos-mcp"
+        }
+      ],
+      "diagram": "integration-boundary"
+    },
+    {
+      "slug": "knowledge-tools",
+      "category": "Independent work",
+      "title": "Knowledge that survives the next session",
+      "dek": "Memory tools, process experiments, and working methods for continuing a task without rebuilding its history.",
+      "status": "Published tools, prototypes, and working methods",
+      "intro": [
+        "I work across several projects and use AI agents heavily. The expensive part is often reconstructing what happened before the current conversation.",
+        "I want a useful record of the decision, its basis, and what remains unfinished. That problem connects my PostgreSQL tools, the Crisi prototype, and the coordination documents I call Sullydox."
+      ],
+      "sections": [
+        {
+          "title": "Store enough context to continue",
+          "paragraphs": [
+            "A saved answer can lose the question that made it useful. A command can lose the environment where it worked. A decision can survive after the condition behind it changes.",
+            "I try to preserve those relationships. A useful record says what I observed, where the information came from, and what someone needs to check before using it again.",
+            "That does not require keeping every conversation. It requires making deliberate choices about the information that helps the next session.",
+            "Corrections matter as much as conclusions. If a later finding changes the answer, I want the next person or agent to see that change."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Build the persistence layer",
+          "paragraphs": [
+            "postgres-mcp-tools provides PostgreSQL persistence, memory-management operations, vector-query paths, and MCP or HTTP transport code.",
+            "The work includes packaging, build behavior, and transport handling. It also keeps log output from interfering with protocol messages.",
+            "The package builds on the MCP SDK and PostgreSQL ecosystem. My contribution is the application and integration work around them.",
+            "Some paths and provider assumptions still need further validation. I keep that distinction visible because persistent storage alone does not make every saved answer correct."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Explore how a finding becomes reusable knowledge",
+          "paragraphs": [
+            "Crisi is my independent prototype for connecting memory with process checks. It asks how information moves from a source into a useful finding, and how a process can reveal missing information.",
+            "The implementation includes source provenance, scoped access, process-gap evaluation, and decisions about which records become reusable memory.",
+            "I use synthetic examples to explore that behavior. The current reference system does not represent a launched service or a live connection to every planned provider.",
+            "This makes room to examine a difficult question early: what should the system do when a required source is missing? I want it to show the missing information and preserve the question."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Give the next agent a usable handoff",
+          "paragraphs": [
+            "Sullydox addresses the same problem through documents. It contains reusable role instructions, work records, review steps, and handoff formats.",
+            "A finding keeps the same identifier as it moves through a review. The handoff records what changed and which questions remain open. A relevant code change can require an earlier review to be repeated.",
+            "The method also limits repeated repair rounds. A task needs a clear point where an unresolved issue returns to a person for a decision.",
+            "These documents are a working method. They are not a separate runtime or a claim that agents can manage a project without human direction."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Use memory as a starting point",
+          "paragraphs": [
+            "My goal is to spend less time reconstructing context and more time making the next useful decision.",
+            "That goal changes how I direct agents. I ask them to preserve assumptions, record failed approaches, and distinguish an observed result from an expected one.",
+            "A remembered configuration can become stale. A previous test can stop applying after a change. I use saved knowledge to guide the next check, then return to the relevant system or source.",
+            "The result I want is practical: another session can continue the work with a clear account of where it stands."
+          ],
+          "bullets": []
+        }
+      ],
+      "projects": [
+        {
+          "name": "postgres-mcp-tools",
+          "description": "PostgreSQL-backed memory operations, vector-query paths, and MCP or HTTP transport support.",
+          "state": "Published npm utility",
+          "href": "https://www.npmjs.com/package/postgres-mcp-tools"
+        },
+        {
+          "name": "Crisi",
+          "description": "An independent prototype that keeps knowledge connected to its sources and identifies missing process information.",
+          "state": "Private source; synthetic reference system",
+          "href": null
+        },
+        {
+          "name": "Sullydox",
+          "description": "Reusable coordination documents for agent roles, findings, review, and continuity between sessions.",
+          "state": "Private source; working method",
+          "href": null
+        }
+      ],
+      "sources": [
+        {
+          "label": "PostgreSQL tools package",
+          "href": "https://www.npmjs.com/package/postgres-mcp-tools"
+        },
+        {
+          "label": "PostgreSQL tools source",
+          "href": "https://github.com/ssmanji89/postgres-mcp-tools"
+        },
+        {
+          "label": "Writing: work that outlasts an agent session",
+          "href": "https://www.sulemanji.com/notes/work-outlasts-agent-session"
+        }
+      ],
+      "diagram": "knowledge-cycle"
+    },
+    {
+      "slug": "service-operations",
+      "category": "My work at Viyu",
+      "title": "Keep the business task in view",
+      "dek": "Service investigations, Microsoft 365, identity, infrastructure, and planned changes that need clear ownership.",
+      "status": "Professional practice at Viyu Network Solutions",
+      "intro": [
+        "I work as a services engineer at Viyu Network Solutions. My work spans investigations, Microsoft 365, identity, infrastructure, migration planning, and technical scoping.",
+        "I care about the task people need to complete: opening the application, reaching shared files, signing in after a change, or finishing a normal workday. The engineering needs to connect back to that task."
+      ],
+      "sections": [
+        {
+          "title": "Establish what is actually happening",
+          "paragraphs": [
+            "A ticket usually starts with a symptom. Documentation may describe an earlier configuration. A monitoring alert shows one part of the environment.",
+            "I bring those records together around a specific question. Which system is affected? What changed? What observation would help distinguish one explanation from another?",
+            "Agents help collect information, compare records, and prepare investigation notes. I remain responsible for choosing the right target, interpreting the information, and deciding what action follows.",
+            "The useful result is a clearer understanding of the service. Closing a ticket or receiving a successful API response does not, by itself, show that someone can finish their work."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Plan a change around its dependencies",
+          "paragraphs": [
+            "A migration can involve identities, devices, applications, files, network access, and several teams. The destination is only one part of the plan.",
+            "I use discovery to establish what moves, what stays, and what people need after the change. Access requirements and unresolved application questions affect the scope and timing.",
+            "The plan also needs a clear definition of completion. Data transfer, successful sign-in, correct permissions, and application use can require different checks.",
+            "That work helps the people carrying out the change know what to do, when to stop, and who can resolve a dependency."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Use automation where it helps the team",
+          "paragraphs": [
+            "Repeated checks and movement of information are useful places to apply automation. I use agents for research, record comparison, draft preparation, and continuity between sessions.",
+            "The person responsible for the work still needs to understand the proposed change and its expected result. An unresolved requirement needs to remain visible in the draft.",
+            "I also use research to track vendor changes and service advisories. A general advisory starts an investigation. The actual environment determines whether the issue applies.",
+            "This is the kind of automation I want for lean teams: less avoidable administration, with clear responsibility for decisions and exceptions."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Verify the result and make the handoff useful",
+          "paragraphs": [
+            "After a change, I return to the original question. Reading the resulting configuration may answer part of it. Application testing or user validation may answer the rest.",
+            "The handoff needs to say what is complete, what has been checked, and what remains open. The next engineer needs enough context to continue without repeating the investigation.",
+            "I preserve decisions, corrections, and failed approaches when they will help future work. I also treat old records as context that may need to be checked again."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "When to talk with Viyu",
+          "paragraphs": [
+            "This work fits organizations whose daily operations depend on connected applications, Microsoft services, and infrastructure.",
+            "The need may be ongoing IT support, a planned migration, growth across locations, or specialist capacity alongside an internal IT team.",
+            "A useful first conversation starts with what needs to keep working, what is changing, and where responsibility is unclear.",
+            "Business delivery is through Viyu. You can contact the team directly to discuss the environment and the help you need."
+          ],
+          "bullets": []
+        }
+      ],
+      "projects": [
+        {
+          "name": "Service delivery with AI agents",
+          "description": "How I use agents in investigations, technical scoping, research, and continuity while retaining responsibility for engineering decisions.",
+          "state": "Public account of my working practice",
+          "href": "https://github.com/ssmanji89/sulemanji-port/blob/5ab5122b61a16ed0bb72067b8a346c67f3091bfa/case-studies/agentic-msp-delivery.md"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Historical service-delivery case source",
+          "href": "https://github.com/ssmanji89/sulemanji-port/blob/5ab5122b61a16ed0bb72067b8a346c67f3091bfa/case-studies/agentic-msp-delivery.md"
+        },
+        {
+          "label": "Viyu managed services",
+          "href": "https://viyu.net/managed-services-offered/"
+        },
+        {
+          "label": "Viyu professional services",
+          "href": "https://viyu.net/professional-services-offered/"
+        },
+        {
+          "label": "Contact Viyu",
+          "href": "https://viyu.net/contact-support/contact-us/"
+        }
+      ],
+      "diagram": "operations-loop"
+    },
+    {
+      "slug": "ff-cli",
+      "category": "Personal decision tools",
+      "title": "Learning fantasy football by building a tool",
+      "dek": "League-specific valuation, draft preparation, and decisions that change with the time horizon.",
+      "status": "Public case and demo; private source",
+      "intro": [
+        "I joined a coworker fantasy football league in 2026 with no previous playing experience. I responded by building a tool to make the scoring rules and tradeoffs easier to understand.",
+        "ff-cli combines projections, league settings, market information, and roster constraints. The public demonstration shows an offline auction interface. The actual league uses a snake draft, so auction support is one mode within the broader project."
+      ],
+      "sections": [
+        {
+          "title": "Make value depend on the league",
+          "paragraphs": [
+            "A player ranking means more when it reflects the league’s scoring and roster rules. The valuation code compares projected points with a replacement baseline for the relevant position.",
+            "That gives me a way to examine the surplus a player may contribute. The tool can then relate that estimate to market information and the choices available to a particular roster.",
+            "I want to understand why two players rank differently, including which assumptions drive the difference."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Build an interface for a moving draft",
+          "paragraphs": [
+            "The auction mode runs as a local web application. It shows a proposed bid ceiling, remaining budgets, roster needs, and the available-player board.",
+            "Recording a sale changes the next decision. An event log preserves the session, and an undo action handles entry mistakes.",
+            "The public demo uses synthetic owner names. It lets someone inspect the interaction without publishing another league member’s information."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Look beyond the next move",
+          "paragraphs": [
+            "The project also compares feasible actions across the current week, the remaining season, and the playoffs. Those horizons can favor different choices.",
+            "Market analysis uses a fixed data snapshot so the comparisons share the same inputs. That helps me understand whether a changed result comes from new information or different reasoning.",
+            "The case demonstrates the tool and the decisions it helps explain. It does not claim a competitive result. The source repository and package downloads remain private."
+          ],
+          "bullets": []
+        }
+      ],
+      "projects": [
+        {
+          "name": "ff-cli",
+          "description": "A league-specific valuation and decision tool with a public auction demonstration and broader season-planning work.",
+          "state": "Private source; public demonstration",
+          "href": "https://github.com/ssmanji89/sulemanji-port/blob/5ab5122b61a16ed0bb72067b8a346c67f3091bfa/case-studies/ff-cli-war-room.md"
+        },
+        {
+          "name": "Auction demonstration",
+          "description": "A local draft interface using public football data and synthetic owner names.",
+          "state": "Public video",
+          "href": "https://www.sulemanji.com/assets/ffcli/demo.mp4"
+        }
+      ],
+      "sources": [
+        {
+          "label": "Historical ff-cli case source",
+          "href": "https://github.com/ssmanji89/sulemanji-port/blob/5ab5122b61a16ed0bb72067b8a346c67f3091bfa/case-studies/ff-cli-war-room.md"
+        },
+        {
+          "label": "Auction demo",
+          "href": "https://www.sulemanji.com/assets/ffcli/demo.mp4"
+        },
+        {
+          "label": "Draft interface screenshot",
+          "href": "https://www.sulemanji.com/assets/ffcli/warroom-full-board.png"
+        }
+      ],
+      "diagram": "decision-horizons"
+    },
+    {
+      "slug": "mathematical-verification",
+      "category": "Mathematics",
+      "title": "Reproduce the calculation",
+      "dek": "An exact verification bundle for a Jacobian counterexample, with independent rational and symbolic checkers.",
+      "status": "Research article and exact checkers",
+      "intro": [
+        "An unexpected mathematical result makes me want to examine the steps. I built an independent verification bundle for the three-variable Jacobian counterexample announced by Levent Alpöge and attributed to Fable.",
+        "My contribution is the reproduction, the compact explanatory calculation, and the files needed to repeat the checks. Discovery and the external Lean formalization belong to their respective authors."
+      ],
+      "sections": [
+        {
+          "title": "Reduce the claim to two checks",
+          "paragraphs": [
+            "The example gives a polynomial map in three variables. The verification needs to show a nonzero constant Jacobian determinant and distinct inputs with the same output.",
+            "The bundle checks the determinant identity exactly and evaluates the three collision points with rational arithmetic. It also checks a normalized version of the map.",
+            "The construction concerns dimension three and extends by identity coordinates to higher dimensions. It does not settle the separate two-variable case."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Use two computational routes",
+          "paragraphs": [
+            "The first checker implements sparse multivariate polynomials over rational numbers. It provides arithmetic, derivatives, evaluation, and a three-by-three determinant without a computer-algebra dependency.",
+            "The second checker uses SymPy. It repeats the determinant and collision calculations, then checks the compact derivation presented in the article.",
+            "Both routes use exact arithmetic. The bundle includes the recorded output, a runner, a dependency pin, and file hashes."
+          ],
+          "bullets": []
+        },
+        {
+          "title": "Keep the explanation and attribution together",
+          "paragraphs": [
+            "The article connects the computational checks to a hand-readable determinant argument. It also explains the normalization used in the separate Lean proof.",
+            "Paul Lezeau’s formalization appears in Google DeepMind’s formal-conjectures repository. That pull request merged on 26 July 2026, after the original date of my article.",
+            "The work reflects an interest I carry into software. I turn a surprising claim into a few checks and preserve the calculation for inspection."
+          ],
+          "bullets": []
+        }
+      ],
+      "projects": [
+        {
+          "name": "Jacobian verification dossier",
+          "description": "An explanatory article, exact rational checker, SymPy checker, and reproducibility files.",
+          "state": "Public research branch",
+          "href": "https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/_posts/2026-07-20-jacobian-conjecture-counterexample-exact-verification.md"
+        }
+      ],
+      "sources": [
+        {
+          "label": "My verification article",
+          "href": "https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/_posts/2026-07-20-jacobian-conjecture-counterexample-exact-verification.md"
+        },
+        {
+          "label": "Exact rational checker",
+          "href": "https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/assets/code/jacobian-counterexample/verify_exact.py"
+        },
+        {
+          "label": "SymPy checker",
+          "href": "https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/assets/code/jacobian-counterexample/verify_sympy.py"
+        },
+        {
+          "label": "Recorded checker output",
+          "href": "https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/assets/code/jacobian-counterexample/VERIFICATION-OUTPUT.txt"
+        },
+        {
+          "label": "Paul Lezeau’s Lean formalization",
+          "href": "https://github.com/google-deepmind/formal-conjectures/pull/4474"
+        }
+      ],
+      "diagram": "verification-paths"
+    }
+  ],
+  "about": {
+    "intro": [
+      "I’m Suleman Manji. Most people call me sully. I’m based in Houston and work as a services engineer at Viyu Network Solutions.",
+      "My background spans about 15 years in managed IT, infrastructure, Microsoft 365, identity, security, migrations, and service operations.",
+      "I like work that connects a technical detail to something a person needs to do. That can mean restoring access, planning a migration, building an integration, or making a repeated task easier to complete."
+    ],
+    "background": [
+      "My first job at a brake-shop counter gave me an early connection to practical repair work. I later did mobile mechanic work as well. Diagnosis, clear explanations, and checking the result still matter to me.",
+      "I studied Management Information Systems at the University of Houston’s Bauer College. My IT background includes support, network operations, automation, infrastructure, and technical architecture.",
+      "I use AI agents heavily for implementation and research. I set direction, define the work, review changes, and decide what the results establish.",
+      "My independent projects give me room to explore markets, mathematics, memory, and decision tools. My professional delivery work belongs with Viyu."
+    ],
+    "interests": [
+      {
+        "title": "Markets and probability",
+        "text": "I explore how incomplete information becomes a decision. Market data, risk, simulations, and fantasy sports give me different ways to examine that question."
+      },
+      {
+        "title": "Mathematics",
+        "text": "I enjoy probability, number theory, and exact verification. I like reducing an intriguing claim to calculations someone else can inspect."
+      },
+      {
+        "title": "Genealogy and privacy",
+        "text": "Family history interests me because records connect people across time. I also care about what those records reveal and whose information I have a right to share."
+      },
+      {
+        "title": "Unusual experiments",
+        "text": "I keep room for questions about perception, dreams, home automation, and unfamiliar science. I separate an interesting hypothesis from an observed result."
+      },
+      {
+        "title": "Houston and elsewhere",
+        "text": "Houston is home. I enjoy travel and the possibility of living and working in different places while keeping useful work and relationships intact."
+      }
+    ]
+  },
+  "viyuContact": {
+    "url": "https://viyu.net/contact-support/contact-us/",
+    "label": "Talk to Viyu",
+    "evidence": "Verified on November 24, 2026, America/Chicago. Viyu’s official Contact Us page offers sales inquiries and a contact form, with separate routing for existing-customer support."
+  }
+}

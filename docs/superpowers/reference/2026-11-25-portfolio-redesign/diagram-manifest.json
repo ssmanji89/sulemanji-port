@@ -1,0 +1,92 @@
+{
+  "purpose": "Supplemental diagrams for the repository redesign handoff. Conceptual and source-based scopes remain explicit.",
+  "palette": {
+    "paper": "#f4f2ec",
+    "ink": "#172c25",
+    "green": "#244c3d",
+    "muted": "#6d756e",
+    "line": "#c9d0c5",
+    "accent": "#b85d3e",
+    "light_green": "#e1e7dc"
+  },
+  "font": "System sans-serif stack. No external font dependency.",
+  "integration": {
+    "accessibility": "Preserve role, title, desc, and prefixed IDs when inlining.",
+    "responsive": "Put case diagrams in a local overflow-x:auto wrapper. Use a min-width of 640px, or 720px for verification-paths. The homepage map can scale freely.",
+    "scope": "Conceptual diagrams do not claim a particular deployed system. The two source-backed abstractions remain bounded to the inspected personal modules.",
+    "source_credit": "Design method adapts cathrynlavery/diagram-design. Project-specific labels use the completed source review."
+  },
+  "diagrams": [
+    {
+      "file": "market-system.svg",
+      "nodes": 6,
+      "arrows": 6,
+      "viewBox": "0 0 792 512",
+      "evidence": "conceptual synthesis",
+      "caption": "Separate what the system suggests, what may act, and what actually happens.",
+      "sha256": "4237e6d3469593c6e45936cff4b7c4d5b1d3bb654ff6a823997c01170c736d50"
+    },
+    {
+      "file": "integration-boundary.svg",
+      "nodes": 5,
+      "arrows": 5,
+      "viewBox": "0 0 792 568",
+      "evidence": "conceptual integration model",
+      "caption": "The adapter translates the request. The external service performs its own operation.",
+      "sha256": "3dfc10d924878af5a2a4bd701ad54e4335ec238f7ae2b1d0608448ad97fad2de"
+    },
+    {
+      "file": "knowledge-cycle.svg",
+      "nodes": 6,
+      "arrows": 10,
+      "viewBox": "0 0 760 680",
+      "evidence": "conceptual method",
+      "caption": "Each pass updates the record. Reuse includes a fresh check.",
+      "sha256": "03a045e35d4510ab3a31ec0fda09e71a7f949c2a7d4b5c9f76800f9c2c7d66a3"
+    },
+    {
+      "file": "operations-loop.svg",
+      "nodes": 6,
+      "arrows": 10,
+      "viewBox": "0 0 760 680",
+      "evidence": "conceptual operating method",
+      "caption": "Solid path: the work. Dashed paths: what the record retains.",
+      "sha256": "7f42620f45063cf06e4b63f27a3868066203b5846d9703078bb4b4613ac2a3c6"
+    },
+    {
+      "file": "decision-horizons.svg",
+      "nodes": 5,
+      "arrows": 6,
+      "viewBox": "0 0 800 620",
+      "evidence": "source-backed abstraction of ff-cli decision and snapshot modules",
+      "caption": "A single input state can support several questions without mixing their time horizons.",
+      "sha256": "154b27782bada49d03e52e1f62337ccf6e12ac9e8780b658f580e5002c40c033"
+    },
+    {
+      "file": "verification-paths.svg",
+      "nodes": 5,
+      "arrows": 5,
+      "viewBox": "0 0 800 808",
+      "evidence": "source-backed abstraction of the Jacobian verification bundle",
+      "caption": "Independent checks make the reproduction easier to inspect. Recorded output is distinguished from a new execution.",
+      "sha256": "d563a707faf47b59197f9c4c071664332641782c25184217938b26b19c236a36"
+    },
+    {
+      "file": "system-map.svg",
+      "nodes": 4,
+      "arrows": 4,
+      "viewBox": "0 0 720 680",
+      "evidence": "conceptual portfolio map, not runtime architecture",
+      "caption": "The same engineering interests connect professional work and independent projects.",
+      "sha256": "ba96626e11ee2ec5488f916b5376a557bb81dccea4452dfb8d1953906ac3d975"
+    }
+  ],
+  "source_links": [
+    "https://github.com/cathrynlavery/diagram-design",
+    "https://github.com/ssmanji89/finBots/blob/0539c1602fd2143625820255d1e3dc5fca197bbb/tradingViewServicer.py",
+    "https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/assets/code/jacobian-counterexample/verify_exact.py",
+    "https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/assets/code/jacobian-counterexample/verify_sympy.py"
+  ],
+  "preview_source_revision": "159ce931d6aaa43b3fcd5dddcaad1c7fe6bb7eb3",
+  "design_method": "https://github.com/cathrynlavery/diagram-design"
+}

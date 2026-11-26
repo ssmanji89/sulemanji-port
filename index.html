@@ -1,48 +1,85 @@
 ---
 layout: default
-title: "Suleman Manji | Dependable operations and practical automation"
-description: "Services engineering, dependable operations, and practical automation for lean teams, alongside independent software and research."
+title: "Suleman Manji | Work, projects, and independent interests"
+description: "A personal profile of Suleman Manji: services engineering at Viyu, independent software and research, and the interests behind the work."
 permalink: /
 body_class: home
 wide_content: true
 hero_eyebrow: "Suleman Manji · Houston, Texas"
-hero_title: "Dependable operations. Practical automation."
-hero_lede: "I’m a services engineer at Viyu Network Solutions. I connect technical work to the tasks people need to finish, and build useful automation with clear ownership and verification."
+hero_title: "Service work, independent projects, and questions worth checking."
+hero_lede: "I’m a Sr. Services Engineer at Viyu Network Solutions. This site follows my work across service operations and automation, alongside independent software, mathematics, astronomy, and other interests."
 hero_ctas:
-  - label: Explore the work
-    url: /work/
+  - label: Explore projects and interests
+    url: /explore/
     style: btn-primary
-  - label: Business inquiries at Viyu
-    url: https://viyu.net/contact-support/contact-us/
+  - label: Read Writing
+    url: /writing
     style: btn-outline
-    external: true
 ---
 
-<section class="home-intro editorial-intro" aria-label="Introduction">
-  <figure class="intro-portrait">
+<section class="home-profile" aria-labelledby="home-profile-title">
+  <figure class="home-profile__portrait">
     <img src="{{ '/images/sulemanji-profile.png' | relative_url }}" alt="Portrait of Suleman Manji" width="200" height="200" fetchpriority="high">
   </figure>
-  <div class="intro-copy">
-    <p class="kicker">Services engineer at Viyu Network Solutions</p>
-    <p>I work across service operations, Microsoft 365, identity, infrastructure, migrations, and technical scoping. My focus is the real task behind the ticket: access that works, a change people can use, and a handoff the next person can follow.</p>
-    <p>AI agents help with research, comparison, and repeatable preparation. I set direction, define contracts, review the work, and judge what the evidence supports.</p>
+  <div>
+    <p class="kicker">A personal profile</p>
+    <h2 id="home-profile-title">Work has a human context.</h2>
+    <p>I work with the systems people rely on to finish their jobs: service platforms, identity, Microsoft 365, infrastructure, migrations, and technical investigations. The through line is making a change understandable and checking that it worked.</p>
+    <p>Outside professional practice, I build tools and investigate questions that hold my attention. They do not need to become products or prove a business point.</p>
+    <a class="text-link" href="{{ '/about/' | relative_url }}">About Suleman</a>
   </div>
 </section>
 
-<figure class="portfolio-map"><img src="{{ '/assets/diagrams/portfolio/system-map.svg' | relative_url }}" alt="Conceptual map connecting service operations, practical automation, and independent projects" loading="lazy"><figcaption>The same engineering interests connect professional work and independent projects. This is a conceptual portfolio map, not runtime architecture.</figcaption></figure>
-
-<section class="home-section" aria-labelledby="work-families-title">
-  <header class="section-heading"><div><p class="kicker">Selected work</p><h2 id="work-families-title">Keep the whole operation in view.</h2></div><a class="text-link" href="{{ '/work/' | relative_url }}">All six cases <span aria-hidden="true">→</span></a></header>
-  <div class="work-grid">
-    <article class="work-card"><p class="kicker">Professional practice</p><h3><a href="{{ '/work/service-operations/' | relative_url }}">Service operations</a></h3><p>Investigations, planned changes, and practical automation with clear ownership and a useful verification path.</p></article>
-    <article class="work-card"><p class="kicker">Independent work</p><h3><a href="{{ '/work/market-systems/' | relative_url }}">Market systems</a></h3><p>Experiments in data, recurring jobs, models, interfaces, and decisions under uncertainty.</p></article>
-    <article class="work-card"><p class="kicker">Published and working tools</p><h3><a href="{{ '/work/integrations/' | relative_url }}">Integrations</a></h3><p>Connectors and services that move information between tools while keeping state and responsibility visible.</p></article>
-    <article class="work-card"><p class="kicker">Continuity</p><h3><a href="{{ '/work/knowledge-tools/' | relative_url }}">Knowledge tools</a></h3><p>Source-linked memory, repeatable process, and handoffs that help work continue across sessions.</p></article>
+<section class="home-work" aria-labelledby="home-work-title">
+  <div class="section-heading">
+    <div><p class="kicker">A few starting points</p><h2 id="home-work-title">Explore work by what it does.</h2></div>
+    <a class="text-link" href="{{ '/explore/' | relative_url }}">Browse all projects and interests</a>
+  </div>
+  <div class="home-work__grid">
+    <article class="home-work__card">
+      <p class="kicker">Independent project family</p>
+      <h3><a href="{{ '/work/market-systems/' | relative_url }}">Market systems</a></h3>
+      <p>Experiments with data, scheduled work, models, and decisions under uncertainty.</p>
+    </article>
+    <article class="home-work__card">
+      <p class="kicker">Published integrations</p>
+      <h3><a href="{{ '/work/integrations/' | relative_url }}">Connect systems with care</a></h3>
+      <p>HaloPSA, ConnectWise Manage, Cavelo for n8n, and other tools with their own release states.</p>
+    </article>
+    <article class="home-work__card">
+      <p class="kicker">Knowledge and practice</p>
+      <h3><a href="{{ '/work/knowledge-tools/' | relative_url }}">Keep evidence in reach</a></h3>
+      <p>Memory, process, and handoffs that let another person continue from the actual record.</p>
+    </article>
+    <article class="home-work__card">
+      <p class="kicker">Mathematics</p>
+      <h3><a href="{{ '/work/mathematical-verification/' | relative_url }}">Reproduce the calculation</a></h3>
+      <p>An exact Jacobian verification with independent rational and symbolic checkers.</p>
+    </article>
   </div>
 </section>
 
-<section class="method-note" aria-labelledby="method-title"><div><p class="kicker">Working principle</p><h2 id="method-title">Verify what changed.</h2></div><div><p>A successful request is not the same as a verified result. I return to the relevant system or source and check whether the intended state is there.</p><a class="text-link" href="{{ '/notes/agent-safety' | relative_url }}">A write is a claim, not evidence <span aria-hidden="true">→</span></a></div></section>
+<section class="home-curiosity" aria-labelledby="home-curiosity-title">
+  <div>
+    <p class="kicker">Independent interests</p>
+    <h2 id="home-curiosity-title">Some questions stay interesting on their own.</h2>
+  </div>
+  <div class="home-curiosity__links">
+    <a href="{{ '/notes/late-october-skywatching-binoculars-telescope' | relative_url }}">Practical skywatching</a>
+    <a href="{{ '/notes/ai-protein-binding-evidence-ladder' | relative_url }}">What counts as evidence?</a>
+    <a href="{{ '/work/ff-cli/' | relative_url }}">Fantasy football tools</a>
+  </div>
+</section>
 
-<section class="home-section personal-note" aria-labelledby="personal-title"><p class="kicker">Outside the day job</p><h2 id="personal-title">A few questions keep following me.</h2><p>Markets and probability, exact mathematics, genealogy and privacy, unusual experiments, and the places people call home all find their way into my independent projects.</p><div class="personal-links"><a class="text-link" href="{{ '/about/#interests' | relative_url }}">Selected interests <span aria-hidden="true">→</span></a><a class="text-link" href="{{ '/writing' | relative_url }}">Writing and field notes <span aria-hidden="true">→</span></a></div></section>
-
-<section class="conversation-note" aria-labelledby="conversation-title"><div><h2 id="conversation-title">For business work, contact Viyu.</h2><p>Viyu Network Solutions handles business inquiries and delivery.</p></div><a class="btn btn-outline" href="https://viyu.net/contact-support/contact-us/">Contact Viyu <span aria-hidden="true">↗</span></a></section>
+<section class="home-next" aria-labelledby="home-next-title">
+  <div>
+    <p class="kicker">Professional context</p>
+    <h2 id="home-next-title">See the work, then find the right route.</h2>
+    <p>For business work and delivery, contact Viyu Network Solutions. For writing, background, or a professional conversation, use the relevant page below.</p>
+  </div>
+  <div class="home-next__links">
+    <a class="btn btn-primary" href="https://viyu.net/contact-support/contact-us/">Contact Viyu about business work</a>
+    <a class="text-link" href="{{ '/experience/' | relative_url }}">Career and experience</a>
+    <a class="text-link" href="{{ '/contact/' | relative_url }}">Other contact routes</a>
+  </div>
+</section>

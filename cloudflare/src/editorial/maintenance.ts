@@ -29,6 +29,28 @@ export type ScopedCorrection = {
 export type CorrectionReceipt = { id: string; revision: string; stored_at: string };
 export interface CorrectionStore { put(correction: ScopedCorrection): Promise<CorrectionReceipt> }
 
+export class D1CorrectionStore implements CorrectionStore {
+  constructor(private readonly db: D1Database) {}
+
+  async put(correction: ScopedCorrection): Promise<CorrectionReceipt> {
+    const storedAt = new Date().toISOString();
+    const revisionInput = JSON.stringify({ id: correction.id, source_episode: correction.source_episode,
+      original_instruction: correction.original_instruction, scope: correction.scope, affected_behavior: correction.affected_behavior,
+      regression_reference: correction.regression_reference, recorded_at: new Date(correction.recorded_at).toISOString() });
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(revisionInput)));
+    const revision = [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+    await this.db.prepare(`INSERT OR IGNORE INTO editorial_corrections
+      (id, source_episode, original_instruction, scope_json, affected_behavior, regression_reference, revision, recorded_at, stored_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(correction.id, correction.source_episode, correction.original_instruction, JSON.stringify(correction.scope), correction.affected_behavior,
+        correction.regression_reference, revision, new Date(correction.recorded_at).toISOString(), storedAt).run();
+    const row = await this.db.prepare('SELECT revision, stored_at FROM editorial_corrections WHERE id = ?')
+      .bind(correction.id).first<{ revision: string; stored_at: string }>();
+    if (!row || row.revision !== revision) throw new Error('SCOPED_CORRECTION_CONFLICT');
+    return { id: correction.id, revision: row.revision, stored_at: row.stored_at };
+  }
+}
+
 export function planMaintenance(event: MaintenanceEvent, item: PublicContentItem): MaintenanceDecision {
   if (!event.id || event.target_id !== item.id || !Number.isFinite(Date.parse(event.occurred_at))) return { action: 'NO_CHANGE', reason: 'Event identity or timestamp does not match the public item.' };
   const protectedFields = [...new Set(event.proposed_protected_fields ?? [])].filter((field) => item.protected_fields.includes(field)).sort();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyProtectedFields, invalidatedByWithdrawal, planMaintenance, recordCorrection, type PublicContentItem } from '../src/editorial/maintenance.js';
+import { applyProtectedFields, D1CorrectionStore, invalidatedByWithdrawal, planMaintenance, recordCorrection, type PublicContentItem } from '../src/editorial/maintenance.js';
 import type { ContentProposal, PublicSource } from '../src/editorial/contracts.js';
 
 const source: PublicSource = { url: 'https://example.com/release', title: 'Release note', retrieved_at: '2026-11-26T00:00:00Z', source_date: '2026-11-25T00:00:00Z', content_sha256: 'a'.repeat(64) };
@@ -36,5 +36,33 @@ describe('bounded editorial maintenance', () => {
     });
     expect((written as { scope: string[] }).scope).toEqual(['markets']);
     expect(receipt.revision).toBe('r1');
+  });
+
+  it('stores scoped corrections durably with idempotent replay and conflicting-ID rejection', async () => {
+    const rows = new Map<string, Record<string, string>>();
+    const db = {
+      prepare(query: string) {
+        let values: unknown[] = [];
+        return {
+          bind(...args: unknown[]) { values = args; return this; },
+          async run() {
+            if (query.startsWith('INSERT OR IGNORE INTO editorial_corrections')) {
+              const [id, sourceEpisode, originalInstruction, scopeJson, affectedBehavior, regressionReference, revision, recordedAt, storedAt] = values as string[];
+              if (!rows.has(id)) rows.set(id, { id, source_episode: sourceEpisode, original_instruction: originalInstruction, scope_json: scopeJson,
+                affected_behavior: affectedBehavior, regression_reference: regressionReference, revision, recorded_at: recordedAt, stored_at: storedAt });
+            }
+            return { meta: { changes: 1 } };
+          },
+          async first<T>() { return (rows.get(values[0] as string) ?? null) as T | null; },
+        };
+      },
+    } as unknown as D1Database;
+    const store = new D1CorrectionStore(db);
+    const correction = { id: 'corr-durable', source_episode: 'episode-7', original_instruction: 'Correct the dated claim.', scope: ['markets'],
+      affected_behavior: 'Refresh only the cited claim.', regression_reference: 'maintenance.test.ts:durable', recorded_at: '2026-11-26T00:00:00Z' };
+    const saved = await recordCorrection(correction, store);
+    expect(await recordCorrection(correction, store)).toEqual(saved);
+    await expect(recordCorrection({ ...correction, affected_behavior: 'Change broader policy.' }, store)).rejects.toThrow('SCOPED_CORRECTION_CONFLICT');
+    expect(rows.size).toBe(1);
   });
 });

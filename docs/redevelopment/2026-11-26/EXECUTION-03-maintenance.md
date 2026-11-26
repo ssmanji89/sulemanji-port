@@ -6,7 +6,7 @@
 | T08 | Implementation partial | 58 Cloudflare tests pass; public source parsers and deterministic relevance are present. | Live source-read qualification and complete end-to-end candidate runner. |
 | T09 | Implementation partial | Atomic budget, Chicago slot, durable claims/outbox, operator controls tested. | Live D1/Workflow resources and resumed durable execution. |
 | T10 | Implementation partial | Provider schema, author/reviewer separation, bounded review, GitHub publisher, deployment readback. `npm run check`: pass (58 passed, 4 skipped); site build: 229 assets / 55 preserved articles; editorial and site Worker dry-runs pass. | Full Workflow integration from discovery through public readback; configured authorized provider; hosted checks and live verification. |
-| T11 | Implementation partial | `maintenance.test.ts`: 5 passed; scoped correction, dependency invalidation and protected-field helpers added. | D1 correction store, workflow/operator integration, wider correction and independent-candidate cases. |
+| T11 | Implementation partial | Scoped correction, dependency invalidation, protected-field checks, forward D1 correction ledger, and authenticated `record_correction` operator action. Tests cover deduplicated scope, idempotent persistence, conflicting-ID rejection, and durable receipts. | Workflow-driven claim repair and regression follow-up; wider independent-candidate cases. |
 
 ## Current rulings
 
@@ -20,6 +20,12 @@
 - Editorial Worker configs: separate staging and production bindings dry-run.
 - `bash scripts/check_site_release.sh`: stopped before release qualification because the working tree was dirty; rerun after commit. Earlier clean-main Writing fixture failures remain recorded in `EXECUTION.md` and must be retested.
 - Generated `test-results/` remains untracked and intentionally preserved.
+
+## T11 correction persistence follow-up
+
+- Forward migration `0003_editorial_corrections.sql` adds a private D1 correction ledger with deterministic content revision, scope, source episode, regression reference, and stored timestamp.
+- The signed operator endpoint accepts a bounded `record_correction` command, normalizes scope, persists it idempotently, rejects conflicting reuse of an ID, and writes an operator receipt.
+- `npm --prefix cloudflare run check`: 60/60 tests pass; built Worker integration passes against 229 assets and 55 preserved articles; static site Worker configs dry-run. This does not qualify a deployed Workflow or D1 migration.
 
 ## T12 acceptance and owner review
 

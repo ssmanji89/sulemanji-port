@@ -1,7 +1,9 @@
 import type { EditorialEnv } from './contracts.js';
 import { readControl, setPaused } from './state.js';
+import { D1CorrectionStore, recordCorrection, type ScopedCorrection } from './maintenance.js';
 
-type OperatorCommand = { action: 'status' | 'pause' | 'resume' } | { action: 'inspect' | 'retry' | 'revoke'; candidate_id: string };
+type OperatorCommand = { action: 'status' | 'pause' | 'resume' } | { action: 'inspect' | 'retry' | 'revoke'; candidate_id: string }
+  | ({ action: 'record_correction' } & Omit<ScopedCorrection, 'scope'> & { scope: string[] });
 type OperatorEnv = EditorialEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string };
 
 function decodeBase64(value: string): Uint8Array | null {
@@ -27,6 +29,14 @@ function isCommand(value: unknown): value is OperatorCommand {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const row = value as Record<string, unknown>;
   if (['status', 'pause', 'resume'].includes(String(row.action))) return Object.keys(row).length === 1;
+  if (row.action === 'record_correction') return Object.keys(row).sort().join(',') === 'action,affected_behavior,id,original_instruction,recorded_at,regression_reference,scope,source_episode'
+    && typeof row.id === 'string' && /^[a-zA-Z0-9._:-]{1,160}$/.test(row.id)
+    && typeof row.source_episode === 'string' && row.source_episode.length > 0 && row.source_episode.length <= 256
+    && typeof row.original_instruction === 'string' && row.original_instruction.trim().length > 0 && row.original_instruction.length <= 2000
+    && Array.isArray(row.scope) && row.scope.length > 0 && row.scope.length <= 20 && row.scope.every((item) => typeof item === 'string' && /^[a-zA-Z0-9._:-]{1,160}$/.test(item))
+    && typeof row.affected_behavior === 'string' && row.affected_behavior.trim().length > 0 && row.affected_behavior.length <= 1000
+    && typeof row.regression_reference === 'string' && row.regression_reference.trim().length > 0 && row.regression_reference.length <= 512
+    && typeof row.recorded_at === 'string' && Number.isFinite(Date.parse(row.recorded_at));
   return ['inspect', 'retry', 'revoke'].includes(String(row.action)) && Object.keys(row).length === 2 && typeof row.candidate_id === 'string' && /^[a-zA-Z0-9._:-]{1,160}$/.test(row.candidate_id);
 }
 
@@ -43,6 +53,14 @@ export async function operatorRequest(raw: Uint8Array, keyId: string, signature:
   let result: Record<string, unknown> = {};
   if (command.action === 'status') result = await readControl(env.DB);
   else if (command.action === 'pause' || command.action === 'resume') result = await setPaused(env.DB, command.action === 'pause', now);
+  else if (command.action === 'record_correction') {
+    try {
+      result = await recordCorrection(command, new D1CorrectionStore(env.DB));
+    } catch (error) {
+      status = 'rejected';
+      reason = error instanceof Error ? error.message : 'Correction could not be stored.';
+    }
+  }
   else if ('candidate_id' in command) {
     candidateId = command.candidate_id;
     if (command.action === 'inspect') {

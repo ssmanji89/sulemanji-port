@@ -11,7 +11,7 @@ Status: prepared for a later owner decision. No account resources, model credent
 
 Both D1 IDs are deliberately unset. Each migration creates the owner control in paused state. The maintenance Worker has no visitor inference path. The website is a separate static-assets Worker; its production route remains `www.sulemanji.com/*`.
 
-Cloudflare account name/ID, plan, zone ID, D1 IDs, Workflow instance state, exact API permissions, production route ID, staging hostname, and current deployed versions require a fresh authorized account read. The connected app currently returns `UNAUTHORIZED` and asks to reconnect. No resource has been created or modified.
+Read-only Wrangler access works for the Cloudflare account, while the connected app returns `UNAUTHORIZED`. The target `sulemanji-site` Worker does not exist in that account and no Pages projects are listed. The only listed D1 database is `sulemanji-work-with-me`, which is unrelated to this site and will not be reused. Account plan, zone ID, new D1 IDs, Workflow instance state, exact API permissions, production route ID, staging hostname, and current deployed versions still require more targeted authorized reads. No resource has been created or modified.
 
 ## Model and cost estimate
 
@@ -30,7 +30,7 @@ Cloudflare's published Workers Paid price is $5/month with included requests, CP
 
 ## One-writer cutover
 
-1. Read the installed publisher, schedule, in-flight state, article queue, locks, and current authority immediately before cutover. Current evidence identifies the local `sulemanji-writing` publisher and a separate publication worktree; retain them as sole writer until this readback is complete.
+1. Read the installed publisher, schedule, in-flight state, article queue, locks, and current authority immediately before cutover. Read-only inspection found the daily and scout LaunchAgents loaded and a clean separate publication worktree (`writing/676b9558`). Retain the existing writer as sole publisher until complete cutover readback is available.
 2. Pause the existing schedule and verify its state. Wait for or reconcile the active article, draft, pending review, or publication effect. Preserve its article identity and durable state.
 3. Deploy the static site and paused editorial Worker. Run the exact source SHA, route, article, Writing, feed, sitemap, privacy, and retirement checks. Do not enable a second publisher during this step.
 4. Record the previous writer's terminal lease/epoch and prove it cannot write. Create a new D1 owner epoch, verify the sanitized Viyu knowledge delivery receipt, provider/model/pricing configuration, budget policy, Workflow class, and GitHub publication authority.
@@ -46,4 +46,4 @@ Cloudflare's published Workers Paid price is $5/month with included requests, CP
 
 ## Current decision boundary
 
-The product preview was approved as presented. Model provider/model, spend envelopes, schedule activation, account resource creation, and production cutover remain unresolved. No model or Cloudflare spending authorization is inferred from this proposal.
+The product preview was approved as presented. The public homepage currently returns 200 through Cloudflare's edge with GitHub origin headers; the proposed site Worker is absent. Model provider/model, spend envelopes, schedule activation, account resource creation, and production cutover remain unresolved. No model or Cloudflare spending authorization is inferred from this proposal.

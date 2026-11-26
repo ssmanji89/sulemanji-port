@@ -1,8 +1,8 @@
 # Sulemanji experience design
 
-**State:** Design proposal; not deployed.  
-**Date:** 2026-11-26.  
-**Scope:** The complete visitor experience, including the public content that background workers maintain.  
+**State:** Design proposal; not deployed.
+**Date:** 2026-11-26.
+**Scope:** The complete visitor experience, including the public content that background workers maintain.
 **Companion:** [Annotated experience board](../reference/2026-11-26-sulemanji-rebuild/experience-board.html).
 
 ## Purpose
@@ -266,4 +266,3 @@ Static checks cover local assets, fragment links, and proposed text-color contra
 The Chromium wrapper exists, but its browser executable is absent.
 Playwright also has no installed browser binaries.
 No screenshot or visual-browser validation is claimed.
-

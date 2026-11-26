@@ -186,4 +186,3 @@ function normalizeNodeText(node: unknown): string {
   };
   return extract(node).replace(/\s+/g, ' ').trim();
 }
-

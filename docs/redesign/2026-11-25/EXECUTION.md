@@ -61,7 +61,7 @@ The preview's 41-article snapshot was not used; the source baseline and current 
 | Task | Status | Evidence |
 |---|---|---|
 | T01 — Source and decision reconciliation | Done | Fresh-main worktree and SHAs recorded; baseline manifest complete; policy decision applied and safety checks pass; checkpoint commit `0ab98ae` |
-| T02 — Jekyll portfolio redesign | Implemented; reviewed next | Shared shell, homepage, About, Contact, six work cases, seven accessible diagrams, retained profile pages and route aliases |
+| T02 — Jekyll portfolio redesign | Implemented; reviewed | Shared shell, homepage, About, Contact, six work cases, seven accessible diagrams, retained profile pages and route aliases |
 | T03 — Offer retirement | Implemented; live disposition gated | Admission endpoints return 410 before parsing/writes/provider calls unless explicitly active; paid-case servicing and callbacks remain; unit tests pass |
 | T04 — Writing preservation and browsing | Implemented | Server-rendered eligible catalog preserved, article URLs unchanged, categories/search layered progressively; 48 Ruby tests and 55 Python tests pass |
 | T05 — Qualification and release safety | Engineering checks pass; live evidence gated | Production build and verifiers pass; current Stripe/Cloudflare read-only access needs reauthentication |

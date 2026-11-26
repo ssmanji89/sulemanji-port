@@ -1,0 +1,11 @@
+[
+  { "source": "/writing/", "kind": "redirect", "target": "/writing", "status": 301 },
+  { "source": "/work-with-me/", "kind": "redirect", "target": "/contact/", "status": 301 },
+  { "source": "/work-with-me", "kind": "redirect", "target": "/contact/", "status": 301 },
+  { "source": "/work-with-me/personal/", "kind": "redirect", "target": "/contact/", "status": 301 },
+  { "source": "/work-with-me/quote", "kind": "redirect", "target": "/contact/", "status": 301 },
+  { "source": "/work-with-me/terms", "kind": "redirect", "target": "/contact/", "status": 301 },
+  { "source": "/work-with-me/thanks", "kind": "redirect", "target": "/contact/", "status": 301 },
+  { "source": "/work-with-me/priority/", "kind": "redirect", "target": "/contact/", "status": 301 },
+  { "source": "/workshop-intake/", "kind": "gone", "destination": "/contact/" }
+]

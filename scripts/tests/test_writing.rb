@@ -460,8 +460,7 @@ class WritingTest < Minitest::Test
         '/notes/presentation' => {
           'proof_url' => '/case-studies/agentic-msp-delivery',
           'proof_label' => 'MSP service delivery using agentic LLMs',
-          'proof_status' => 'case study',
-          'cta_label' => 'Discuss a business engagement'
+          'proof_status' => 'case study'
         }
       }
     }
@@ -494,8 +493,8 @@ class WritingTest < Minitest::Test
     assert_equal ['nofollow', 'noopener', 'sponsored'],
                  Nokogiri::HTML.fragment(preserved).at_css('a')['rel'].split.sort
     assert_equal 1, page.css('[data-article-context]').length
-    assert_includes page.at_css('[data-article-context]').text,
-                    'Business delivery is through Viyu Network Solutions.'
+    assert_includes page.at_css('[data-article-context-proof]')['href'], '/case-studies/agentic-msp-delivery'
+    assert_empty page.css('[data-article-context-cta]')
     assert_empty html('/notes/unlisted').css('[data-article-context]')
   end
 
@@ -617,8 +616,7 @@ class WritingTest < Minitest::Test
         '/notes/hidden-context' => {
           'proof_url' => '/case-studies/agentic-msp-delivery',
           'proof_label' => 'Synthetic proof link',
-          'proof_status' => 'case study',
-          'cta_label' => 'Synthetic call to action'
+          'proof_status' => 'case study'
         }
       }
     }

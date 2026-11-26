@@ -27,9 +27,12 @@ class RedesignShellTests(unittest.TestCase):
     def test_main_navigation_and_business_destination(self):
         navigation = (ROOT / "_data/navigation.yml").read_text()
         labels = [line.split(": ", 1)[1] for line in navigation.splitlines() if line.startswith("- title:")]
-        self.assertEqual(labels, ["Work", "Writing", "About", "Contact"])
+        self.assertEqual(labels, ["Explore", "Writing", "About", "Contact"])
+        self.assertIn("/explore/", navigation)
         header = (ROOT / "_includes/site-header.html").read_text()
-        self.assertIn("https://viyu.net/contact-support/contact-us/", header)
+        self.assertNotIn("https://viyu.net/contact-support/contact-us/", header)
+        contact = (ROOT / "contact.md").read_text()
+        self.assertIn("https://viyu.net/contact-support/contact-us/", contact)
 
     def test_legacy_business_case_calls_go_directly_to_viyu(self):
         destination = "https://viyu.net/contact-support/contact-us/"

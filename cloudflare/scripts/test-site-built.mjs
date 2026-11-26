@@ -9,7 +9,7 @@ const here = fileURLToPath(new URL('.', import.meta.url));
 const cloudflareDir = resolve(here, '..');
 const root = resolve(cloudflareDir, '..');
 const suppliedSite = process.env.SITE_BUILD_PATH ? resolve(process.env.SITE_BUILD_PATH) : null;
-const temp = suppliedSite ? null : await mkdtemp(join(tmpdir(), 'sulemanji-site-built-'));
+const temp = await mkdtemp(join(tmpdir(), 'sulemanji-site-built-'));
 const site = suppliedSite || join(temp, 'site');
 const config = join(cloudflareDir, `.wrangler-site-built-${process.pid}.jsonc`);
 let worker;

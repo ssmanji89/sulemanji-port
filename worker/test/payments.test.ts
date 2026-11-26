@@ -64,6 +64,7 @@ describe("payment routes", () => {
     workflowStarts = [];
     Object.assign(testEnv, {
       SITE_ORIGIN,
+      PUBLIC_OFFER_MODE: "active",
       TERMS_VERSION: "2026-07-11",
       STRIPE_SECRET_KEY: "sk_test_123",
       STRIPE_WEBHOOK_SECRET: "whsec_test_123",
@@ -124,6 +125,18 @@ describe("payment routes", () => {
     expect(response.status).toBe(409);
     await expect(response.json()).resolves.toEqual({
       error: "checkout_unavailable",
+    });
+    expect(stripe.checkoutRequests).toHaveLength(0);
+  });
+
+  it("retires deposit checkout for unknown public offer mode before case reads or Stripe calls", async () => {
+    Object.assign(testEnv, { PUBLIC_OFFER_MODE: "future-value" });
+    const response = await checkout("missing-case-token");
+
+    expect(response.status).toBe(410);
+    await expect(response.json()).resolves.toEqual({
+      error: "offer_retired",
+      contactUrl: "https://viyu.net/contact-support/contact-us/",
     });
     expect(stripe.checkoutRequests).toHaveLength(0);
   });

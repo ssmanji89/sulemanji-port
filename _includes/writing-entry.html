@@ -1,5 +1,7 @@
 {% assign writing_entry_url = site.baseurl | append: include.article.url %}
-<article class="proj" data-writing-url="{{ include.article.url | escape }}">
+{% assign writing_category = site.data["writing-categories"].by_url[include.article.url] | default: "Other" %}
+{% assign writing_search = include.article.title | append: " " | append: include.article.description | append: " " | append: writing_category | downcase %}
+<article class="proj writing-entry" data-writing-url="{{ include.article.url | escape }}" data-category="{{ writing_category | downcase | replace: ' ', '-' | escape }}" data-search="{{ writing_search | strip_newlines | escape }}">
   <h3><a href="{{ writing_entry_url | escape }}">{{ include.article.title | escape }}</a></h3>
   <p>{{ include.article.description | escape }}</p>
   {% include writing-meta.html article=include.article %}

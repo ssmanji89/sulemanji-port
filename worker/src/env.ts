@@ -2,6 +2,7 @@ export type Env = {
   DB: D1Database;
   PRIORITY_DISCOVERY: Workflow<{ caseId: string }>;
   SERVICE_MODE?: "setup" | "live" | string;
+  PUBLIC_OFFER_MODE?: string;
   SITE_ORIGIN: string;
   TERMS_VERSION: string;
   TURNSTILE_SECRET: string;

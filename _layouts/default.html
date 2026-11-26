@@ -39,6 +39,11 @@
     {% endif %}
 
       <section class="page{% unless page.hero_title %} has-no-hero{% endunless %}">
+        {% if page.redirect_target and page.redirect_title %}
+        <p class="kicker">Redirecting</p>
+        <h1>{{ page.redirect_title | escape }}</h1>
+        <p>This page has moved. <a href="{{ page.redirect_target | relative_url | escape }}">Continue to {{ page.redirect_label | default: "the updated page" | escape }}</a>.</p>
+        {% endif %}
         {{ content }}
       </section>
     </main>
@@ -53,6 +58,9 @@
     {% endif %}
     {% if page.work_with_me_quote %}
     <script src="{{ "/assets/js/work-with-me-quote.js" | relative_url }}"></script>
+    {% endif %}
+    {% if page.writing_browser %}
+    <script src="{{ "/assets/js/writing-browser.js" | relative_url }}" defer></script>
     {% endif %}
   </body>
 </html>

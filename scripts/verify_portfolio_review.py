@@ -10,10 +10,13 @@ from urllib.parse import unquote, urljoin, urlsplit
 ORIGIN = 'https://www.sulemanji.com'
 PERSON_ID = ORIGIN + '/#person'
 ROUTES = (
-    '/', '/about', '/experience', '/projects', '/story', '/beyond', '/resume',
-    '/work-with-me', '/work-with-me/personal', '/work-with-me/quote',
-    '/work-with-me/thanks', '/work-with-me/terms', '/work-with-me/priority',
-    '/case-studies/agentic-msp-delivery', '/case-studies/ff-cli',
+    '/', '/work/', '/work/service-operations/', '/work/market-systems/',
+    '/work/integrations/', '/work/knowledge-tools/', '/work/ff-cli/',
+    '/work/mathematical-verification/', '/writing', '/about/', '/contact/',
+    '/experience/', '/resume/', '/projects/', '/story/', '/beyond/',
+    '/work-with-me/', '/work-with-me/personal/', '/work-with-me/priority/',
+    '/work-with-me/quote', '/work-with-me/thanks', '/work-with-me/terms',
+    '/case-studies/agentic-msp-delivery/', '/case-studies/ff-cli/',
     '/case-studies/microsoft-365-acquisition-integration', '/case-studies/rfms-operations',
 )
 
@@ -134,17 +137,18 @@ def verify(root):
                   and person.get('jobTitle') == 'Sr. Services Engineer'
                   and person.get('worksFor') == {'@type': 'Organization', 'name': 'Viyu Network Solutions', 'url': 'https://www.viyu.net'}, route, 'Person identity and employer')
         profiles = [node for node in nodes if node.get('@type') == 'ProfilePage']
-        check(len(profiles) == (1 if route == '/about' else 0), route, 'About-only ProfilePage')
+        check(len(profiles) == (1 if route == '/about/' else 0), route, 'About-only ProfilePage')
         if profiles:
             check(profiles[0].get('mainEntity') == {'@id': PERSON_ID}, route, 'profile references shared Person')
         check(any(node.get('@type') in ('WebPage', 'WebSite', 'BlogPosting', 'Article') for node in nodes), route, 'SEO page schema retained')
         check(not any('portfolio-rewrite.css' in a.get('href', '') for a in doc.elements('link')), route, 'retired homepage stylesheet absent')
-        if route == '/work-with-me':
-            check(not doc.elements('form'), route, 'scenario root has no form')
-            check(not any('work-with-me.js' in a.get('src', '') or 'turnstile' in a.get('src', '') for a in doc.elements('script')), route, 'scenario root has no intake scripts')
-        if route == '/work-with-me/personal':
-            check(any(a.get('id') == 'work-with-me-intake' for a in doc.elements('form')), route, 'personal form present')
-            check(any(a.get('name') == 'contextType' and a.get('type') == 'hidden' and a.get('value') == 'personal' for a in doc.elements('input')), route, 'personal context preserved')
+        if route in ('/work-with-me/', '/work-with-me/personal/', '/work-with-me/priority/'):
+            check(not doc.elements('form'), route, 'retired admission route has no form')
+            check(not any('work-with-me.js' in a.get('src', '') or 'turnstile' in a.get('src', '') for a in doc.elements('script')), route, 'retired admission route has no intake scripts')
+            check(doc.meta('robots') == ['noindex,follow'], route, 'retired admission route is noindex')
+            check(any(a.get('http-equiv', '').lower() == 'refresh' for a in doc.elements('meta')), route, 'compatibility redirect is present')
+        if route.startswith('/work-with-me/') and route not in ('/work-with-me/personal/', '/work-with-me/priority/'):
+            check(doc.meta('robots') == ['noindex,follow'], route, 'obligation servicing route is noindex')
         for tag, attrs in doc.tags:
             reference = attrs.get('href') if tag in ('a', 'link') else attrs.get('src') if tag in ('script', 'img') else None
             if not reference:

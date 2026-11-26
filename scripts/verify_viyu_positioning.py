@@ -8,10 +8,17 @@ ROOT = Path(__file__).resolve().parents[1]
 PUBLIC_FILES = [
     ROOT / "index.html",
     ROOT / "about.md",
-    ROOT / "projects.md",
+    ROOT / "contact.md",
+    ROOT / "work.md",
+    ROOT / "_data" / "work-cases.yml",
+    ROOT / "work" / "service-operations.md",
+    ROOT / "work" / "market-systems.md",
+    ROOT / "work" / "integrations.md",
+    ROOT / "work" / "knowledge-tools.md",
+    ROOT / "work" / "ff-cli.md",
+    ROOT / "work" / "mathematical-verification.md",
     ROOT / "experience.md",
     ROOT / "resume.md",
-    ROOT / "story.md",
 ]
 PUBLIC_METADATA_FILES = [
     ROOT / "_config.yml",
@@ -40,45 +47,21 @@ FORBIDDEN_PATTERNS = [
 ]
 
 REQUIRED_BY_FILE = {
-    "projects.md": [
-        "Service delivery automation at Viyu",
-        "Review-ready operations artifacts",
-        "Governed AI-assisted workflows",
-        "SOW",
-        "PBR/QBR",
-        "invoice-review",
-        "review gates",
-    ],
-    "experience.md": [
-        "Sr. Services Engineer",
-        "acting as a solutions architect and automation engineer",
-        "Service Delivery Automation",
-        "Operational Review Artifacts",
-        "Governed AI-Assisted Workflows",
-    ],
-    "resume.md": [
-        "Sr. Services Engineer; acting as Solutions Architect & Automation Engineer",
-        "SOW",
-        "PBR/QBR",
-        "invoice-review",
-    ],
-    "story.md": [
-        "Sr. Services Engineer",
-        "acting as a solutions architect and automation engineer",
-        "SOW",
-        "PBR/QBR",
-        "invoice-review",
-    ],
     "about.md": [
-        "Sr. Services Engineer",
-        "acting as a solutions architect and automation engineer",
-        "agentic",
+        "services engineer at Viyu Network Solutions",
+        "Management Information Systems",
     ],
     "index.html": [
-        "Microsoft 365",
-        "migration work",
-        "service-delivery automation",
-        "agentic",
+        "Dependable operations. Practical automation.",
+        "contact-support/contact-us/",
+    ],
+    "contact.md": [
+        "Business inquiries",
+        "contact-support/contact-us/",
+    ],
+    "work-cases.yml": [
+        "Service delivery with AI agents",
+        "Business delivery is through Viyu",
     ],
 }
 

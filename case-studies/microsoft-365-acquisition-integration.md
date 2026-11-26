@@ -36,4 +36,4 @@ Microsoft's guidance describes supported migration services, prerequisites, and 
 
 A useful discovery output would be an agreed scope, an ownership map, a dependency list, and acceptance criteria. Those are planning artifacts to establish, not results claimed here.
 
-Planning a Microsoft 365 migration or acquisition integration? [Tell me what is changing and where you need engineering support](/work-with-me#business-engagements). Business delivery is through Viyu Network Solutions.
+Planning a Microsoft 365 migration or acquisition integration? [Tell me what is changing and where you need engineering support](/contact/). Business delivery is through Viyu Network Solutions.

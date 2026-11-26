@@ -5,7 +5,7 @@ import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLIC_GLOBS = ["*.md", "*.html", "writing/*.md", "case-studies/*.md", "notes/*.md"]
+PUBLIC_GLOBS = ["*.md", "*.html", "*.yml", "writing/*.md", "case-studies/*.md", "work/**/*.md", "notes/*.md", "_data/*.yml"]
 EXCLUDE_DIRS = {"_site", "vendor", "docs", "node_modules", ".git", "blog_automation", "worker"}
 
 FORBIDDEN = [
@@ -26,14 +26,19 @@ def public_files():
                 yield p
 
 
-def main():
+def scan_files(paths):
     failures = []
-    for path in public_files():
+    for path in paths:
         text = path.read_text(encoding="utf-8", errors="replace")
         for pattern, label in FORBIDDEN:
             m = re.search(pattern, text, re.IGNORECASE)
             if m:
-                failures.append(f"{path.relative_to(ROOT)}: forbidden ({label}): {m.group(0)!r}")
+                failures.append(f"{path}: forbidden ({label}): {m.group(0)!r}")
+    return failures
+
+
+def main():
+    failures = scan_files(public_files())
     if failures:
         print("Public-safety verification failed:")
         for f in failures:

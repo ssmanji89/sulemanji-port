@@ -193,7 +193,7 @@ module WritingContract
             context.keys.sort == %w[cta_label proof_label proof_status proof_url],
             "article context: #{route} invalid fields")
       check(context['proof_url'].is_a?(String) &&
-            /\A\/(?:case-studies|projects)(?:\/[a-z0-9-]+)?(?:#[a-z0-9-]+)?\z/.match?(context['proof_url']),
+            /\A\/(?:case-studies|projects|work)(?:\/[a-z0-9-]+)?\/?(?:#[a-z0-9-]+)?\z/.match?(context['proof_url']),
             "article context: #{route} invalid proof_url")
       %w[proof_label cta_label].each do |field|
         check(context[field].is_a?(String) && !context[field].strip.empty? &&
@@ -689,7 +689,7 @@ module WritingContract
       check(section &&
             section.at_css('[data-article-context-proof]')&.[]('href') == baseurl + context['proof_url'] &&
             section.at_css('[data-article-context-cta]')&.[]('href') ==
-              baseurl + '/work-with-me#business-engagements' &&
+              baseurl + '/contact/' &&
             section.text.include?('Business delivery is through Viyu Network Solutions.'),
             "#{article.path}: article context mismatch")
     else
@@ -719,8 +719,13 @@ module WritingContract
     expected_scripts += %w[/assets/js/theme-toggle.js /assets/js/portfolio-rewrite.js]
                         .map { |path| [baseurl + path, ''] }
 
+    writing_scripts = expected_scripts + [[baseurl + '/assets/js/writing-browser.js', '']]
     index = document(site, '/writing',
-                     origin: origin, baseurl: baseurl, expected_scripts: expected_scripts)
+                     origin: origin, baseurl: baseurl, expected_scripts: writing_scripts)
+    check(index.css('[data-writing-controls]').length == 1,
+          '/writing: one progressive filter control group required')
+    check(index.css('[data-writing-query]').length == 1,
+          '/writing: search control missing')
     disclosure_page = document(
       site,
       '/affiliate-disclosure',
@@ -735,10 +740,10 @@ module WritingContract
     expected = records.active.map { |article| article.data['permalink'] }
     check(cards.map { |node| node['data-writing-url'] } == expected,
           '/writing: discovery/order/uniqueness mismatch')
-    check(index.css('#writing-latest [data-writing-url]').map { |node| node['data-writing-url'] } ==
-          expected.take(1), '/writing: latest mismatch')
-    check(index.css('#writing-more [data-writing-url]').map { |node| node['data-writing-url'] } ==
-          expected.drop(1), '/writing: remainder mismatch')
+    check(cards.map { |node| node['data-writing-url'] } == expected,
+          '/writing: server-rendered article order or visibility mismatch')
+    check(index.css('#writing-latest, #writing-more').empty?,
+          '/writing: obsolete featured layout remains')
     check(index.css('#writing-empty').length == (expected.empty? ? 1 : 0),
           '/writing: empty state mismatch')
 

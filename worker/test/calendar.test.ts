@@ -143,6 +143,7 @@ describe("private quote routes", () => {
 
   it("creates a hold and balance Checkout from the authoritative quote balance", async () => {
     const { caseId, quote } = await createQuote();
+    Object.assign(testEnv, { PUBLIC_OFFER_MODE: "retired" });
 
     const response = await app.fetch(
       new Request(`${API_ORIGIN}/v1/quotes/${quote.publicToken}/holds`, {

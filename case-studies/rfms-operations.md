@@ -39,4 +39,4 @@ Access should have a named approver, a defined purpose, and an agreed end to the
 
 The planning goal is a clear division of responsibility and an agreed validation checklist. Neither an application move nor ongoing support is promised by this note.
 
-Working through an RFMS move or integration dependency? [Tell me what needs to keep working and where the project is stuck](/work-with-me#business-engagements). Business delivery is through Viyu Network Solutions.
+Working through an RFMS move or integration dependency? [Tell me what needs to keep working and where the project is stuck](/contact/). Business delivery is through Viyu Network Solutions.

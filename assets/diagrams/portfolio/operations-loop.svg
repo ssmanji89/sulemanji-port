@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="portfolio-diagram" viewBox="0 0 760 680" role="img" aria-labelledby="operations-loop-title operations-loop-desc" style="max-width:100%;height:auto">
+<title id="operations-loop-title">A repeatable operating method</title>
+<desc id="operations-loop-desc">Observe, scope, change, verify, and retain form an operating cycle that preserves decisions and results in a shared record.</desc>
+<defs>
+<marker id="operations-loop-arrow" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#6d756e"/></marker>
+<marker id="operations-loop-arrow-accent" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#b85d3e"/></marker>
+<marker id="operations-loop-arrow-link" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#244c3d"/></marker>
+<marker id="operations-loop-arrow-soft" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#c9d0c5"/></marker>
+</defs>
+<rect width="760" height="680" fill="#f4f2ec"/>
+<path data-connector="true" d="M472.000 110.671A236 236 0 0 1 587.445 215.472" fill="none" stroke="#6d756e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#operations-loop-arrow)"/>
+<path data-connector="true" d="M613.820 296.000A236 236 0 0 1 560.918 479.541" fill="none" stroke="#6d756e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#operations-loop-arrow)"/>
+<path data-connector="true" d="M428.000 559.067A236 236 0 0 1 332.588 559.188" fill="none" stroke="#6d756e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#operations-loop-arrow)"/>
+<path data-connector="true" d="M199.467 480.000A236 236 0 0 1 146.099 296.595" fill="none" stroke="#6d756e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#operations-loop-arrow)"/>
+<path data-connector="true" d="M172.269 216.000A236 236 0 0 1 287.448 110.905" fill="none" stroke="#6d756e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#operations-loop-arrow)"/>
+<path data-connector="true" d="M380.000 132.000L380.000 274.000" fill="none" stroke="#c9d0c5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6" marker-end="url(#operations-loop-arrow-soft)"/>
+<path data-connector="true" d="M512.000 285.571L485.712 294.021" fill="none" stroke="#c9d0c5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6" marker-end="url(#operations-loop-arrow-soft)"/>
+<path data-connector="true" d="M490.833 480.000L418.535 380.848" fill="none" stroke="#c9d0c5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6" marker-end="url(#operations-loop-arrow-soft)"/>
+<path data-connector="true" d="M269.167 480.000L341.465 380.848" fill="none" stroke="#c9d0c5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6" marker-end="url(#operations-loop-arrow-soft)"/>
+<path data-connector="true" d="M248.000 285.571L274.288 294.021" fill="none" stroke="#c9d0c5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6" marker-end="url(#operations-loop-arrow-soft)"/>
+<g data-node-id="operations-loop-node-1"><rect x="288" y="52" width="184" height="80" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="operations-loop-text-1" x="380.0" y="87.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Observe</text>
+<text id="operations-loop-text-2" x="380.0" y="115.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">current state</text>
+<g data-node-id="operations-loop-node-2"><rect x="512" y="216" width="184" height="80" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="operations-loop-text-3" x="604.0" y="251.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Scope</text>
+<text id="operations-loop-text-4" x="604.0" y="279.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">owner + limits</text>
+<g data-node-id="operations-loop-node-3"><rect x="428" y="480" width="184" height="80" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="operations-loop-text-5" x="520.0" y="515.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Change</text>
+<text id="operations-loop-text-6" x="520.0" y="543.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">bounded work</text>
+<g data-node-id="operations-loop-node-4"><rect x="148" y="480" width="184" height="80" rx="6" fill="#f2e6dc" stroke="#b85d3e" stroke-width="1.5"/></g>
+<text id="operations-loop-text-7" x="240.0" y="515.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Verify</text>
+<text id="operations-loop-text-8" x="240.0" y="543.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">read the result</text>
+<g data-node-id="operations-loop-node-5"><rect x="64" y="216" width="184" height="80" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="operations-loop-text-9" x="156.0" y="251.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Retain</text>
+<text id="operations-loop-text-10" x="156.0" y="279.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">decision + proof</text>
+<g data-node-id="operations-loop-node-6"><rect x="280" y="280" width="200" height="96" rx="6" fill="#244c3d" stroke="#244c3d" stroke-width="1.5"/></g>
+<text id="operations-loop-text-11" x="380.0" y="323.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Operating</text>
+<text id="operations-loop-text-12" x="380.0" y="351.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">record</text>
+<line x1="40" y1="624" x2="720" y2="624" stroke="#c9d0c5"/>
+<text id="operations-loop-text-13" x="40" y="650" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="start" style="">Solid path: the work. Dashed paths: what the record retains.</text>
+</svg>

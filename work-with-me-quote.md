@@ -4,6 +4,8 @@ title: Private Priority Session Quote
 description: Private quote and priority session scheduling for Work With Me customers.
 permalink: /work-with-me/quote
 work_with_me_quote: true
+noindex: true
+sitemap: false
 ---
 
 # Private Priority Session Quote

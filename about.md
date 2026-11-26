@@ -1,27 +1,33 @@
 ---
 layout: default
 title: About
-description: Suleman Manji — a Houston-based Sr. Services Engineer who often acts as a solutions architect and automation engineer across service platforms, infrastructure, and AI-assisted workflow tooling.
-permalink: /about
+description: Suleman Manji is a Houston-based services engineer at Viyu Network Solutions. His work connects technical details to dependable operations and useful automation.
+permalink: /about/
 profile_page: true
 seo:
   type: WebPage
+hero_eyebrow: About
+hero_title: "The work, the background, and the questions I keep exploring."
+hero_lede: "I’m Suleman Manji. Most people call me sully. I’m based in Houston and work as a services engineer at Viyu Network Solutions."
 ---
 
-# About
+<section id="background" class="prose-block" aria-labelledby="background-title">
+  <h2 id="background-title">Background</h2>
+  <p>My background spans about 15 years in managed IT, infrastructure, Microsoft 365, identity, security, migrations, and service operations. I like work that connects a technical detail to something a person needs to do: restoring access, planning a migration, building an integration, or making a repeated task easier to complete.</p>
+  <p>My first job at a brake-shop counter gave me an early connection to practical repair work. I later did mobile mechanic work as well. Diagnosis, clear explanations, and checking the result still matter to me.</p>
+  <p>I studied Management Information Systems at the University of Houston’s Bauer College. My IT background includes support, network operations, automation, infrastructure, and technical architecture.</p>
+  <p>I use AI agents heavily for implementation and research. I set direction, define the work, review changes, and decide what the results establish. My professional delivery work belongs with Viyu.</p>
+</section>
 
-I work as a Sr. Services Engineer in Houston, often acting as a solutions architect and automation engineer. My work spans migrations, security operations, and infrastructure. That engineering practice came first; agentic-LLM systems are a later addition to how I organize and review service delivery.
+<section id="interests" class="home-section" aria-labelledby="interests-title">
+  <p class="kicker">Independent interests</p><h2 id="interests-title">Questions worth following.</h2>
+  <div class="work-grid">
+    <article class="work-card"><h3>Markets and probability</h3><p>I explore how incomplete information becomes a decision. Market data, risk, simulations, and fantasy sports give me different ways to examine that question.</p></article>
+    <article class="work-card"><h3>Mathematics</h3><p>I enjoy probability, number theory, and exact verification. I like reducing an intriguing claim to calculations someone else can inspect.</p></article>
+    <article class="work-card"><h3>Genealogy and privacy</h3><p>Family history interests me because records connect people across time. I also care about what those records reveal and whose information I have a right to share.</p></article>
+    <article class="work-card"><h3>Unusual experiments</h3><p>I keep room for questions about perception, dreams, home automation, and unfamiliar science. I separate an interesting hypothesis from an observed result.</p></article>
+    <article class="work-card"><h3>Houston and elsewhere</h3><p>Houston is home. I enjoy travel and the possibility of living and working in different places while keeping useful work and relationships intact.</p></article>
+  </div>
+</section>
 
-## The pattern
-
-For about fifteen years the same reflex keeps repeating: find a process that survives on memory, tickets, and heroic follow-up, and replace it with something that holds — a script, a system, an agent with a review gate. It started with device-onboarding scripts as an intern and now shows up as MCP servers and governed multi-agent workflows. The domain keeps changing — managed services, enterprise security and identity, real-estate operations, software delivery, and now agentic tooling — the instinct does not.
-
-## Right now
-
-At Viyu Network Solutions I handle Microsoft 365 migrations, professional-services scoping, and project-discovery work. I architect and review the AI-assisted systems that support SOW drafting, PBR/QBR prep, and invoice-review support, with human approval gates on anything that touches a client. Platform implementation is materially agent-assisted; my role is architecture, contracts, orchestration, review standards, and evidence judgment. The goal on all of it is the same: turn work that currently survives on folklore into something structured enough to scope, review, and hand off.
-
-<div class="cta-buttons" markdown="0">
-    <a href="/experience" class="btn btn-primary">The full timeline <span aria-hidden="true">&rarr;</span></a>
-    <a href="/projects" class="btn btn-outline">Selected work <span aria-hidden="true">&rarr;</span></a>
-    <a href="/story" class="btn btn-outline">The long, personal version <span aria-hidden="true">&rarr;</span></a>
-</div>
+<section class="conversation-note"><div><h2>Business inquiries</h2><p>For business needs, contact Viyu Network Solutions directly.</p></div><a class="btn btn-primary" href="https://viyu.net/contact-support/contact-us/">Contact Viyu <span aria-hidden="true">↗</span></a></section>

@@ -44,6 +44,7 @@ class PipelineD1 {
   receipts = new Map<string, Record<string, unknown>>();
   candidates = new Map<string, Record<string, unknown>>();
   sourceStates = new Map<string, Record<string, unknown>>();
+  sourceAttempts = new Map<string, Record<string, unknown>>();
   prepare(sql: string) {
     let args: unknown[] = [];
     const statement = {
@@ -58,6 +59,7 @@ class PipelineD1 {
       all: async <T>() => {
         if (sql.includes('FROM public_knowledge')) return { results: [] as T[] };
         if (sql.includes('FROM editorial_source_state')) return { results: [...this.sourceStates.values()] as T[] };
+        if (sql.includes('FROM editorial_source_attempts')) return { results: [...this.sourceAttempts.values()] as T[] };
         if (sql.includes('FROM editorial_receipts')) return { results: [...this.receipts.values()].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, Number(args[0])) as T[] };
         if (sql.includes('FROM editorial_candidates')) return { results: [...this.candidates.values()].slice(0, Number(args[0])) as T[] };
         return { results: [] as T[] };
@@ -83,6 +85,12 @@ class PipelineD1 {
           this.sourceStates.set(String(source_id), { source_id, fetched_at, signals_json });
           return { meta: { changes: 1 } };
         }
+        if (sql.includes('editorial_source_attempts')) {
+          const [source_id, last_attempt_at, retry_after, consecutive_failures, last_failure_code, ownerEpoch] = args;
+          if (this.control.paused !== 0 || this.control.owner_epoch !== Number(ownerEpoch)) return { meta: { changes: 0 } };
+          this.sourceAttempts.set(String(source_id), { source_id, last_attempt_at, retry_after, consecutive_failures, last_failure_code });
+          return { meta: { changes: 1 } };
+        }
         return { meta: { changes: 0 } };
       },
     };
@@ -90,7 +98,7 @@ class PipelineD1 {
   }
 }
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 let sourceFetchCalls = 0;
 
 function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
@@ -141,6 +149,82 @@ describe('deterministic signal workflow', () => {
     expect(Date.parse(String(db.sourceStates.get(firstSource.id)?.fetched_at))).toBeGreaterThan(now - 60 * 60 * 1000);
   });
 
+  it('rotates due sources by oldest fetch so a one-request cap eventually covers the registry', async () => {
+    vi.useFakeTimers();
+    const firstDay = new Date('2026-11-27T08:00:00.000Z');
+    vi.setSystemTime(firstDay);
+    const db = new PipelineD1();
+    const sources = sourceRegistry as Array<{ id: string; url: string; min_interval_seconds: number }>;
+    const originalIntervals = sources.map((source) => source.min_interval_seconds);
+    const base = sourceFetcher({ candidate: false });
+    const fetchedUrls: string[] = [];
+    vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(String(input));
+      if (url.pathname !== '/content-index.json') fetchedUrls.push(url.toString());
+      return base(input, init);
+    }) as typeof fetch);
+    const limitedPolicy = JSON.stringify({ ...JSON.parse(policy), max_fetches_per_scan: 1 });
+    let result: Awaited<ReturnType<typeof runEditorialAdmission>> | undefined;
+    try {
+      sources.forEach((source) => { source.min_interval_seconds = 10 * 24 * 60 * 60; });
+      for (let day = 0; day < sources.length; day += 1) {
+        vi.setSystemTime(new Date(firstDay.getTime() + day * 24 * 60 * 60 * 1000));
+        result = await runEditorialAdmission({ slot_claim_id: `fairness-day-${day}` }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: limitedPolicy } as never, new DurableStep());
+      }
+    } finally {
+      sources.forEach((source, index) => { source.min_interval_seconds = originalIntervals[index]; });
+    }
+    expect(new Set(fetchedUrls)).toEqual(new Set(sources.map((source) => source.url)));
+    expect(db.sourceStates.size).toBe(sources.length);
+    expect(result?.status).toBe('no_change');
+  });
+
+  it('backs off failed source attempts without treating them as successful coverage', async () => {
+    vi.useFakeTimers();
+    const firstSlot = new Date('2026-11-27T08:00:00.000Z');
+    vi.setSystemTime(firstSlot);
+    const db = new PipelineD1();
+    const base = sourceFetcher({ candidate: false });
+    const fetchedUrls: string[] = [];
+    vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/content-index.json') return base(input, init);
+      fetchedUrls.push(url.toString());
+      if (fetchedUrls.length === 1) return new Response('unavailable', { status: 503 });
+      return base(input, init);
+    }) as typeof fetch);
+    const limitedPolicy = JSON.stringify({ ...JSON.parse(policy), max_fetches_per_scan: 1 });
+    const sources = sourceRegistry as Array<{ id: string; url: string }>;
+    const first = await runEditorialAdmission({ slot_claim_id: 'retry-day-0' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: limitedPolicy } as never, new DurableStep());
+    expect(first.status).toBe('held');
+    expect(db.sourceStates.has(sources[0].id)).toBe(false);
+    expect(db.sourceAttempts.get(sources[0].id)).toMatchObject({ consecutive_failures: 1 });
+    expect(Date.parse(String(db.sourceAttempts.get(sources[0].id)?.retry_after))).toBeGreaterThan(firstSlot.getTime() + 60 * 60 * 1000);
+
+    vi.setSystemTime(new Date(firstSlot.getTime() + 60 * 60 * 1000));
+    const second = await runEditorialAdmission({ slot_claim_id: 'retry-day-1' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: limitedPolicy } as never, new DurableStep());
+    expect(second.status).toBe('held');
+    expect(fetchedUrls).toEqual([sources[0].url, sources[1].url]);
+    expect(db.sourceAttempts.get(sources[0].id)).toMatchObject({ consecutive_failures: 1 });
+  });
+
+  it('counts actual HTTP requests across a source redirect chain against the scan budget', async () => {
+    const base = sourceFetcher({ candidate: false });
+    const sourceUrls: string[] = [];
+    vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/content-index.json') return base(input, init);
+      sourceUrls.push(url.toString());
+      return new Response(null, { status: 302, headers: { location: `${url.pathname}/redirect` } });
+    }) as typeof fetch);
+    const db = new PipelineD1();
+    const limitedPolicy = JSON.stringify({ ...JSON.parse(policy), max_fetches_per_scan: 1 });
+    const result = await runEditorialAdmission({ slot_claim_id: 'redirect-budget' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: limitedPolicy } as never, new DurableStep());
+    expect(result.status).toBe('held');
+    expect(sourceUrls).toHaveLength(1);
+    expect(sourceUrls[0]).toBe((sourceRegistry as Array<{ url: string }>)[0].url);
+  });
+
   it('does not persist NO_CHANGE after the owner epoch changes during source reads', async () => {
     const db = new PipelineD1();
     const base = sourceFetcher({ candidate: false });
@@ -148,11 +232,12 @@ describe('deterministic signal workflow', () => {
     vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(String(input));
       const response = await base(input, init);
-      if (url.pathname !== '/content-index.json' && ++feeds === 5) db.control = { paused: 0, owner_epoch: 2 };
+      if (url.pathname !== '/content-index.json' && ++feeds === 1) db.control = { paused: 0, owner_epoch: 2 };
       return response;
     }) as typeof fetch);
     const result = await runEditorialAdmission({ slot_claim_id: 'stale-no-change' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
     expect(result.status).toBe('held');
+    expect(feeds).toBe(1);
     expect([...db.receipts.values()].some((row) => row.action === 'NO_CHANGE')).toBe(false);
   });
 
@@ -169,6 +254,7 @@ describe('deterministic signal workflow', () => {
     const result = await runEditorialAdmission({ slot_claim_id: 'stale-candidate' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
     expect(result.status).toBe('held');
     expect(db.candidates.size).toBe(0);
+    expect(feedCalls).toBe(1);
     expect([...db.receipts.values()].some((row) => row.action === 'HELD_PROVIDER_UNCONFIGURED')).toBe(false);
   });
 

@@ -1,5 +1,5 @@
 import sourceRegistry from '../../config/public-sources.json' with { type: 'json' };
-import type { ActionDecision, Candidate, CatalogItem, EditorialEnv, PublicKnowledge, RecentHistory, Signal, SignalBatch, SourceConfig } from './contracts.js';
+import type { ActionDecision, Candidate, CatalogItem, EditorialEnv, PublicKnowledge, RecentHistory, Signal, SignalBatch, SourceConfig, SourceFailure } from './contracts.js';
 import { collectSignals } from './sources.js';
 import { chooseAction } from './relevance.js';
 import { getPublicKnowledge } from './knowledge.js';
@@ -12,7 +12,9 @@ type EditorialWorkflowEnv = EditorialEnv & { EDITORIAL_POLICY_JSON?: string };
 type ReceiptRow = { id: string; action: string; result_json: string; created_at: string };
 type CandidateRow = { id: string; state: string; revision: string; payload_json: string };
 type SourceStateRow = { source_id: string; fetched_at: string; signals_json: string };
+type SourceAttemptRow = { source_id: string; last_attempt_at: string; retry_after: string | null; consecutive_failures: number; last_failure_code: string | null };
 type SignalHistory = { id: string; source_revision: string; episode_id: string; topic_ids: string[] };
+type GuardedFetcher = { fetcher: typeof fetch; isStale: () => boolean; isCurrent: () => Promise<boolean>; requestsUsed: () => number };
 
 const CONTENT_INDEX_URL = 'https://www.sulemanji.com/content-index.json';
 const MAX_INDEX_BYTES = 1_048_576;
@@ -130,6 +132,56 @@ function sourceDue(source: SourceConfig, row: SourceStateRow | undefined, now: D
   return now.getTime() - Date.parse(row.fetched_at) >= source.min_interval_seconds * 1000;
 }
 
+function createGuardedFetcher(db: D1Database, ownerEpoch: number, fetcher: typeof fetch, requestLimit?: number): GuardedFetcher {
+  let stale = false;
+  let requests = 0;
+  const isCurrent = async (): Promise<boolean> => {
+    if (stale) return false;
+    const control = await readControl(db);
+    if (control.paused || control.owner_epoch !== ownerEpoch) stale = true;
+    return !stale;
+  };
+  return {
+    isStale: () => stale,
+    isCurrent,
+    requestsUsed: () => requests,
+    fetcher: async (input, init) => {
+      if (!(await isCurrent())) throw new Error('OWNER_CHANGED');
+      if (requestLimit !== undefined && requests >= requestLimit) throw new Error('LIMIT');
+      requests += 1;
+      return fetcher(input, init);
+    },
+  };
+}
+
+async function persistSourceAttempt(db: D1Database, attempt: SourceAttemptRow, ownerEpoch: number): Promise<boolean> {
+  const saved = await db.prepare(`INSERT OR REPLACE INTO editorial_source_attempts(
+      source_id, last_attempt_at, retry_after, consecutive_failures, last_failure_code
+    ) SELECT ?, ?, ?, ?, ? WHERE EXISTS (
+      SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
+    )`).bind(attempt.source_id, attempt.last_attempt_at, attempt.retry_after, attempt.consecutive_failures,
+      attempt.last_failure_code, ownerEpoch).run();
+  return (saved.meta?.changes ?? 0) > 0;
+}
+
+function failedAttempt(source: SourceConfig, prior: SourceAttemptRow | undefined, now: Date, code: SourceFailure['code']): SourceAttemptRow {
+  const consecutiveFailures = (prior?.consecutive_failures ?? 0) + 1;
+  const baseSeconds = Math.max(60, source.min_interval_seconds);
+  const ceilingSeconds = Math.max(7 * 24 * 60 * 60, baseSeconds);
+  const retrySeconds = Math.min(baseSeconds * (2 ** Math.min(consecutiveFailures - 1, 10)), ceilingSeconds);
+  return {
+    source_id: source.id,
+    last_attempt_at: now.toISOString(),
+    retry_after: new Date(now.getTime() + retrySeconds * 1000).toISOString(),
+    consecutive_failures: consecutiveFailures,
+    last_failure_code: code,
+  };
+}
+
+function successfulAttempt(sourceId: string, now: Date): SourceAttemptRow {
+  return { source_id: sourceId, last_attempt_at: now.toISOString(), retry_after: null, consecutive_failures: 0, last_failure_code: null };
+}
+
 async function persistSourceState(db: D1Database, sourceId: string, fetchedAt: string, signals: Signal[], ownerEpoch: number): Promise<boolean> {
   const signalsJson = JSON.stringify(signals);
   const written = await db.prepare(`INSERT OR REPLACE INTO editorial_source_state(source_id, fetched_at, signals_json)
@@ -140,39 +192,66 @@ async function persistSourceState(db: D1Database, sourceId: string, fetchedAt: s
 }
 
 async function collectCoveredSignals(sources: SourceConfig[], maxFetches: number, now: Date, db: D1Database, ownerEpoch: number,
-  fetcher: typeof fetch): Promise<{ signals: Signal[]; failures: SignalBatch['failures']; uncovered: string[] }> {
+  fetcher: GuardedFetcher): Promise<{ signals: Signal[]; failures: SignalBatch['failures']; uncovered: string[]; stale: boolean }> {
   const enabled = sources.filter((source) => source.enabled);
-  const rows = await db.prepare('SELECT source_id, fetched_at, signals_json FROM editorial_source_state LIMIT 100').all<SourceStateRow>();
-  const stateRows = rows.results ?? [];
+  const [stateResult, attemptResult] = await Promise.all([
+    db.prepare('SELECT source_id, fetched_at, signals_json FROM editorial_source_state LIMIT 100').all<SourceStateRow>(),
+    db.prepare('SELECT source_id, last_attempt_at, retry_after, consecutive_failures, last_failure_code FROM editorial_source_attempts LIMIT 100').all<SourceAttemptRow>(),
+  ]);
+  const stateRows = stateResult.results ?? [];
   const states = new Map(stateRows.map((row) => [row.source_id, row]));
+  const attempts = new Map((attemptResult.results ?? []).map((row) => [row.source_id, row]));
+  if (!(await fetcher.isCurrent())) return { signals: [], failures: [], uncovered: [], stale: true };
   const due = enabled.filter((source) => sourceDue(source, states.get(source.id), now));
-  const toFetch = new Set(due.slice(0, maxFetches).map((source) => source.id));
-  const unfetchedDue = due.slice(maxFetches).map((source) => source.id);
+  const retryBlocked = due.filter((source) => {
+    const retryAfter = attempts.get(source.id)?.retry_after;
+    return retryAfter !== null && retryAfter !== undefined && Number.isFinite(Date.parse(retryAfter)) && Date.parse(retryAfter) > now.getTime();
+  });
+  const retryBlockedIds = new Set(retryBlocked.map((source) => source.id));
+  const ready = due.filter((source) => !retryBlockedIds.has(source.id));
+  const originalOrder = new Map(enabled.map((source, index) => [source.id, index]));
+  ready.sort((left, right) => {
+    const leftLast = attempts.get(left.id)?.last_attempt_at ?? states.get(left.id)?.fetched_at;
+    const rightLast = attempts.get(right.id)?.last_attempt_at ?? states.get(right.id)?.fetched_at;
+    const leftTime = leftLast && Number.isFinite(Date.parse(leftLast)) ? Date.parse(leftLast) : Number.NEGATIVE_INFINITY;
+    const rightTime = rightLast && Number.isFinite(Date.parse(rightLast)) ? Date.parse(rightLast) : Number.NEGATIVE_INFINITY;
+    return leftTime - rightTime || (originalOrder.get(left.id) ?? 0) - (originalOrder.get(right.id) ?? 0);
+  });
   const signals: Signal[] = [];
   const failures: SignalBatch['failures'] = [];
-  const uncovered = [...unfetchedDue];
+  const uncovered = retryBlocked.map((source) => source.id);
+  const attempted = new Set<string>();
 
   for (const source of enabled) {
-    if (!toFetch.has(source.id)) {
-      if (unfetchedDue.includes(source.id)) continue;
+    if (!due.some((item) => item.id === source.id)) {
       const cached = parseCachedSignals(source.id, states.get(source.id), now);
       if (cached === null) uncovered.push(source.id);
       else signals.push(...cached);
-      continue;
     }
-    const batch = await collectSignals([source], now, fetcher);
+  }
+
+  for (const source of ready) {
+    if (fetcher.requestsUsed() >= maxFetches) break;
+    if (!(await fetcher.isCurrent())) return { signals: [], failures: [], uncovered: [], stale: true };
+    attempted.add(source.id);
+    const batch = await collectSignals([source], now, fetcher.fetcher);
+    if (fetcher.isStale() || !(await fetcher.isCurrent())) return { signals: [], failures: [], uncovered: [], stale: true };
     if (batch.failures.length) {
       failures.push(...batch.failures);
       uncovered.push(source.id);
+      const attemptedAt = now;
+      const persistedAttempt = await persistSourceAttempt(db, failedAttempt(source, attempts.get(source.id), attemptedAt, batch.failures[0].code), ownerEpoch);
+      if (!persistedAttempt) return { signals: [], failures: [], uncovered: [], stale: true };
       continue;
     }
-    const persisted = await persistSourceState(db, source.id, now.toISOString(), batch.signals, ownerEpoch);
-    if (!persisted) {
-      uncovered.push(source.id);
-      continue;
-    }
+    const fetchedAt = now;
+    const persisted = await persistSourceState(db, source.id, fetchedAt.toISOString(), batch.signals, ownerEpoch);
+    if (!persisted) return { signals: [], failures: [], uncovered: [], stale: true };
+    const persistedAttempt = await persistSourceAttempt(db, successfulAttempt(source.id, fetchedAt), ownerEpoch);
+    if (!persistedAttempt) return { signals: [], failures: [], uncovered: [], stale: true };
     signals.push(...batch.signals);
   }
+  for (const source of ready) if (!attempted.has(source.id)) uncovered.push(source.id);
 
   const seen = new Set<string>();
   const uniqueSignals = signals.filter((signal) => {
@@ -180,7 +259,7 @@ async function collectCoveredSignals(sources: SourceConfig[], maxFetches: number
     seen.add(signal.episode_id);
     return true;
   });
-  return { signals: uniqueSignals, failures, uncovered: [...new Set(uncovered)] };
+  return { signals: uniqueSignals, failures, uncovered: [...new Set(uncovered)], stale: fetcher.isStale() };
 }
 
 export async function runEditorialAdmission(params: WorkflowParams, env: EditorialWorkflowEnv, step: DurableStep): Promise<WorkflowResult> {
@@ -203,14 +282,17 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   }
 
   let catalog: CatalogItem[];
+  const catalogFetcher = createGuardedFetcher(env.DB, control.owner_epoch, fetch);
   try {
-    catalog = await step.do('read-public-content-index', () => readCatalog(fetch));
+    catalog = await step.do('read-public-content-index', () => readCatalog(catalogFetcher.fetcher));
   } catch {
+    if (catalogFetcher.isStale() || !(await catalogFetcher.isCurrent())) return held(params, 'Workflow authority changed during the content-index read.');
     const reason = 'The public content index is unavailable or invalid.';
     const saved = await step.do('record-content-index-hold', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'HELD_CONTENT_INDEX_UNAVAILABLE', { reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the hold could be recorded.');
     return held(params, reason);
   }
+  if (catalogFetcher.isStale() || !(await catalogFetcher.isCurrent())) return held(params, 'Workflow authority changed during the content-index read.');
 
   const now = await step.do('capture-editorial-run-time', () => new Date().toISOString());
   const knowledge = await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now)));
@@ -223,7 +305,9 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   });
   const history = historyFromRows(historyRows.receipts, historyRows.candidates);
   const sources = sourceRegistry as SourceConfig[];
-  const batch = await step.do('collect-dated-public-signals-v2', () => collectCoveredSignals(sources, policy.max_fetches_per_scan, new Date(now), env.DB, control.owner_epoch, fetch));
+  const sourceFetcher = createGuardedFetcher(env.DB, control.owner_epoch, fetch, policy.max_fetches_per_scan);
+  const batch = await step.do('collect-dated-public-signals-v3', () => collectCoveredSignals(sources, policy.max_fetches_per_scan, new Date(now), env.DB, control.owner_epoch, sourceFetcher));
+  if (batch.stale || sourceFetcher.isStale() || !(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed during public-source discovery.');
   if (!batch.signals.length && batch.failures.length) {
     const reason = 'Public source reads failed; the run cannot conclude NO_CHANGE.';
     const saved = await step.do('record-source-read-hold', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'HELD_SOURCE_UNAVAILABLE', {

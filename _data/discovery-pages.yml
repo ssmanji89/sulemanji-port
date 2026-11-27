@@ -1,6 +1,7 @@
 version: 1
 pages:
   - {id: home, class: core-profile, route: /}
+  - {id: explore, class: core-profile, route: /explore/}
   - {id: about, class: core-profile, route: /about/}
   - {id: experience, class: core-profile, route: /experience/}
   - {id: work, class: core-profile, route: /work/}

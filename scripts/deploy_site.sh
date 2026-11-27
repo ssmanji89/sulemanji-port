@@ -28,7 +28,8 @@ if [[ "$ENVIRONMENT" == production ]]; then
     CURRENT_MAIN_SHA="$(git rev-parse refs/remotes/origin/main)"
   fi
 else CURRENT_MAIN_SHA="$SOURCE_COMMIT"; fi
-python3 "$ROOT/scripts/site_release.py" verify --artifact "$ARTIFACT" --source-commit "$SOURCE_COMMIT" --current-main "$CURRENT_MAIN_SHA"
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.site_release \
+  verify --artifact "$ARTIFACT" --source-commit "$SOURCE_COMMIT" --current-main "$CURRENT_MAIN_SHA"
 
 if [[ "$ENVIRONMENT" == production ]]; then
   CONFIG_SOURCE="$CF/wrangler.site.jsonc"
@@ -60,19 +61,7 @@ PY
 cd "$CF"
 ./node_modules/.bin/wrangler deploy --config "$TEMP_CONFIG" --message "site $SOURCE_COMMIT" >"$TEMP_LOG" 2>&1
 ./node_modules/.bin/wrangler deployments list --name "$WORKER_NAME" --json --config "$TEMP_CONFIG" >"$TEMP_DEPLOYMENTS" 2>>"$TEMP_LOG"
-VERSION_ID="$(python3 - "$TEMP_DEPLOYMENTS" <<'PY'
-import json,sys
-from pathlib import Path
-data=json.loads(Path(sys.argv[1]).read_text())
-deployments=data.get('deployments',data) if isinstance(data,dict) else data
-if not isinstance(deployments,list) or not deployments: raise SystemExit('deployment readback returned no deployments')
-versions=deployments[0].get('versions',[])
-if not isinstance(versions,list) or len(versions)!=1: raise SystemExit('active deployment is not a single-version release')
-version=versions[0]
-if version.get('percentage',100)!=100: raise SystemExit('active deployment is not serving 100 percent')
-print(version.get('version_id') or version.get('id') or '')
-PY
-)"
+VERSION_ID="$(python3 "$ROOT/scripts/verify_cloudflare_deployment.py" "$TEMP_DEPLOYMENTS" "site $SOURCE_COMMIT")"
 [[ -n "$VERSION_ID" ]] || { echo "deployment readback omitted worker version id" >&2; exit 1; }
 if [[ "$ENVIRONMENT" == staging ]]; then TARGET_HOST="${SITE_TARGET_HOST%/}"; fi
 [[ "$TARGET_HOST" =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?$ ]] || { echo "target host must be HTTPS" >&2; exit 2; }
@@ -102,17 +91,21 @@ check_status /work/market-systems/ 200
 check_status /notes/late-october-skywatching-binoculars-telescope 200
 check_status /workshop-intake/ 410
 check_status /notes/does-not-exist 404
-python3 - "$TARGET_HOST" "$SOURCE_COMMIT" "$ARTIFACT/release.json" "$RECEIPT" <<'PY'
-import json,sys,urllib.request
+VERIFY_ARGS=(
+  --base-url "$TARGET_HOST"
+  --expected-commit "$SOURCE_COMMIT"
+  --manifest "$ARTIFACT/release.json"
+)
+if [[ "$ENVIRONMENT" == staging ]]; then VERIFY_ARGS+=(--staging); fi
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.verify_cloudflare_live "${VERIFY_ARGS[@]}"
+python3 - "$RECEIPT" <<'PY'
+import json,sys
 from pathlib import Path
-host,source,manifest_path,receipt_path=sys.argv[1:]
-manifest=json.loads(Path(manifest_path).read_text())
-with urllib.request.urlopen(host+'/release.json',timeout=15) as response: live=json.load(response)
-if live.get('source_commit')!=source or live.get('asset_digest')!=manifest['asset_digest']: raise SystemExit('live artifact manifest mismatch')
+receipt_path=sys.argv[1]
 receipt=json.loads(Path(receipt_path).read_text())
-receipt['result']='deployed and public manifest plus canonical routes read back'
+receipt['result']='deployed and full public release verification passed'
 Path(receipt_path).write_text(json.dumps(receipt,indent=2)+'\n')
-print('Public release manifest and canonical routes verified')
+print('Full public release verification passed')
 PY
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
   printf '\nCloudflare %s deployment verified\n- Source: %s\n- Worker version: %s\n- Host: %s\n' "$ENVIRONMENT" "$SOURCE_COMMIT" "$VERSION_ID" "$TARGET_HOST" >> "$GITHUB_STEP_SUMMARY"

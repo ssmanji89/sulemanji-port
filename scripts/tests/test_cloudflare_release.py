@@ -1,14 +1,49 @@
 import json
 import re
+import threading
 import tempfile
 import unittest
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from scripts.build_site_manifest import build_manifest
-from scripts.site_release import ReleaseError, verify_artifact
+from scripts.build_site_manifest import PUBLIC_PAGE_FILES, article_content_sha256, build_manifest, render_release_headers
+from scripts.verify_cloudflare_deployment import verify_deployment
+from scripts.site_release import ReleaseError, fetch_public_manifest, verify_artifact
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / '.github' / 'workflows' / 'jekyll.yml'
+
+
+def add_public_pages(root):
+    for route, relative_path in PUBLIC_PAGE_FILES.items():
+        page = root / relative_path
+        page.parent.mkdir(parents=True, exist_ok=True)
+        page.write_text(
+            f'<html><head><title>{route} | Suleman Manji</title>'
+            f'<link rel="canonical" href="https://www.sulemanji.com{route}">'
+            f'<meta name="description" content="Description for {route}">'
+            f'<meta property="og:title" content="{route}"></head>'
+            f'<main><h1>{route}</h1><p>Page content for {route}.</p></main></html>', encoding='utf-8')
+
+
+def add_article(root):
+    notes = root / 'notes'
+    notes.mkdir(exist_ok=True)
+    rendered = ('<html><head><title>Known title | Sulemanji</title>'
+                '<link rel="canonical" href="https://www.sulemanji.com/notes/a">'
+                '<meta name="description" content="Known description">'
+                '<meta property="og:title" content="Known title"></head>'
+                '<body><h1>Known title</h1><time data-published-on datetime="2024-01-01"></time>'
+                '<div data-writing-body>Known content.</div></body></html>')
+    (notes / 'a.html').write_text(rendered, encoding='utf-8')
+    return [{
+        'url': '/notes/a',
+        'published_on': '2024-01-01',
+        'content_sha256': article_content_sha256(rendered),
+        'canonical': 'https://www.sulemanji.com/notes/a',
+        'title': 'Known title | Sulemanji', 'description': 'Known description',
+        'og_title': 'Known title', 'h1': 'Known title', 'robots': '', 'indexable': True,
+    }]
 
 
 class CloudflareReleaseTests(unittest.TestCase):
@@ -39,9 +74,8 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_stale_artifact_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
-            articles = [{'url': '/notes/a', 'published_on': '2024-01-01'}]
-            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            add_public_pages(root)
+            manifest = build_manifest(root, '1111111', [], '2026-11-26T00:00:00Z')
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ReleaseError, 'current main'):
                 verify_artifact(root, '1111111', '2222222')
@@ -49,11 +83,45 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_wrong_artifact_digest_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
+            add_public_pages(root)
             manifest = build_manifest(root, '1111111', [], '2026-11-26T00:00:00Z')
             manifest['asset_digest'] = 'sha256:' + ('0' * 64)
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ReleaseError, 'digest'):
+                verify_artifact(root, '1111111', '1111111')
+
+    def test_artifact_requires_manifest_bound_static_identity_headers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            add_public_pages(root)
+            articles = add_article(root)
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'identity headers'):
+                verify_artifact(root, '1111111', '1111111')
+
+    def test_article_body_change_is_rejected_even_if_release_header_remains(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            add_public_pages(root)
+            articles = add_article(root)
+            articles[0]['content_sha256'] = article_content_sha256('<div data-writing-body>Changed content.</div>')
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'article identity or visible content'):
+                verify_artifact(root, '1111111', '1111111')
+
+    def test_key_page_body_identity_is_required_by_the_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            add_public_pages(root)
+            articles = add_article(root)
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            manifest['pages'][0]['content_sha256'] = '0' * 64
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'page identity or visible content'):
                 verify_artifact(root, '1111111', '1111111')
 
     def test_operational_docs_and_test_code_stay_out_of_public_build(self):
@@ -68,11 +136,66 @@ class CloudflareReleaseTests(unittest.TestCase):
         for command in ('npm ci --prefix worker', 'npm run check --prefix worker', 'verify_public_safety.py'):
             self.assertIn(command, self.release_check or self.workflow)
 
+    def test_public_manifest_readback_uses_curl_transport(self):
+        deploy = (ROOT / 'scripts' / 'deploy_site.sh').read_text(encoding='utf-8')
+        live_verifier = (ROOT / 'scripts' / 'verify_cloudflare_live.py').read_text(encoding='utf-8')
+        self.assertIn('-m scripts.site_release', deploy)
+        self.assertIn('-m scripts.verify_cloudflare_live', deploy)
+        self.assertIn('if [[ "$ENVIRONMENT" == staging ]]; then VERIFY_ARGS+=(--staging); fi', deploy)
+        self.assertIn('scripts.verify_cloudflare_live "${VERIFY_ARGS[@]}"', deploy)
+        self.assertIn('--manifest "$ARTIFACT/release.json"', deploy)
+        self.assertIn("['curl', '--silent', '--show-error'", live_verifier)
+        self.assertNotIn('urllib.request.urlopen', live_verifier)
+
+    def test_public_manifest_fetch_uses_cloudflare_accepted_curl_user_agent(self):
+        payload = b'{"source_commit":"a"}'
+
+        class CurlOnlyHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.server.user_agent = self.headers.get('User-Agent', '')
+                if not self.server.user_agent.startswith('curl/'):
+                    self.send_response(403)
+                    self.end_headers()
+                    return
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, _format, *_args):
+                pass
+
+        server = HTTPServer(('127.0.0.1', 0), CurlOnlyHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            manifest = fetch_public_manifest(f'http://127.0.0.1:{server.server_port}/release.json')
+            self.assertEqual(manifest, {'source_commit': 'a'})
+            self.assertTrue(server.user_agent.startswith('curl/'))
+        finally:
+            server.shutdown()
+            thread.join(timeout=2)
+            server.server_close()
+
     def test_production_uses_the_existing_www_route_without_changing_dns(self):
         config = json.loads(self.production_config)
         self.assertEqual([route['pattern'] for route in config['routes']], ['www.sulemanji.com/*'])
         self.assertEqual(config['routes'][0]['zone_name'], 'sulemanji.com')
         self.assertNotIn('custom_domain', self.production_config)
+
+    def test_worker_deployment_readback_selects_newest_timestamp(self):
+        expected_message = 'site ' + ('a' * 40)
+        payload = [
+            {'created_on': '2026-11-26T23:00:00Z', 'annotations': {'workers/message': 'site stale'},
+             'versions': [{'version_id': 'old-version', 'percentage': 100}]},
+            {'created_on': '2026-11-27T00:00:00Z', 'annotations': {'workers/message': expected_message},
+             'versions': [{'version_id': 'new-version', 'percentage': 100}]},
+        ]
+        self.assertEqual(verify_deployment(payload, expected_message), 'new-version')
+        payload[1]['annotations']['workers/message'] = 'site stale'
+        with self.assertRaisesRegex(ValueError, 'latest deployment source'):
+            verify_deployment(payload, expected_message)
 
 
 if __name__ == '__main__':

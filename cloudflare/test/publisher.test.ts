@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { canPublish, publishContent, type GitHubPublisher, type PullRequestState, type PublishEffectStore } from '../src/editorial/publisher.js';
-import type { ContentProposal, PublicationState, ReviewReceipt } from '../src/editorial/contracts.js';
+import { canPublish, publishContent, verifyPublicationDetailed, type GitHubPublisher, type PullRequestState, type PublishEffectStore } from '../src/editorial/publisher.js';
+import type { ContentProposal, PublicationState, PublishAttempt, ReviewReceipt } from '../src/editorial/contracts.js';
 
 async function sha(value: string): Promise<string> {
   const bytes = new TextEncoder().encode(value);
@@ -69,13 +69,42 @@ describe('guarded source publication effects', () => {
 
   it('reconciles a successful merge when the merge response is lost', async () => {
     const { proposal, receipt, state } = await fixture();
-    const github = new FakeGitHub(); github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' }; github.loseMergeResponse = true;
-    const store = new FakeStore();
+    const github = new FakeGitHub(); const store = new FakeStore();
+    await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
+    github.loseMergeResponse = true;
     const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
     expect(attempt).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12, source_commit: 'e'.repeat(40) });
-    expect(github.creates).toBe(0);
+    expect(github.creates).toBe(1);
     expect(github.merges).toBe(1);
     expect(store.value).toMatchObject({ state: 'MERGED', merge_commit: 'e'.repeat(40) });
+  });
+
+  it('does not adopt or merge a preexisting branch PR without a matching durable source head', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
+    const store = new FakeStore();
+    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+
+    expect(attempt.status).toBe('UNCERTAIN');
+    expect(github.creates).toBe(0);
+    expect(github.merges).toBe(0);
+    expect(store.value).toMatchObject({ state: 'UNCERTAIN' });
+    expect(store.value).not.toHaveProperty('source_commit');
+  });
+
+  it('holds when a previously recorded publication branch has been edited', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub(); const store = new FakeStore();
+    await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    github.pr = { number: 12, head_sha: 'f'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
+
+    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+
+    expect(attempt.status).toBe('UNCERTAIN');
+    expect(github.merges).toBe(0);
+    expect(store.value).toMatchObject({ source_commit: 'd'.repeat(40), state: 'UNCERTAIN' });
   });
 
   it('invalidates the reviewed attempt if the owner epoch pauses or changes', async () => {
@@ -84,5 +113,39 @@ describe('guarded source publication effects', () => {
     const attempt = await publishContent(proposal, receipt, { store: new FakeStore(), github, currentState: async () => ({ ...state, paused: true, owner_epoch: 8 }) });
     expect(attempt.status).toBe('FAILED');
     expect(github.creates).toBe(0);
+  });
+});
+
+describe('public publication identity verification', () => {
+  it('accepts the digest and timestamp formats emitted by the Jekyll release manifest', async () => {
+    const body = 'A source-backed reader explanation.';
+    const url = 'https://www.sulemanji.com/notes/reviewed-article';
+    const attempt: PublishAttempt = {
+      id: 'attempt-42', candidate_id: 'candidate-42', owner_epoch: 7, branch: 'editorial/candidate-42', pull_request: 12,
+      source_commit: 'd'.repeat(40), deployment_version: null, public_urls: ['/notes/reviewed-article'],
+      expected_content: [{ url: '/notes/reviewed-article', title: 'Reviewed title', text_sha256: await sha(body) }], status: 'SOURCE_PUBLISHED',
+    };
+    const digest = `sha256:${'a'.repeat(64)}`;
+    const builtAt = '2026-11-27T14:00:00Z';
+    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body>${body}</div></body></html>`;
+    const response = (content: string, responseUrl: string, headers?: HeadersInit) => {
+      const result = new Response(content, { headers });
+      Object.defineProperty(result, 'url', { value: responseUrl });
+      return result;
+    };
+    const fetcher: typeof fetch = async (input) => {
+      const requestUrl = new URL(input instanceof Request ? input.url : input.toString());
+      if (requestUrl.pathname === '/notes/reviewed-article') return response(article, url, {
+        'x-site-source-commit': attempt.source_commit!, 'x-site-asset-digest': digest, 'x-site-built-at': builtAt,
+      });
+      if (requestUrl.pathname === '/writing/') return response('/notes/reviewed-article', requestUrl.toString());
+      if (requestUrl.pathname === '/feed.xml' || requestUrl.pathname === '/sitemap.xml') return response('/notes/reviewed-article', requestUrl.toString());
+      return response('missing', requestUrl.toString());
+    };
+
+    const result = await verifyPublicationDetailed(attempt, fetcher);
+
+    expect(result.failure).toBeUndefined();
+    expect(result.receipt.outcome).toBe('VERIFIED');
   });
 });

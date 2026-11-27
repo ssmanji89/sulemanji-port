@@ -247,3 +247,18 @@ export async function getPublicKnowledge(subjectId: string, db: D1Database, now 
     return validPayload(payload) ? payload : null;
   } catch { return null; }
 }
+
+export async function fingerprintPublicKnowledge(items: PublicKnowledge[]): Promise<string> {
+  const canonical = [...items].sort((a, b) => a.subject_id.localeCompare(b.subject_id)).map((item) => ({
+    subject_id: item.subject_id,
+    summary: item.summary,
+    allowed_uses: [...item.allowed_uses].sort(),
+    public_sources: [...item.public_sources].sort((a, b) => a.url.localeCompare(b.url)).map((source) => ({
+      url: source.url, title: source.title, retrieved_at: source.retrieved_at, source_date: source.source_date, content_sha256: source.content_sha256,
+    })),
+    authored_fields: [...item.authored_fields].sort(),
+  }));
+  const bytes = new TextEncoder().encode(JSON.stringify({ schema_version: 1, items: canonical }));
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', source(bytes)));
+  return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}

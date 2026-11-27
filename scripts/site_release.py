@@ -3,14 +3,38 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
-from scripts.build_site_manifest import build_manifest
+from scripts.build_site_manifest import _article_identity, build_manifest, render_release_headers
 
 
 class ReleaseError(ValueError):
     pass
+
+
+def fetch_public_manifest(url: str) -> dict[str, Any]:
+    """Fetch the public release identity with curl's Cloudflare-compatible transport."""
+    try:
+        response = subprocess.run(
+            ['curl', '--fail', '--silent', '--show-error', '--max-time', '15', url],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ReleaseError('live release manifest request failed') from error
+    if response.returncode != 0:
+        raise ReleaseError('live release manifest request failed')
+    try:
+        manifest = json.loads(response.stdout)
+    except (TypeError, json.JSONDecodeError) as error:
+        raise ReleaseError('live release manifest is not valid JSON') from error
+    if not isinstance(manifest, dict):
+        raise ReleaseError('live release manifest must be a JSON object')
+    return manifest
 
 
 def verify_artifact(artifact: Path, source_commit: str, current_main_sha: str) -> dict[str, Any]:
@@ -34,6 +58,21 @@ def verify_artifact(artifact: Path, source_commit: str, current_main_sha: str) -
         raise ReleaseError(f'artifact manifest cannot be verified: {error}') from error
     if calculated['files'] != manifest['files'] or calculated['asset_digest'] != manifest.get('asset_digest'):
         raise ReleaseError('artifact file digest does not match release manifest')
+    if calculated['pages'] != manifest.get('pages'):
+        raise ReleaseError('artifact page identity or visible content does not match release manifest')
+    try:
+        rendered_articles = _article_identity(artifact)
+    except (ValueError, OSError) as error:
+        raise ReleaseError(f'artifact article identities cannot be verified: {error}') from error
+    if rendered_articles != manifest.get('articles'):
+        raise ReleaseError('artifact article identity or visible content does not match release manifest')
+    try:
+        expected_headers = render_release_headers(manifest)
+        actual_headers = (artifact / '_headers').read_text(encoding='utf-8')
+    except (ValueError, OSError) as error:
+        raise ReleaseError(f'artifact identity headers are missing or invalid: {error}') from error
+    if actual_headers != expected_headers:
+        raise ReleaseError('artifact identity headers do not match release manifest')
     return manifest
 
 

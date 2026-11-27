@@ -52,11 +52,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install image generation font
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes fonts-dejavu-core
-
       - name: Run complete release gates and build once
         run: bash scripts/check_site_release.sh
 

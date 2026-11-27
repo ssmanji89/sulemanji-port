@@ -24,6 +24,11 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("node-version: '22'", self.workflow)
         self.assertIn("python-version: '3.12'", self.workflow)
 
+    def test_social_card_build_uses_repository_fonts_without_apt_update(self):
+        self.assertNotIn("apt-get update", self.workflow)
+        for font in ("DejaVuSans.ttf", "DejaVuSans-Bold.ttf"):
+            self.assertTrue((ROOT / "scripts" / "fonts" / font).is_file(), font)
+
     def test_discovery_and_safety_gates_run_before_upload(self):
         check_index = self.workflow.index("bash scripts/check_site_release.sh")
         upload_index = self.workflow.index("- name: Upload Pages artifact")

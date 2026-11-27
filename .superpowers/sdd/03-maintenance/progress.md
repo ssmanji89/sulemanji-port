@@ -42,9 +42,10 @@ Wire the deterministic public-signal discovery and relevance path into durable W
 
 ## T07 consumer boundary follow-up (2026-11-27)
 
-- The private producer's exact `authored_fields` validation fix merged to `Viyu-Network-Solutions/mem0-mcp` main (`111f5cb`). A review found the site's independent importer still accepted arbitrary dotted field names and allowed empty source lists.
-- Site PR #110 (`730fd98`) now requires exact top-level content field names, uniqueness, at least one public source, safe text, and rejects localhost/private/reserved IP source literals. Signed-import regressions and the full local release gate pass; the hosted PR build passes.
-- Source review and production activation remain outstanding. No secret was found in the checked Viyu env files, shell startup files, nearby config directories, or current shell. The GitHub `cloudflare-production` environment still lacks `CLOUDFLARE_API_TOKEN`; existing Wrangler OAuth was not copied into CI.
+- Private producer PR #177 (`24a5df963bc4693e42eed942109e8eef8e2c66a6`) merged to `Viyu-Network-Solutions/mem0-mcp` main as `0ed4de6cfb7e5583b73c02edcbbc707c776f069c`; its exact-head CI passed. Producer URL validation rejects alternate numeric/private host forms while retaining legitimate internationalized domains and globally reachable exceptions.
+- Site PR #110 (`f9c53d28b2d4855afeb4fc13282c90766e576d31`) merged to `ssmanji89/sulemanji-port` main as `691608a89e307b69f6ece6cba6f4679728eb9992`; its exact-head build passed. The importer now requires exact top-level content fields, nonempty public sources, unique authored fields, safe text, and rejects local/private/reserved source literals.
+- This is a source-contract correction, not a live producer connection. The Cloudflare editorial Workers still run the prior deployed revision; production and staging controls remain paused, both have no Worker secrets, and both D1s read zero claims, candidates, receipts, public knowledge, and usage reservations. An unsigned production import probe returned 401 AUTH; no signed producer delivery, renewal, or withdrawal was exercised.
+- GitHub `cloudflare-production` still lacks `CLOUDFLARE_API_TOKEN`. Existing Wrangler OAuth was not copied into CI. T07 remains partial until an authorized sanitized derivative is sent from the actual private producer to isolated staging and acceptance, duplicate, renewal, and withdrawal are read back.
 
 ## Post-merge and live readback (2026-11-27)
 

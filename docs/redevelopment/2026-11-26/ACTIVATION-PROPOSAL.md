@@ -60,4 +60,8 @@ Full editorial activation remains paused until signed sanitized Viyu delivery an
 
 ## Credential inventory readback (2026-11-27)
 
-The site Worker is present at 100%; deployment CI is blocked by the missing Actions credential. A name-only scan found no Cloudflare API token variable in `~/.viyu-agents/.env`, the `viyu-agents` repository env file, `.zshrc`, `.zprofile`, `.zshenv`, nearby `.config`/`.local/share`, or the current shell. GitHub `cloudflare-production` also has no `CLOUDFLARE_API_TOKEN` secret. The existing local Wrangler OAuth session is separate and was not copied to GitHub. The owner is adding a scoped API token directly to that GitHub environment.
+The site Worker is present at 100%; deployment CI is blocked by the missing Actions credential. A name-only scan found no Cloudflare API token variable in `~/.viyu-agents/.env`, the `viyu-agents` repository env file, `.zshrc`, `.zprofile`, `.zshenv`, nearby `.config`/`.local/share`, or the current shell. GitHub `cloudflare-production` also has no `CLOUDFLARE_API_TOKEN` secret. The existing local Wrangler OAuth session is separate and was not copied to GitHub. The owner must add a scoped API token directly to that GitHub environment.
+
+## Importer source follow-up (2026-11-27)
+
+The site importer contract fix merged to public main as `691608a89e307b69f6ece6cba6f4679728eb9992`; the corresponding private producer URL-validation fix merged to `mem0-mcp` main as `0ed4de6cfb7e5583b73c02edcbbc707c776f069c`. Both exact pull-request heads passed CI and independent review. These source changes have not yet been deployed, and they do not establish an authenticated producer connection. Fresh readback still shows production and staging paused with empty secret lists and zero knowledge, candidates, receipts, schedule claims, or usage reservations.

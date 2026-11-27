@@ -48,7 +48,13 @@
 
 ## T07 importer contract alignment follow-up (2026-11-27)
 
-- Independent review of the merged private producer PR #176 found that the public editorial importer's `authored_fields` validator still accepted arbitrary dotted names. The producer fix is merged to `Viyu-Network-Solutions/mem0-mcp` main as `111f5cb889239957d1c512ad05eafd5a5b7a5e54`.
-- Site PR #110 (`730fd988633eb3837b1470f0ec0e0b6b0281d7e2`) now applies the same exact-field rule at the importer boundary, also requiring non-empty public sources, unique authored fields, safe text, and rejecting local/private/reserved source address literals. Signed-import tests cover the invalid cases.
-- Local verification on the clean candidate: Cloudflare `npm run check` passed TypeScript, 86 tests / 4 skipped, built-site integration 90/90, and both site Worker dry-runs. `bash scripts/check_site_release.sh` passed, including 72 Python tests, public safety, 26-route review, and retirement checks. Hosted PR build passed; deployment jobs were skipped for a pull request. Independent exact-candidate review is pending.
-- This is a source-level correction only; PR #110 has not merged or deployed. Production/staging editorial Workers remain paused; no actual authorized producer receipt or natural eligible run is claimed.
+- The private producer URL fix merged as `0ed4de6cfb7e5583b73c02edcbbc707c776f069c` after exact-head CI passed on PR #177 head `24a5df963bc4693e42eed942109e8eef8e2c66a6`.
+- Site PR #110 head `f9c53d28b2d4855afeb4fc13282c90766e576d31` merged as `691608a89e307b69f6ece6cba6f4679728eb9992` after exact-head build passed. It requires exact top-level authored fields, unique fields, nonempty public sources, safe text, and rejects local/private/reserved source addresses. Local importer and release gates and independent review passed before merge.
+- The source corrections have not yet been deployed. Fresh Wrangler readback confirms the public Worker route is live (unsigned `POST /internal/knowledge` returns 401 AUTH), production and staging controls are paused at epoch 1, both Worker secret lists are empty, and each D1 has zero claims, candidates, receipts, public knowledge rows, and usage reservations.
+- T07 remains partial. No signed authorized derivative, producer-side delivery, renewal, or withdrawal has been exercised. The GitHub `cloudflare-production` environment still lacks `CLOUDFLARE_API_TOKEN`; local Wrangler OAuth was not copied into CI.
+
+## Activation blocker readback (2026-11-27)
+
+- The site Worker and both editorial Workers exist and their latest deployed versions receive 100% traffic. The editorial Worker responds on the custom hostname; `GET` to unsupported paths returns 404, while an unsigned JSON `POST /internal/knowledge` returns 401 AUTH as designed.
+- Current main source performs durable public-signal discovery and safely records NO_CHANGE or holds actionable candidates. It does not yet wire authoring, independent review, publication, or public readback adapters. No provider/publisher configuration or signed knowledge is present. D1 remains paused; no natural eligible run is claimed.
+- The deployment token is an Actions deployment prerequisite, not a substitute for the missing editorial runtime configuration or activation evidence.

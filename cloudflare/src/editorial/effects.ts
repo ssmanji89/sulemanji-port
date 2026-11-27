@@ -63,11 +63,10 @@ export class D1PublishEffectStore implements PublishEffectStore {
     const result = await this.db.prepare(`UPDATE publication_effects SET pull_request = COALESCE(?, pull_request), source_commit = COALESCE(?, source_commit),
       merge_commit = COALESCE(?, merge_commit), state = ?, updated_at = ?,
       merge_settled_date = CASE WHEN merge_admission_date IS NOT NULL THEN COALESCE(merge_settled_date, ?) END
-      WHERE candidate_id = ? AND owner_epoch = ? AND EXISTS (
-        SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
-      )`)
+      WHERE candidate_id = ? AND owner_epoch = ? AND (state <> 'MERGED' OR (? = 'MERGED' AND merge_commit = ?))
+        AND EXISTS (SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?)`)
       .bind(patch.pull_request ?? null, patch.source_commit ?? null, patch.merge_commit ?? null, patch.state,
-        now.toISOString(), settledDate, candidateId, this.ownerEpoch, this.ownerEpoch).run();
+        now.toISOString(), settledDate, candidateId, this.ownerEpoch, patch.state, patch.merge_commit ?? null, this.ownerEpoch).run();
     if ((result.meta.changes ?? 0) !== 1) throw new Error('WORKFLOW_AUTHORITY_CHANGED');
     const readback = await this.read(candidateId);
     if (!readback || readback.state !== patch.state || (patch.pull_request !== undefined && readback.pull_request !== patch.pull_request) ||

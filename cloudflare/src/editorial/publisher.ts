@@ -79,19 +79,29 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   const branch = `editorial/candidate-${proposal.candidate_id.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 80)}`;
   const attemptId = `publication:${proposal.candidate_id}`;
   const recorded = await deps.store.read(proposal.candidate_id);
-  if (recorded?.state === 'MERGED') {
+  let knownPull: PullRequestState | null = null;
+  if (recorded && (recorded.state === 'MERGED' || (recorded.pull_request && recorded.source_commit))) {
     const authority = await deps.readAuthority();
-    const exact = recorded.pull_request && recorded.merge_commit && recorded.effect_id === attemptId &&
-      recorded.branch === branch && recorded.owner_epoch === authority.owner_epoch && recorded.content_digest === proposal.content_digest;
-    // This observes an existing effect. Mutable upstream checks authorize only new effects.
+    const exact = recorded.pull_request && recorded.effect_id === attemptId && recorded.branch === branch &&
+      recorded.owner_epoch === authority.owner_epoch && recorded.content_digest === proposal.content_digest;
     const replay = exact && await canPublish(proposal, receipt, {
       ...authority, base_commit: proposal.base_commit, policy_revision: proposal.policy_revision,
       knowledge_revision: proposal.knowledge_revision, source_digest: proposal.source_digest,
       allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id,
     });
-    return replay && replay.allowed
+    if (!replay || !replay.allowed) return attemptFor(proposal, authority, branch, null, null, 'FAILED');
+    if (recorded.state === 'MERGED') return recorded.merge_commit
       ? attemptFor(proposal, authority, branch, recorded.pull_request, recorded.merge_commit, 'SOURCE_PUBLISHED')
       : attemptFor(proposal, authority, branch, null, null, 'FAILED');
+    // The merge can advance the base before we record it. This path observes an existing effect only.
+    try { knownPull = await deps.github.findPullRequest(branch); }
+    catch { return attemptFor(proposal, authority, branch, recorded.pull_request, recorded.source_commit, 'UNCERTAIN'); }
+    if (!knownPull) return attemptFor(proposal, authority, branch, recorded.pull_request, recorded.source_commit, 'UNCERTAIN');
+    if (knownPull.number === recorded.pull_request && knownPull.head_sha === recorded.source_commit &&
+        knownPull.merged && knownPull.merge_commit_sha) {
+      await deps.store.record(proposal.candidate_id, { merge_commit: knownPull.merge_commit_sha, state: 'MERGED' });
+      return attemptFor(proposal, authority, branch, knownPull.number, knownPull.merge_commit_sha, 'SOURCE_PUBLISHED');
+    }
   }
   const state = await deps.currentState();
   const decision = await canPublish(proposal, receipt, state);
@@ -100,7 +110,7 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   const effect = await deps.store.read(proposal.candidate_id);
   if (effect?.merge_commit) return attemptFor(proposal, state, branch, effect.pull_request, effect.merge_commit, 'SOURCE_PUBLISHED');
   try {
-    let pull = await deps.github.findPullRequest(branch);
+    let pull = knownPull ?? await deps.github.findPullRequest(branch);
     if (!pull) {
       const fresh = await deps.currentState();
       const check = await canPublish(proposal, receipt, fresh);
@@ -138,7 +148,7 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
     try { mergeCommit = (await deps.github.mergePullRequest(pull.number, pull.head_sha)).merge_commit_sha; }
     catch {
       const readback = await deps.github.findPullRequest(branch);
-      if (!readback?.merged || !readback.merge_commit_sha) {
+      if (!readback?.merged || !readback.merge_commit_sha || readback.number !== pull.number || readback.head_sha !== pull.head_sha) {
         await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'UNCERTAIN' });
         return attemptFor(proposal, state, branch, pull.number, pull.head_sha, 'UNCERTAIN');
       }
@@ -149,17 +159,18 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   } catch {
     let readback: PullRequestState | null = null;
     try { readback = await deps.github.findPullRequest(branch); } catch { /* Preserve the uncertain intent for later reconciliation. */ }
-    const knownPull = Boolean(effect && readback && effect.pull_request === readback.number && effect.source_commit === readback.head_sha);
-    if (knownPull && readback?.merged && readback.merge_commit_sha) {
+    const latest = await deps.store.read(proposal.candidate_id);
+    const confirmedPull = Boolean(latest && readback && latest.pull_request === readback.number && latest.source_commit === readback.head_sha);
+    if (confirmedPull && readback?.merged && readback.merge_commit_sha) {
       await deps.store.record(proposal.candidate_id, { pull_request: readback.number, source_commit: readback.head_sha, merge_commit: readback.merge_commit_sha, state: 'MERGED' });
       return attemptFor(proposal, state, branch, readback.number, readback.merge_commit_sha, 'SOURCE_PUBLISHED');
     }
-    if (knownPull && readback?.state === 'open') {
+    if (confirmedPull && readback?.state === 'open') {
       await deps.store.record(proposal.candidate_id, { pull_request: readback.number, source_commit: readback.head_sha, state: 'SOURCE_PUBLISHED' });
       return attemptFor(proposal, state, branch, readback.number, readback.head_sha, readback.checks === 'failure' ? 'FAILED' : 'SOURCE_PUBLISHED');
     }
     await deps.store.record(proposal.candidate_id, { state: 'UNCERTAIN' });
-    return attemptFor(proposal, state, branch, effect?.pull_request ?? null, effect?.source_commit ?? null, 'UNCERTAIN');
+    return attemptFor(proposal, state, branch, latest?.pull_request ?? null, latest?.source_commit ?? null, 'UNCERTAIN');
   }
 }
 

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runEditorialAdmission as runWorkerAdmission } from '../src/editorial/workflow-core.js';
-import { parseEditorialPolicy } from '../src/editorial/scheduler.js';
+import { nextChicagoBudgetDay, parseEditorialPolicy } from '../src/editorial/scheduler.js';
 import { fingerprintPublicKnowledge } from '../src/editorial/knowledge.js';
 import sourceRegistry from '../config/public-sources.json' with { type: 'json' };
 import { OperationsD1 } from './operations.test-support.js';
@@ -8,6 +8,7 @@ import { OperationsD1 } from './operations.test-support.js';
 class DurableStep {
   values = new Map<string, unknown>();
   async sleep(_name: string, _milliseconds: number) {}
+  async sleepUntil(_name: string, _timestamp: number) {}
   async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
     if (!this.values.has(name)) this.values.set(name, await callback());
     return this.values.get(name) as T;
@@ -175,10 +176,11 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
 
 describe('deterministic signal workflow', () => {
   it.each([
-    { canContinue: true, laterSharedHold: false },
-    { canContinue: true, laterSharedHold: true },
-    { canContinue: false, laterSharedHold: false },
-  ])('only continues independently after an explicitly safe candidate hold ($canContinue, $laterSharedHold)', async ({ canContinue, laterSharedHold }) => {
+    { canContinue: true, laterSharedHold: false, capacityHold: false },
+    { canContinue: true, laterSharedHold: true, capacityHold: false },
+    { canContinue: false, laterSharedHold: false, capacityHold: false },
+    { canContinue: true, laterSharedHold: false, capacityHold: true },
+  ])('only continues independently after an explicitly safe candidate hold ($canContinue, $laterSharedHold, $capacityHold)', async ({ canContinue, laterSharedHold, capacityHold }) => {
     const now = new Date('2026-11-27T14:00:00.000Z');
     vi.useFakeTimers();
     vi.setSystemTime(now);
@@ -202,18 +204,34 @@ describe('deterministic signal workflow', () => {
       return new Response(`<rss><channel>${items.join('')}</channel></rss>`);
     });
     const processed: Array<string | null> = [];
-    const processor: NonNullable<Parameters<typeof runWorkerAdmission>[4]> = { processCandidate: ({ candidate, step }) => step.do(`test-process-${candidate.id}`, () => {
+    const processor: NonNullable<Parameters<typeof runWorkerAdmission>[4]> = { processCandidate: ({ candidate, step, resumeCapacity }) => step.do(`test-process-${candidate.id}-${Boolean(resumeCapacity)}`, () => {
       processed.push(candidate.target_id);
       if (processed.length === 1) return { status: 'held' as const, reason: 'Original candidate needs review.',
-        ...(canContinue ? { continue_after_hold: true as const } : {}) };
+        ...(canContinue ? { continue_after_hold: true as const } : {}),
+        ...(capacityHold ? { retry_capacity_after: nextChicagoBudgetDay(now) } : {}) };
       if (laterSharedHold) return { status: 'held' as const, reason: 'The provider requires reconciliation.' };
       return { status: 'verified' as const, reason: 'Exact publication was verified.' };
     }) };
     const params = { slot_claim_id: 'independent-candidate-hold' };
     const env = { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never;
     const step = new DurableStep();
+    const wait = vi.spyOn(step, 'sleepUntil').mockImplementation(async (_name, timestamp) => {
+      expect(processed).toEqual(['workers', 'markets']);
+      vi.setSystemTime(timestamp);
+    });
     const result = await runEditorialAdmission(params, env, step, processor);
 
+    if (capacityHold) {
+      expect(wait).toHaveBeenCalledExactlyOnceWith('await-next-publication-day', Date.parse('2026-11-28T06:00:00Z'));
+      expect(processed).toEqual(['workers', 'markets', 'workers']);
+      const receipt = db.receipts.get(`slot-result:${params.slot_claim_id}`)!;
+      expect(JSON.parse(String(receipt.result_json)).outcomes.map((outcome: { status: string }) => outcome.status))
+        .toEqual(['verified', 'held', 'verified']);
+      expect(await runEditorialAdmission(params, env, step, processor)).toEqual(result);
+      expect(processed).toEqual(['workers', 'markets', 'workers']);
+      return;
+    }
+    expect(wait).not.toHaveBeenCalled();
     expect(db.candidates.size).toBe(3);
     expect(result).toMatchObject({ status: 'held', reason: laterSharedHold ? 'The provider requires reconciliation.' : 'Original candidate needs review.' });
     expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
@@ -223,6 +241,11 @@ describe('deterministic signal workflow', () => {
       .toEqual(canContinue ? ['held', 'held', laterSharedHold ? 'held' : 'verified'] : ['held']);
     expect(await runEditorialAdmission(params, env, step, processor)).toEqual(result);
     expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
+  });
+
+  it('uses Chicago midnight on both sides of a daylight-saving transition', () => {
+    expect(nextChicagoBudgetDay(new Date('2026-03-08T06:00:00Z'))).toBe(Date.parse('2026-03-09T05:00:00Z'));
+    expect(nextChicagoBudgetDay(new Date('2026-11-01T05:00:00Z'))).toBe(Date.parse('2026-11-02T06:00:00Z'));
   });
 
   it('holds when the catalog redirects away from its exact URL', async () => {

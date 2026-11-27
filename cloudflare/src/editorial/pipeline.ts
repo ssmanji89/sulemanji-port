@@ -1,6 +1,6 @@
 import type { Candidate, CatalogItem, ContentProposal, PreparationContext, PublicationReceipt, PublicKnowledge, PublishAttempt, ReviewReceipt, Signal } from './contracts.js';
 import { ModelAdmissionHoldError, type ModelGateway } from './models.js';
-import type { EditorialPolicy } from './scheduler.js';
+import { nextChicagoBudgetDay, type EditorialPolicy } from './scheduler.js';
 import { SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
 import { articleSourcePath, attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
 import type { CandidateProcessOutcome, DurableStep } from './workflow-core.js';
@@ -14,6 +14,7 @@ type CandidatePipelineInput = {
   policy: EditorialPolicy;
   owner_epoch: number;
   step: DurableStep;
+  resumeCapacity?: true;
 };
 type PublicationResult = { attempt: PublishAttempt; merged: boolean };
 type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true };
@@ -136,15 +137,27 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       if (!cleared) return { status: 'held', reason: 'Independent review did not clear the candidate.' };
 
       const review = cleared;
+      const retrySuffix = input.resumeCapacity ? '-capacity-retry' : '';
       let mergedAttempt: PublishAttempt | undefined;
       for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
-        const suffix = probe ? `-poll-${probe}` : '';
+        const suffix = retrySuffix + (probe ? `-poll-${probe}` : '');
         if (probe) await step.sleep(`await-checks-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
         const publication = await step.do(`publish-content-${key}${suffix}`, () => deps.publish(proposal, review, input.signal));
         const attempt = publication.attempt;
-        if (attempt.status === 'CAPACITY_HELD') return { status: 'held', reason: 'The daily publication allowance would be exceeded.' };
-        if (attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.source_commit ||
-            !attempt.pull_request || attempt.status !== 'SOURCE_PUBLISHED') {
+        if (attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.source_commit || !attempt.pull_request) {
+          return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };
+        }
+        if (attempt.status === 'CAPACITY_HELD') {
+          const recorded = await step.do(`persist-candidate-${key}-CAPACITY_HELD${suffix}`, () =>
+            deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', { proposal, review, attempt }));
+          if (!recorded) return { status: 'held', reason: 'Could not checkpoint the publication capacity hold.' };
+          const retryCapacityAfter = input.resumeCapacity ? undefined :
+            await step.do(`next-publication-day-${key}`, () => nextChicagoBudgetDay(new Date()));
+          return { status: 'held', reason: 'The daily publication allowance would be exceeded.', continue_after_hold: true,
+            retry_capacity_after: retryCapacityAfter };
+        }
+        if (attempt.status === 'UNCERTAIN') continue;
+        if (attempt.status !== 'SOURCE_PUBLISHED') {
           return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };
         }
         const publishedCheckpoint = { proposal, review, attempt };
@@ -154,17 +167,17 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         }
         if (publication.merged) { mergedAttempt = attempt; break; }
       }
-      if (!mergedAttempt) return { status: 'held', reason: 'Required pull request checks did not finish within the publication wait.' };
+      if (!mergedAttempt) return { status: 'held', reason: 'Pull request checks or merge reconciliation did not complete within the publication wait.' };
 
       const attempt = mergedAttempt;
       for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
-        const suffix = probe ? `-poll-${probe}` : '';
+        const suffix = retrySuffix + (probe ? `-poll-${probe}` : '');
         if (probe) await step.sleep(`await-deployment-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
         const verification = await step.do(`verify-publication-${key}${suffix}`, () => deps.verify(attempt));
         const receipt = verification.receipt;
         const verifiedCheckpoint = { proposal, review, attempt, publication: receipt };
         if (receipt.outcome !== 'VERIFIED' || verification.failure) {
-          if (probe === PUBLICATION_WAIT_MS.length) await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED-readback`, () =>
+          if (probe === PUBLICATION_WAIT_MS.length) await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED-readback${retrySuffix}`, () =>
             deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', verifiedCheckpoint));
           continue;
         }
@@ -172,7 +185,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
             !receipt.deployment_version || JSON.stringify(receipt.public_urls) !== JSON.stringify(attempt.public_urls)) {
           return { status: 'held', reason: 'Deployment readback did not bind to the exact reviewed publication.' };
         }
-        if (!(await step.do(`persist-candidate-${key}-VERIFIED`, () => deps.persist(candidate.id, ownerEpoch, 'VERIFIED', verifiedCheckpoint)))) {
+        if (!(await step.do(`persist-candidate-${key}-VERIFIED${retrySuffix}`, () => deps.persist(candidate.id, ownerEpoch, 'VERIFIED', verifiedCheckpoint)))) {
           return { status: 'held', reason: 'Workflow authority changed before verified publication could be checkpointed.' };
         }
         return { status: 'verified', reason: 'Publication and exact readback are verified.' };

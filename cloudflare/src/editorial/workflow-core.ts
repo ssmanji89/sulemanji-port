@@ -11,9 +11,10 @@ import { fixtureSiteFetcher } from './site-readback.js';
 export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
   sleep(name: string, milliseconds: number): Promise<void>;
+  sleepUntil(name: string, timestamp: number): Promise<void>;
 };
 export type CandidateProcessOutcome = { status: 'verified'; reason: string }
-  | { status: 'held'; reason: string; continue_after_hold?: true };
+  | { status: 'held'; reason: string; continue_after_hold?: true; retry_capacity_after?: number };
 export type EditorialCandidateProcessor = {
   processCandidate(input: {
     candidate: Candidate;
@@ -23,6 +24,7 @@ export type EditorialCandidateProcessor = {
     policy: EditorialPolicy;
     owner_epoch: number;
     step: DurableStep;
+    resumeCapacity?: true;
   }): Promise<CandidateProcessOutcome>;
 };
 type EditorialWorkflowEnv = EditorialEnv & { EDITORIAL_POLICY_JSON?: string };
@@ -383,6 +385,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (processor) {
     const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [];
     const heldTargets = new Set<string>();
+    const deferred: Array<{ candidate: Candidate; signal: Signal; after: number; index: number }> = [];
     let stopReason: string | undefined;
     for (const { signal, decision } of actionable) {
       if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the next candidate.');
@@ -395,11 +398,28 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
         owner_epoch: control.owner_epoch, step });
       outcomes.push({ candidate_id: candidate.id, status: outcome.status, reason: outcome.reason });
       if (outcome.status === 'held') {
+        if (outcome.retry_capacity_after !== undefined) {
+          deferred.push({ candidate, signal, after: outcome.retry_capacity_after, index: outcomes.length - 1 });
+        }
         if (!outcome.continue_after_hold) {
           stopReason = outcome.reason;
           break;
         }
         if (candidate.target_id) heldTargets.add(candidate.target_id);
+      }
+    }
+    if (!stopReason && deferred.length) {
+      const resumeAfter = Math.max(...deferred.map(({ after }) => after));
+      await step.sleepUntil('await-next-publication-day', resumeAfter);
+      for (const { candidate, signal, index } of deferred) {
+        if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the deferred candidate could resume.');
+        const outcome = await processor.processCandidate({ candidate, signal, catalog, knowledge, policy,
+          owner_epoch: control.owner_epoch, step, resumeCapacity: true });
+        outcomes[index] = { candidate_id: candidate.id, status: outcome.status, reason: outcome.reason };
+        if (outcome.status === 'held' && !outcome.continue_after_hold) {
+          stopReason = outcome.reason;
+          break;
+        }
       }
     }
     const verified = outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');

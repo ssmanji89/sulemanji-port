@@ -97,6 +97,20 @@ describe('GitHub publication read adapters', () => {
     expect(fetcher.mock.calls.some(([input]) => String(input).endsWith('/pulls'))).toBe(false);
   });
 
+  it('recognizes a merged PR from the list-pulls response without a merged field or check reads', async () => {
+    const branch = 'editorial/candidate-42';
+    const head = 'a'.repeat(40);
+    const merge = 'b'.repeat(40);
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      if (!String(input).includes('/pulls?')) throw new Error('Merged PR must not require current checks');
+      return Response.json([{ number: 9, state: 'closed', merged_at: '2026-11-27T19:20:30Z', merge_commit_sha: merge,
+        head: { ref: branch, sha: head }, base: { ref: 'main' } }]);
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port',
+      required_checks: ['site-release'] }, fetcher as typeof fetch);
+    await expect(github.findPullRequest(branch)).resolves.toMatchObject({ number: 9, head_sha: head, merged: true, merge_commit_sha: merge });
+  });
+
   it('does not adopt an unrelated PR when creating the reviewed PR races with an existing branch PR', async () => {
     const base = 'a'.repeat(40);
     const branch = 'editorial/candidate-42';

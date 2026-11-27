@@ -117,6 +117,21 @@ describe('guarded source publication effects', () => {
     expect(github.merges).toBe(1);
   });
 
+  it('settles an unresolved exact merge after the merge advances the reviewed base', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub(); const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () => state };
+    await publishContent(proposal, receipt, deps);
+    await store.record(proposal.candidate_id, { state: 'UNCERTAIN' });
+    github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'closed', merged: true, merge_commit_sha: 'e'.repeat(40), checks: 'success' };
+
+    await expect(publishContent(proposal, receipt, { ...deps,
+      currentState: async () => ({ ...state, base_commit: 'e'.repeat(40) }),
+    })).resolves.toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12, source_commit: 'e'.repeat(40) });
+    expect(store.value).toMatchObject({ state: 'MERGED', merge_commit: 'e'.repeat(40) });
+    expect(github.merges).toBe(0);
+  });
+
   it('does not adopt or merge a preexisting branch PR without a matching durable source head', async () => {
     const { proposal, receipt, state } = await fixture();
     const github = new FakeGitHub();

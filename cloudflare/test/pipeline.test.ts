@@ -38,6 +38,7 @@ class Steps implements DurableStep {
   waits = new Map<string, number>();
   values = new Map<string, unknown>();
   async sleep(name: string, milliseconds: number) { this.waits.set(name, milliseconds); }
+  async sleepUntil(name: string, timestamp: number) { this.waits.set(name, timestamp); }
   async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
     this.names.push(name);
     if (!this.values.has(name)) this.values.set(name, await callback());
@@ -52,6 +53,32 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it('keeps the exact reviewed PR through a capacity hold and resumes without model work', async () => {
+    const models = new Models();
+    const steps = new Steps();
+    const proposals: string[] = [];
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, renderSocialCard, preparationContext: async () => context, persist: async () => true,
+      publish: async (proposal, review) => {
+        proposals.push(proposal.content_digest);
+        expect(review.content_digest).toBe(proposal.content_digest);
+        const held = proposals.length === 1;
+        return { attempt: { ...attempt(proposal), status: held ? 'CAPACITY_HELD' : 'SOURCE_PUBLISHED' }, merged: !held };
+      },
+      verify: async (published) => ({ receipt: { candidate_id: published.candidate_id, owner_epoch: 1,
+        source_commit: published.source_commit!, deployment_version: 'fixture', public_urls: published.public_urls,
+        verified_at: '2026-11-28T12:00:00Z', outcome: 'VERIFIED' } }),
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: steps };
+    await expect(pipeline.processCandidate(input)).resolves.toMatchObject({ status: 'held',
+      continue_after_hold: true, retry_capacity_after: expect.any(Number) });
+    await expect(pipeline.processCandidate({ ...input, resumeCapacity: true })).resolves.toMatchObject({ status: 'verified' });
+    expect(proposals).toHaveLength(2);
+    expect(proposals[0]).toBe(proposals[1]);
+    expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review']);
+  });
+
   it('holds a portfolio refresh before preparing content and allows work on a separate target', async () => {
     const models = new Models();
     const target = { id: 'market-systems', title: 'Market systems', url: '/work/market-systems/', topics: ['markets'] };
@@ -82,6 +109,7 @@ describe('durable candidate publication pipeline', () => {
     let retries = 0;
     const step: DurableStep = {
       sleep: steps.sleep.bind(steps),
+      sleepUntil: steps.sleepUntil.bind(steps),
       do: <T>(name: string, callback: () => Promise<T> | T) => steps.do(name, async () => {
         try {
           return await callback();

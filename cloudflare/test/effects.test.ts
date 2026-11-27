@@ -7,10 +7,11 @@ const limits = { new_articles: 1, refreshes: 1 };
 const creation = { new_articles: 1, refreshes: 0 };
 const refresh = { new_articles: 0, refreshes: 1 };
 
-function sqliteD1() {
+function sqliteD1(beforeCapacity?: (sqlite: DatabaseSync) => void) {
   const sqlite = new DatabaseSync(':memory:');
   const migrations = new URL('../migrations/', import.meta.url);
   for (const name of readdirSync(migrations).filter((file) => file.endsWith('.sql')).sort()) {
+    if (name.startsWith('0007_')) beforeCapacity?.(sqlite);
     sqlite.exec(readFileSync(new URL(name, migrations), 'utf8'));
   }
   sqlite.exec('UPDATE editorial_control SET paused = 0');
@@ -34,6 +35,22 @@ async function seedMergeable(store: D1PublishEffectStore, ...ids: string[]) {
 }
 
 describe('daily merge capacity on SQLite', () => {
+  it('requires a paused, drained database and a clean accounting day before migrating', () => {
+    const migration = readFileSync(new URL('../migrations/0007_editorial_publication_capacity.sql', import.meta.url), 'utf8');
+    const { sqlite } = sqliteD1((db) => {
+      db.exec('UPDATE editorial_control SET paused = 0');
+      expect(() => db.exec(migration)).toThrow(/publication_capacity_cutover_safe/);
+      db.exec('UPDATE editorial_control SET paused = 1');
+      db.exec(`INSERT INTO publication_effects(candidate_id, effect_id, branch, state, owner_epoch, content_digest, updated_at)
+        VALUES ('historical', 'historical', 'editorial/historical', 'MERGED', 1, 'digest', datetime('now'))`);
+      expect(() => db.exec(migration)).toThrow(/publication_capacity_cutover_safe/);
+      db.exec("UPDATE publication_effects SET updated_at = datetime('now', '-27 hours'), state = 'UNCERTAIN'");
+      expect(() => db.exec(migration)).toThrow(/publication_capacity_cutover_safe/);
+      db.exec("UPDATE publication_effects SET state = 'MERGED'");
+    });
+    sqlite.close();
+  });
+
   it('admits only one concurrent new article, preserves replay and keeps refresh capacity separate', async () => {
     const { db, sqlite } = sqliteD1();
     try {

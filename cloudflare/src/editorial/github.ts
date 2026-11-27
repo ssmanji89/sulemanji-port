@@ -2,7 +2,7 @@ import type { ContentProposal } from './contracts.js';
 import type { GitHubPublisher, PullRequestState } from './publisher.js';
 
 type GitHubConfig = { token: string; repository: string; required_checks: string[]; default_branch?: string; api_origin?: string; require_private?: boolean };
-type PullRequestApi = { number: number; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; head: { ref: string; sha: string }; base: { ref: string } };
+type PullRequestApi = { number: number; state: 'open' | 'closed'; merged_at?: string | null; merge_commit_sha: string | null; head: { ref: string; sha: string }; base: { ref: string } };
 type CheckRunsApi = { check_runs?: Array<{ name: string; status: string; conclusion: string | null }> };
 
 function binaryBase64(bytes: Uint8Array): string {
@@ -107,8 +107,11 @@ export class GitHubApiPublisher implements GitHubPublisher {
   }
 
   private async pullRequestState(pr: PullRequestApi): Promise<PullRequestState> {
-    const checks = await this.checkState(pr.head.sha);
-    return { number: pr.number, head_sha: pr.head.sha, state: pr.state, merged: pr.merged, merge_commit_sha: pr.merge_commit_sha, checks };
+    const merged = pr.state === 'closed' && typeof pr.merged_at === 'string' && Number.isFinite(Date.parse(pr.merged_at)) &&
+      typeof pr.merge_commit_sha === 'string' && /^[0-9a-f]{40}$/i.test(pr.merge_commit_sha);
+    const checks = pr.state === 'open' ? await this.checkState(pr.head.sha) : merged ? 'success' : 'failure';
+    return { number: pr.number, head_sha: pr.head.sha, state: pr.state, merged,
+      merge_commit_sha: merged ? pr.merge_commit_sha : null, checks };
   }
 
   private async findPullRequestApi(branch: string): Promise<PullRequestApi | null> {
@@ -118,6 +121,7 @@ export class GitHubApiPublisher implements GitHubPublisher {
   }
 
   async findPullRequest(branch: string): Promise<PullRequestState | null> {
+    await this.assertPrivateFixture();
     const pr = await this.findPullRequestApi(branch);
     if (!pr) return null;
     return this.pullRequestState(pr);

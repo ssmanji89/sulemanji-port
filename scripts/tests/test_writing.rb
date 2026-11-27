@@ -16,6 +16,10 @@ class WritingTest < Minitest::Test
     @source = File.join(@tmp, 'source')
     @site = File.join(@tmp, 'site')
     FileUtils.mkdir_p(File.join(@source, 'notes'))
+    # macOS resolves /var/folders through /private when chdir runs. Jekyll 3.9
+    # reads layouts from the absolute cwd path, then joins that path to config
+    # source. Keep both paths canonical so the layout is read from this fixture.
+    @source = File.realpath(@source)
     %w[_config.yml writing.md _layouts _includes _data _plugins].each do |entry|
       FileUtils.cp_r(File.join(REPO, entry), File.join(@source, entry))
     end

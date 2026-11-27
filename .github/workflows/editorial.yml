@@ -24,7 +24,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: editorial-${{ github.event.inputs.deploy_environment || 'validate' }}
+  group: editorial-${{ inputs.deploy_environment || (github.event_name == 'push' && 'production') || 'validate' }}
   cancel-in-progress: false
 
 jobs:
@@ -56,7 +56,7 @@ jobs:
     if: github.repository == 'ssmanji89/sulemanji-port' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy_environment == 'staging'
     runs-on: ubuntu-latest
     environment:
-      name: ${{ format('cloudflare-{0}', inputs.deploy_environment) }}
+      name: cloudflare-staging
     concurrency:
       group: editorial-staging
       cancel-in-progress: false
@@ -100,6 +100,10 @@ jobs:
             echo "::error::Migration failed; private resource diagnostics were suppressed."
             exit 1
           fi
+      - name: Read back staging migrations before deployment
+        run: |
+          npx wrangler d1 migrations list DB --remote --config wrangler.editorial-staging.runtime.jsonc > "$RUNNER_TEMP/migrations-state.txt" 2>&1
+          node scripts/verify-editorial-migrations.mjs "$RUNNER_TEMP/migrations-state.txt"
       - name: Refuse a stale staging revision before deployment
         run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
       - name: Deploy staging Worker and Workflow
@@ -108,10 +112,6 @@ jobs:
             echo "::error::Deployment failed; private resource diagnostics were suppressed."
             exit 1
           fi
-      - name: Read back staging migrations
-        run: |
-          npx wrangler d1 migrations list DB --remote --config wrangler.editorial-staging.runtime.jsonc > "$RUNNER_TEMP/migrations-state.txt" 2>&1
-          node scripts/verify-editorial-migrations.mjs "$RUNNER_TEMP/migrations-state.txt"
       - name: Read back and verify exact staging deployment
         run: |
           npx wrangler deployments list --json --config wrangler.editorial-staging.runtime.jsonc > "$RUNNER_TEMP/deployments.json" 2>/dev/null
@@ -120,10 +120,10 @@ jobs:
 
   deploy-production:
     needs: validate
-    if: github.repository == 'ssmanji89/sulemanji-port' && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.deploy_environment == 'production'
+    if: github.repository == 'ssmanji89/sulemanji-port' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'production'))
     runs-on: ubuntu-latest
     environment:
-      name: ${{ format('cloudflare-{0}', inputs.deploy_environment) }}
+      name: cloudflare-production
     concurrency:
       group: editorial-production
       cancel-in-progress: false
@@ -167,6 +167,10 @@ jobs:
             echo "::error::Migration failed; private resource diagnostics were suppressed."
             exit 1
           fi
+      - name: Read back production migrations before deployment
+        run: |
+          npx wrangler d1 migrations list DB --remote --config wrangler.editorial.runtime.jsonc > "$RUNNER_TEMP/migrations-state.txt" 2>&1
+          node scripts/verify-editorial-migrations.mjs "$RUNNER_TEMP/migrations-state.txt"
       - name: Refuse a stale production revision before deployment
         run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
       - name: Deploy production Worker and Workflow
@@ -175,10 +179,6 @@ jobs:
             echo "::error::Deployment failed; private resource diagnostics were suppressed."
             exit 1
           fi
-      - name: Read back production migrations
-        run: |
-          npx wrangler d1 migrations list DB --remote --config wrangler.editorial.runtime.jsonc > "$RUNNER_TEMP/migrations-state.txt" 2>&1
-          node scripts/verify-editorial-migrations.mjs "$RUNNER_TEMP/migrations-state.txt"
       - name: Read back and verify exact production deployment
         run: |
           npx wrangler deployments list --json --config wrangler.editorial.runtime.jsonc > "$RUNNER_TEMP/deployments.json" 2>/dev/null

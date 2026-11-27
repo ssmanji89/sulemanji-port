@@ -16,16 +16,23 @@ class EditorialWorkflowTests(unittest.TestCase):
     def setUpClass(cls):
         cls.workflow = WORKFLOW.read_text(encoding="utf-8")
 
-    def test_deployments_are_manual_and_main_only(self):
+    def test_staging_is_manual_and_production_reconciles_main_pushes(self):
         self.assertIn("workflow_dispatch:", self.workflow)
         self.assertIn("options: [validate, staging, production]", self.workflow)
         self.assertIn("default: validate", self.workflow)
-        for job_name, target in (("deploy-staging:", "staging"), ("deploy-production:", "production")):
-            job = self.workflow.split(f"  {job_name}", 1)[1]
-            self.assertIn("github.event_name == 'workflow_dispatch'", job)
+        staging = self.workflow.split("  deploy-staging:", 1)[1].split("  deploy-production:", 1)[0]
+        production = self.workflow.split("  deploy-production:", 1)[1]
+        for job in (staging, production):
+            self.assertIn("github.repository == 'ssmanji89/sulemanji-port'", job)
             self.assertIn("github.ref == 'refs/heads/main'", job)
-            self.assertIn(f"inputs.deploy_environment == '{target}'", job)
-        self.assertIn("format('cloudflare-{0}', inputs.deploy_environment)", self.workflow)
+        self.assertIn("github.event_name == 'workflow_dispatch'", staging)
+        self.assertIn("inputs.deploy_environment == 'staging'", staging)
+        self.assertIn("github.event_name == 'push'", production)
+        self.assertIn("inputs.deploy_environment == 'production'", production)
+        self.assertIn("group: editorial-production", production)
+        self.assertIn("git ls-remote origin refs/heads/main", production)
+        self.assertIn("name: cloudflare-staging", staging)
+        self.assertIn("name: cloudflare-production", production)
         self.assertNotIn("secrets.CLOUDFLARE_STAGING_API_TOKEN", self.workflow)
         self.assertNotIn("secrets.CLOUDFLARE_EDITORIAL_API_TOKEN", self.workflow)
 
@@ -43,9 +50,12 @@ class EditorialWorkflowTests(unittest.TestCase):
             job = self.workflow.split(f"  {job_name}", 1)[1]
             migration = job.index(f"d1 migrations apply DB --remote --config {config}")
             deploy = job.index(f"wrangler deploy --config {config}")
+            migration_readback = job.index(f"d1 migrations list DB --remote --config {config}")
+            migration_verification = job.index("verify-editorial-migrations.mjs")
             self.assertLess(migration, deploy)
-            self.assertIn(f"d1 migrations list DB --remote --config {config}", job)
-            self.assertIn("verify-editorial-migrations.mjs", job)
+            self.assertLess(migration, migration_readback)
+            self.assertLess(migration_readback, deploy)
+            self.assertLess(migration_verification, deploy)
             self.assertIn(f"deployments list --json --config {config}", job)
             self.assertIn("private resource diagnostics were suppressed", job)
 

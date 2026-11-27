@@ -1,9 +1,8 @@
 import type { EditorialEnv } from './contracts.js';
 import { ingestKnowledge } from './knowledge.js';
 import { operatorRequest } from './operator.js';
-import { claimScheduleSlot, markScheduleDispatched, pendingScheduleClaims, parseEditorialPolicy } from './scheduler.js';
-import { readControl } from './state.js';
-import { EditorialWorkflow, type WorkflowParams } from './workflow.js';
+import { dispatchDueSlot } from './schedule-dispatch.js';
+import { EditorialWorkflow } from './workflow.js';
 
 export { EditorialWorkflow };
 type Env = EditorialEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string; EDITORIAL_POLICY_JSON?: string };
@@ -26,25 +25,6 @@ async function readBody(request: Request, limit: number): Promise<Uint8Array | n
   let offset = 0;
   for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
   return bytes;
-}
-
-async function dispatchDueSlot(now: Date, env: Env): Promise<void> {
-  if ((await readControl(env.DB)).paused) return;
-  const policy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
-  if (!policy) return;
-  await claimScheduleSlot(env.DB, now, policy);
-  for (const claim of await pendingScheduleClaims(env.DB)) {
-    const workflowId = `slot-${claim.local_date}-${claim.slot.replace(':', '')}`;
-    try {
-      await env.EDITORIAL_WORKFLOW.create({ id: workflowId, params: { slot_claim_id: claim.id } satisfies WorkflowParams });
-      await markScheduleDispatched(env.DB, claim.id, workflowId, now);
-    } catch {
-      try {
-        await env.EDITORIAL_WORKFLOW.get(workflowId);
-        await markScheduleDispatched(env.DB, claim.id, workflowId, now);
-      } catch { /* Keep the durable claim pending for a later cron readback. */ }
-    }
-  }
 }
 
 export default {

@@ -74,6 +74,7 @@ jobs:
       EDITORIAL_WORKERS_DEV: ${{ vars.EDITORIAL_WORKERS_DEV }}
       EDITORIAL_CRON_SCHEDULE: ${{ vars.EDITORIAL_CRON_SCHEDULE }}
       EDITORIAL_POLICY_REVISION: ${{ vars.EDITORIAL_POLICY_REVISION }}
+      EDITORIAL_POLICY_JSON: ${{ vars.EDITORIAL_POLICY_JSON }}
     steps:
       - name: Checkout exact main revision
         uses: actions/checkout@v4
@@ -141,6 +142,7 @@ jobs:
       EDITORIAL_WORKERS_DEV: ${{ vars.EDITORIAL_WORKERS_DEV }}
       EDITORIAL_CRON_SCHEDULE: ${{ vars.EDITORIAL_CRON_SCHEDULE }}
       EDITORIAL_POLICY_REVISION: ${{ vars.EDITORIAL_POLICY_REVISION }}
+      EDITORIAL_POLICY_JSON: ${{ vars.EDITORIAL_POLICY_JSON }}
     steps:
       - name: Checkout exact main revision
         uses: actions/checkout@v4

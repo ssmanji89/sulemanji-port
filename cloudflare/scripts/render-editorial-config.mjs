@@ -13,9 +13,14 @@ if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
   throw new Error('EDITORIAL_DATABASE_ID_MUST_BE_A_UUID');
 }
 
-const requiredValues = ['EDITORIAL_WORKER_NAME', 'EDITORIAL_WORKFLOW_NAME', 'EDITORIAL_DATABASE_NAME', 'EDITORIAL_POLICY_REVISION'];
+const requiredValues = ['EDITORIAL_WORKER_NAME', 'EDITORIAL_WORKFLOW_NAME', 'EDITORIAL_DATABASE_NAME', 'EDITORIAL_POLICY_REVISION', 'EDITORIAL_POLICY_JSON'];
 for (const key of requiredValues) {
   if (!process.env[key]?.trim()) throw new Error(`${key}_IS_REQUIRED`);
+}
+let editorialPolicy;
+try { editorialPolicy = JSON.parse(process.env.EDITORIAL_POLICY_JSON); } catch { throw new Error('EDITORIAL_POLICY_JSON_MUST_BE_VALID_JSON'); }
+if (!editorialPolicy || typeof editorialPolicy !== 'object' || Array.isArray(editorialPolicy)) {
+  throw new Error('EDITORIAL_POLICY_JSON_MUST_BE_AN_OBJECT');
 }
 
 const configName = environment === 'staging' ? 'wrangler.editorial-staging.jsonc' : 'wrangler.editorial.jsonc';
@@ -31,6 +36,7 @@ config.triggers.crons = process.env.EDITORIAL_CRON_SCHEDULE?.trim()
   : [];
 config.vars.DEPLOYMENT_ENV = environment;
 config.vars.KNOWLEDGE_POLICY_REVISION = process.env.EDITORIAL_POLICY_REVISION;
+config.vars.EDITORIAL_POLICY_JSON = JSON.stringify(editorialPolicy);
 config.d1_databases[0].database_name = process.env.EDITORIAL_DATABASE_NAME;
 config.d1_databases[0].database_id = databaseId;
 config.workflows[0].name = process.env.EDITORIAL_WORKFLOW_NAME;

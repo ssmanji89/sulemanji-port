@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 const base = process.env.SITE_PREVIEW_URL;
+const articleBaseline = JSON.parse(readFileSync(resolve(process.cwd(), '../docs/redevelopment/2026-11-26/article-baseline.json'), 'utf8')) as {
+  articles: Array<{ url: string; published_on: string | null }>;
+};
 describe.skipIf(!base)('built site in Wrangler Worker runtime', () => {
   it('serves the canonical Writing page and redirects the trailing-slash variant', async () => {
     const canonical = await fetch(`${base}/writing`, { redirect: 'manual' });
@@ -35,10 +40,11 @@ describe.skipIf(!base)('built site in Wrangler Worker runtime', () => {
     expect(await head.text()).toBe('');
     const release = await fetch(`${base}/release.json`);
     expect(release.status).toBe(200);
-    const manifest = await release.json() as { source_commit: string; asset_digest: string; built_at: string; articles: unknown[] };
+    const manifest = await release.json() as { source_commit: string; asset_digest: string; built_at: string; articles: Array<{ url: string; published_on: string | null }> };
     expect(manifest.source_commit).toMatch(/^(local|[0-9a-f]{7,64})$/);
     expect(manifest.asset_digest).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(manifest.built_at).toBeTruthy();
-    expect(manifest.articles).toHaveLength(55);
+    expect(new Set(manifest.articles.map((article) => article.url)).size).toBe(manifest.articles.length);
+    for (const preserved of articleBaseline.articles) expect(manifest.articles).toContainEqual(preserved);
   });
 });

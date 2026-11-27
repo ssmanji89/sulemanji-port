@@ -58,7 +58,7 @@ config['vars']={'SOURCE_COMMIT':manifest['source_commit'],'ASSET_DIGEST':manifes
 Path(destination).write_text(json.dumps(config,indent=2)+'\n')
 PY
 cd "$CF"
-./node_modules/.bin/wrangler deploy --config "$TEMP_CONFIG" --message "site $SOURCE_COMMIT" --yes >"$TEMP_LOG" 2>&1
+./node_modules/.bin/wrangler deploy --config "$TEMP_CONFIG" --message "site $SOURCE_COMMIT" >"$TEMP_LOG" 2>&1
 ./node_modules/.bin/wrangler deployments list --name "$WORKER_NAME" --json --config "$TEMP_CONFIG" >"$TEMP_DEPLOYMENTS" 2>>"$TEMP_LOG"
 VERSION_ID="$(python3 - "$TEMP_DEPLOYMENTS" <<'PY'
 import json,sys

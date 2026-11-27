@@ -8,7 +8,10 @@ import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
 
-export type DurableStep = { do<T>(name: string, callback: () => Promise<T> | T): Promise<T> };
+export type DurableStep = {
+  do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
+  sleep(name: string, milliseconds: number): Promise<void>;
+};
 export type CandidateProcessOutcome = { status: 'verified' | 'held'; reason: string };
 export type EditorialCandidateProcessor = {
   processCandidate(input: {

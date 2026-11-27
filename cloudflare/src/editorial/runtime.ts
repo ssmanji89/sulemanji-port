@@ -12,6 +12,7 @@ import { readKnowledge } from './workflow-core.js';
 import { revalidateSignalSourceDigest } from './sources.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
 import { fixtureSiteFetcher } from './site-readback.js';
+import { articleSourcePath } from './review.js';
 
 export type EditorialRuntimeEnv = EditorialEnv & {
   EDITORIAL_POLICY_JSON?: string;
@@ -94,9 +95,8 @@ function pathForRefresh(candidate: Candidate, catalog: Array<{ id: string; url: 
   if (candidate.action !== 'REFRESH' || !candidate.target_id) return null;
   const item = catalog.find((entry) => entry.id === candidate.target_id);
   if (!item) throw new Error('REFRESH_TARGET_NOT_IN_CATALOG');
-  const url = new URL(item.url);
-  const path = `${url.pathname.replace(/^\//, '')}.md`;
-  if (url.origin !== 'https://www.sulemanji.com' || !/^notes\/[a-z0-9]+(?:-[a-z0-9]+)*\.md$/.test(path)) throw new Error('REFRESH_TARGET_PATH_REJECTED');
+  const path = articleSourcePath(item.url);
+  if (!path) throw new Error('REFRESH_TARGET_PATH_REJECTED');
   return path;
 }
 

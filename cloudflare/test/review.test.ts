@@ -40,6 +40,22 @@ function state(proposal: ContentProposal) {
 }
 
 describe('independent content preparation and review', () => {
+  it('refreshes the exact tracked article when the catalog uses an absolute canonical URL', async () => {
+    const initial = await prepareContent(candidate, context, new FakeModels());
+    const file = initial.files[0];
+    const target = { id: 'existing', title: output.title, url: new URL(initial.public_urls[0], 'https://www.sulemanji.com').href, topics: output.topics };
+    const refresh = { ...candidate, action: 'REFRESH' as const, target_id: target.id };
+    const existing = { ...context, catalog: [...context.catalog, target],
+      existing_paths: [file.path], existing_files: { [file.path]: file.content } };
+    const result = await prepareContent(refresh, existing, new FakeModels());
+    expect(result.files[0]).toMatchObject({ path: file.path, operation: 'update' });
+    expect(result.public_urls).toEqual([target.url]);
+    expect(result.files[0].content.match(/^published_on: .*$/m)?.[0]).toBe(file.content.match(/^published_on: .*$/m)?.[0]);
+    const noSource = new FakeModels();
+    await expect(prepareContent(refresh, { ...existing, existing_files: {} }, noSource)).rejects.toThrow('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
+    expect(noSource.calls).toHaveLength(0);
+  });
+
   it('keeps article identity and authority server-assigned', async () => {
     const models = new FakeModels();
     const proposal = await prepareContent(candidate, context, models);

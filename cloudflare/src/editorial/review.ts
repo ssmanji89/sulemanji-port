@@ -141,14 +141,32 @@ function frontMatterScalar(header: string, key: string): string | null {
 function canonicalArticleUrl(permalink: string): string | null {
   try {
     const url = new URL(permalink, 'https://www.sulemanji.com');
-    if (url.origin !== 'https://www.sulemanji.com' || url.search || url.hash || !url.pathname.startsWith('/notes/')) return null;
+    if (url.origin !== 'https://www.sulemanji.com' || url.username || url.password || url.search || url.hash || !url.pathname.startsWith('/notes/')) return null;
     return url.href;
   } catch { return null; }
+}
+
+export function articleSourcePath(url: string): string | null {
+  const canonical = canonicalArticleUrl(url);
+  const path = canonical ? `${new URL(canonical).pathname.slice(1)}.md` : '';
+  return ARTICLE_PATH.test(path) ? path : null;
 }
 
 export async function prepareContent(candidate: Candidate, context: PreparationContext, models: ModelGateway, stableRunId = `author:${candidate.id}`): Promise<ContentProposal> {
   if (candidate.action === 'PROPOSE' || candidate.action === 'REPAIR') throw new Error('CANDIDATE_REQUIRES_OWNER_OR_REPAIR_PIPELINE');
   if (!context.policy_revision || context.policy_revision === 'editorial-policy-unbound' || !context.base_commit) throw new Error('PUBLICATION_CONTEXT_UNQUALIFIED');
+  const target = candidate.action === 'REFRESH' ? context.catalog.find((item) => item.id === candidate.target_id) : undefined;
+  const refreshPath = target ? articleSourcePath(target.url) : null;
+  const previous = refreshPath ? context.existing_files?.[refreshPath] : undefined;
+  if (candidate.action === 'REFRESH' && (!target || !refreshPath || !previous || !context.existing_paths?.includes(refreshPath))) {
+    throw new Error('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
+  }
+  const original = previous ? frontMatterParts(previous) : null;
+  if (target && (!original || frontMatterValue<number>(original.header, 'writing_schema') !== 2 ||
+      frontMatterValue<string>(original.header, 'title') !== target.title ||
+      canonicalArticleUrl(frontMatterScalar(original.header, 'permalink') ?? '') !== canonicalArticleUrl(target.url))) {
+    throw new Error('EXISTING_ARTICLE_FRONTMATTER_INVALID');
+  }
   const authorRunId = stableRunId;
   const modelOutput = await outputSchema(candidate, context, models, authorRunId);
   if (!validGenerated(modelOutput)) throw new Error('MODEL_ARTICLE_SCHEMA_REJECTED');
@@ -164,16 +182,11 @@ export async function prepareContent(candidate: Candidate, context: PreparationC
   let path = `notes/${articleSlug}.md`;
   let operation: FileChange['operation'] = 'create';
   let content = frontMatter(article, articleSlug, date, permalink);
-  const existingPath = context.catalog.find((item) => item.id === candidate.target_id)?.url.replace(/^\//, '') + '.md';
-  if (candidate.action === 'REFRESH' && existingPath && context.existing_files?.[existingPath]) {
-    const previous = context.existing_files[existingPath];
-    const front = previous.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
-    if (!front || !/^writing_schema:\s*2\s*$/m.test(front[1])) throw new Error('EXISTING_ARTICLE_FRONTMATTER_INVALID');
-    path = existingPath;
+  if (refreshPath && original) {
+    path = refreshPath;
     operation = 'update';
-    const header = front[1].replace(/^updated_on:\s*.*\n?/m, '').trimEnd();
+    const header = original.header.replace(/^updated_on:[ \t]*[^\r\n]*\r?\n?/m, '').trimEnd();
     content = `---\n${header}\nupdated_on: ${JSON.stringify(date)}\n---\n\n${article.body.trim()}\n`;
-    if (!context.existing_paths?.includes(path)) throw new Error('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
   }
   if (!ARTICLE_PATH.test(path) || !safeArticleLinks(article.body, context.sources, context.existing_paths ?? [], [path])) throw new Error('ARTICLE_PATH_OR_CITATION_REJECTED');
   const rendered = marked.parse(article.body, { async: false });
@@ -182,10 +195,10 @@ export async function prepareContent(candidate: Candidate, context: PreparationC
   const file: FileChange = { path, operation, encoding: 'utf-8', content, content_sha256: await sha256(content) };
   const contentDigest = await sha256(`${path}\n${file.content_sha256}`);
   const sourceDigest = await sha256(context.sources.map((source) => `${source.url}\n${source.content_sha256}`).sort().join('\n'));
-  const url = operation === 'update' ? context.catalog.find((item) => item.id === candidate.target_id)!.url : permalink;
+  const url = target?.url ?? permalink;
   return { candidate_id: candidate.id, author_run_id: authorRunId, content_digest: contentDigest, source_digest: sourceDigest,
     policy_revision: context.policy_revision, knowledge_revision: context.knowledge_revision, base_commit: context.base_commit, owner_epoch: context.owner_epoch,
-    files: [file], public_sources: context.sources, required_media_paths: [], public_urls: [url], expected_content: [{ url, title: operation === 'update' ? context.catalog.find((item) => item.id === candidate.target_id)!.title : article.title, text_sha256: textHash }] };
+    files: [file], public_sources: context.sources, required_media_paths: [], public_urls: [url], expected_content: [{ url, title: target?.title ?? article.title, text_sha256: textHash }] };
 }
 
 export async function reviseContent(previous: ContentProposal, candidate: Candidate, context: PreparationContext, findings: ReviewReceipt['findings'],

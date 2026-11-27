@@ -20,7 +20,12 @@ export interface PublishEffectStore {
   read(candidateId: string): Promise<PublishEffect | null>;
   record(candidateId: string, patch: { pull_request?: number; source_commit?: string; merge_commit?: string; state: string }): Promise<void>;
 }
-export type PublishDependencies = { store: PublishEffectStore; github: GitHubPublisher; currentState(): Promise<PublicationState>; now?: () => Date };
+type PublicationAuthority = Pick<PublicationState, 'owner_epoch' | 'paused'>;
+export type PublishDependencies = {
+  store: PublishEffectStore; github: GitHubPublisher;
+  readAuthority(): Promise<PublicationAuthority>;
+  currentState(): Promise<PublicationState>;
+};
 
 const ARTICLE = /^notes\/[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
 const MEDIA = /^assets\/images\/articles\/[a-z0-9][a-z0-9._-]{0,150}\.(?:svg|png|webp|jpe?g)$/i;
@@ -60,23 +65,30 @@ export async function canPublish(proposal: ContentProposal, receipt: ReviewRecei
   return reasons.length ? { allowed: false, reasons } : { allowed: true };
 }
 
-function attemptFor(proposal: ContentProposal, state: PublicationState, branch: string, pullRequest: number | null, sourceCommit: string | null, status: PublishAttempt['status']): PublishAttempt {
+function attemptFor(proposal: ContentProposal, state: PublicationAuthority, branch: string, pullRequest: number | null, sourceCommit: string | null, status: PublishAttempt['status']): PublishAttempt {
   return { id: `publication:${proposal.candidate_id}`, candidate_id: proposal.candidate_id, owner_epoch: state.owner_epoch, branch, pull_request: pullRequest,
     source_commit: sourceCommit, deployment_version: null, public_urls: proposal.public_urls, expected_content: proposal.expected_content, status };
 }
 
 export async function publishContent(proposal: ContentProposal, receipt: ReviewReceipt, deps: PublishDependencies): Promise<PublishAttempt> {
-  const state = await deps.currentState();
   const branch = `editorial/candidate-${proposal.candidate_id.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 80)}`;
   const attemptId = `publication:${proposal.candidate_id}`;
   const recorded = await deps.store.read(proposal.candidate_id);
-  if (recorded?.state === 'MERGED' && recorded.pull_request && recorded.merge_commit &&
-      recorded.effect_id === attemptId && recorded.branch === branch && recorded.owner_epoch === state.owner_epoch &&
-      recorded.content_digest === proposal.content_digest) {
-    // The successful merge moved the base itself. Recover the recorded effect without another write.
-    const replay = await canPublish(proposal, receipt, { ...state, base_commit: proposal.base_commit });
-    if (replay.allowed) return attemptFor(proposal, state, branch, recorded.pull_request, recorded.merge_commit, 'SOURCE_PUBLISHED');
+  if (recorded?.state === 'MERGED') {
+    const authority = await deps.readAuthority();
+    const exact = recorded.pull_request && recorded.merge_commit && recorded.effect_id === attemptId &&
+      recorded.branch === branch && recorded.owner_epoch === authority.owner_epoch && recorded.content_digest === proposal.content_digest;
+    // This observes an existing effect. Mutable upstream checks authorize only new effects.
+    const replay = exact && await canPublish(proposal, receipt, {
+      ...authority, base_commit: proposal.base_commit, policy_revision: proposal.policy_revision,
+      knowledge_revision: proposal.knowledge_revision, source_digest: proposal.source_digest,
+      allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id,
+    });
+    return replay && replay.allowed
+      ? attemptFor(proposal, authority, branch, recorded.pull_request, recorded.merge_commit, 'SOURCE_PUBLISHED')
+      : attemptFor(proposal, authority, branch, null, null, 'FAILED');
   }
+  const state = await deps.currentState();
   const decision = await canPublish(proposal, receipt, state);
   if (!decision.allowed) return attemptFor(proposal, state, branch, null, null, 'FAILED');
   await deps.store.ensureIntent(proposal.candidate_id, attemptId, branch, state.owner_epoch, proposal.content_digest);

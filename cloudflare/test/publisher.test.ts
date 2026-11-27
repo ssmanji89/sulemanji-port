@@ -52,7 +52,7 @@ describe('guarded source publication effects', () => {
     const protectedProposal = { ...proposal, files: [{ ...proposal.files[0], path: 'worker/src/index.ts' }] };
     expect(await canPublish(protectedProposal, receipt, { ...state, allowed_paths: ['worker/src/index.ts'] })).toMatchObject({ allowed: false });
     const github = new FakeGitHub();
-    const attempt = await publishContent(proposal, receipt, { store: new FakeStore(), github, currentState: async () => ({ ...state, base_commit: 'f'.repeat(40) }) });
+    const attempt = await publishContent(proposal, receipt, { store: new FakeStore(), github, readAuthority: async () => state, currentState: async () => ({ ...state, base_commit: 'f'.repeat(40) }) });
     expect(attempt.status).toBe('FAILED');
     expect(github.creates).toBe(0);
   });
@@ -60,7 +60,7 @@ describe('guarded source publication effects', () => {
   it('records intent and waits for required checks before merge', async () => {
     const { proposal, receipt, state } = await fixture();
     const github = new FakeGitHub(); const store = new FakeStore();
-    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    const attempt = await publishContent(proposal, receipt, { store, github, readAuthority: async () => state, currentState: async () => state });
     expect(attempt).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12 });
     expect(github.creates).toBe(1);
     expect(github.merges).toBe(0);
@@ -70,21 +70,23 @@ describe('guarded source publication effects', () => {
   it('reconciles a successful merge when the merge response is lost', async () => {
     const { proposal, receipt, state } = await fixture();
     const github = new FakeGitHub(); const store = new FakeStore();
-    await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    await publishContent(proposal, receipt, { store, github, readAuthority: async () => state, currentState: async () => state });
     github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
     github.loseMergeResponse = true;
-    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    const attempt = await publishContent(proposal, receipt, { store, github, readAuthority: async () => state, currentState: async () => state });
     expect(attempt).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12, source_commit: 'e'.repeat(40) });
     expect(github.creates).toBe(1);
     expect(github.merges).toBe(1);
     expect(store.value).toMatchObject({ state: 'MERGED', merge_commit: 'e'.repeat(40) });
     const replay = await publishContent(proposal, receipt, {
-      store, github, currentState: async () => ({ ...state, base_commit: 'e'.repeat(40) }),
+      store, github, currentState: async () => { throw new Error('Source temporarily unavailable after the merge'); },
+      readAuthority: async () => ({ owner_epoch: 7, paused: false }),
     });
     expect(replay).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12, source_commit: 'e'.repeat(40) });
     expect(github.merges).toBe(1);
     const paused = await publishContent(proposal, receipt, {
-      store, github, currentState: async () => ({ ...state, base_commit: 'e'.repeat(40), paused: true }),
+      store, github, currentState: async () => { throw new Error('Source temporarily unavailable after the merge'); },
+      readAuthority: async () => ({ owner_epoch: 7, paused: true }),
     });
     expect(paused.status).toBe('FAILED');
     expect(github.merges).toBe(1);
@@ -95,7 +97,7 @@ describe('guarded source publication effects', () => {
     const github = new FakeGitHub();
     github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
     const store = new FakeStore();
-    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    const attempt = await publishContent(proposal, receipt, { store, github, readAuthority: async () => state, currentState: async () => state });
 
     expect(attempt.status).toBe('UNCERTAIN');
     expect(github.creates).toBe(0);
@@ -107,10 +109,10 @@ describe('guarded source publication effects', () => {
   it('holds when a previously recorded publication branch has been edited', async () => {
     const { proposal, receipt, state } = await fixture();
     const github = new FakeGitHub(); const store = new FakeStore();
-    await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    await publishContent(proposal, receipt, { store, github, readAuthority: async () => state, currentState: async () => state });
     github.pr = { number: 12, head_sha: 'f'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
 
-    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    const attempt = await publishContent(proposal, receipt, { store, github, readAuthority: async () => state, currentState: async () => state });
 
     expect(attempt.status).toBe('UNCERTAIN');
     expect(github.merges).toBe(0);
@@ -120,7 +122,7 @@ describe('guarded source publication effects', () => {
   it('invalidates the reviewed attempt if the owner epoch pauses or changes', async () => {
     const { proposal, receipt, state } = await fixture();
     const github = new FakeGitHub();
-    const attempt = await publishContent(proposal, receipt, { store: new FakeStore(), github, currentState: async () => ({ ...state, paused: true, owner_epoch: 8 }) });
+    const attempt = await publishContent(proposal, receipt, { store: new FakeStore(), github, readAuthority: async () => ({ paused: true, owner_epoch: 8 }), currentState: async () => ({ ...state, paused: true, owner_epoch: 8 }) });
     expect(attempt.status).toBe('FAILED');
     expect(github.creates).toBe(0);
   });

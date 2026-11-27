@@ -138,7 +138,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, fetc
     },
     async publish(proposal, review, signal) {
       const store = new D1PublishEffectStore(env.DB, review.owner_epoch);
-      const attempt = await publishContent(proposal, review, { store, github, async currentState() {
+      const attempt = await publishContent(proposal, review, { store, github, readAuthority: () => readControl(env.DB), async currentState() {
         const guardedSourceFetch: typeof fetch = async (input, init) => {
           const before = await readControl(env.DB);
           if (before.paused || before.owner_epoch !== review.owner_epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');

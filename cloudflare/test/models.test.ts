@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BudgetedModelGateway, estimateModelInputTokenUpperBound, reserveMaximumUsd, type ModelConfig, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
+import { BudgetedModelGateway, JsonSchemaGateway, estimateModelInputTokenUpperBound, reserveMaximumUsd, type ModelConfig, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
 import { OperationsD1 } from './operations.test-support.js';
 
 const config: ModelConfig = {
@@ -21,6 +21,17 @@ class FakeModels implements ModelGateway {
 }
 
 describe('budgeted model gateway', () => {
+  it('rejects a redirect from the configured provider', async () => {
+    let requests = 0;
+    const fetcher: typeof fetch = async (_input, init) => {
+      requests += 1;
+      expect(init?.redirect).toBe('manual');
+      return new Response(null, { status: 307, headers: { location: 'https://example.test/' } });
+    };
+    await expect(new JsonSchemaGateway(config, fetcher).generate(request)).rejects.toThrow('MODEL_PROVIDER_HTTP_307');
+    expect(requests).toBe(1);
+  });
+
   it('rejects output limits that cannot be safely reserved', () => {
     expect(() => reserveMaximumUsd(config, 1_200, -1)).toThrow('MODEL_REQUEST_LIMIT');
   });

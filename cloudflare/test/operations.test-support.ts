@@ -14,24 +14,31 @@ export class OperationsD1 {
       first: async <T>() => {
         const v = args();
         if (sql.includes('FROM editorial_control')) return this.control as T;
-        if (sql.includes('WHERE id = ? AND dispatch_state')) return (this.slots.get(String(v[0]))?.dispatch_state === 'PENDING' ? this.slots.get(String(v[0])) : null) as T | null;
+        if (sql.includes('FROM schedule_claims')) {
+          const row = this.slots.get(String(v[0]));
+          return (row?.owner_epoch === v[1] && this.control.paused === 0 && this.control.owner_epoch === v[1] ? row : null) as T | null;
+        }
         if (sql.includes('WHERE attempt_id = ?')) {
           const row = [...this.reservations.values()].find((x) => x.attempt_id === v[0]);
           return (row ? { id: row.id, candidate_id: row.candidate_id, maximum_micros: row.maximum_micros, pricing_revision: row.pricing_revision } : null) as T | null;
         }
         return null;
       },
-      all: async <T>() => ({ results: [...this.slots.values()].filter((x) => x.dispatch_state === 'PENDING').slice(0, Number(args()[0])) as T[] }),
+      all: async <T>() => {
+        const [ownerEpoch, limit] = args();
+        if (this.control.paused !== 0 || this.control.owner_epoch !== ownerEpoch) return { results: [] as T[] };
+        return { results: [...this.slots.values()].filter((x) => x.dispatch_state === 'PENDING' && x.owner_epoch === ownerEpoch).slice(0, Number(limit)) as T[] };
+      },
       run: async () => {
         const v = args();
         if (sql.includes('INSERT OR IGNORE INTO schedule_claims')) {
-          const [id, local_date, slot, claimed_at] = v;
-          if (this.slots.has(String(id))) return { meta: { changes: 0 } };
-          this.slots.set(String(id), { id, local_date, slot, claimed_at, dispatch_state: 'PENDING' }); return { meta: { changes: 1 } };
+          const [id, local_date, slot, claimed_at, owner_epoch] = v;
+          if (this.slots.has(String(id)) || this.control.paused !== 0 || this.control.owner_epoch !== owner_epoch) return { meta: { changes: 0 } };
+          this.slots.set(String(id), { id, local_date, slot, claimed_at, owner_epoch, dispatch_state: 'PENDING' }); return { meta: { changes: 1 } };
         }
         if (sql.includes("UPDATE schedule_claims SET dispatch_state = 'DISPATCHED'")) {
-          const [workflow_instance_id, dispatched_at, id] = v; const row = this.slots.get(String(id));
-          if (row?.dispatch_state !== 'PENDING') return { meta: { changes: 0 } };
+          const [workflow_instance_id, dispatched_at, id, ownerEpoch] = v; const row = this.slots.get(String(id));
+          if (row?.dispatch_state !== 'PENDING' || row.owner_epoch !== ownerEpoch) return { meta: { changes: 0 } };
           Object.assign(row, { dispatch_state: 'DISPATCHED', workflow_instance_id, dispatched_at }); return { meta: { changes: 1 } };
         }
         if (sql.includes('INSERT INTO usage_reservations')) {

@@ -2,6 +2,16 @@ import { describe, expect, it, vi } from 'vitest';
 import { GitHubApiPublisher } from '../src/editorial/github.js';
 
 describe('GitHub publication read adapters', () => {
+  it('rejects a redirect from the authenticated GitHub request', async () => {
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      expect(init?.redirect).toBe('manual');
+      return new Response(null, { status: 302, headers: { location: 'https://example.test/' } });
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port', required_checks: ['build'] }, fetcher);
+    await expect(github.readDefaultBranchHead()).rejects.toThrow('GITHUB_API_HTTP_302');
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
   it.each(['public', 'internal'])('rejects a %s staging repository before reading its default branch', async (visibility) => {
     const repo = 'ssmanji89/sulemanji-editorial-fixture';
     const fetcher = vi.fn(async () => Response.json({ full_name: repo, visibility, private: false, default_branch: 'main' }));

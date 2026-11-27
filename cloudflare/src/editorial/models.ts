@@ -56,7 +56,7 @@ export class JsonSchemaGateway implements ModelGateway {
     if (request.input.length > this.config.max_input_chars || request.max_output_tokens > this.config.max_output_tokens) throw new Error('MODEL_REQUEST_LIMIT');
     const endpoint = validateConfig(this.config);
     const response = await this.fetcher(endpoint, {
-      method: 'POST', redirect: 'error',
+      method: 'POST', redirect: 'manual',
       headers: { authorization: `Bearer ${this.config.api_key}`, 'content-type': 'application/json', 'idempotency-key': request.run_id },
       body: JSON.stringify(modelRequestBody(this.config, request)),
     });

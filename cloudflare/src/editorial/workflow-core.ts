@@ -3,7 +3,7 @@ import type { ActionDecision, Candidate, CatalogItem, EditorialEnv, PublicKnowle
 import { collectSignals } from './sources.js';
 import { chooseAction } from './relevance.js';
 import { fingerprintPublicKnowledge, getPublicKnowledge } from './knowledge.js';
-import { parseEditorialPolicy, type EditorialPolicy } from './scheduler.js';
+import { parseEditorialPolicy, readScheduleClaim, scheduleWorkflowId, type EditorialPolicy } from './scheduler.js';
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
@@ -41,7 +41,7 @@ function parseJson<T>(value: string): T | null {
 }
 
 async function readCatalog(fetcher: typeof fetch): Promise<CatalogItem[]> {
-  const response = await fetcher(CONTENT_INDEX_URL, { redirect: 'error', headers: { accept: 'application/json' } });
+  const response = await fetcher(CONTENT_INDEX_URL, { redirect: 'manual', headers: { accept: 'application/json' } });
   if (!response.ok) throw new Error('CONTENT_INDEX_UNAVAILABLE');
   const text = await response.text();
   if (new TextEncoder().encode(text).byteLength > MAX_INDEX_BYTES) throw new Error('CONTENT_INDEX_TOO_LARGE');
@@ -279,13 +279,17 @@ async function collectCoveredSignals(sources: SourceConfig[], maxFetches: number
   return { signals: uniqueSignals, failures, uncovered: [...new Set(uncovered)], stale: fetcher.isStale() };
 }
 
-export async function runEditorialAdmission(params: WorkflowParams, env: EditorialWorkflowEnv, step: DurableStep,
+export async function runEditorialAdmission(params: WorkflowParams, env: EditorialWorkflowEnv, step: DurableStep, workflowInstanceId: string,
   processor?: EditorialCandidateProcessor): Promise<WorkflowResult> {
   if (!params.slot_claim_id || params.slot_claim_id.length > 128 || !/^[a-zA-Z0-9:_-]+$/.test(params.slot_claim_id)) {
     return held(params, 'Schedule slot identity is invalid.');
   }
   const control = await step.do('read-editorial-control', () => readControl(env.DB));
   if (control.paused) return held(params, 'Editorial publishing is paused.');
+  const claim = await step.do('read-editorial-slot-claim', () => readScheduleClaim(env.DB, params.slot_claim_id, control.owner_epoch));
+  if (!claim || workflowInstanceId !== scheduleWorkflowId(claim)) {
+    return held(params, 'No current schedule claim matches this Workflow instance.');
+  }
 
   const existing = await step.do('read-existing-slot-result', () => env.DB.prepare(`SELECT id, action, result_json, created_at
     FROM editorial_receipts WHERE id = ?`).bind(`slot-result:${params.slot_claim_id}`).first<ReceiptRow>());

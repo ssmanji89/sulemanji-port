@@ -27,7 +27,7 @@ export class GitHubApiPublisher implements GitHubPublisher {
   }
 
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
-    const response = await this.fetcher(new URL(path, this.origin), { ...init, redirect: 'error', headers: {
+    const response = await this.fetcher(new URL(path, this.origin), { ...init, redirect: 'manual', headers: {
       accept: 'application/vnd.github+json', authorization: `Bearer ${this.config.token}`, 'x-github-api-version': '2022-11-28',
       ...(init?.body ? { 'content-type': 'application/json' } : {}), ...init?.headers,
     } });

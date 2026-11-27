@@ -5,7 +5,7 @@ title: "Choose the Copilot code-review payer before the default changes"
 description: "Turn GitHub's Copilot code-review billing change into an explicit decision about payer, triggers, budgets, and evidence."
 permalink: /notes/copilot-code-review-billing-change-record
 published: true
-published_on: "2026-11-26"
+published_on: "2026-11-27"
 publication_family: professional-analysis
 commercial_intent: none
 disclosure_required: false
@@ -100,4 +100,4 @@ GitHub's settings and documentation can change before the deadline. Plan eligibi
 
 The durable lesson is that defaults are implementation behavior, not organizational intent. Before December 30, turn the unset state into a named decision, then verify the payer, trigger, stop condition, and evidence path as separate claims.
 
-*Public sources reviewed November 26, 2026, at approximately 9:30 a.m. America/Chicago. GitHub can change the deadline, eligibility, controls, and billing behavior. Recheck the linked GitHub announcement and documentation before acting.*
+*Public sources reviewed November 27, 2026, at approximately 11:55 a.m. America/Chicago. GitHub can change the deadline, eligibility, controls, and billing behavior. Recheck the linked GitHub announcement and documentation before acting.*

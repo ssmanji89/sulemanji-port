@@ -211,6 +211,13 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             self.verify(base_url='https://example.invalid', staging=False)
         self.assertEqual(self.calls, [])
 
+    def test_sitemap_inventory_includes_every_required_public_page(self):
+        inventory = (ROOT / '_data/discovery-pages.yml').read_text(encoding='utf-8')
+        configured_routes = set(re.findall(r'^\s*-\s+\{[^}]*route:\s*([^,}]+)', inventory, re.M))
+        configured_routes = {route.strip() for route in configured_routes}
+        required_routes = {path for path, (_, heading) in REQUIRED_ROUTE_CONTRACTS.items() if heading is not None}
+        self.assertFalse(required_routes - configured_routes, 'sitemap discovery inventory omits a required public page')
+
     def test_staging_origin_is_verified_without_reading_production_host(self):
         staging_origin = 'https://sulemanji-site-staging.preview.workers.dev'
         try:

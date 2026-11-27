@@ -57,6 +57,15 @@ class EditorialWorkflowTests(unittest.TestCase):
         ):
             self.assertIn(f"vars.{name}", self.workflow)
 
+    def test_runtime_settings_are_scoped_to_the_render_steps(self):
+        for target in ("staging", "production"):
+            step = self.workflow.split(f"      - name: Render {target} config with private D1 binding\n", 1)[1]
+            step = step.split("      - name:", 1)[0]
+            for name in ("EDITORIAL_MODEL_CONFIG_JSON", "EDITORIAL_GITHUB_CONFIG_JSON"):
+                self.assertIn(f"{name}: ${{{{ secrets.{name} }}}}", step)
+            self.assertNotIn("EDITORIAL_MODEL_API_KEY", step)
+            self.assertNotIn("EDITORIAL_GITHUB_TOKEN", step)
+
     def test_remote_migrations_precede_worker_deployments_and_logs_are_suppressed(self):
         for job_name, config in (("deploy-staging:", "wrangler.editorial-staging.runtime.jsonc"), ("deploy-production:", "wrangler.editorial.runtime.jsonc")):
             job = self.workflow.split(f"  {job_name}", 1)[1]

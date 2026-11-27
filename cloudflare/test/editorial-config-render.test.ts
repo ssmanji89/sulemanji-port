@@ -24,7 +24,23 @@ const validPolicy = {
   model_pricing_revision: 'synthetic-pricing-r1',
 };
 
-function render(policy: string | undefined, environment: 'staging' | 'production' = 'staging') {
+const modelSettings = {
+  endpoint: 'https://models.example.test/v1/chat/completions',
+  model_id: 'fixture-model',
+  pricing_revision: validPolicy.model_pricing_revision,
+  input_usd_per_million: 1,
+  output_usd_per_million: 2,
+  max_input_chars: 48_000,
+  max_output_tokens: 4_000,
+};
+const fixturePublisher = {
+  repository: 'ssmanji89/sulemanji-editorial-fixture',
+  required_checks: ['build'],
+  default_branch: 'main',
+};
+
+function render(policy: string | undefined, environment: 'staging' | 'production' = 'staging',
+  settings: Record<string, string> = {}) {
   const outputDirectory = mkdtempSync(resolve(tmpdir(), 'editorial-render-test-'));
   const result = spawnSync(process.execPath, [renderer, environment, outputDirectory], {
     cwd: cloudflareDirectory,
@@ -37,6 +53,7 @@ function render(policy: string | undefined, environment: 'staging' | 'production
       EDITORIAL_DATABASE_NAME: 'editorial-test-database',
       EDITORIAL_POLICY_REVISION: 'synthetic-knowledge-policy-r1',
       ...(policy === undefined ? {} : { EDITORIAL_POLICY_JSON: policy }),
+      ...settings,
     },
   });
   return { outputDirectory, result };
@@ -80,6 +97,50 @@ describe('editorial runtime config policy wiring', () => {
       expect(result.status).toBe(0);
       const config = JSON.parse(readFileSync(resolve(outputDirectory, outputName), 'utf8'));
       expect(config.vars.EDITORIAL_POLICY_JSON).toBe(policy);
+      expect(config.vars).not.toHaveProperty('EDITORIAL_MODEL_CONFIG_JSON');
+      expect(config.vars).not.toHaveProperty('EDITORIAL_GITHUB_CONFIG_JSON');
+    } finally {
+      rmSync(outputDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    ['staging', fixturePublisher.repository, outputName],
+    ['production', 'ssmanji89/sulemanji-port', 'wrangler.editorial.runtime.jsonc'],
+  ] as const)('renders trusted runtime settings for %s without rendering credentials', (environment, repository, output) => {
+    const publisher = { ...fixturePublisher, repository };
+    const { outputDirectory, result } = render(JSON.stringify(validPolicy), environment, {
+      EDITORIAL_MODEL_CONFIG_JSON: JSON.stringify(modelSettings),
+      EDITORIAL_GITHUB_CONFIG_JSON: JSON.stringify(publisher),
+      EDITORIAL_MODEL_API_KEY: 'synthetic-model-secret',
+      EDITORIAL_GITHUB_TOKEN: 'synthetic-github-secret',
+    });
+    try {
+      expect(result.status).toBe(0);
+      const config = JSON.parse(readFileSync(resolve(outputDirectory, output), 'utf8'));
+      expect(JSON.parse(config.vars.EDITORIAL_MODEL_CONFIG_JSON)).toEqual(modelSettings);
+      expect(JSON.parse(config.vars.EDITORIAL_GITHUB_CONFIG_JSON)).toEqual(publisher);
+      expect(JSON.stringify(config)).not.toContain('synthetic-model-secret');
+      expect(JSON.stringify(config)).not.toContain('synthetic-github-secret');
+    } finally {
+      rmSync(outputDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    ['incomplete settings', JSON.stringify(modelSettings), ''],
+    ['wrong pricing revision', JSON.stringify({ ...modelSettings, pricing_revision: 'different-price' }), JSON.stringify(fixturePublisher)],
+    ['production publisher in staging', JSON.stringify(modelSettings), JSON.stringify({ ...fixturePublisher, repository: 'ssmanji89/sulemanji-port' })],
+    ['malformed model settings', '{broken', JSON.stringify(fixturePublisher)],
+  ])('rejects %s without writing a runtime config', (_label, model, publisher) => {
+    const { outputDirectory, result } = render(JSON.stringify(validPolicy), 'staging', {
+      EDITORIAL_MODEL_CONFIG_JSON: model,
+      EDITORIAL_GITHUB_CONFIG_JSON: publisher,
+    });
+    try {
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('EDITORIAL_RUNTIME_SETTINGS_MISSING_OR_INVALID');
+      expect(() => readFileSync(resolve(outputDirectory, outputName))).toThrow();
     } finally {
       rmSync(outputDirectory, { recursive: true, force: true });
     }

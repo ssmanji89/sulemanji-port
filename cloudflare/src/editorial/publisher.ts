@@ -10,9 +10,13 @@ export interface GitHubPublisher {
   createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState>;
   mergePullRequest(number: number, expectedHead: string): Promise<{ merge_commit_sha: string }>;
 }
+export type PublishEffect = {
+  effect_id: string; branch: string; owner_epoch: number; content_digest: string;
+  pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string;
+};
 export interface PublishEffectStore {
   ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string): Promise<void>;
-  read(candidateId: string): Promise<{ pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string } | null>;
+  read(candidateId: string): Promise<PublishEffect | null>;
   record(candidateId: string, patch: { pull_request?: number; source_commit?: string; merge_commit?: string; state: string }): Promise<void>;
 }
 export type PublishDependencies = { store: PublishEffectStore; github: GitHubPublisher; currentState(): Promise<PublicationState>; now?: () => Date };
@@ -62,9 +66,17 @@ function attemptFor(proposal: ContentProposal, state: PublicationState, branch: 
 
 export async function publishContent(proposal: ContentProposal, receipt: ReviewReceipt, deps: PublishDependencies): Promise<PublishAttempt> {
   const state = await deps.currentState();
-  const decision = await canPublish(proposal, receipt, state);
   const branch = `editorial/candidate-${proposal.candidate_id.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 80)}`;
   const attemptId = `publication:${proposal.candidate_id}`;
+  const recorded = await deps.store.read(proposal.candidate_id);
+  if (recorded?.state === 'MERGED' && recorded.pull_request && recorded.merge_commit &&
+      recorded.effect_id === attemptId && recorded.branch === branch && recorded.owner_epoch === state.owner_epoch &&
+      recorded.content_digest === proposal.content_digest) {
+    // The successful merge moved the base itself. Recover the recorded effect without another write.
+    const replay = await canPublish(proposal, receipt, { ...state, base_commit: proposal.base_commit });
+    if (replay.allowed) return attemptFor(proposal, state, branch, recorded.pull_request, recorded.merge_commit, 'SOURCE_PUBLISHED');
+  }
+  const decision = await canPublish(proposal, receipt, state);
   if (!decision.allowed) return attemptFor(proposal, state, branch, null, null, 'FAILED');
   await deps.store.ensureIntent(proposal.candidate_id, attemptId, branch, state.owner_epoch, proposal.content_digest);
   const effect = await deps.store.read(proposal.candidate_id);

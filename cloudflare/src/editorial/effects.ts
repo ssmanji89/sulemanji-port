@@ -1,4 +1,4 @@
-import type { PublishEffectStore } from './publisher.js';
+import type { PublishEffect, PublishEffectStore } from './publisher.js';
 
 export class D1PublishEffectStore implements PublishEffectStore {
   constructor(private readonly db: D1Database, private readonly ownerEpoch: number) {}
@@ -20,8 +20,8 @@ export class D1PublishEffectStore implements PublishEffectStore {
   }
 
   async read(candidateId: string) {
-    return this.db.prepare('SELECT pull_request, source_commit, merge_commit, state FROM publication_effects WHERE candidate_id = ?')
-      .bind(candidateId).first<{ pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string }>();
+    return this.db.prepare(`SELECT effect_id, branch, owner_epoch, content_digest, pull_request, source_commit, merge_commit, state
+      FROM publication_effects WHERE candidate_id = ?`).bind(candidateId).first<PublishEffect>();
   }
 
   async record(candidateId: string, patch: { pull_request?: number; source_commit?: string; merge_commit?: string; state: string }): Promise<void> {

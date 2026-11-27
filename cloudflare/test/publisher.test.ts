@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canPublish, publishContent, verifyPublicationDetailed, type GitHubPublisher, type PullRequestState, type PublishEffectStore } from '../src/editorial/publisher.js';
+import { canPublish, publishContent, verifyPublicationDetailed, type GitHubPublisher, type PullRequestState, type PublishEffect, type PublishEffectStore } from '../src/editorial/publisher.js';
 import type { ContentProposal, PublicationState, PublishAttempt, ReviewReceipt } from '../src/editorial/contracts.js';
 
 async function sha(value: string): Promise<string> {
@@ -28,7 +28,7 @@ class FakeStore implements PublishEffectStore {
     if (this.value && this.value.content_digest !== contentDigest) throw new Error('conflicting intent');
     this.value ??= { candidate_id: candidateId, effect_id: effectId, branch, owner_epoch: ownerEpoch, content_digest: contentDigest, state: 'INTENT' };
   }
-  async read() { return this.value as { pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string } | null; }
+  async read() { return this.value as PublishEffect | null; }
   async record(_candidateId: string, patch: Record<string, unknown>) { Object.assign(this.value ?? {}, patch); }
 }
 class FakeGitHub implements GitHubPublisher {
@@ -78,6 +78,16 @@ describe('guarded source publication effects', () => {
     expect(github.creates).toBe(1);
     expect(github.merges).toBe(1);
     expect(store.value).toMatchObject({ state: 'MERGED', merge_commit: 'e'.repeat(40) });
+    const replay = await publishContent(proposal, receipt, {
+      store, github, currentState: async () => ({ ...state, base_commit: 'e'.repeat(40) }),
+    });
+    expect(replay).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12, source_commit: 'e'.repeat(40) });
+    expect(github.merges).toBe(1);
+    const paused = await publishContent(proposal, receipt, {
+      store, github, currentState: async () => ({ ...state, base_commit: 'e'.repeat(40), paused: true }),
+    });
+    expect(paused.status).toBe('FAILED');
+    expect(github.merges).toBe(1);
   });
 
   it('does not adopt or merge a preexisting branch PR without a matching durable source head', async () => {

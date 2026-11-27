@@ -45,12 +45,16 @@ describe('independent content preparation and review', () => {
     const file = initial.files[0];
     const target = { id: 'existing', title: output.title, url: new URL(initial.public_urls[0], 'https://www.sulemanji.com').href, topics: output.topics };
     const refresh = { ...candidate, action: 'REFRESH' as const, target_id: target.id };
+    const ordinaryYaml = file.content.replace(/^title: .*$/m, `title: '${target.title}'`)
+      .replace(/^permalink: .*$/m, `permalink: ${new URL(target.url).pathname}`);
     const existing = { ...context, catalog: [...context.catalog, target],
-      existing_paths: [file.path], existing_files: { [file.path]: file.content } };
+      existing_paths: [file.path], existing_files: { [file.path]: ordinaryYaml } };
     const result = await prepareContent(refresh, existing, new FakeModels());
     expect(result.files[0]).toMatchObject({ path: file.path, operation: 'update' });
     expect(result.public_urls).toEqual([target.url]);
     expect(result.files[0].content.match(/^published_on: .*$/m)?.[0]).toBe(file.content.match(/^published_on: .*$/m)?.[0]);
+    await expect(reviseContent(result, refresh, existing, [{ code: 'CLARITY', detail: 'Explain the source.' }],
+      new FakeModels(), 'author:ordinary-yaml')).resolves.toMatchObject({ public_urls: [target.url] });
     const noSource = new FakeModels();
     await expect(prepareContent(refresh, { ...existing, existing_files: {} }, noSource)).rejects.toThrow('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
     expect(noSource.calls).toHaveLength(0);

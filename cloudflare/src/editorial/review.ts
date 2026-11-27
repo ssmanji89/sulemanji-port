@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import * as parse5 from 'parse5';
+import { isMap, parseDocument } from 'yaml';
 import type { Candidate, ContentProposal, FileChange, PreparationContext, PublicSource, ReviewContext, ReviewReceipt } from './contracts.js';
 import type { ModelGateway, ModelRequest } from './models.js';
 import { sourceSetDigest } from './sources.js';
@@ -113,29 +114,14 @@ async function outputSchema(candidate: Candidate, context: PreparationContext, m
   return (await models.generate(request)).output;
 }
 
-function frontMatterParts(content: string): { header: string; body: string } | null {
+function frontMatterParts(content: string): { header: string; metadata: Record<string, unknown> } | null {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  return match ? { header: match[1], body: match[2] } : null;
-}
-
-function frontMatterValue<T>(header: string, key: string): T | null {
-  const line = header.split(/\r?\n/).find((item) => item.startsWith(`${key}:`));
-  if (!line) return null;
-  const serialized = line.slice(key.length + 1).trim();
-  try { return JSON.parse(serialized) as T; } catch { return null; }
-}
-
-function frontMatterScalar(header: string, key: string): string | null {
-  const line = header.split(/\r?\n/).find((item) => item.startsWith(`${key}:`));
-  if (!line) return null;
-  const serialized = line.slice(key.length + 1).trim();
-  if (!serialized) return null;
+  if (!match || match[1].length > 16_384) return null;
   try {
-    const parsed: unknown = JSON.parse(serialized);
-    return typeof parsed === 'string' ? parsed : null;
-  } catch {
-    return /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,180}$/.test(serialized) ? serialized : null;
-  }
+    const document = parseDocument(match[1], { schema: 'core', strict: true, uniqueKeys: true });
+    if (document.errors.length || document.warnings.length || !isMap(document.contents)) return null;
+    return { header: match[1], metadata: document.toJS({ maxAliasCount: 0 }) as Record<string, unknown> };
+  } catch { return null; }
 }
 
 function canonicalArticleUrl(permalink: string): string | null {
@@ -162,9 +148,9 @@ export async function prepareContent(candidate: Candidate, context: PreparationC
     throw new Error('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
   }
   const original = previous ? frontMatterParts(previous) : null;
-  if (target && (!original || frontMatterValue<number>(original.header, 'writing_schema') !== 2 ||
-      frontMatterValue<string>(original.header, 'title') !== target.title ||
-      canonicalArticleUrl(frontMatterScalar(original.header, 'permalink') ?? '') !== canonicalArticleUrl(target.url))) {
+  if (target && (!original || original.metadata.writing_schema !== 2 || original.metadata.title !== target.title ||
+      typeof original.metadata.permalink !== 'string' ||
+      canonicalArticleUrl(original.metadata.permalink) !== canonicalArticleUrl(target.url))) {
     throw new Error('EXISTING_ARTICLE_FRONTMATTER_INVALID');
   }
   const authorRunId = stableRunId;
@@ -215,16 +201,16 @@ export async function reviseContent(previous: ContentProposal, candidate: Candid
   if (!ARTICLE_PATH.test(file.path) || file.encoding !== 'utf-8' || !['create', 'update'].includes(file.operation) || await sha256(file.content) !== file.content_sha256) throw new Error('REVISION_FILE_INVALID');
   if (await sha256(`${file.path}\n${file.content_sha256}`) !== previous.content_digest) throw new Error('REVISION_PROPOSAL_DIGEST_MISMATCH');
   const parts = frontMatterParts(file.content);
-  const permalink = parts ? frontMatterScalar(parts.header, 'permalink') : null;
-  const canonicalUrl = permalink ? canonicalArticleUrl(permalink) : null;
+  const permalink = parts?.metadata.permalink;
+  const canonicalUrl = typeof permalink === 'string' ? canonicalArticleUrl(permalink) : null;
   const proposalUrl = previous.public_urls[0].startsWith('/') ? canonicalArticleUrl(previous.public_urls[0]) : previous.public_urls[0];
-  const publishedOn = parts ? frontMatterScalar(parts.header, 'published_on') : null;
-  const publishedDateIsValid = Boolean(publishedOn && /^\d{4}-\d{2}-\d{2}$/.test(publishedOn) &&
+  const publishedOn = parts?.metadata.published_on;
+  const publishedDateIsValid = Boolean(typeof publishedOn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(publishedOn) &&
     !Number.isNaN(Date.parse(`${publishedOn}T00:00:00.000Z`)) && new Date(`${publishedOn}T00:00:00.000Z`).toISOString().slice(0, 10) === publishedOn);
   const existingItem = file.operation === 'update' ? context.catalog.find((item) => item.url === previous.public_urls[0]) : undefined;
-  const articleTopics = parts ? (frontMatterValue<string[]>(parts.header, 'topics') ?? existingItem?.topics ?? null) : null;
-  if (!parts || frontMatterValue<number>(parts.header, 'writing_schema') !== 2 || frontMatterValue<string>(parts.header, 'title') !== previous.expected_content[0].title ||
-      !canonicalUrl || canonicalUrl !== proposalUrl || !publishedDateIsValid || frontMatterValue<boolean>(parts.header, 'published') !== true ||
+  const articleTopics = parts?.metadata.topics ?? existingItem?.topics;
+  if (!parts || parts.metadata.writing_schema !== 2 || parts.metadata.title !== previous.expected_content[0].title ||
+      !canonicalUrl || canonicalUrl !== proposalUrl || !publishedDateIsValid || parts.metadata.published !== true ||
       (file.operation === 'create' && candidate.action !== 'CREATE' && candidate.action !== 'CONNECT') ||
       (file.operation === 'update' && (candidate.action !== 'REFRESH' || !existingItem || candidate.target_id !== existingItem.id || !context.existing_paths?.includes(file.path)))) throw new Error('REVISION_FRONTMATTER_INVALID');
 
@@ -235,10 +221,10 @@ export async function reviseContent(previous: ContentProposal, candidate: Candid
   const allowedTopics = new Set(context.catalog.flatMap((item) => item.topics));
   if (article.topics.some((topic) => !allowedTopics.has(topic))) throw new Error('MODEL_TOPIC_NOT_IN_CATALOG');
   if (article.commercial_intent !== 'none') throw new Error('ARTICLE_REQUIRES_NONCOMMERCIAL_INTENT');
-  if (article.publication_family !== frontMatterScalar(parts.header, 'publication_family') ||
-      article.commercial_intent !== frontMatterScalar(parts.header, 'commercial_intent') ||
-      article.time_horizon !== frontMatterScalar(parts.header, 'time_horizon') ||
-      article.reader !== frontMatterScalar(parts.header, 'reader') || !articleTopics ||
+  if (article.publication_family !== parts.metadata.publication_family ||
+      article.commercial_intent !== parts.metadata.commercial_intent ||
+      article.time_horizon !== parts.metadata.time_horizon ||
+      article.reader !== parts.metadata.reader || !Array.isArray(articleTopics) ||
       JSON.stringify(article.topics) !== JSON.stringify(articleTopics)) throw new Error('MODEL_REVISION_METADATA_REJECTED');
   if (!safeArticleLinks(article.body, context.sources, context.existing_paths ?? [], [file.path])) throw new Error('ARTICLE_PATH_OR_CITATION_REJECTED');
 

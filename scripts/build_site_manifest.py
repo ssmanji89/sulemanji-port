@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Any
 
 EXCLUDED = {'release.json', 'release-manifest.json', '_headers', '_redirects', '.assetsignore'}
+PUBLIC_ORIGIN = 'https://www.sulemanji.com'
 PUBLIC_PAGE_FILES = {
     '/': 'index.html',
     '/explore/': 'explore/index.html',
@@ -70,6 +71,41 @@ class _VisibleContainerText(HTMLParser):
             self.parts.append(data)
 
 
+class _PageMetadata(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.title_depth = 0
+        self.title_parts: list[str] = []
+        self.values: dict[str, str] = {}
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if tag == 'title':
+            self.title_depth += 1
+        elif tag == 'link' and 'canonical' in (values.get('rel') or '').split():
+            self.values['canonical'] = values.get('href') or ''
+        elif tag == 'meta':
+            key = (values.get('property') or values.get('name') or '').lower()
+            if key in {'description', 'og:title'}:
+                self.values[key] = values.get('content') or ''
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == 'title' and self.title_depth:
+            self.title_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self.title_depth:
+            self.title_parts.append(data)
+
+    def normalized_values(self) -> dict[str, str]:
+        return {
+            'canonical': self.values.get('canonical', ''),
+            'title': ' '.join(' '.join(self.title_parts).split()),
+            'description': self.values.get('description', ''),
+            'og_title': self.values.get('og:title', ''),
+        }
+
+
 def _visible_content_sha256(rendered_html: str, container_tag: str,
                             data_attribute: str | None = None) -> str:
     parser = _VisibleContainerText(container_tag, data_attribute)
@@ -95,11 +131,19 @@ def _page_identity(site_root: Path) -> list[dict[str, str]]:
         html_path = site_root / relative_path
         if not html_path.is_file():
             raise ValueError(f'missing rendered public page for {url}: {relative_path}')
+        rendered = html_path.read_text(encoding='utf-8')
+        metadata = _PageMetadata()
+        metadata.feed(rendered)
+        metadata.close()
+        page_metadata = metadata.normalized_values()
+        if page_metadata['canonical'] != PUBLIC_ORIGIN + url or not all(
+                page_metadata[key] for key in ('title', 'description', 'og_title')):
+            raise ValueError(f'{html_path}: public page metadata is incomplete or noncanonical')
         try:
-            content_sha256 = page_content_sha256(html_path.read_text(encoding='utf-8'))
+            content_sha256 = page_content_sha256(rendered)
         except (OSError, ValueError) as error:
             raise ValueError(f'{html_path}: {error}') from error
-        pages.append({'url': url, 'content_sha256': content_sha256})
+        pages.append({'url': url, **page_metadata, 'content_sha256': content_sha256})
     return pages
 
 

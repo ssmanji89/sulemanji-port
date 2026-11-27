@@ -44,6 +44,10 @@ def site_manifest(source_commit=COMMIT, articles=None):
         body = ''.join(f'<a href="{article["url"]}">Article</a>' for article in articles) if path == '/writing' else f'<p>Public section for {path}.</p>'
         pages.append({
             'url': path,
+            'canonical': f'{CANONICAL_ORIGIN}{path}',
+            'title': f'{heading} | Suleman Manji',
+            'description': 'A useful page description.',
+            'og_title': heading,
             'content_sha256': page_content_sha256(f'<main><h1>{heading}</h1>{body}</main>'),
         })
     return {
@@ -59,7 +63,8 @@ def site_manifest(source_commit=COMMIT, articles=None):
 
 class LiveCloudflareVerificationTests(unittest.TestCase):
     def setUp(self):
-        self.public_manifest = site_manifest()
+        self.expected_manifest = site_manifest()
+        self.public_manifest = json.loads(json.dumps(self.expected_manifest))
         self.overrides = {}
         self.calls = []
 
@@ -109,15 +114,14 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
 
     def page_html(self, path, body_content=''):
         description = '' if self.overrides.get('missing_page_description') == path else 'A useful page description.'
-        heading = REQUIRED_ROUTE_CONTRACTS[path][1] or 'page'
-        if self.overrides.get('wrong_page_heading') == path:
-            heading = 'wrong content'
+        expected_heading = REQUIRED_ROUTE_CONTRACTS[path][1] or 'page'
+        heading = 'wrong content' if self.overrides.get('wrong_page_heading') == path else expected_heading
         if path != '/writing':
             body_content = '' if self.overrides.get('alter_page_content') == path else f'<p>Public section for {path}.</p>'
-        return (f'<html><head><title>{heading} | Suleman Manji</title>'
+        return (f'<html><head><title>{expected_heading} | Suleman Manji</title>'
                 f'<link rel="canonical" href="{CANONICAL_ORIGIN}{path}">'
                 f'<meta name="description" content="{description}">'
-                f'<meta property="og:title" content="{heading}"></head>'
+                f'<meta property="og:title" content="{expected_heading}"></head>'
                 f'<body><main><h1>{heading}</h1>{body_content}</main></body></html>')
 
     def article_html(self, article):
@@ -143,13 +147,12 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             content_type = 'text/plain'
         return {**self.release_headers(), 'content-type': content_type}
 
-    def verify(self, public_manifest=None, base_url='https://www.sulemanji.com', expected_digest=DIGEST):
+    def verify(self, expected_manifest=None, base_url='https://www.sulemanji.com'):
         return verify_live_release(
             base_url=base_url,
             expected_commit=COMMIT,
-            expected_digest=expected_digest,
+            expected_manifest=expected_manifest or self.expected_manifest,
             fetcher=self.fetch,
-            public_manifest=public_manifest,
         )
 
     def test_wrong_origin_fails(self):
@@ -162,6 +165,11 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         with self.assertRaisesRegex(LiveReleaseError, 'source commit'):
             self.verify()
 
+    def test_modified_live_manifest_is_rejected_even_when_digest_field_is_unchanged(self):
+        self.public_manifest['pages'][0]['content_sha256'] = '0' * 64
+        with self.assertRaisesRegex(LiveReleaseError, 'manifest does not match the qualified artifact'):
+            self.verify()
+
     def test_build_timestamp_must_match_static_identity_headers(self):
         self.overrides['wrong_built_at'] = True
         with self.assertRaisesRegex(LiveReleaseError, 'build timestamp header'):
@@ -169,13 +177,15 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
 
     def test_missing_writing_entry_fails(self):
         self.overrides['missing_writing_entry'] = True
-        writing_page = next(page for page in self.public_manifest['pages'] if page['url'] == '/writing')
-        writing_page['content_sha256'] = page_content_sha256(self.page_html('/writing'))
+        for manifest in (self.expected_manifest, self.public_manifest):
+            writing_page = next(page for page in manifest['pages'] if page['url'] == '/writing')
+            writing_page['content_sha256'] = page_content_sha256(self.page_html('/writing'))
         with self.assertRaisesRegex(LiveReleaseError, 'Writing index'):
             self.verify()
 
     def test_legacy_article_remains_discoverable_without_an_invented_date(self):
-        self.public_manifest = site_manifest(articles=[ARTICLE, LEGACY_ARTICLE])
+        self.expected_manifest = site_manifest(articles=[ARTICLE, LEGACY_ARTICLE])
+        self.public_manifest = json.loads(json.dumps(self.expected_manifest))
         receipt = self.verify()
         self.assertEqual(receipt['article_count'], 2)
         self.assertIn('https://www.sulemanji.com/notes/agent-safety', self.calls)
@@ -189,9 +199,11 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         receipt = self.verify()
         self.assertEqual(receipt['checked_response_count'], 19)
 
-    def test_invalid_expected_digest_fails_before_live_requests(self):
-        with self.assertRaisesRegex(LiveReleaseError, 'expected asset digest'):
-            self.verify(expected_digest='not-a-digest')
+    def test_invalid_artifact_digest_fails_before_live_requests(self):
+        invalid_manifest = json.loads(json.dumps(self.expected_manifest))
+        invalid_manifest['asset_digest'] = 'not-a-digest'
+        with self.assertRaisesRegex(LiveReleaseError, 'qualified artifact asset digest'):
+            self.verify(expected_manifest=invalid_manifest)
         self.assertEqual(self.calls, [])
 
     def test_required_route_mime_is_verified(self):
@@ -211,7 +223,7 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
 
     def test_required_route_checks_page_metadata(self):
         self.overrides['missing_page_description'] = '/contact/'
-        with self.assertRaisesRegex(LiveReleaseError, 'page metadata is incomplete for /contact/'):
+        with self.assertRaisesRegex(LiveReleaseError, 'page metadata does not match the qualified artifact for /contact/'):
             self.verify()
 
     def test_writing_slash_alias_redirects_to_canonical_path(self):
@@ -240,7 +252,8 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
 
     def test_feed_must_include_older_dated_articles(self):
         older = {'url': '/notes/older-article', 'published_on': '2026-11-01', 'content_sha256': ARTICLE_DIGEST}
-        self.public_manifest = site_manifest(articles=[older, ARTICLE])
+        self.expected_manifest = site_manifest(articles=[older, ARTICLE])
+        self.public_manifest = json.loads(json.dumps(self.expected_manifest))
         with self.assertRaisesRegex(LiveReleaseError, 'feed.xml is missing dated article /notes/older-article'):
             self.verify()
 
@@ -272,11 +285,12 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             facts = PageIdentity()
             facts.feed(output.read_text(encoding='utf-8'))
             self.assertEqual(facts.canonical, CANONICAL_ORIGIN + path, path)
-            self.assertTrue(facts.title, path)
-            self.assertTrue(facts.meta.get('description'), path)
-            self.assertTrue(facts.meta.get('og:title'), path)
-            self.assertIn(expected_heading, facts.headings, path)
             page = next(page for page in manifest['pages'] if page['url'] == path)
+            self.assertEqual(facts.canonical, page['canonical'], path)
+            self.assertEqual(facts.title, page['title'], path)
+            self.assertEqual(facts.meta.get('description'), page['description'], path)
+            self.assertEqual(facts.meta.get('og:title'), page['og_title'], path)
+            self.assertIn(expected_heading, facts.headings, path)
             self.assertEqual(page_content_sha256(output.read_text(encoding='utf-8')), page['content_sha256'], path)
 
         writing = PageIdentity()

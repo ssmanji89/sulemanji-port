@@ -14,6 +14,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from scripts.build_site_manifest import article_content_sha256, page_content_sha256
+from scripts.site_release import ReleaseError, verify_artifact
 
 
 CANONICAL_ORIGIN = 'https://www.sulemanji.com'
@@ -192,60 +193,65 @@ def _fetch(fetcher, url: str, expected_status: int, label: str) -> LiveResponse:
     return response
 
 
-def verify_live_release(base_url: str, expected_commit: str, expected_digest: str,
-                        fetcher=fetch_live, public_manifest: dict | None = None) -> dict:
-    """Verify the public site against the source revision and digest of a built artifact."""
+def verify_live_release(base_url: str, expected_commit: str, expected_manifest: dict,
+                        fetcher=fetch_live) -> dict:
+    """Verify the public site against a locally validated build artifact manifest."""
     parsed_base = urlparse(base_url)
     if (parsed_base.scheme != 'https' or parsed_base.netloc != 'www.sulemanji.com'
             or parsed_base.path not in ('', '/') or parsed_base.query or parsed_base.fragment):
         raise LiveReleaseError(f'base URL must be the canonical origin {CANONICAL_ORIGIN}')
     if not COMMIT_RE.fullmatch(expected_commit):
         raise LiveReleaseError('expected source commit is invalid')
-    if not DIGEST_RE.fullmatch(expected_digest):
-        raise LiveReleaseError('expected asset digest is invalid')
-    digest = expected_digest
-
-    manifest_response = _fetch(fetcher, base_url.rstrip('/') + '/release.json', 200, 'release manifest')
-    _check_content_type(manifest_response, 'application/json', '/release.json')
-    if public_manifest is None:
-        try:
-            public_manifest = json.loads(manifest_response.body)
-        except (TypeError, json.JSONDecodeError) as error:
-            raise LiveReleaseError('live release manifest is not valid JSON') from error
-    if not isinstance(public_manifest, dict) or public_manifest.get('schema_version') != 1:
-        raise LiveReleaseError('live release manifest schema is invalid')
-    if public_manifest.get('source_commit') != expected_commit:
-        raise LiveReleaseError('live release source commit does not match expected commit')
-    if public_manifest.get('asset_digest') != digest:
-        raise LiveReleaseError('live release asset digest does not match expected artifact')
-    built_at = public_manifest.get('built_at')
+    if not isinstance(expected_manifest, dict) or expected_manifest.get('schema_version') != 1:
+        raise LiveReleaseError('qualified artifact manifest is invalid')
+    if expected_manifest.get('source_commit') != expected_commit:
+        raise LiveReleaseError('qualified artifact source commit does not match expected commit')
+    digest = expected_manifest.get('asset_digest')
+    if not isinstance(digest, str) or not DIGEST_RE.fullmatch(digest):
+        raise LiveReleaseError('qualified artifact asset digest is invalid')
+    built_at = expected_manifest.get('built_at')
     if not isinstance(built_at, str) or not BUILT_AT_RE.fullmatch(built_at):
-        raise LiveReleaseError('live release build timestamp is invalid')
+        raise LiveReleaseError('qualified artifact build timestamp is invalid')
     try:
         parsed_built_at = datetime.fromisoformat(built_at.replace('Z', '+00:00'))
     except ValueError as error:
-        raise LiveReleaseError('live release build timestamp is invalid') from error
+        raise LiveReleaseError('qualified artifact build timestamp is invalid') from error
     if parsed_built_at.isoformat(timespec='seconds').replace('+00:00', 'Z') != built_at:
-        raise LiveReleaseError('live release build timestamp is not canonical UTC')
+        raise LiveReleaseError('qualified artifact build timestamp is not canonical UTC')
+
+    manifest_response = _fetch(fetcher, base_url.rstrip('/') + '/release.json', 200, 'release manifest')
+    _check_content_type(manifest_response, 'application/json', '/release.json')
+    try:
+        live_manifest = json.loads(manifest_response.body)
+    except (TypeError, json.JSONDecodeError) as error:
+        raise LiveReleaseError('live release manifest is not valid JSON') from error
+    if not isinstance(live_manifest, dict) or live_manifest.get('schema_version') != 1:
+        raise LiveReleaseError('live release manifest schema is invalid')
+    if live_manifest.get('source_commit') != expected_commit:
+        raise LiveReleaseError('live release source commit does not match expected commit')
+    if live_manifest != expected_manifest:
+        raise LiveReleaseError('live release manifest does not match the qualified artifact')
     _check_identity_headers(manifest_response, expected_commit, digest, built_at, '/release.json')
-    articles = public_manifest.get('articles')
-    if not isinstance(public_manifest.get('files'), dict) or not public_manifest['files']:
+    articles = expected_manifest.get('articles')
+    if not isinstance(expected_manifest.get('files'), dict) or not expected_manifest['files']:
         raise LiveReleaseError('live release manifest has no asset inventory')
     if not isinstance(articles, list) or not articles:
         raise LiveReleaseError('live release manifest has no preserved articles')
     expected_page_paths = {path for path, (_, heading) in REQUIRED_ROUTE_CONTRACTS.items() if heading is not None}
-    page_rows = public_manifest.get('pages')
+    page_rows = expected_manifest.get('pages')
     if not isinstance(page_rows, list) or len(page_rows) != len(expected_page_paths):
         raise LiveReleaseError('live release manifest has an invalid key-page inventory')
     pages_by_path = {}
     for page in page_rows:
-        if (not isinstance(page, dict) or set(page) != {'url', 'content_sha256'}
+        if (not isinstance(page, dict)
+                or set(page) != {'url', 'canonical', 'title', 'description', 'og_title', 'content_sha256'}
                 or not isinstance(page.get('url'), str)
+                or not all(isinstance(page.get(key), str) and page[key] for key in ('canonical', 'title', 'description', 'og_title'))
                 or not isinstance(page.get('content_sha256'), str)
                 or not re.fullmatch(r'[0-9a-f]{64}', page['content_sha256'])
                 or page['url'] in pages_by_path):
             raise LiveReleaseError('live release manifest has an invalid key-page identity')
-        pages_by_path[page['url']] = page['content_sha256']
+        pages_by_path[page['url']] = page
     if set(pages_by_path) != expected_page_paths:
         raise LiveReleaseError('live release manifest key-page routes do not match the required routes')
 
@@ -262,17 +268,20 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
         if expected_heading is not None:
             facts = PageIdentity()
             facts.feed(response.body)
-            if facts.canonical != CANONICAL_ORIGIN + path:
+            expected_page = pages_by_path[path]
+            if facts.canonical != expected_page['canonical'] or facts.canonical != CANONICAL_ORIGIN + path:
                 raise LiveReleaseError(f'page canonical URL changed for {path}')
-            if not facts.title or not facts.meta.get('description') or not facts.meta.get('og:title'):
-                raise LiveReleaseError(f'page metadata is incomplete for {path}')
+            if (facts.title != expected_page['title']
+                    or facts.meta.get('description') != expected_page['description']
+                    or facts.meta.get('og:title') != expected_page['og_title']):
+                raise LiveReleaseError(f'page metadata does not match the qualified artifact for {path}')
             if expected_heading not in facts.headings:
                 raise LiveReleaseError(f'expected page content is missing on {path}')
             try:
                 actual_page_sha256 = page_content_sha256(response.body)
             except ValueError as error:
                 raise LiveReleaseError(f'page visible content is missing on {path}') from error
-            if actual_page_sha256 != pages_by_path[path]:
+            if actual_page_sha256 != expected_page['content_sha256']:
                 raise LiveReleaseError(f'page visible body changed on {path}')
         route_count += 1
         if path == '/writing':
@@ -380,11 +389,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--base-url', required=True)
     parser.add_argument('--expected-commit', required=True)
-    parser.add_argument('--expected-digest', required=True, help='asset digest from the locally built release manifest')
+    parser.add_argument('--manifest', type=Path, required=True, help='release.json from the exact built artifact')
     args = parser.parse_args()
     try:
-        receipt = verify_live_release(args.base_url, args.expected_commit, args.expected_digest)
-    except LiveReleaseError as error:
+        manifest_path = args.manifest.resolve()
+        expected_manifest = verify_artifact(manifest_path.parent, args.expected_commit, args.expected_commit)
+        receipt = verify_live_release(args.base_url, args.expected_commit, expected_manifest)
+    except (LiveReleaseError, ReleaseError, OSError, ValueError, json.JSONDecodeError) as error:
         parser.error(str(error))
     print('PASS live public-site checks: ' + json.dumps(receipt, sort_keys=True))
     return 0

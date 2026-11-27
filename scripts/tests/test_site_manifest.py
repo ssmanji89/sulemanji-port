@@ -15,7 +15,11 @@ class SiteManifestTests(unittest.TestCase):
             page = self.root / relative_path
             page.parent.mkdir(parents=True, exist_ok=True)
             page.write_text(
-                f'<html><main><h1>{route}</h1><p>Page content for {route}.</p></main></html>', encoding='utf-8')
+                f'<html><head><title>{route} | Suleman Manji</title>'
+                f'<link rel="canonical" href="https://www.sulemanji.com{route}">'
+                f'<meta name="description" content="Description for {route}">'
+                f'<meta property="og:title" content="{route}"></head>'
+                f'<main><h1>{route}</h1><p>Page content for {route}.</p></main></html>', encoding='utf-8')
         (self.root / 'writing').mkdir()
         (self.root / 'assets').mkdir()
         (self.root / 'writing' / 'notes.html').write_text(
@@ -71,7 +75,10 @@ class SiteManifestTests(unittest.TestCase):
         first = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')
         self.assertEqual({page['url'] for page in first['pages']}, set(PUBLIC_PAGE_FILES))
         expected = page_content_sha256((self.root / PUBLIC_PAGE_FILES['/']).read_text(encoding='utf-8'))
-        self.assertEqual(next(page['content_sha256'] for page in first['pages'] if page['url'] == '/'), expected)
+        page = next(page for page in first['pages'] if page['url'] == '/')
+        self.assertEqual(page['content_sha256'], expected)
+        self.assertEqual(page['title'], '/ | Suleman Manji')
+        self.assertEqual(page['canonical'], 'https://www.sulemanji.com/')
 
     def test_asset_digest_binds_article_content_identity(self):
         first = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')

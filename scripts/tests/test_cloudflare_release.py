@@ -19,7 +19,11 @@ def add_public_pages(root):
         page = root / relative_path
         page.parent.mkdir(parents=True, exist_ok=True)
         page.write_text(
-            f'<html><main><h1>{route}</h1><p>Page content for {route}.</p></main></html>', encoding='utf-8')
+            f'<html><head><title>{route} | Suleman Manji</title>'
+            f'<link rel="canonical" href="https://www.sulemanji.com{route}">'
+            f'<meta name="description" content="Description for {route}">'
+            f'<meta property="og:title" content="{route}"></head>'
+            f'<main><h1>{route}</h1><p>Page content for {route}.</p></main></html>', encoding='utf-8')
 
 
 def add_article(root):
@@ -128,8 +132,11 @@ class CloudflareReleaseTests(unittest.TestCase):
 
     def test_public_manifest_readback_uses_curl_transport(self):
         deploy = (ROOT / 'scripts' / 'deploy_site.sh').read_text(encoding='utf-8')
-        self.assertIn('fetch_public_manifest', deploy)
-        self.assertNotIn('urllib.request.urlopen', deploy)
+        live_verifier = (ROOT / 'scripts' / 'verify_cloudflare_live.py').read_text(encoding='utf-8')
+        self.assertIn('verify_cloudflare_live.py', deploy)
+        self.assertIn('--manifest "$ARTIFACT/release.json"', deploy)
+        self.assertIn("['curl', '--silent', '--show-error'", live_verifier)
+        self.assertNotIn('urllib.request.urlopen', live_verifier)
 
     def test_public_manifest_fetch_uses_cloudflare_accepted_curl_user_agent(self):
         payload = b'{"source_commit":"a"}'

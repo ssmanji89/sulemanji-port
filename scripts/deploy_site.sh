@@ -90,18 +90,18 @@ check_status /work/market-systems/ 200
 check_status /notes/late-october-skywatching-binoculars-telescope 200
 check_status /workshop-intake/ 410
 check_status /notes/does-not-exist 404
-PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 - "$TARGET_HOST" "$SOURCE_COMMIT" "$ARTIFACT/release.json" "$RECEIPT" <<'PY'
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/scripts/verify_cloudflare_live.py" \
+  --base-url "$TARGET_HOST" \
+  --expected-commit "$SOURCE_COMMIT" \
+  --manifest "$ARTIFACT/release.json"
+python3 - "$RECEIPT" <<'PY'
 import json,sys
 from pathlib import Path
-from scripts.site_release import fetch_public_manifest
-host,source,manifest_path,receipt_path=sys.argv[1:]
-manifest=json.loads(Path(manifest_path).read_text())
-live=fetch_public_manifest(host+'/release.json')
-if live.get('source_commit')!=source or live.get('asset_digest')!=manifest['asset_digest']: raise SystemExit('live artifact manifest mismatch')
+receipt_path=sys.argv[1]
 receipt=json.loads(Path(receipt_path).read_text())
-receipt['result']='deployed and public manifest plus canonical routes read back'
+receipt['result']='deployed and full public release verification passed'
 Path(receipt_path).write_text(json.dumps(receipt,indent=2)+'\n')
-print('Public release manifest and canonical routes verified')
+print('Full public release verification passed')
 PY
 if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
   printf '\nCloudflare %s deployment verified\n- Source: %s\n- Worker version: %s\n- Host: %s\n' "$ENVIRONMENT" "$SOURCE_COMMIT" "$VERSION_ID" "$TARGET_HOST" >> "$GITHUB_STEP_SUMMARY"

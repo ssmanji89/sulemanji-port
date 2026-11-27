@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -11,6 +12,29 @@ from scripts.build_site_manifest import build_manifest
 
 class ReleaseError(ValueError):
     pass
+
+
+def fetch_public_manifest(url: str) -> dict[str, Any]:
+    """Fetch the public release identity with curl's Cloudflare-compatible transport."""
+    try:
+        response = subprocess.run(
+            ['curl', '--fail', '--silent', '--show-error', '--max-time', '15', url],
+            capture_output=True,
+            text=True,
+            timeout=20,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise ReleaseError('live release manifest request failed') from error
+    if response.returncode != 0:
+        raise ReleaseError('live release manifest request failed')
+    try:
+        manifest = json.loads(response.stdout)
+    except (TypeError, json.JSONDecodeError) as error:
+        raise ReleaseError('live release manifest is not valid JSON') from error
+    if not isinstance(manifest, dict):
+        raise ReleaseError('live release manifest must be a JSON object')
+    return manifest
 
 
 def verify_artifact(artifact: Path, source_commit: str, current_main_sha: str) -> dict[str, Any]:

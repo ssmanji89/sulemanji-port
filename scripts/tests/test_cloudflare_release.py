@@ -1,11 +1,13 @@
 import json
 import re
+import threading
 import tempfile
 import unittest
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 from scripts.build_site_manifest import build_manifest
-from scripts.site_release import ReleaseError, verify_artifact
+from scripts.site_release import ReleaseError, fetch_public_manifest, verify_artifact
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / '.github' / 'workflows' / 'jekyll.yml'
@@ -67,6 +69,42 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_current_worker_checks_remain(self):
         for command in ('npm ci --prefix worker', 'npm run check --prefix worker', 'verify_public_safety.py'):
             self.assertIn(command, self.release_check or self.workflow)
+
+    def test_public_manifest_readback_uses_curl_transport(self):
+        deploy = (ROOT / 'scripts' / 'deploy_site.sh').read_text(encoding='utf-8')
+        self.assertIn('fetch_public_manifest', deploy)
+        self.assertNotIn('urllib.request.urlopen', deploy)
+
+    def test_public_manifest_fetch_uses_cloudflare_accepted_curl_user_agent(self):
+        payload = b'{"source_commit":"a"}'
+
+        class CurlOnlyHandler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                self.server.user_agent = self.headers.get('User-Agent', '')
+                if not self.server.user_agent.startswith('curl/'):
+                    self.send_response(403)
+                    self.end_headers()
+                    return
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+
+            def log_message(self, _format, *_args):
+                pass
+
+        server = HTTPServer(('127.0.0.1', 0), CurlOnlyHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            manifest = fetch_public_manifest(f'http://127.0.0.1:{server.server_port}/release.json')
+            self.assertEqual(manifest, {'source_commit': 'a'})
+            self.assertTrue(server.user_agent.startswith('curl/'))
+        finally:
+            server.shutdown()
+            thread.join(timeout=2)
+            server.server_close()
 
     def test_production_uses_the_existing_www_route_without_changing_dns(self):
         config = json.loads(self.production_config)

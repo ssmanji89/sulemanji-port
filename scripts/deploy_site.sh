@@ -102,12 +102,13 @@ check_status /work/market-systems/ 200
 check_status /notes/late-october-skywatching-binoculars-telescope 200
 check_status /workshop-intake/ 410
 check_status /notes/does-not-exist 404
-python3 - "$TARGET_HOST" "$SOURCE_COMMIT" "$ARTIFACT/release.json" "$RECEIPT" <<'PY'
-import json,sys,urllib.request
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 - "$TARGET_HOST" "$SOURCE_COMMIT" "$ARTIFACT/release.json" "$RECEIPT" <<'PY'
+import json,sys
 from pathlib import Path
+from scripts.site_release import fetch_public_manifest
 host,source,manifest_path,receipt_path=sys.argv[1:]
 manifest=json.loads(Path(manifest_path).read_text())
-with urllib.request.urlopen(host+'/release.json',timeout=15) as response: live=json.load(response)
+live=fetch_public_manifest(host+'/release.json')
 if live.get('source_commit')!=source or live.get('asset_digest')!=manifest['asset_digest']: raise SystemExit('live artifact manifest mismatch')
 receipt=json.loads(Path(receipt_path).read_text())
 receipt['result']='deployed and public manifest plus canonical routes read back'

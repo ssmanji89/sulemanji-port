@@ -1,5 +1,7 @@
 import json
 import hashlib
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -43,6 +45,33 @@ class SiteManifestTests(unittest.TestCase):
         (self.root / 'assets' / 'app-a1.js').write_text('const current = false;', encoding='utf-8')
         second = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')
         self.assertNotEqual(first['asset_digest'], second['asset_digest'])
+
+    def test_release_cli_preserves_baseline_while_including_a_new_note(self):
+        notes = self.root / 'notes'
+        notes.mkdir()
+        for slug in ('preserved', 'new'):
+            (notes / f'{slug}.html').write_text(
+                f'<link rel="canonical" href="https://www.sulemanji.com/notes/{slug}">'
+                f'<title>{slug}</title><meta name="description" content="A note">'
+                f'<meta property="og:title" content="{slug}"><h1>{slug}</h1>'
+                '<time data-published-on datetime="2026-11-26"></time>'
+                '<div data-writing-body><p>Rendered article.</p></div>', encoding='utf-8')
+        with tempfile.TemporaryDirectory() as temp:
+            baseline = Path(temp) / 'baseline.json'
+            command = [sys.executable, 'scripts/build_site_manifest.py', '--allow-dirty',
+                       '--site-root', str(self.root), '--baseline', str(baseline)]
+            baseline.write_text(json.dumps({'articles': [{'url': '/notes/preserved', 'published_on': '2026-11-26'}]}))
+            result = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            manifest = json.loads((self.root / 'release.json').read_text())
+            self.assertEqual({a['url'] for a in manifest['articles']}, {'/notes/preserved', '/notes/new'})
+
+            for url, date in (('/notes/missing', '2026-11-26'), ('/notes/preserved', '2026-11-25')):
+                with self.subTest(url=url, date=date):
+                    baseline.write_text(json.dumps({'articles': [{'url': url, 'published_on': date}]}))
+                    rejected = subprocess.run(command, capture_output=True, text=True)
+                    self.assertNotEqual(rejected.returncode, 0)
+                    self.assertIn('differ from the approved baseline', rejected.stderr)
 
     def test_public_manifest_excludes_private_paths_and_secret_values(self):
         result = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')

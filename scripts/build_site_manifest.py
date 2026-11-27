@@ -284,7 +284,7 @@ def main() -> int:
     parser.add_argument('--site-root', type=Path, default=Path('_site'))
     parser.add_argument('--source-commit')
     parser.add_argument('--output', type=Path)
-    parser.add_argument('--baseline', type=Path, help='JSON file with articles [{url,published_on}] to preserve exactly')
+    parser.add_argument('--baseline', type=Path, help='JSON file with existing article URLs and dates to preserve')
     parser.add_argument('--allow-dirty', action='store_true', help='label a local test artifact as source_commit=local when the checkout is dirty')
     args = parser.parse_args()
     root = Path(subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip())
@@ -296,22 +296,20 @@ def main() -> int:
     if args.baseline:
         baseline_payload = json.loads(args.baseline.read_text(encoding='utf-8'))
         baseline = baseline_payload.get('articles', baseline_payload)
-        article_identity = sorted(
-            ({'url': item['url'], 'published_on': item['published_on']} for item in articles),
-            key=lambda item: item['url'],
-        )
-        baseline_identity = sorted(
-            ({'url': item['url'], 'published_on': item['published_on']} for item in baseline),
-            key=lambda item: item['url'],
-        )
-        if article_identity != baseline_identity:
+        article_identity = {item['url']: item['published_on'] for item in articles}
+        baseline_urls = {item['url'] for item in baseline}
+        if len(baseline_urls) != len(baseline) or any(
+            item['url'] not in article_identity
+            or article_identity[item['url']] != item['published_on']
+            for item in baseline
+        ):
             raise SystemExit('built article URLs or dates differ from the approved baseline')
     manifest = build_manifest(args.site_root, source_commit, articles)
     output = args.output or args.site_root / 'release.json'
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')
     (Path(args.site_root).resolve() / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
-    print(f"{len(manifest['files'])} assets; {len(articles)} preserved articles; {manifest['asset_digest']}")
+    print(f"{len(manifest['files'])} assets; {len(articles)} articles; {manifest['asset_digest']}")
     return 0
 
 

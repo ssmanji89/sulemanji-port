@@ -145,11 +145,17 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
     const articleFiles = proposal.files.filter((file) => ARTICLE.test(file.path));
     const newArticles = articleFiles.filter((file) => file.operation === 'create').length;
     const dispatchId = crypto.randomUUID();
-    if (!(await deps.store.reserveMergeCapacity(proposal.candidate_id, {
-      new_articles: newArticles, refreshes: articleFiles.length - newArticles,
-    }, dispatchId))) {
-      return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'CAPACITY_HELD');
+    let granted: boolean;
+    try {
+      granted = await deps.store.reserveMergeCapacity(proposal.candidate_id, {
+        new_articles: newArticles, refreshes: articleFiles.length - newArticles,
+      }, dispatchId);
+    } catch (error) {
+      // Admission can commit before its response is lost. No merge call starts on this path.
+      await deps.store.releaseUndispatchedMerge(proposal.candidate_id, dispatchId);
+      throw error;
     }
+    if (!granted) return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'CAPACITY_HELD');
     let mergeCommit: string;
     try {
       const merged = await deps.github.mergePullRequest(pull.number, pull.head_sha, async () => {

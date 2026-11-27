@@ -27,6 +27,7 @@ class FakeStore implements PublishEffectStore {
   value: Record<string, unknown> | null = null;
   allowMerge = true;
   capacityReleased = 0;
+  loseCapacityResponse = false;
   capacityRequests: Array<{ new_articles: number; refreshes: number }> = [];
   async ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string) {
     if (this.value && this.value.content_digest !== contentDigest) throw new Error('conflicting intent');
@@ -38,6 +39,7 @@ class FakeStore implements PublishEffectStore {
   async releaseUndispatchedMerge() { this.capacityReleased += 1; }
   async reserveMergeCapacity(_candidateId: string, counts: { new_articles: number; refreshes: number }) {
     this.capacityRequests.push(counts);
+    if (this.loseCapacityResponse) throw new Error('D1 admission response was lost');
     return this.allowMerge;
   }
 }
@@ -96,6 +98,21 @@ describe('guarded source publication effects', () => {
     expect(store.capacityRequests).toEqual([{ new_articles: 0, refreshes: 1 }]);
     expect(github.merges).toBe(0);
     expect(store.value).toMatchObject({ state: 'SOURCE_PUBLISHED' });
+  });
+
+  it('releases the exact admission attempt if its D1 response is lost before dispatch', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () => state };
+    await publishContent(proposal, receipt, deps);
+    github.pr!.checks = 'success';
+    store.loseCapacityResponse = true;
+
+    await publishContent(proposal, receipt, deps);
+    expect(store.capacityRequests).toHaveLength(1);
+    expect(store.capacityReleased).toBe(1);
+    expect(github.merges).toBe(0);
   });
 
   it('requires strict branch checks and rereads the reviewed base after capacity is reserved', async () => {

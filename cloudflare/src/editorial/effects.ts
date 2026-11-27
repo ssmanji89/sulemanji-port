@@ -35,28 +35,28 @@ export class D1PublishEffectStore implements PublishEffectStore {
       .some((number) => !Number.isSafeInteger(number) || number < 0)) throw new Error('PUBLICATION_CAPACITY_INVALID');
     const { local_date: date } = localBudgetPeriod(this.clock());
     // Unresolved attempts carry forward. A merge settled after midnight counts on both days.
-    await this.db.prepare(`UPDATE publication_effects SET merge_admission_date = ?, new_articles = ?, refreshes = ?, merge_dispatch_id = ?
-      WHERE candidate_id = ? AND owner_epoch = ? AND state = 'SOURCE_PUBLISHED' AND merge_commit IS NULL
-        AND merge_admission_date IS NULL AND merge_settled_date IS NULL AND EXISTS (
-          SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
-        ) AND EXISTS (
-          SELECT 1 FROM (
-            SELECT COALESCE(SUM(new_articles), 0) AS used_new, COALESCE(SUM(refreshes), 0) AS used_refreshes
-            FROM publication_effects WHERE merge_admission_date IS NOT NULL
-              AND (merge_admission_date = ? OR merge_settled_date IS NULL OR merge_settled_date >= ?)
-          ) WHERE (? = 0 OR used_new <= ?) AND (? = 0 OR used_refreshes <= ?)
-        )`).bind(date, counts.new_articles, counts.refreshes, dispatchId, candidateId, this.ownerEpoch, this.ownerEpoch,
+    const granted = await this.db.prepare(`UPDATE publication_effects
+      SET merge_admission_date = COALESCE(merge_admission_date, ?), new_articles = ?, refreshes = ?, merge_dispatch_id = ?
+      WHERE candidate_id = ? AND owner_epoch = ? AND state = 'SOURCE_PUBLISHED'
+        AND merge_commit IS NULL AND merge_settled_date IS NULL
+        AND EXISTS (SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?)
+        AND ((merge_dispatch_id = ? AND new_articles = ? AND refreshes = ?) OR
+          (merge_admission_date IS NULL AND EXISTS (
+            SELECT 1 FROM (
+              SELECT COALESCE(SUM(new_articles), 0) AS used_new, COALESCE(SUM(refreshes), 0) AS used_refreshes
+              FROM publication_effects WHERE merge_admission_date IS NOT NULL
+                AND (merge_admission_date = ? OR merge_settled_date IS NULL OR merge_settled_date >= ?)
+            ) WHERE (? = 0 OR used_new <= ?) AND (? = 0 OR used_refreshes <= ?)
+          )))
+      RETURNING merge_dispatch_id`).bind(date, counts.new_articles, counts.refreshes, dispatchId, candidateId, this.ownerEpoch, this.ownerEpoch,
+      dispatchId, counts.new_articles, counts.refreshes,
       date, date, counts.new_articles, this.limits.new_articles - counts.new_articles,
-      counts.refreshes, this.limits.refreshes - counts.refreshes).run();
-    const row = await this.db.prepare(`SELECT effect.merge_dispatch_id, effect.new_articles, effect.refreshes
-      FROM publication_effects AS effect JOIN editorial_control AS control
-        ON control.singleton = 1 AND control.paused = 0 AND control.owner_epoch = effect.owner_epoch
-      WHERE effect.candidate_id = ? AND effect.owner_epoch = ? AND effect.state = 'SOURCE_PUBLISHED' AND effect.merge_commit IS NULL AND effect.merge_settled_date IS NULL`)
-      .bind(candidateId, this.ownerEpoch).first<{ merge_dispatch_id: string | null; new_articles: number; refreshes: number }>();
-    if (!row) throw new Error('WORKFLOW_AUTHORITY_CHANGED');
-    if (row.merge_dispatch_id !== dispatchId) return false;
-    if (row.new_articles !== counts.new_articles || row.refreshes !== counts.refreshes) throw new Error('PUBLICATION_CAPACITY_CONFLICT');
-    return true;
+      counts.refreshes, this.limits.refreshes - counts.refreshes).first();
+    if (granted) return true;
+    const control = await this.db.prepare('SELECT paused, owner_epoch FROM editorial_control WHERE singleton = 1')
+      .first<{ paused: number; owner_epoch: number }>();
+    if (!control || control.paused !== 0 || control.owner_epoch !== this.ownerEpoch) throw new Error('WORKFLOW_AUTHORITY_CHANGED');
+    return false;
   }
 
   async hasMergeDispatch(candidateId: string, dispatchId: string): Promise<boolean> {

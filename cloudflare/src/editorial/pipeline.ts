@@ -19,7 +19,7 @@ export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewR
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
   preparationContext(input: CandidatePipelineInput): Promise<PreparationContext>;
-  publish(proposal: ContentProposal, review: ReviewReceipt): Promise<PublicationResult>;
+  publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal): Promise<PublicationResult>;
   verify(attempt: PublishAttempt): Promise<{ receipt: PublicationReceipt; failure?: string }>;
   persist(candidateId: string, ownerEpoch: number, state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'VERIFIED', checkpoint: CandidateCheckpoint): Promise<boolean>;
 };
@@ -77,7 +77,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       }
       if (!cleared) return { status: 'held', reason: 'Independent review did not clear the candidate.' };
 
-      const publication = await step.do(`publish-content-${key}`, () => deps.publish(proposal, cleared!));
+      const publication = await step.do(`publish-content-${key}`, () => deps.publish(proposal, cleared!, input.signal));
       checkpoint = { proposal, review: cleared, attempt: publication.attempt };
       if (!(await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED`, () => deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', checkpoint)))) {
         return { status: 'held', reason: 'Workflow authority changed before the publication effect could be checkpointed.' };

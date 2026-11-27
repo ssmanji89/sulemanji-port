@@ -2,7 +2,7 @@ import type { ContentProposal } from './contracts.js';
 import type { GitHubPublisher, PullRequestState } from './publisher.js';
 
 type GitHubConfig = { token: string; repository: string; required_checks: string[]; default_branch?: string; api_origin?: string };
-type PullRequestApi = { number: number; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; head: { ref: string; sha: string } };
+type PullRequestApi = { number: number; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; head: { ref: string; sha: string }; base: { ref: string } };
 type CheckRunsApi = { check_runs?: Array<{ name: string; status: string; conclusion: string | null }> };
 
 function binaryBase64(bytes: Uint8Array): string {
@@ -33,6 +33,11 @@ export class GitHubApiPublisher implements GitHubPublisher {
     } });
     if (!response.ok) throw new Error(`GITHUB_API_HTTP_${response.status}`);
     return await response.json() as T;
+  }
+
+  private async requestOptional<T>(path: string): Promise<T | null> {
+    try { return await this.request<T>(path); }
+    catch (error) { if (error instanceof Error && error.message === 'GITHUB_API_HTTP_404') return null; throw error; }
   }
 
   private async checkState(sha: string): Promise<PullRequestState['checks']> {
@@ -73,19 +78,50 @@ export class GitHubApiPublisher implements GitHubPublisher {
     try { return new TextDecoder('utf-8', { fatal: true }).decode(decoded); } catch { throw new Error('GITHUB_FILE_UTF8_INVALID'); }
   }
 
-  async findPullRequest(branch: string): Promise<PullRequestState | null> {
-    const query = new URLSearchParams({ head: `${this.owner}:${branch}`, state: 'all', per_page: '100' });
-    const rows = await this.request<PullRequestApi[]>(`/repos/${this.owner}/${this.repo}/pulls?${query}`);
-    const pr = rows.find((item) => item.head.ref === branch);
-    if (!pr) return null;
+  private async pathExistsAtRef(path: string, ref: string): Promise<boolean> {
+    if (!/^(?:notes\/[a-z0-9]+(?:-[a-z0-9]+)*\.md|assets\/images\/articles\/[a-z0-9][a-z0-9._-]{0,150}\.(?:svg|png|webp|jpe?g))$/i.test(path) || !/^[0-9a-f]{40}$/i.test(ref)) {
+      throw new Error('GITHUB_PATH_REJECTED');
+    }
+    const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    const file = await this.requestOptional<{ type?: string }>(`/repos/${this.owner}/${this.repo}/contents/${encodedPath}?${new URLSearchParams({ ref })}`);
+    if (!file) return false;
+    if (file.type !== 'file') throw new Error('GITHUB_PATH_NOT_A_FILE');
+    return true;
+  }
+
+  private async branchMatchesExpectedTree(branch: string, headSha: string, baseCommit: string, treeSha: string): Promise<boolean> {
+    const ref = await this.request<{ object?: { sha?: unknown } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${encodeURIComponent(branch)}`);
+    if (ref.object?.sha !== headSha) return false;
+    const commit = await this.request<{ tree?: { sha?: unknown }; parents?: Array<{ sha?: unknown }> }>(`/repos/${this.owner}/${this.repo}/git/commits/${headSha}`);
+    return commit.tree?.sha === treeSha && Array.isArray(commit.parents) && commit.parents.length === 1 && commit.parents[0].sha === baseCommit;
+  }
+
+  private async pullRequestState(pr: PullRequestApi): Promise<PullRequestState> {
     const checks = await this.checkState(pr.head.sha);
     return { number: pr.number, head_sha: pr.head.sha, state: pr.state, merged: pr.merged, merge_commit_sha: pr.merge_commit_sha, checks };
+  }
+
+  private async findPullRequestApi(branch: string): Promise<PullRequestApi | null> {
+    const query = new URLSearchParams({ head: `${this.owner}:${branch}`, state: 'all', per_page: '100' });
+    const rows = await this.request<PullRequestApi[]>(`/repos/${this.owner}/${this.repo}/pulls?${query}`);
+    return rows.find((item) => item.head.ref === branch && item.base.ref === this.branch) ?? null;
+  }
+
+  async findPullRequest(branch: string): Promise<PullRequestState | null> {
+    const pr = await this.findPullRequestApi(branch);
+    if (!pr) return null;
+    return this.pullRequestState(pr);
   }
 
   async createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState> {
     const ref = await this.request<{ object: { sha: string } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${this.branch}`);
     if (ref.object.sha !== input.base_commit) throw new Error('GITHUB_BASE_HEAD_CHANGED');
     const commit = await this.request<{ tree: { sha: string } }>(`/repos/${this.owner}/${this.repo}/git/commits/${input.base_commit}`);
+    for (const file of input.files) {
+      const exists = await this.pathExistsAtRef(file.path, input.base_commit);
+      if (file.operation === 'create' && exists) throw new Error('GITHUB_CREATE_PATH_EXISTS');
+      if (file.operation === 'update' && !exists) throw new Error('GITHUB_UPDATE_PATH_MISSING');
+    }
     const tree = await Promise.all(input.files.map(async (file) => {
       const bytes = file.encoding === 'base64' ? Uint8Array.from(atob(file.content), (char) => char.charCodeAt(0)) : new TextEncoder().encode(file.content);
       const blob = await this.request<{ sha: string }>(`/repos/${this.owner}/${this.repo}/git/blobs`, { method: 'POST', body: JSON.stringify({ content: binaryBase64(bytes), encoding: 'base64' }) });
@@ -96,22 +132,32 @@ export class GitHubApiPublisher implements GitHubPublisher {
       message: `Editorial candidate ${input.candidate_id}\n\nContent-Digest: ${input.content_digest}`, tree: nextTree.sha, parents: [input.base_commit],
     }) });
     const refPath = `/repos/${this.owner}/${this.repo}/git/refs`;
+    let branchHead = nextCommit.sha;
     try {
       await this.request(refPath, { method: 'POST', body: JSON.stringify({ ref: `refs/heads/${input.branch}`, sha: nextCommit.sha }) });
     } catch (error) {
-      const existingRef = await this.request<{ object: { sha: string } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${input.branch}`);
-      const existingCommit = await this.request<{ message: string }>(`/repos/${this.owner}/${this.repo}/git/commits/${existingRef.object.sha}`);
-      if (!existingCommit.message.includes(`Content-Digest: ${input.content_digest}`)) throw error;
+      let existingRef: { object?: { sha?: string } };
+      try { existingRef = await this.request(`/repos/${this.owner}/${this.repo}/git/ref/heads/${input.branch}`); }
+      catch { throw error; }
+      if (typeof existingRef.object?.sha !== 'string' || !(await this.branchMatchesExpectedTree(input.branch, existingRef.object.sha, input.base_commit, nextTree.sha))) {
+        throw new Error('GITHUB_BRANCH_CONTENT_MISMATCH');
+      }
+      branchHead = existingRef.object.sha;
     }
     let pr: PullRequestApi;
     try {
       pr = await this.request<PullRequestApi>(`/repos/${this.owner}/${this.repo}/pulls`, { method: 'POST', body: JSON.stringify({ title: input.title, body: input.body, head: input.branch, base: this.branch, draft: false, maintainer_can_modify: false }) });
     } catch (error) {
-      const existing = await this.findPullRequest(input.branch);
+      const existing = await this.findPullRequestApi(input.branch);
       if (!existing) throw error;
-      return existing;
+      if (existing.head.sha !== branchHead || !(await this.branchMatchesExpectedTree(input.branch, existing.head.sha, input.base_commit, nextTree.sha))) {
+        throw new Error('GITHUB_PR_CONTENT_MISMATCH');
+      }
+      return this.pullRequestState(existing);
     }
-    return { number: pr.number, head_sha: pr.head.sha, state: pr.state, merged: pr.merged, merge_commit_sha: pr.merge_commit_sha, checks: await this.checkState(pr.head.sha) };
+    if (pr.head.ref !== input.branch || pr.base.ref !== this.branch || pr.head.sha !== branchHead ||
+        !(await this.branchMatchesExpectedTree(input.branch, pr.head.sha, input.base_commit, nextTree.sha))) throw new Error('GITHUB_PR_CONTENT_MISMATCH');
+    return this.pullRequestState(pr);
   }
 
   async mergePullRequest(number: number, expectedHead: string): Promise<{ merge_commit_sha: string }> {

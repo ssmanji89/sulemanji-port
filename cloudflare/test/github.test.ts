@@ -27,4 +27,112 @@ describe('GitHub publication read adapters', () => {
     await expect(github.readTextFile('../.github/workflows/site.yml', 'a'.repeat(40))).rejects.toThrow('GITHUB_PATH_REJECTED');
     expect(fetcher).not.toHaveBeenCalled();
   });
+
+  it.each([
+    { operation: 'create' as const, response: Response.json({ type: 'file' }), expected: 'GITHUB_CREATE_PATH_EXISTS' },
+    { operation: 'update' as const, response: new Response('not found', { status: 404 }), expected: 'GITHUB_UPDATE_PATH_MISSING' },
+  ])('checks $operation path existence at the exact base before constructing a Git tree', async ({ operation, response, expected }) => {
+    const base = 'a'.repeat(40);
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('/git/ref/heads/main')) return Response.json({ object: { sha: base } });
+      if (url.endsWith(`/git/commits/${base}`)) return Response.json({ tree: { sha: 'b'.repeat(40) } });
+      if (url.includes('/contents/notes/reviewed-article.md?ref=')) return response;
+      throw new Error(`Unexpected request ${url}`);
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port', required_checks: ['site-release'] }, fetcher as typeof fetch);
+
+    await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch: 'editorial/candidate-42', base_commit: base,
+      content_digest: 'c'.repeat(64), files: [{ path: 'notes/reviewed-article.md', operation, encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
+      title: 'Reviewed article', body: 'Reviewed proposal.' })).rejects.toThrow(expected);
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(fetcher.mock.calls.some(([input]) => String(input).endsWith('/git/blobs'))).toBe(false);
+  });
+
+  it('rejects a digest-matching branch conflict whose tree is not the exact reviewed proposal', async () => {
+    const base = 'a'.repeat(40);
+    const branch = 'editorial/candidate-42';
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/git/ref/heads/main')) return Response.json({ object: { sha: base } });
+      if (url.endsWith(`/git/commits/${base}`)) return Response.json({ tree: { sha: 'b'.repeat(40) } });
+      if (url.includes('/contents/notes/reviewed-article.md?ref=')) return new Response('not found', { status: 404 });
+      if (url.endsWith('/git/blobs')) return Response.json({ sha: 'f'.repeat(40) });
+      if (url.endsWith('/git/trees')) return Response.json({ sha: '1'.repeat(40) });
+      if (url.endsWith('/git/commits') && init?.method === 'POST') return Response.json({ sha: '2'.repeat(40) });
+      if (url.endsWith('/git/refs')) return new Response('already exists', { status: 422 });
+      if (url.includes('/git/ref/heads/') && url.includes('candidate-42')) return Response.json({ object: { sha: '3'.repeat(40) } });
+      if (url.endsWith(`/git/commits/${'3'.repeat(40)}`)) return Response.json({
+        message: `untrusted concurrent commit\n\nContent-Digest: ${'c'.repeat(64)}`, tree: { sha: '4'.repeat(40) }, parents: [{ sha: base }],
+      });
+      if (url.includes('/pulls?')) return Response.json([{ number: 9, state: 'open', merged: false, merge_commit_sha: null,
+        head: { ref: branch, sha: '3'.repeat(40) }, base: { ref: 'main' } }]);
+      if (url.includes('/check-runs?')) return Response.json({ check_runs: [{ name: 'site-release', status: 'completed', conclusion: 'success' }] });
+      if (url.endsWith('/status')) return Response.json({ statuses: [] });
+      throw new Error(`Unexpected request ${url}`);
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port', required_checks: ['site-release'] }, fetcher as typeof fetch);
+
+    await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch, base_commit: base, content_digest: 'c'.repeat(64),
+      files: [{ path: 'notes/reviewed-article.md', operation: 'create', encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
+      title: 'Reviewed article', body: 'Reviewed proposal.' })).rejects.toThrow('GITHUB_BRANCH_CONTENT_MISMATCH');
+    expect(fetcher.mock.calls.some(([input]) => String(input).endsWith('/pulls'))).toBe(false);
+  });
+
+  it('does not adopt an unrelated PR when creating the reviewed PR races with an existing branch PR', async () => {
+    const base = 'a'.repeat(40);
+    const branch = 'editorial/candidate-42';
+    const createdHead = '2'.repeat(40);
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/git/ref/heads/main')) return Response.json({ object: { sha: base } });
+      if (url.endsWith(`/git/commits/${base}`)) return Response.json({ tree: { sha: 'b'.repeat(40) } });
+      if (url.includes('/contents/notes/reviewed-article.md?ref=')) return new Response('not found', { status: 404 });
+      if (url.endsWith('/git/blobs')) return Response.json({ sha: 'f'.repeat(40) });
+      if (url.endsWith('/git/trees')) return Response.json({ sha: '1'.repeat(40) });
+      if (url.endsWith('/git/commits') && init?.method === 'POST') return Response.json({ sha: createdHead });
+      if (url.endsWith('/git/refs')) return Response.json({ ref: `refs/heads/${branch}` });
+      if (url.endsWith('/pulls') && init?.method === 'POST') return new Response('pull request conflict', { status: 422 });
+      if (url.includes('/pulls?')) return Response.json([{ number: 9, state: 'open', merged: false, merge_commit_sha: null,
+        head: { ref: branch, sha: '3'.repeat(40) }, base: { ref: 'main' } }]);
+      if (url.includes('/git/ref/heads/') && url.includes('candidate-42')) return Response.json({ object: { sha: '3'.repeat(40) } });
+      if (url.endsWith(`/git/commits/${'3'.repeat(40)}`)) return Response.json({ tree: { sha: '4'.repeat(40) }, parents: [{ sha: base }] });
+      if (url.includes('/check-runs?')) return Response.json({ check_runs: [{ name: 'site-release', status: 'completed', conclusion: 'success' }] });
+      if (url.endsWith('/status')) return Response.json({ statuses: [] });
+      throw new Error(`Unexpected request ${url}`);
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port', required_checks: ['site-release'] }, fetcher as typeof fetch);
+
+    await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch, base_commit: base, content_digest: 'c'.repeat(64),
+      files: [{ path: 'notes/reviewed-article.md', operation: 'create', encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
+      title: 'Reviewed article', body: 'Reviewed proposal.' })).rejects.toThrow('GITHUB_PR_CONTENT_MISMATCH');
+  });
+
+  it('creates and returns a pull request only after its exact expected tree is confirmed', async () => {
+    const base = 'a'.repeat(40);
+    const branch = 'editorial/candidate-42';
+    const head = '2'.repeat(40);
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/git/ref/heads/main')) return Response.json({ object: { sha: base } });
+      if (url.endsWith(`/git/commits/${base}`)) return Response.json({ tree: { sha: 'b'.repeat(40) } });
+      if (url.includes('/contents/notes/reviewed-article.md?ref=')) return new Response('not found', { status: 404 });
+      if (url.endsWith('/git/blobs')) return Response.json({ sha: 'f'.repeat(40) });
+      if (url.endsWith('/git/trees')) return Response.json({ sha: '1'.repeat(40) });
+      if (url.endsWith('/git/commits') && init?.method === 'POST') return Response.json({ sha: head });
+      if (url.endsWith('/git/refs') && init?.method === 'POST') return Response.json({ ref: `refs/heads/${branch}` });
+      if (url.endsWith('/pulls') && init?.method === 'POST') return Response.json({ number: 9, state: 'open', merged: false,
+        merge_commit_sha: null, head: { ref: branch, sha: head }, base: { ref: 'main' } });
+      if (url.includes('/git/ref/heads/') && url.includes('candidate-42')) return Response.json({ object: { sha: head } });
+      if (url.endsWith(`/git/commits/${head}`)) return Response.json({ tree: { sha: '1'.repeat(40) }, parents: [{ sha: base }] });
+      if (url.includes('/check-runs?')) return Response.json({ check_runs: [{ name: 'site-release', status: 'completed', conclusion: 'success' }] });
+      if (url.endsWith('/status')) return Response.json({ statuses: [] });
+      throw new Error(`Unexpected request ${url}`);
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port', required_checks: ['site-release'] }, fetcher as typeof fetch);
+
+    await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch, base_commit: base, content_digest: 'c'.repeat(64),
+      files: [{ path: 'notes/reviewed-article.md', operation: 'create', encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
+      title: 'Reviewed article', body: 'Reviewed proposal.' })).resolves.toMatchObject({ number: 9, head_sha: head, checks: 'success' });
+  });
 });

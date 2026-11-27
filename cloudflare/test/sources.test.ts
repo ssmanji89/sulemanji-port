@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { collectSignals } from '../src/editorial/sources.js';
+import { collectSignals, revalidateSignalSourceDigest, sourceSetDigest } from '../src/editorial/sources.js';
 import type { SourceConfig } from '../src/editorial/contracts.js';
 
 const now = new Date('2026-11-26T18:00:00.000Z');
@@ -45,5 +45,17 @@ describe('bounded public signal collection', () => {
     const future = xml.replace('Thu, 26 Nov 2026 17:00:00 GMT', 'Thu, 01 Jan 2027 17:00:00 GMT');
     expect((await collectSignals([config()], now, async () => new Response(old))).signals).toHaveLength(0);
     expect((await collectSignals([config()], now, async () => new Response(future))).signals).toHaveLength(0);
+  });
+
+  it('recomputes the reviewed source digest and fails closed when the source changed or disappeared', async () => {
+    const original = await collectSignals([config()], now, async () => new Response(xml));
+    expect(original.signals).toHaveLength(1);
+    const reviewed = original.signals[0];
+    const unchanged = await revalidateSignalSourceDigest(reviewed, [config()], now, async () => new Response(xml));
+    expect(unchanged).toBe(await sourceSetDigest(reviewed.evidence));
+
+    const changed = xml.replace('New release improves durable workflow support.', 'The release now changes its behavior.');
+    await expect(revalidateSignalSourceDigest(reviewed, [config()], now, async () => new Response(changed))).resolves.toBeNull();
+    await expect(revalidateSignalSourceDigest(reviewed, [config()], now, async () => new Response('unavailable', { status: 503 }))).resolves.toBeNull();
   });
 });

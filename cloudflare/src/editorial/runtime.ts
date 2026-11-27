@@ -1,4 +1,6 @@
+import sourceRegistry from '../../config/public-sources.json' with { type: 'json' };
 import type { EditorialEnv, Candidate } from './contracts.js';
+import type { Signal, SourceConfig } from './contracts.js';
 import { parseEditorialPolicy, type EditorialPolicy } from './scheduler.js';
 import { BudgetedModelGateway, JsonSchemaGateway, type ModelConfig } from './models.js';
 import { GitHubApiPublisher } from './github.js';
@@ -7,6 +9,7 @@ import { fingerprintPublicKnowledge } from './knowledge.js';
 import { publishContent, verifyPublicationDetailed } from './publisher.js';
 import { readControl } from './state.js';
 import { readKnowledge } from './workflow-core.js';
+import { revalidateSignalSourceDigest } from './sources.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
 
 export type EditorialRuntimeEnv = EditorialEnv & {
@@ -123,16 +126,25 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, fetc
         policy_revision: input.policy.revision, knowledge_revision: input.candidate.knowledge_revision,
         base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths };
     },
-    async publish(proposal, review) {
+    async publish(proposal, review, signal) {
       const store = new D1PublishEffectStore(env.DB, review.owner_epoch);
       const attempt = await publishContent(proposal, review, { store, github, async currentState() {
-        const [control, baseCommit, knowledge] = await Promise.all([
+        const guardedSourceFetch: typeof fetch = async (input, init) => {
+          const before = await readControl(env.DB);
+          if (before.paused || before.owner_epoch !== review.owner_epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');
+          const response = await fetcher(input, init);
+          const after = await readControl(env.DB);
+          if (after.paused || after.owner_epoch !== review.owner_epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');
+          return response;
+        };
+        const [control, baseCommit, knowledge, sourceDigest] = await Promise.all([
           readControl(env.DB), github.readDefaultBranchHead(), readKnowledge(env.DB, new Date()),
+          revalidateSignalSourceDigest(signal, sourceRegistry as SourceConfig[], new Date(), guardedSourceFetch),
         ]);
         const currentPolicy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
         return { owner_epoch: control.owner_epoch, paused: control.paused || !currentPolicy || currentPolicy.revision !== proposal.policy_revision,
           base_commit: baseCommit, policy_revision: currentPolicy?.revision ?? 'unqualified', knowledge_revision: await fingerprintPublicKnowledge(knowledge),
-          source_digest: proposal.source_digest, allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id };
+          source_digest: sourceDigest ?? '', allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id };
       } });
       const effect = await store.read(proposal.candidate_id);
       return { attempt, merged: Boolean(effect?.merge_commit) };

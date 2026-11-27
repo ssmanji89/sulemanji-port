@@ -43,8 +43,8 @@ def validate_custom_image(source, article):
 
 def font_path(name):
     roots = [
-        Path(os.environ.get("DEJAVU_FONT_DIR", "")),
         Path(__file__).resolve().parent / "fonts",
+        Path(os.environ.get("DEJAVU_FONT_DIR", "")),
         Path("/usr/share/fonts/truetype/dejavu"),
         Path("/usr/local/share/fonts"),
         Path.home() / "Library" / "Fonts",

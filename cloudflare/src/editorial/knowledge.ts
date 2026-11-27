@@ -206,30 +206,36 @@ export async function ingestKnowledge(raw: Uint8Array, signature: string, keyId:
   const payloadBytes = new TextEncoder().encode(envelope.payload === null ? 'null' : canonical(envelope.payload));
   if (await sha256Hex(payloadBytes) !== envelope.payload_sha256) return reject('INVALID', 'Payload digest does not match canonical payload bytes.');
 
-  const current = await env.DB.prepare('SELECT * FROM public_knowledge WHERE derivative_id = ?').bind(envelope.derivative_id).first<StoredKnowledge>();
-  if (current && current.sequence > envelope.sequence) return reject('STALE', 'A newer knowledge sequence is already stored.');
-  const subjectId = envelope.payload?.subject_id ?? current?.subject_id ?? envelope.derivative_id;
-  if (current && current.subject_id !== subjectId) return reject('CONFLICT', 'A derivative cannot change its authorized subject.');
-  if (current && envelope.action === 'UPSERT' && current.revision === envelope.revision && current.payload_sha256 !== envelope.payload_sha256) {
-    return reject('CONFLICT', 'Changed content requires a new opaque content revision.');
-  }
+  const subjectId = envelope.payload?.subject_id ?? envelope.derivative_id;
   const payloadJson = envelope.payload === null ? null : JSON.stringify(envelope.payload);
   const write = await env.DB.prepare(`INSERT INTO public_knowledge
     (derivative_id, subject_id, revision, sequence, action, payload_sha256, policy_revision, issued_at, expires_at, payload_json, updated_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(derivative_id) DO UPDATE SET
-      subject_id=excluded.subject_id, revision=excluded.revision, sequence=excluded.sequence, action=excluded.action,
+      revision=excluded.revision, sequence=excluded.sequence, action=excluded.action,
       payload_sha256=excluded.payload_sha256, policy_revision=excluded.policy_revision, issued_at=excluded.issued_at,
       expires_at=excluded.expires_at, payload_json=excluded.payload_json, updated_at=excluded.updated_at
-    WHERE excluded.sequence > public_knowledge.sequence`)
+    WHERE excluded.sequence > public_knowledge.sequence
+      AND (
+        excluded.action = 'WITHDRAW'
+        OR (excluded.subject_id = public_knowledge.subject_id
+          AND (excluded.revision <> public_knowledge.revision OR excluded.payload_sha256 = public_knowledge.payload_sha256))
+      )`)
     .bind(envelope.derivative_id, subjectId, envelope.revision, envelope.sequence, envelope.action, envelope.payload_sha256,
       envelope.policy_revision, envelope.issued_at, envelope.expires_at, payloadJson, now.toISOString()).run();
   const stored = await env.DB.prepare('SELECT * FROM public_knowledge WHERE derivative_id = ?').bind(envelope.derivative_id).first<StoredKnowledge>();
   if (!stored) return reject('INVALID', 'Durable knowledge readback failed.');
   if (stored.sequence > envelope.sequence) return reject('STALE', 'A newer knowledge sequence is already stored.');
-  if (stored.sequence === envelope.sequence && (stored.revision !== envelope.revision || stored.action !== envelope.action ||
+  if (envelope.action === 'UPSERT' && stored.subject_id !== subjectId) {
+    return reject('CONFLICT', 'A derivative cannot change its authorized subject.');
+  }
+  if (envelope.action === 'UPSERT' && stored.revision === envelope.revision && stored.payload_sha256 !== envelope.payload_sha256) {
+    return reject('CONFLICT', 'Changed content requires a new opaque content revision.');
+  }
+  if (stored.sequence < envelope.sequence) return reject('INVALID', 'Durable knowledge readback did not reach the expected sequence.');
+  if (stored.revision !== envelope.revision || stored.action !== envelope.action ||
       stored.payload_sha256 !== envelope.payload_sha256 || stored.policy_revision !== envelope.policy_revision ||
-      stored.issued_at !== envelope.issued_at || stored.expires_at !== envelope.expires_at)) {
+      stored.issued_at !== envelope.issued_at || stored.expires_at !== envelope.expires_at) {
     return reject('CONFLICT', 'Sequence is already bound to different knowledge.');
   }
   const changed = (write.meta.changes ?? 0) > 0;

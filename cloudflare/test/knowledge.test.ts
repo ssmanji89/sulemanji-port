@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getPublicKnowledge, ingestKnowledge } from '../src/editorial/knowledge.js';
 import type { EditorialEnv, KnowledgeEnvelope, PublicKnowledge } from '../src/editorial/contracts.js';
@@ -18,41 +20,35 @@ async function digest(value: unknown): Promise<string> {
   return [...result].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-class MemoryD1 {
-  rows = new Map<string, Record<string, unknown>>();
-  prepare(sql: string) {
-    let values: unknown[] = [];
-    return {
-      bind: (...args: unknown[]) => { values = args; return this.prepareBound(sql, () => values); },
-    };
+class KnowledgeD1Fixture {
+  private readonly database = new DatabaseSync(':memory:');
+  beforeWrite?: () => Promise<void>;
+
+  constructor() {
+    this.database.exec(readFileSync(new URL('../migrations/0001_editorial.sql', import.meta.url), 'utf8'));
   }
-  private prepareBound(sql: string, values: () => unknown[]) {
+
+  clear() {
+    this.beforeWrite = undefined;
+    this.database.exec('DELETE FROM public_knowledge');
+  }
+
+  count() {
+    return this.database.prepare('SELECT count(*) AS total FROM public_knowledge').get()?.total;
+  }
+
+  prepare(sql: string) {
+    const statement = this.database.prepare(sql);
     return {
-      first: async <T>() => {
-        const args = values();
-        if (sql.includes('WHERE derivative_id = ?')) {
-          const row = this.rows.get(String(args[0]));
-          if (!row) return null;
-          return (sql.includes('SELECT subject_id') ? { subject_id: row.subject_id } : row) as T;
-        }
-        if (sql.includes('WHERE subject_id = ?')) {
-          const [subjectId, expiry] = args as [string, string];
-          const row = [...this.rows.values()].filter((item) => item.subject_id === subjectId && item.action === 'UPSERT' && String(item.expires_at) > expiry)
-            .sort((a, b) => Number(b.sequence) - Number(a.sequence))[0];
-          return (row ? { payload_json: row.payload_json } : null) as T | null;
-        }
-        return null;
-      },
-      run: async () => {
-        const args = values();
-        if (!sql.includes('INSERT INTO public_knowledge')) return { meta: { changes: 0 } };
-        const [derivativeId, subjectId, revision, sequence, action, payloadSha, policyRevision, issuedAt, expiresAt, payloadJson, updatedAt] = args;
-        const old = this.rows.get(String(derivativeId));
-        if (old && Number(sequence) <= Number(old.sequence)) return { meta: { changes: 0 } };
-        this.rows.set(String(derivativeId), { derivative_id: derivativeId, subject_id: subjectId, revision, sequence, action, payload_sha256: payloadSha,
-          policy_revision: policyRevision, issued_at: issuedAt, expires_at: expiresAt, payload_json: payloadJson, updated_at: updatedAt });
-        return { meta: { changes: 1 } };
-      },
+      bind: (...args: SQLInputValue[]) => ({
+        first: async <T>() => (statement.get(...args) ?? null) as T | null,
+        run: async () => {
+          const beforeWrite = this.beforeWrite;
+          this.beforeWrite = undefined;
+          await beforeWrite?.();
+          return { meta: { changes: statement.run(...args).changes } };
+        },
+      }),
     };
   }
 }
@@ -65,7 +61,7 @@ const payload: PublicKnowledge = {
   authored_fields: ['summary'],
 };
 
-const db = new MemoryD1();
+const db = new KnowledgeD1Fixture();
 const env = {
   DB: db as unknown as D1Database,
   EDITORIAL_WORKFLOW: {} as Workflow,
@@ -96,7 +92,7 @@ async function importEnvelope(envelope: KnowledgeEnvelope, requestEnv = env) {
 }
 
 describe('signed public knowledge import', () => {
-  beforeEach(() => db.rows.clear());
+  beforeEach(() => db.clear());
   it('accepts a valid target and returns only a typed receipt', async () => {
     const result = await importEnvelope(await makeEnvelope());
     expect(result).toEqual({ status: 'accepted', derivative_id: 'derivative.project.viyu', sequence: 1 });
@@ -126,7 +122,7 @@ describe('signed public knowledge import', () => {
     const invalidPayload = { ...payload, authored_fields: [field] };
     const result = await importEnvelope(await makeEnvelope({ payload: invalidPayload, payload_sha256: await digest(invalidPayload) }));
     expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
-    expect(db.rows.size).toBe(0);
+    expect(db.count()).toBe(0);
   });
 
   it.each(['https://localhost/private', 'https://localhost./private', 'https://printer/private',
@@ -144,7 +140,7 @@ describe('signed public knowledge import', () => {
     const invalidPayload = { ...payload, public_sources: [{ ...payload.public_sources[0], url }] };
     const result = await importEnvelope(await makeEnvelope({ payload: invalidPayload, payload_sha256: await digest(invalidPayload) }));
     expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
-    expect(db.rows.size).toBe(0);
+    expect(db.count()).toBe(0);
   });
 
   it.each(['https://192.0.0.9/public', 'https://192.0.0.10/public',
@@ -155,7 +151,7 @@ describe('signed public knowledge import', () => {
     const validPayload = { ...payload, public_sources: [{ ...payload.public_sources[0], url }] };
     const result = await importEnvelope(await makeEnvelope({ payload: validPayload, payload_sha256: await digest(validPayload) }));
     expect(result).toMatchObject({ status: 'accepted' });
-    expect(db.rows.size).toBe(1);
+    expect(db.count()).toBe(1);
   });
 
   it('rejects empty source lists, duplicate authored fields, and NUL text', async () => {
@@ -166,7 +162,7 @@ describe('signed public knowledge import', () => {
     ]) {
       const result = await importEnvelope(await makeEnvelope({ payload: invalidPayload, payload_sha256: await digest(invalidPayload) }));
       expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
-      expect(db.rows.size).toBe(0);
+      expect(db.count()).toBe(0);
     }
   });
 
@@ -180,7 +176,7 @@ describe('signed public knowledge import', () => {
     for (const invalidPayload of invalidPayloads) {
       const result = await importEnvelope(await makeEnvelope({ payload: invalidPayload, payload_sha256: await digest(invalidPayload) }));
       expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
-      expect(db.rows.size).toBe(0);
+      expect(db.count()).toBe(0);
     }
   });
 
@@ -197,7 +193,53 @@ describe('signed public knowledge import', () => {
   it('rejects oversize requests without touching D1', async () => {
     const result = await ingestKnowledge(new Uint8Array(1_048_577), '', '', env, NOW);
     expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
-    expect(db.rows.size).toBe(0);
+    expect(db.count()).toBe(0);
+  });
+
+  it('keeps the first committed payload for an opaque revision during overlapping writes', async () => {
+    expect(await importEnvelope(await makeEnvelope())).toMatchObject({ status: 'accepted', sequence: 1 });
+    const original = { ...payload, summary: 'The first authorized revision.' };
+    const incoming = { ...payload, summary: 'The second draft has a different summary.' };
+    const firstRevision = await makeEnvelope({
+      sequence: 2, revision: 'content-rev-2', payload: original, payload_sha256: await digest(original),
+    });
+    const overlapping = await makeEnvelope({
+      sequence: 3, revision: firstRevision.revision, payload: incoming, payload_sha256: await digest(incoming),
+    });
+    db.beforeWrite = async () => {
+      expect(await importEnvelope(firstRevision)).toMatchObject({ status: 'accepted', sequence: 2 });
+    };
+    expect(await importEnvelope(overlapping)).toMatchObject({ status: 'rejected', code: 'CONFLICT' });
+    expect(await getPublicKnowledge(payload.subject_id, env.DB, NOW)).toEqual(original);
+  });
+
+  it('binds a derivative to the subject of the first committed insert', async () => {
+    const first = await makeEnvelope();
+    const other = { ...payload, subject_id: 'work.different-subject' };
+    const overlapping = await makeEnvelope({
+      sequence: 2, revision: 'content-rev-2', payload: other, payload_sha256: await digest(other),
+    });
+    db.beforeWrite = async () => {
+      expect(await importEnvelope(first)).toMatchObject({ status: 'accepted', sequence: 1 });
+    };
+    expect(await importEnvelope(overlapping)).toMatchObject({ status: 'rejected', code: 'CONFLICT' });
+    expect(await getPublicKnowledge(payload.subject_id, env.DB, NOW)).toEqual(payload);
+    expect(await getPublicKnowledge(other.subject_id, env.DB, NOW)).toBeNull();
+  });
+
+  it('preserves the committed subject when a newer withdrawal overlaps the first insert', async () => {
+    const first = await makeEnvelope();
+    const withdrawal = await makeEnvelope({
+      sequence: 2, revision: 'withdrawal-rev', action: 'WITHDRAW', payload: null, payload_sha256: await digest(null),
+    });
+    db.beforeWrite = async () => {
+      expect(await importEnvelope(first)).toMatchObject({ status: 'accepted', sequence: 1 });
+    };
+    expect(await importEnvelope(withdrawal)).toMatchObject({ status: 'withdrawn', sequence: 2 });
+    expect(await getPublicKnowledge(payload.subject_id, env.DB, NOW)).toBeNull();
+    const tombstone = await db.prepare('SELECT subject_id FROM public_knowledge WHERE derivative_id = ?')
+      .bind(withdrawal.derivative_id).first<{ subject_id: string }>();
+    expect(tombstone?.subject_id).toBe(payload.subject_id);
   });
 
   it('makes an exact replay a no-op duplicate', async () => {

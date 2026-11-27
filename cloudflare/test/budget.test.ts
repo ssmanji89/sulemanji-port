@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { reserveUsage, settleUsage } from '../src/editorial/budget.js';
-import { recordModelCall, recordReviewRound } from '../src/editorial/state.js';
+import { recordModelCall } from '../src/editorial/state.js';
 import { OperationsD1 } from './operations.test-support.js';
 
 const request = (i: number, candidate = `candidate-${i}`, amount = 0.75) => ({ id: `reservation-${i}`, attempt_id: `attempt-${i}`, candidate_id: candidate, maximum_usd: amount, pricing_revision: 'prices-2026-11-26', requested_at: '2026-11-26T14:00:00.000Z' });
@@ -35,8 +35,10 @@ describe('atomic bounded model reservations', () => {
     const db = new OperationsD1();
     db.control = { paused: 0, owner_epoch: 1 };
     db.candidates.set('candidate', { model_calls: 0, review_rounds: 0 });
-    for (let i = 0; i < 7; i += 1) await recordModelCall(db as unknown as D1Database, 'candidate', 1);
-    for (let i = 0; i < 4; i += 1) await recordReviewRound(db as unknown as D1Database, 'candidate');
+    for (let i = 0; i < 3; i += 1) await recordModelCall(db as unknown as D1Database, 'candidate', 1, 6, 3, true);
+    for (let i = 0; i < 3; i += 1) await recordModelCall(db as unknown as D1Database, 'candidate', 1, 6, 3, false);
+    expect(await recordModelCall(db as unknown as D1Database, 'candidate', 1, 6, 3, false)).toBe(false);
+    expect(await recordModelCall(db as unknown as D1Database, 'candidate', 1, 6, 3, true)).toBe(false);
     expect(db.candidates.get('candidate')).toMatchObject({ model_calls: 6, review_rounds: 3 });
   });
 });

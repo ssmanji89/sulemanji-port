@@ -1,5 +1,5 @@
 import type { Candidate, CatalogItem, ContentProposal, PreparationContext, PublicationReceipt, PublicKnowledge, PublishAttempt, ReviewReceipt, Signal } from './contracts.js';
-import type { ModelGateway } from './models.js';
+import { ModelAttemptAlreadyReservedError, type ModelGateway } from './models.js';
 import type { EditorialPolicy } from './scheduler.js';
 import { SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
 import { attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
@@ -17,6 +17,7 @@ type CandidatePipelineInput = {
 };
 type PublicationResult = { attempt: PublishAttempt; merged: boolean };
 type PipelineOutcome = { status: 'verified' | 'held'; reason: string };
+const modelAttemptHold: PipelineOutcome = { status: 'held', reason: 'A prior model attempt needs reconciliation before it can be retried.' };
 export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt };
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
@@ -31,6 +32,17 @@ function stepPart(candidateId: string): string {
   return candidateId.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 64);
 }
 
+async function runModelStep<T>(step: DurableStep, name: string, generate: () => Promise<T>): Promise<T | null> {
+  return step.do(name, async () => {
+    try {
+      return await generate();
+    } catch (error) {
+      if (error instanceof ModelAttemptAlreadyReservedError) return null;
+      throw error;
+    }
+  });
+}
+
 export function createEditorialCandidatePipeline(deps: CandidatePipelineDependencies) {
   return {
     async processCandidate(input: CandidatePipelineInput): Promise<PipelineOutcome> {
@@ -43,7 +55,10 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       const key = stepPart(candidate.id);
       const context = await step.do(`prepare-context-${key}`, () => deps.preparationContext(input));
       const models = deps.modelsFor(candidate, ownerEpoch, policy);
-      let proposal = await step.do(`prepare-content-${key}`, () => prepareContent(candidate, context, models, `author:${candidate.id}`));
+      const draftProposal = await runModelStep(step, `prepare-content-${key}`,
+        () => prepareContent(candidate, context, models, `author:${candidate.id}`));
+      if (!draftProposal) return modelAttemptHold;
+      let proposal = draftProposal;
       if (proposal.files[0]?.operation === 'create') {
         const draft = proposal;
         const card = await step.do(`attach-social-card-${key}`, async () => {
@@ -72,7 +87,8 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       for (let round = 1; round <= maximumRounds; round += 1) {
         const reviewerRunId = `review:${candidate.id}:round-${round}`;
         const reviewContext = { ...context, reviewer_run_id: reviewerRunId };
-        const receipt = await step.do(`review-content-${key}-round-${round}`, () => reviewContent(proposal, reviewContext, models));
+        const receipt = await runModelStep(step, `review-content-${key}-round-${round}`, () => reviewContent(proposal, reviewContext, models));
+        if (!receipt) return modelAttemptHold;
         checkpoint = { proposal, review: receipt };
         if (receipt.decision === 'CLEAR') {
           if (receipt.findings.length !== 0 || receipt.reviewer_run_id === proposal.author_run_id || receipt.content_digest !== proposal.content_digest ||
@@ -89,8 +105,10 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
           await step.do(`persist-candidate-${key}-NEEDS_OWNER-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', checkpoint));
           return { status: 'held', reason: receipt.decision === 'HOLD' ? 'Independent review requires an owner decision.' : 'Review rounds were exhausted before clearance.' };
         }
-        proposal = await step.do(`revise-content-${key}-round-${round}`, () => reviseContent(proposal, candidate, context, receipt.findings,
+        const revision = await runModelStep(step, `revise-content-${key}-round-${round}`, () => reviseContent(proposal, candidate, context, receipt.findings,
           models, `author:${candidate.id}:revision-${round}`));
+        if (!revision) return modelAttemptHold;
+        proposal = revision;
         checkpoint = { proposal, review: receipt };
         if (!(await step.do(`persist-candidate-${key}-DRAFTED-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'DRAFTED', checkpoint)))) {
           return { status: 'held', reason: 'Workflow authority changed before the revision could be checkpointed.' };

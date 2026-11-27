@@ -114,8 +114,46 @@ describe('budgeted model gateway', () => {
     expect([...db.reservations.values()][0]).toMatchObject({
       maximum_micros: estimateModelInputTokenUpperBound(config, request) + request.max_output_tokens, actual_micros: null,
     });
+    await expect(gateway.generate(request)).rejects.toThrow('MODEL_ATTEMPT_ALREADY_RESERVED');
+    expect(provider.calls).toBe(1);
+    expect(db.candidates.get('candidate-a')).toMatchObject({ model_calls: 1 });
+    expect([...db.reservations.values()][0]?.actual_micros).toBeNull();
   });
 
+  it('does not call or settle the provider reservation again while the first attempt is in flight', async () => {
+    const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
+    db.candidates.set('candidate-a', { model_calls: 0, review_rounds: 0 });
+    const provider = new FakeModels();
+    let finishFirstCall!: () => void;
+    let firstCallStarted!: () => void;
+    const firstCall = new Promise<void>((resolve) => { finishFirstCall = resolve; });
+    const started = new Promise<void>((resolve) => { firstCallStarted = resolve; });
+    provider.generate = async () => {
+      provider.calls += 1;
+      if (provider.calls === 1) {
+        firstCallStarted();
+        await firstCall;
+      }
+      return provider.result;
+    };
+    const gateway = new BudgetedModelGateway(provider, config, {
+      db: db as unknown as D1Database, candidate_id: 'candidate-a', owner_epoch: 1,
+      max_model_calls: 1, max_review_rounds: 1, limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 },
+      expected_pricing_revision: config.pricing_revision,
+    });
+    const result = gateway.generate(request);
+    try {
+      await started;
+      await expect(gateway.generate(request)).rejects.toThrow('MODEL_ATTEMPT_ALREADY_RESERVED');
+      expect([...db.reservations.values()][0]?.actual_micros).toBeNull();
+    } finally {
+      finishFirstCall();
+      await result;
+    }
+    expect(provider.calls).toBe(1);
+    expect([...db.reservations.values()][0]?.actual_micros).toBe(2_000);
+  });
   it('does not call the provider or charge the reservation when the durable model-call cap is exhausted', async () => {
     const db = new OperationsD1();
     db.control = { paused: 0, owner_epoch: 1 };

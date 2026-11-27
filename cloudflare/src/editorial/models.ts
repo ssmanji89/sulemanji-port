@@ -80,6 +80,12 @@ export function reserveMaximumUsd(config: ModelConfig, inputTokenUpperBound: num
   return (inputTokenUpperBound * config.input_usd_per_million + maxOutputTokens * config.output_usd_per_million) / 1_000_000;
 }
 
+export class ModelAttemptAlreadyReservedError extends Error {
+  constructor() {
+    super('MODEL_ATTEMPT_ALREADY_RESERVED');
+  }
+}
+
 export class BudgetedModelGateway implements ModelGateway {
   constructor(private readonly provider: ModelGateway, private readonly model: ModelConfig, private readonly options: ModelBudgetOptions) {}
 
@@ -104,6 +110,7 @@ export class BudgetedModelGateway implements ModelGateway {
       requested_at: requestedAt.toISOString(),
     }, this.options.limits);
     if (reservation.status === 'denied') throw new Error('MODEL_BUDGET_HOLD');
+    if (reservation.status === 'existing') throw new ModelAttemptAlreadyReservedError();
 
     const isReview = request.purpose === 'review';
     const callAllowed = await recordModelCall(this.options.db, this.options.candidate_id, this.options.owner_epoch,

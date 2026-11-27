@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { createEditorialCandidatePipeline } from '../src/editorial/pipeline.js';
 import type { Candidate, ContentProposal, PreparationContext, PublicationReceipt, PublishAttempt, Signal } from '../src/editorial/contracts.js';
 import type { EditorialPolicy } from '../src/editorial/scheduler.js';
-import type { ModelGateway, ModelRequest, ModelResult } from '../src/editorial/models.js';
+import { ModelAttemptAlreadyReservedError, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
 import type { DurableStep } from '../src/editorial/workflow-core.js';
 
 const article = {
@@ -51,6 +51,29 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it.each(['author', 'review', 'revise'] as const)('records an uncertain %s attempt as a durable hold', async (purpose) => {
+    const models = new Models();
+    models.outputs[1] = { decision: 'FIX_REQUIRED', findings: [{ code: 'EVIDENCE', detail: 'Clarify the evidence.' }] };
+    const generate = models.generate.bind(models);
+    models.generate = async (request) => {
+      if (request.purpose !== purpose) return generate(request);
+      models.calls.push(request);
+      throw new ModelAttemptAlreadyReservedError();
+    };
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, renderSocialCard, preparationContext: async () => context, persist: async () => true,
+      publish: async () => { throw new Error('A held candidate must not publish'); },
+      verify: async () => { throw new Error('A held candidate must not run public readback'); },
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps() };
+
+    const held = { status: 'held', reason: 'A prior model attempt needs reconciliation before it can be retried.' };
+    await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
+    await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
+    expect(models.calls.filter((call) => call.purpose === purpose)).toHaveLength(1);
+  });
+
   it('uses durable waits for pending checks and deployment without repeating authoring on replay', async () => {
     const models = new Models();
     const step = new Steps();

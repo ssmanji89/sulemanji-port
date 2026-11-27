@@ -135,6 +135,7 @@ describe('signed public knowledge import', () => {
     'https://192.0.2.1/private', 'https://192.168.1.2/private', 'https://@example.org/private', 'https://[::1]/private',
     'https://[fd12::1]/private', 'https://[fe80::1]/private', 'https://[ff02::1]/private',
     'https://[2001:db8::1]/private', 'https://[2001:2::1]/private', 'https://[2001:4::1]/private',
+    'https://[2001:40::1]/private',
     'https://[2002:0a00:0001::1]/private', 'https://[3fff::1]/private',
     'https://[::ffff:10.0.0.1]/private'])('rejects non-public source address %s', async (url) => {
     const invalidPayload = { ...payload, public_sources: [{ ...payload.public_sources[0], url }] };
@@ -144,7 +145,9 @@ describe('signed public knowledge import', () => {
   });
 
   it.each(['https://[2001:1::1]/public', 'https://[2001:3::1]/public',
-    'https://[2001:4:112::1]/public', 'https://[2001:20::1]/public'])('accepts globally reachable IPv6 exception %s', async (url) => {
+    'https://[2001:4:112::1]/public', 'https://[2001:20::1]/public', 'https://[2001:21::1]/public',
+    'https://[2001:2f:ffff::1]/public', 'https://[2001:20:1000::1]/public',
+    'https://[2001:30:1000::1]/public', 'https://[2001:3f:ffff::1]/public'])('accepts globally reachable IPv6 exception %s', async (url) => {
     const validPayload = { ...payload, public_sources: [{ ...payload.public_sources[0], url }] };
     const result = await importEnvelope(await makeEnvelope({ payload: validPayload, payload_sha256: await digest(validPayload) }));
     expect(result).toMatchObject({ status: 'accepted' });

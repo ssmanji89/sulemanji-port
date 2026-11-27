@@ -150,7 +150,8 @@ function isPublicIpv6(address: string): boolean {
       (Number.parseInt(groups[7] ?? '0', 16) === 1 || Number.parseInt(groups[7] ?? '0', 16) === 2)) ||
     secondWord === 3 ||
     (secondWord === 4 && thirdWord === 0x112) ||
-    ((secondWord === 0x20 || secondWord === 0x30) && thirdWord < 0x1000)
+    (secondWord >= 0x20 && secondWord <= 0x2f) ||
+    (secondWord >= 0x30 && secondWord <= 0x3f)
   );
   if (firstWord < 0x2000 || firstWord > 0x3fff || firstWord === 0x2002 ||
       (firstWord === 0x3fff && secondWord < 0x1000)) return false;

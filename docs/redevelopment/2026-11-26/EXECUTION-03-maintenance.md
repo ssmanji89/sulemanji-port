@@ -36,3 +36,19 @@
 - Acceptance verifier unit tests: 2/2 pass; built-site verifier passes against the 55-article baseline.
 - Activation proposal is recorded in `ACTIVATION-PROPOSAL.md`. It does not grant spending, account access, provider configuration, schedule activation, or production cutover.
 - Generated `test-results/` remains untracked and preserved.
+
+## Post-merge live readback (2026-11-27)
+
+- PR #109 merged as `f37bb7c07ed8dcbbdde86f391d085ba36fe2443a` after the full hosted gate and independent review. PIPE-01 through PIPE-06 are fixed and locally reviewed. Main build passed; its production deploy step stopped before writing because `CLOUDFLARE_API_TOKEN` is unset in GitHub Actions.
+- The successful main artifact was deployed manually with the existing Wrangler OAuth session. Static Worker `sulemanji-site` version `9baf081c-b60b-4044-a79a-e5dcc5ab6165` is 100% active; public `release.json` matches main `f37bb7c`, with 229 assets and the verified digest. Canonical Home, Writing, market project, preserved article, retired intake, and missing-article routes read back 200/301/410/404 as specified.
+- Production editorial Worker version `c2c1c980-89ea-4f24-81e9-2f7eb9c2ca30` and staging version `2b067b44-99f4-4ec2-bccd-6cdf80edce89` are deployed with separate D1 and Workflow resources. Production has the hourly Cron; staging Cron remains disabled.
+- Remote migrations 0004 and 0005 are applied to both editorial D1s; readback confirms migrations 0001–0005. Both control rows remain `paused=1, owner_epoch=1`; production candidates and receipts are zero. The editorial endpoint's unsigned synthetic POST remains a 401 AUTH reachability check only.
+- Existing Writing LaunchAgent authority was left in place, with no new publisher enabled. Current status shows the daily job not running and last exit code 1. Its Nov 26 run blocked on Docker CLI timeout; later scout attempts blocked while Docker's `desktop` credential helper hung for the missing pinned Ruby image. Anonymous pull of the exact pinned image fixed the cache dependency; the read-only source gate now passes (55 public, 0 draft, 1 legacy), and the existing publication worktree remains clean. No article run was triggered.
+- T09/T10 remain partial: CI still needs the scoped production token; the installed writer needs its next natural run reconciled; the signed sanitized Viyu producer/reader, approved strict policy, provider/model spend, real review/publisher/readback adapters, one-writer cutover, and two natural eligible schedule runs remain outstanding. No schedule run is counted from a manual probe.
+
+## T07 importer contract alignment follow-up (2026-11-27)
+
+- Independent review of the merged private producer PR #176 found that the public editorial importer's `authored_fields` validator still accepted arbitrary dotted names. The producer fix is merged to `Viyu-Network-Solutions/mem0-mcp` main as `111f5cb889239957d1c512ad05eafd5a5b7a5e54`.
+- Site PR #110 (`730fd988633eb3837b1470f0ec0e0b6b0281d7e2`) now applies the same exact-field rule at the importer boundary, also requiring non-empty public sources, unique authored fields, safe text, and rejecting local/private/reserved source address literals. Signed-import tests cover the invalid cases.
+- Local verification on the clean candidate: Cloudflare `npm run check` passed TypeScript, 86 tests / 4 skipped, built-site integration 90/90, and both site Worker dry-runs. `bash scripts/check_site_release.sh` passed, including 72 Python tests, public safety, 26-route review, and retirement checks. Hosted PR build passed; deployment jobs were skipped for a pull request. Independent exact-candidate review is pending.
+- This is a source-level correction only; PR #110 has not merged or deployed. Production/staging editorial Workers remain paused; no actual authorized producer receipt or natural eligible run is claimed.

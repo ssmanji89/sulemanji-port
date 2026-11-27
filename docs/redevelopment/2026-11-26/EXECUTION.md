@@ -14,4 +14,4 @@ Release verification checks the built artifact identity, canonical routes, prese
 
 Background maintenance is a separate capability with its own source-authority, provider-limit, review, recovery, public-readback, and publisher-cutover requirements.
 
-Exact account and resource details, private integration design, and operational receipts belong in access-controlled records rather than this public execution note.
+Exact commands and results are maintained in an access-controlled local qualification ledger outside the public repository. Account and resource details, private integration design, and operational receipts also belong in access-controlled records rather than this public execution note.

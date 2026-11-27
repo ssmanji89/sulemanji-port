@@ -6,12 +6,26 @@ import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from scripts.build_site_manifest import build_manifest, render_release_headers
+from scripts.build_site_manifest import article_content_sha256, build_manifest, render_release_headers
 from scripts.verify_cloudflare_deployment import verify_deployment
 from scripts.site_release import ReleaseError, fetch_public_manifest, verify_artifact
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / '.github' / 'workflows' / 'jekyll.yml'
+
+
+def add_article(root):
+    notes = root / 'notes'
+    notes.mkdir(exist_ok=True)
+    rendered = ('<html><head><link rel="canonical" href="https://www.sulemanji.com/notes/a"></head>'
+                '<body><h1>Known title</h1><time data-published-on datetime="2024-01-01"></time>'
+                '<div data-writing-body>Known content.</div></body></html>')
+    (notes / 'a.html').write_text(rendered, encoding='utf-8')
+    return [{
+        'url': '/notes/a',
+        'published_on': '2024-01-01',
+        'content_sha256': article_content_sha256(rendered),
+    }]
 
 
 class CloudflareReleaseTests(unittest.TestCase):
@@ -43,8 +57,7 @@ class CloudflareReleaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
-            articles = [{'url': '/notes/a', 'published_on': '2024-01-01'}]
-            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            manifest = build_manifest(root, '1111111', [], '2026-11-26T00:00:00Z')
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ReleaseError, 'current main'):
                 verify_artifact(root, '1111111', '2222222')
@@ -63,17 +76,21 @@ class CloudflareReleaseTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
-            articles = [{'url': '/notes/a', 'published_on': '2024-01-01'}]
+            articles = add_article(root)
             manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ReleaseError, 'identity headers'):
                 verify_artifact(root, '1111111', '1111111')
 
+    def test_article_body_change_is_rejected_even_if_release_header_remains(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            articles = add_article(root)
+            articles[0]['content_sha256'] = article_content_sha256('<div data-writing-body>Changed content.</div>')
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
-            self.assertEqual(verify_artifact(root, '1111111', '1111111'), manifest)
-
-            (root / '_headers').write_text('/*\n  X-Site-Source-Commit: 2222222\n', encoding='utf-8')
-            with self.assertRaisesRegex(ReleaseError, 'identity headers'):
+            with self.assertRaisesRegex(ReleaseError, 'article identity or visible content'):
                 verify_artifact(root, '1111111', '1111111')
 
     def test_operational_docs_and_test_code_stay_out_of_public_build(self):

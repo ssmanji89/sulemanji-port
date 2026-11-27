@@ -8,10 +8,62 @@ import os
 import re
 import subprocess
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
 
 EXCLUDED = {'release.json', 'release-manifest.json', '_headers', '_redirects', '.assetsignore'}
+
+
+class _ArticleBodyText(HTMLParser):
+    """Extract rendered article text using the publisher's text-node spacing rules."""
+    IGNORED_TAGS = {'script', 'style', 'noscript'}
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.body_depth = 0
+        self.body_count = 0
+        self.ignored: list[str] = []
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        values = dict(attrs)
+        if not self.body_depth and tag == 'div' and 'data-writing-body' in values:
+            self.body_depth = 1
+            self.body_count += 1
+            return
+        if not self.body_depth:
+            return
+        if tag == 'div':
+            self.body_depth += 1
+        if tag in self.IGNORED_TAGS:
+            self.ignored.append(tag)
+
+    def handle_startendtag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        self.handle_starttag(tag, attrs)
+        self.handle_endtag(tag)
+
+    def handle_endtag(self, tag: str) -> None:
+        if not self.body_depth:
+            return
+        if tag in self.IGNORED_TAGS and tag in self.ignored:
+            self.ignored.remove(tag)
+        if tag == 'div':
+            self.body_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self.body_depth and not self.ignored:
+            self.parts.append(data)
+
+
+def article_content_sha256(rendered_html: str) -> str:
+    parser = _ArticleBodyText()
+    parser.feed(rendered_html)
+    parser.close()
+    normalized = ' '.join(' '.join(parser.parts).split())
+    if parser.body_count != 1 or not normalized:
+        raise ValueError('rendered article must contain one nonempty visible writing body')
+    return hashlib.sha256(normalized.encode('utf-8')).hexdigest()
 
 
 def _file_hash(path: Path) -> str:
@@ -33,12 +85,15 @@ def build_manifest(root: Path, source_commit: str, articles: list[dict[str, str 
     for article in articles:
         url = article.get('url', '')
         published_on = article.get('published_on')
+        content_sha256 = article.get('content_sha256')
         if not url.startswith('/') or url.startswith('//') or url in seen_urls:
             raise ValueError(f'invalid or duplicate article URL: {url}')
         if published_on is not None and not re.fullmatch(r'\d{4}-\d{2}-\d{2}', str(published_on)):
             raise ValueError(f'invalid publication date for {url}')
+        if not isinstance(content_sha256, str) or not re.fullmatch(r'[0-9a-f]{64}', content_sha256):
+            raise ValueError(f'invalid visible article content digest for {url}')
         seen_urls.add(url)
-        normalized_articles.append({'url': url, 'published_on': published_on})
+        normalized_articles.append({'url': url, 'published_on': published_on, 'content_sha256': content_sha256})
     files = {}
     for path in sorted(root.rglob('*')):
         if not path.is_file() or path.is_symlink():
@@ -50,6 +105,8 @@ def build_manifest(root: Path, source_commit: str, articles: list[dict[str, str 
     aggregate = hashlib.sha256()
     for name, file_digest in files.items():
         aggregate.update(name.encode('utf-8') + b'\0' + file_digest.encode('ascii') + b'\n')
+    for article in sorted(normalized_articles, key=lambda item: item['url']):
+        aggregate.update(json.dumps(article, sort_keys=True, separators=(',', ':')).encode('utf-8') + b'\n')
     return {
         'schema_version': 1,
         'source_commit': source_commit,
@@ -104,7 +161,15 @@ def _article_identity(site_root: Path) -> list[dict[str, str | None]]:
         published = re.search(r'<time[^>]+data-published-on[^>]+datetime=["\'](\d{4}-\d{2}-\d{2})', rendered, re.I)
         if not published:
             published = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})', rendered, re.I)
-        articles.append({'url': url, 'published_on': published.group(1) if published else None})
+        try:
+            content_sha256 = article_content_sha256(rendered)
+        except ValueError as error:
+            raise ValueError(f'{html_path}: {error}') from error
+        articles.append({
+            'url': url,
+            'published_on': published.group(1) if published else None,
+            'content_sha256': content_sha256,
+        })
     if not articles:
         raise ValueError('no rendered note pages found')
     return articles
@@ -127,7 +192,15 @@ def main() -> int:
     if args.baseline:
         baseline_payload = json.loads(args.baseline.read_text(encoding='utf-8'))
         baseline = baseline_payload.get('articles', baseline_payload)
-        if sorted(articles, key=lambda item: item['url']) != sorted(baseline, key=lambda item: item['url']):
+        article_identity = sorted(
+            ({'url': item['url'], 'published_on': item['published_on']} for item in articles),
+            key=lambda item: item['url'],
+        )
+        baseline_identity = sorted(
+            ({'url': item['url'], 'published_on': item['published_on']} for item in baseline),
+            key=lambda item: item['url'],
+        )
+        if article_identity != baseline_identity:
             raise SystemExit('built article URLs or dates differ from the approved baseline')
     manifest = build_manifest(args.site_root, source_commit, articles)
     output = args.output or args.site_root / 'release.json'

@@ -7,10 +7,13 @@ import re
 import subprocess
 import tempfile
 from dataclasses import dataclass
+from datetime import datetime
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlparse
+
+from scripts.build_site_manifest import article_content_sha256
 
 
 CANONICAL_ORIGIN = 'https://www.sulemanji.com'
@@ -34,6 +37,7 @@ MISSING_ROUTE = '/__release-verification-must-404__/'
 SUPPLEMENTAL_RESPONSE_COUNT = 5  # manifest, social image, retired path, missing path, apex redirect
 COMMIT_RE = re.compile(r'^[0-9a-f]{40}$')
 DIGEST_RE = re.compile(r'^sha256:[0-9a-f]{64}$')
+BUILT_AT_RE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
 
 
 class LiveReleaseError(ValueError):
@@ -127,12 +131,15 @@ class PageIdentity(HTMLParser):
         return [' '.join(' '.join(parts).split()) for parts in self.heading_parts]
 
 
-def _check_identity_headers(response: LiveResponse, expected_commit: str, expected_digest: str, path: str) -> None:
+def _check_identity_headers(response: LiveResponse, expected_commit: str, expected_digest: str,
+                            expected_built_at: str, path: str) -> None:
     headers = {key.lower(): value for key, value in (response.headers or {}).items()}
     if headers.get('x-site-source-commit') != expected_commit:
         raise LiveReleaseError(f'source commit header does not match on {path}')
     if headers.get('x-site-asset-digest') != expected_digest:
         raise LiveReleaseError(f'asset digest header does not match on {path}')
+    if headers.get('x-site-built-at') != expected_built_at:
+        raise LiveReleaseError(f'build timestamp header does not match on {path}')
 
 
 def _check_content_type(response: LiveResponse, expected: str, path: str) -> None:
@@ -199,7 +206,6 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
     digest = expected_digest
 
     manifest_response = _fetch(fetcher, base_url.rstrip('/') + '/release.json', 200, 'release manifest')
-    _check_identity_headers(manifest_response, expected_commit, digest, '/release.json')
     _check_content_type(manifest_response, 'application/json', '/release.json')
     if public_manifest is None:
         try:
@@ -212,6 +218,16 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
         raise LiveReleaseError('live release source commit does not match expected commit')
     if public_manifest.get('asset_digest') != digest:
         raise LiveReleaseError('live release asset digest does not match expected artifact')
+    built_at = public_manifest.get('built_at')
+    if not isinstance(built_at, str) or not BUILT_AT_RE.fullmatch(built_at):
+        raise LiveReleaseError('live release build timestamp is invalid')
+    try:
+        parsed_built_at = datetime.fromisoformat(built_at.replace('Z', '+00:00'))
+    except ValueError as error:
+        raise LiveReleaseError('live release build timestamp is invalid') from error
+    if parsed_built_at.isoformat(timespec='seconds').replace('+00:00', 'Z') != built_at:
+        raise LiveReleaseError('live release build timestamp is not canonical UTC')
+    _check_identity_headers(manifest_response, expected_commit, digest, built_at, '/release.json')
     articles = public_manifest.get('articles')
     if not isinstance(public_manifest.get('files'), dict) or not public_manifest['files']:
         raise LiveReleaseError('live release manifest has no asset inventory')
@@ -226,7 +242,7 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
     route_count = 0
     for path, (content_type, expected_heading) in REQUIRED_ROUTE_CONTRACTS.items():
         response = _fetch(fetcher, base_url.rstrip('/') + path, 200, f'required route {path}')
-        _check_identity_headers(response, expected_commit, digest, path)
+        _check_identity_headers(response, expected_commit, digest, built_at, path)
         _check_content_type(response, content_type, path)
         if expected_heading is not None:
             facts = PageIdentity()
@@ -270,9 +286,11 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
     for article in articles:
         route = _safe_article_path(article.get('url') if isinstance(article, dict) else None)
         published_on = article.get('published_on') if isinstance(article, dict) else None
+        content_sha256 = article.get('content_sha256') if isinstance(article, dict) else None
         valid_date = isinstance(published_on, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', published_on)
         if (route is None or not isinstance(article, dict) or 'published_on' not in article
-                or (published_on is not None and not valid_date)):
+                or (published_on is not None and not valid_date)
+                or not isinstance(content_sha256, str) or not re.fullmatch(r'[0-9a-f]{64}', content_sha256)):
             raise LiveReleaseError('live release manifest contains an invalid article identity')
         article_path, normalized = route
         if normalized not in writing_paths:
@@ -282,7 +300,7 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
         if published_on is not None and normalized not in feed_paths:
             raise LiveReleaseError(f'feed.xml is missing dated article {article_path}')
         article_response = _fetch(fetcher, base_url.rstrip('/') + article_path, 200, f'article {article_path}')
-        _check_identity_headers(article_response, expected_commit, digest, article_path)
+        _check_identity_headers(article_response, expected_commit, digest, built_at, article_path)
         _check_content_type(article_response, 'text/html', article_path)
         facts = PageIdentity()
         facts.feed(article_response.body)
@@ -290,6 +308,12 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
             raise LiveReleaseError(f'article canonical URL changed for {article_path}')
         if not facts.title or not facts.meta.get('description') or not facts.meta.get('og:title') or not any(facts.headings):
             raise LiveReleaseError(f'article metadata or heading is missing for {article_path}')
+        try:
+            actual_content_sha256 = article_content_sha256(article_response.body)
+        except ValueError as error:
+            raise LiveReleaseError(f'article visible body is missing for {article_path}') from error
+        if actual_content_sha256 != content_sha256:
+            raise LiveReleaseError(f'article visible body changed for {article_path}')
         if published_on is None and facts.published_on is not None:
             raise LiveReleaseError(f'legacy article gained an unverified publication date for {article_path}')
         if published_on is not None and facts.published_on != published_on:
@@ -298,8 +322,6 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
         if published_on is not None:
             article_dates.append((published_on, normalized))
 
-    if not article_dates:
-        raise LiveReleaseError('live release manifest has no dated articles')
     if not article_dates:
         raise LiveReleaseError('live release manifest has no dated articles')
 
@@ -315,7 +337,7 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
     image_headers = {key.lower(): value for key, value in (image.headers or {}).items()}
     if not image_headers.get('content-type', '').lower().startswith('image/'):
         raise LiveReleaseError('Home social image did not return an image MIME type')
-    _check_identity_headers(image, expected_commit, digest, image_url.path)
+    _check_identity_headers(image, expected_commit, digest, built_at, image_url.path)
 
     _fetch(fetcher, base_url.rstrip('/') + RETIRED_ROUTE, 410, 'retired route')
     _fetch(fetcher, base_url.rstrip('/') + MISSING_ROUTE, 404, 'unknown route')
@@ -327,6 +349,7 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
     return {
         'source_commit': expected_commit,
         'asset_digest': digest,
+        'built_at': built_at,
         'checked_response_count': route_count + article_count + SUPPLEMENTAL_RESPONSE_COUNT,
         'article_count': article_count,
     }

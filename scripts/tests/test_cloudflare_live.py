@@ -1,3 +1,4 @@
+import hashlib
 import json
 import re
 import unittest
@@ -12,14 +13,18 @@ from scripts.verify_cloudflare_live import (
     PageIdentity,
     _safe_article_path,
     _safe_feed_path,
+    article_content_sha256,
     verify_live_release,
 )
 
 
 COMMIT = 'a' * 40
 DIGEST = 'sha256:' + 'b' * 64
-ARTICLE = {'url': '/notes/example-article', 'published_on': '2026-11-20'}
-LEGACY_ARTICLE = {'url': '/notes/agent-safety', 'published_on': None}
+BUILT_AT = '2026-11-20T00:00:00Z'
+ARTICLE_BODY = 'Article body text.'
+ARTICLE_DIGEST = hashlib.sha256(ARTICLE_BODY.encode()).hexdigest()
+ARTICLE = {'url': '/notes/example-article', 'published_on': '2026-11-20', 'content_sha256': ARTICLE_DIGEST}
+LEGACY_ARTICLE = {'url': '/notes/agent-safety', 'published_on': None, 'content_sha256': ARTICLE_DIGEST}
 
 
 @dataclass
@@ -34,7 +39,7 @@ def site_manifest(source_commit=COMMIT, articles=None):
         'schema_version': 1,
         'source_commit': source_commit,
         'asset_digest': DIGEST,
-        'built_at': '2026-11-20T00:00:00Z',
+        'built_at': BUILT_AT,
         'files': {'index.html': 'f' * 64},
         'articles': articles if articles is not None else [ARTICLE],
     }
@@ -104,14 +109,16 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
     def article_html(self, article):
         date = article['published_on']
         time = f'<time data-published-on datetime="{date}"></time>' if date else ''
+        body = 'Altered article body.' if self.overrides.get('alter_article_body') else ARTICLE_BODY
         return (f'<html><head><title>Article | Suleman Manji</title>'
                 f'<link rel="canonical" href="{CANONICAL_ORIGIN}{article["url"]}">'
                 '<meta name="description" content="Article description">'
                 '<meta property="og:title" content="Article"></head>'
-                f'<body><main><h1>Article title</h1>{time}</main></body></html>')
+                f'<body><main><h1>Article title</h1><div data-writing-body>{body}</div>{time}</main></body></html>')
 
     def release_headers(self):
-        return {'x-site-source-commit': COMMIT, 'x-site-asset-digest': DIGEST}
+        built_at = '2026-11-21T00:00:00Z' if self.overrides.get('wrong_built_at') else BUILT_AT
+        return {'x-site-source-commit': COMMIT, 'x-site-asset-digest': DIGEST, 'x-site-built-at': built_at}
 
     def response_headers(self, path):
         content_type = {
@@ -141,6 +148,11 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         with self.assertRaisesRegex(LiveReleaseError, 'source commit'):
             self.verify()
 
+    def test_build_timestamp_must_match_static_identity_headers(self):
+        self.overrides['wrong_built_at'] = True
+        with self.assertRaisesRegex(LiveReleaseError, 'build timestamp header'):
+            self.verify()
+
     def test_missing_writing_entry_fails(self):
         self.overrides['missing_writing_entry'] = True
         with self.assertRaisesRegex(LiveReleaseError, 'Writing index'):
@@ -151,6 +163,11 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         receipt = self.verify()
         self.assertEqual(receipt['article_count'], 2)
         self.assertIn('https://www.sulemanji.com/notes/agent-safety', self.calls)
+
+    def test_article_visible_body_must_match_release_manifest(self):
+        self.overrides['alter_article_body'] = True
+        with self.assertRaisesRegex(LiveReleaseError, 'article visible body changed'):
+            self.verify()
 
     def test_checked_response_count_includes_supplemental_checks(self):
         receipt = self.verify()
@@ -201,7 +218,7 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             self.verify()
 
     def test_feed_must_include_older_dated_articles(self):
-        older = {'url': '/notes/older-article', 'published_on': '2026-11-01'}
+        older = {'url': '/notes/older-article', 'published_on': '2026-11-01', 'content_sha256': ARTICLE_DIGEST}
         self.public_manifest = site_manifest(articles=[older, ARTICLE])
         with self.assertRaisesRegex(LiveReleaseError, 'feed.xml is missing dated article /notes/older-article'):
             self.verify()
@@ -260,10 +277,12 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             output = page_file(article_path)
             self.assertIsNotNone(output, article_path)
             facts = PageIdentity()
-            facts.feed(output.read_text(encoding='utf-8'))
+            rendered = output.read_text(encoding='utf-8')
+            facts.feed(rendered)
             self.assertEqual(facts.canonical, CANONICAL_ORIGIN + article_path)
             self.assertTrue(facts.title and facts.meta.get('description') and facts.meta.get('og:title'), article_path)
             self.assertTrue(any(facts.headings), article_path)
+            self.assertEqual(article_content_sha256(rendered), article['content_sha256'], article_path)
             if article['published_on'] is None:
                 self.assertIsNone(facts.published_on, article_path)
             else:

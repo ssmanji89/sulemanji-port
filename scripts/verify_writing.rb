@@ -190,12 +190,12 @@ module WritingContract
       check(route.is_a?(String) && /\A\/notes\/[a-z0-9]+(?:-[a-z0-9]+)*\z/.match?(route),
             'article context: invalid route')
       check(context.is_a?(Hash) &&
-            context.keys.sort == %w[cta_label proof_label proof_status proof_url],
+            context.keys.sort == %w[proof_label proof_status proof_url],
             "article context: #{route} invalid fields")
       check(context['proof_url'].is_a?(String) &&
             /\A\/(?:case-studies|projects|work)(?:\/[a-z0-9-]+)?\/?(?:#[a-z0-9-]+)?\z/.match?(context['proof_url']),
             "article context: #{route} invalid proof_url")
-      %w[proof_label cta_label].each do |field|
+      %w[proof_label].each do |field|
         check(context[field].is_a?(String) && !context[field].strip.empty? &&
               !/[<>]/.match?(context[field]),
               "article context: #{route} invalid #{field}")
@@ -688,9 +688,8 @@ module WritingContract
     if context
       check(section &&
             section.at_css('[data-article-context-proof]')&.[]('href') == baseurl + context['proof_url'] &&
-            section.at_css('[data-article-context-cta]')&.[]('href') ==
-              baseurl + '/contact/' &&
-            section.text.include?('Business delivery is through Viyu Network Solutions.'),
+            section.at_css('[data-article-context-cta]').nil? &&
+            !section.text.include?('Business delivery is through Viyu Network Solutions.'),
             "#{article.path}: article context mismatch")
     else
       check(section.nil?, "#{article.path}: unlisted article context rendered")

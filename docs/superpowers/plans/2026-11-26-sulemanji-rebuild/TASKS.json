@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "goal": "complete-site-redevelopment",
+  "execution_method": "superpowers:executing-plans",
+  "tasks": [
+    {"id": "T01", "plan": "01-experience.md", "depends_on": []},
+    {"id": "T02", "plan": "01-experience.md", "depends_on": ["T01"]},
+    {"id": "T03", "plan": "01-experience.md", "depends_on": ["T01", "T02"]},
+    {"id": "T04", "plan": "01-experience.md", "depends_on": ["T01", "T02"]},
+    {"id": "T05", "plan": "02-cloudflare.md", "depends_on": ["T02"]},
+    {"id": "T06", "plan": "02-cloudflare.md", "depends_on": ["T05"]},
+    {"id": "T07", "plan": "03-maintenance.md", "depends_on": []},
+    {"id": "T08", "plan": "03-maintenance.md", "depends_on": ["T01", "T07"]},
+    {"id": "T09", "plan": "03-maintenance.md", "depends_on": ["T08"]},
+    {"id": "T10", "plan": "03-maintenance.md", "depends_on": ["T06", "T09"]},
+    {"id": "T11", "plan": "03-maintenance.md", "depends_on": ["T03", "T04", "T10"]},
+    {"id": "T12", "plan": "04-qualification-release.md", "depends_on": ["T03", "T04", "T06", "T11"]},
+    {"id": "T13", "plan": "04-qualification-release.md", "depends_on": ["T12"]}
+  ]
+}

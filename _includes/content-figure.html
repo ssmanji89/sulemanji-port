@@ -1,0 +1,5 @@
+<figure{% if include.class %} class="{{ include.class | escape }}"{% endif %}>
+  <img src="{{ include.src | relative_url | escape }}" alt="{{ include.alt | escape }}" loading="lazy">
+  {% if include.caption %}<figcaption>{{ include.caption | escape }}</figcaption>{% endif %}
+  {% if include.text_equivalent %}<details class="figure-description"><summary>Read the diagram description</summary><p>{{ include.text_equivalent | escape }}</p></details>{% endif %}
+</figure>

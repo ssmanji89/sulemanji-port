@@ -179,6 +179,17 @@ class WritingTest < Minitest::Test
     assert_equal false, article.data['disclosure_required']
   end
 
+  def test_reviewed_mathematics_reader_and_topic_are_allowed
+    publication_note(
+      'mathematics-note',
+      {'reader' => 'mathematics-reader', 'topics' => ['mathematics']}
+    )
+
+    article = catalog.active.find { |item| item.path == 'notes/mathematics-note.md' }
+    assert_equal 'mathematics-reader', article.data['reader']
+    assert_equal ['mathematics'], article.data['topics']
+  end
+
   def test_changed_schema_v1_digest_requires_schema_v2
     path = note('v1-frozen')
     File.write(path, File.read(path) + "\n")
@@ -449,8 +460,7 @@ class WritingTest < Minitest::Test
         '/notes/presentation' => {
           'proof_url' => '/case-studies/agentic-msp-delivery',
           'proof_label' => 'MSP service delivery using agentic LLMs',
-          'proof_status' => 'case study',
-          'cta_label' => 'Discuss a business engagement'
+          'proof_status' => 'case study'
         }
       }
     }
@@ -483,8 +493,8 @@ class WritingTest < Minitest::Test
     assert_equal ['nofollow', 'noopener', 'sponsored'],
                  Nokogiri::HTML.fragment(preserved).at_css('a')['rel'].split.sort
     assert_equal 1, page.css('[data-article-context]').length
-    assert_includes page.at_css('[data-article-context]').text,
-                    'Business delivery is through Viyu Network Solutions.'
+    assert_includes page.at_css('[data-article-context-proof]')['href'], '/case-studies/agentic-msp-delivery'
+    assert_empty page.css('[data-article-context-cta]')
     assert_empty html('/notes/unlisted').css('[data-article-context]')
   end
 
@@ -606,8 +616,7 @@ class WritingTest < Minitest::Test
         '/notes/hidden-context' => {
           'proof_url' => '/case-studies/agentic-msp-delivery',
           'proof_label' => 'Synthetic proof link',
-          'proof_status' => 'case study',
-          'cta_label' => 'Synthetic call to action'
+          'proof_status' => 'case study'
         }
       }
     }

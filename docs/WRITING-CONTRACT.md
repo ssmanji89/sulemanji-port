@@ -87,6 +87,15 @@ date; `--as-of` freezes a validation date.
 Allowed labels live in `_data/writing.yml`. Expanding the vocabulary is a reviewed
 data change, not a reason to introduce archives or filtering UI.
 
+The public content catalog in `_data/content-catalog.yml` indexes non-article
+projects and reviewed article annotations without copying article bodies or
+changing their publication dates or permalinks. Topics use the same reviewed
+vocabulary as Writing. Each record states its actual public availability and
+uses public HTTPS source references only. Directed relations need a named reason;
+commercial calls to action are optional and must be useful to that continuation.
+The generated `/content-index.json` is a discovery index, not evidence that a
+prototype is supported, maintained, or adopted.
+
 Allowed `publication_family` values are `professional-analysis`,
 `technical-guide`, `research-note`, `product-category-guide`, `field-note`, and
 `experiment`. Allowed `commercial_intent` values are `none`, `affiliate`,

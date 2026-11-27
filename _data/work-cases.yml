@@ -72,26 +72,31 @@
     bullets: []
   projects:
   - name: botStuff
+    anchor: botstuff
     description: My long-running stock and cryptocurrency automation experiments,
       including recurring jobs, analysis, order handling, and research variants.
     state: Private source; historical project family
     href:
   - name: finBots
+    anchor: finbots
     description: Indicator services, scheduling, model experiments, and trade records
       across several development branches.
     state: Public historical source
     href: https://github.com/ssmanji89/finBots/tree/2f26fc4dd1ee6f1da389fc81425fa3c60ec7535f
   - name: robinBots
+    anchor: robinbots
     description: A later project structure that carries forward part of the finBots
       implementation.
     state: Public historical source
     href: https://github.com/ssmanji89/robinBots/tree/6cb76cf2ddf0771101df98d93911af8e4a4253fd
   - name: TradingAgents-RH
+    anchor: tradingagents-rh
     description: Extensions to TradingAgents for broker integration, decision records,
       replay, and human review.
     state: Private implementation; upstream framework credited
     href:
   - name: Auxiliary-signal experiments
+    anchor: auxiliary-signals
     description: Typed signal records, deterministic scoring, confirmation checks,
       and expiry routing in a TradingAgents branch.
     state: Public extension prototype
@@ -109,6 +114,7 @@
   diagram_caption: Separate what the system suggests, what may act, and what actually
     happens.
   diagram_alt: Market automation and decision systems
+  diagram_text_equivalent: Market data moves to analysis, then to a proposed action. Review and authority determine whether external action happens. The result is recorded, and a retry or review can begin another pass.
 - slug: integrations
   category: Public tools
   title: Useful connections between systems
@@ -184,20 +190,24 @@
     bullets: []
   projects:
   - name: halopsa-workflows-mcp
+    anchor: halopsa
     description: Authenticated HaloPSA workflow operations exposed as MCP tools.
     state: Published npm package
     href: https://www.npmjs.com/package/halopsa-workflows-mcp
   - name: mcp-connectwise-manage
+    anchor: connectwise
     description: OpenAPI-derived tools with operation selection, schema checks, paging
       defaults, and change controls.
     state: Published npm package
     href: https://www.npmjs.com/package/mcp-connectwise-manage
   - name: n8n-nodes-cavelo
+    anchor: cavelo
     description: Cavelo resource operations, polling, pagination, and enrichment for
       n8n workflows.
     state: Published npm package
     href: https://www.npmjs.com/package/n8n-nodes-cavelo
   - name: toast-pos-mcp
+    anchor: toast-reporting
     description: Reporting tools with exact decimal accumulation and separate Standard
       and Analytics paths.
     state: Public implementation; package release pending
@@ -219,6 +229,7 @@
   diagram_caption: The adapter translates the request. The external service performs
     its own operation.
   diagram_alt: Useful connections between systems
+  diagram_text_equivalent: An agent request passes through a scoped adapter to an external service. Operator or policy authority sets the scope. The returned result includes status and detail.
 - slug: knowledge-tools
   category: Independent work
   title: Knowledge that survives the next session
@@ -321,6 +332,7 @@
   diagram: knowledge-cycle
   diagram_caption: Each pass updates the record. Reuse includes a fresh check.
   diagram_alt: Knowledge that survives the next session
+  diagram_text_equivalent: Capture observations with where and when they came from. Check the current state before reuse, apply knowledge in context, then revise, fix, or expire it. The cycle updates working knowledge.
 - slug: service-operations
   category: My work at Viyu
   title: Keep the business task in view
@@ -414,6 +426,7 @@
   diagram: operations-loop
   diagram_caption: 'Solid path: the work. Dashed paths: what the record retains.'
   diagram_alt: Keep the business task in view
+  diagram_text_equivalent: Observe current state, scope the owner and limits, make a bounded change, verify the result, and retain the decision and proof. A separate record keeps the operating work inspectable.
 - slug: ff-cli
   category: Personal decision tools
   title: Learning fantasy football by building a tool
@@ -481,6 +494,7 @@
   diagram_caption: A single input state can support several questions without mixing
     their time horizons.
   diagram_alt: Learning fantasy football by building a tool
+  diagram_text_equivalent: The same frozen input snapshot supports distinct views for this week, the rest of the season, and playoff qualification and risk. Compare options while keeping each time horizon distinct.
 - slug: mathematical-verification
   category: Mathematics
   title: Reproduce the calculation
@@ -547,3 +561,4 @@
   diagram_caption: Independent checks make the reproduction easier to inspect. Recorded
     output is distinguished from a new execution.
   diagram_alt: Reproduce the calculation
+  diagram_text_equivalent: A polynomial claim is checked against the same map and identities by a custom exact rational checker and an independent SymPy checker. Their results are compared with identity and collision checks. The verification bundle retains code, output, versions, and hashes.

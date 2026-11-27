@@ -1,0 +1,173 @@
+- id: market-systems
+  canonical_url: /work/market-systems/
+  kind: project-family
+  title: Market automation and decision systems
+  summary: Independent experiments in market data, software, probability, and human review.
+  topics: [markets, trading-systems, mathematics]
+  availability: [historical, public-source, explanation-only]
+  source_refs:
+    - https://github.com/ssmanji89/finBots/tree/2f26fc4dd1ee6f1da389fc81425fa3c60ec7535f
+    - https://github.com/ssmanji89/robinBots/tree/6cb76cf2ddf0771101df98d93911af8e4a4253fd
+    - https://github.com/ssmanji89/TradingAgents/compare/7e9e7b83c7fcc18d941300b253c6ed24d985788d...8ed800abe44c7d5108edc48699c93c5453078bd4
+  related_ids: [finbots, robinbots, auxiliary-signal-experiments]
+  authored_fields: []
+- id: finbots
+  canonical_url: /work/market-systems/#finbots
+  kind: tool
+  title: finBots
+  summary: Public historical source for indicator services, scheduled work, model experiments, and trade records.
+  topics: [markets, trading-systems]
+  availability: [historical, public-source]
+  source_refs: [https://github.com/ssmanji89/finBots/tree/2f26fc4dd1ee6f1da389fc81425fa3c60ec7535f]
+  related_ids: [market-systems, robinbots]
+  authored_fields: []
+- id: robinbots
+  canonical_url: /work/market-systems/#robinbots
+  kind: tool
+  title: robinBots
+  summary: A later public historical project structure carrying forward part of the finBots implementation.
+  topics: [markets, trading-systems]
+  availability: [historical, public-source]
+  source_refs: [https://github.com/ssmanji89/robinBots/tree/6cb76cf2ddf0771101df98d93911af8e4a4253fd]
+  related_ids: [market-systems, finbots]
+  authored_fields: []
+- id: auxiliary-signal-experiments
+  canonical_url: /work/market-systems/#auxiliary-signals
+  kind: experiment
+  title: Auxiliary signal experiments
+  summary: A public extension prototype with typed signals, confirmation checks, expiry, and human review.
+  topics: [markets, trading-systems]
+  availability: [public-source, demo]
+  source_refs: [https://github.com/ssmanji89/TradingAgents/compare/7e9e7b83c7fcc18d941300b253c6ed24d985788d...8ed800abe44c7d5108edc48699c93c5453078bd4]
+  related_ids: [market-systems]
+  authored_fields: []
+- id: botstuff
+  canonical_url: /work/market-systems/#botstuff
+  kind: project-family
+  title: botStuff
+  summary: A long-running family of stock and cryptocurrency automation experiments; the current public account describes its historical scope without exposing private source.
+  topics: [markets, trading-systems]
+  availability: [historical, explanation-only]
+  source_refs: []
+  related_ids: [market-systems]
+  authored_fields: []
+- id: tradingagents-rh
+  canonical_url: /work/market-systems/#tradingagents-rh
+  kind: experiment
+  title: TradingAgents extensions
+  summary: Private implementation work is described at the public account level; the upstream framework remains credited to its authors.
+  topics: [markets, trading-systems]
+  availability: [historical, explanation-only]
+  source_refs: [https://github.com/TauricResearch/TradingAgents]
+  related_ids: [market-systems, auxiliary-signal-experiments]
+  authored_fields: []
+- id: service-integrations
+  canonical_url: /work/integrations/
+  kind: project-family
+  title: Practical system integrations
+  summary: Published packages and implementation work connect service platforms, security workflows, and reporting.
+  topics: [integrations, service-operations, professional-practice]
+  availability: [public-source, package]
+  source_refs:
+    - https://www.npmjs.com/package/halopsa-workflows-mcp
+    - https://www.npmjs.com/package/mcp-connectwise-manage
+    - https://www.npmjs.com/package/n8n-nodes-cavelo
+  related_ids: [halopsa-workflows-mcp, mcp-connectwise-manage, n8n-nodes-cavelo, toast-pos-mcp]
+  authored_fields: []
+- id: halopsa-workflows-mcp
+  canonical_url: /work/integrations/#halopsa
+  kind: tool
+  title: HaloPSA workflow tools
+  summary: Authenticated HaloPSA workflow operations exposed as MCP tools.
+  topics: [integrations, service-operations]
+  availability: [package, public-source]
+  source_refs:
+    - https://www.npmjs.com/package/halopsa-workflows-mcp
+    - https://github.com/ssmanji89/halopsa-workflows-mcp
+  related_ids: [service-integrations]
+  authored_fields: []
+- id: service-operations
+  canonical_url: /work/service-operations/
+  kind: project-family
+  title: Service operations and professional practice
+  summary: A public account of investigations, technical scoping, planned changes, and clear ownership in managed IT service work.
+  topics: [service-operations, professional-practice, infrastructure]
+  availability: [historical, explanation-only]
+  source_refs: []
+  related_ids: [service-integrations]
+  authored_fields: []
+- id: mcp-connectwise-manage
+  canonical_url: /work/integrations/#connectwise
+  kind: tool
+  title: ConnectWise Manage tools
+  summary: OpenAPI-derived operations with schema checks, paging defaults, and change controls.
+  topics: [integrations, service-operations]
+  availability: [package, public-source]
+  source_refs: [https://www.npmjs.com/package/mcp-connectwise-manage]
+  related_ids: [service-integrations]
+  authored_fields: []
+- id: n8n-nodes-cavelo
+  canonical_url: /work/integrations/#cavelo
+  kind: tool
+  title: Cavelo nodes for n8n
+  summary: Resource operations, polling, pagination, and enrichment in n8n workflows.
+  topics: [integrations, service-operations]
+  availability: [package, public-source]
+  source_refs:
+    - https://www.npmjs.com/package/n8n-nodes-cavelo
+    - https://github.com/viyusmanji/n8n-cavelo-nodes
+  related_ids: [service-integrations]
+  authored_fields: []
+- id: toast-pos-mcp
+  canonical_url: /work/integrations/#toast-reporting
+  kind: tool
+  title: Toast POS reporting prototype
+  summary: A public implementation with exact decimal accumulation and separate Standard and Analytics paths; package release pending.
+  topics: [integrations, professional-practice]
+  availability: [public-source, historical]
+  source_refs: [https://github.com/ssmanji89/toast-pos-mcp]
+  related_ids: [service-integrations]
+  authored_fields: []
+- id: knowledge-tools
+  canonical_url: /work/knowledge-tools/
+  kind: project-family
+  title: Knowledge that survives the next session
+  summary: Memory tools and working methods for resuming a task with its evidence and decisions intact.
+  topics: [knowledge-work, professional-practice]
+  availability: [public-source, explanation-only]
+  source_refs: [https://github.com/ssmanji89/viyu-memory]
+  related_ids: [mathematical-verification, service-integrations]
+  authored_fields: []
+- id: mathematical-verification
+  canonical_url: /work/mathematical-verification/
+  kind: experiment
+  title: Reproduce the calculation
+  summary: An exact verification bundle for a Jacobian counterexample, using independent rational and symbolic checkers.
+  topics: [mathematics, knowledge-work]
+  availability: [public-source, historical]
+  source_refs:
+    - https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/assets/code/jacobian-counterexample/verify_exact.py
+    - https://github.com/ssmanji89/jekyll-TeXt-theme.sulemanji.com/blob/27afec0866b0a7b7b195c94bd83f9bd43524446a/assets/code/jacobian-counterexample/verify_sympy.py
+    - https://github.com/google-deepmind/formal-conjectures/pull/4474
+  related_ids: [knowledge-tools]
+  authored_fields: []
+- id: independent-interests
+  canonical_url: /about/#interests
+  kind: profile
+  title: Looking up
+  summary: Practical astronomy and skywatching remain interests in their own right.
+  topics: [astronomy, skywatching, optics]
+  availability: [historical, explanation-only]
+  source_refs: [https://www.sulemanji.com/notes/late-october-skywatching-binoculars-telescope]
+  related_ids: [mathematical-verification]
+  authored_fields: []
+- id: ff-cli
+  canonical_url: /work/ff-cli/
+  kind: tool
+  title: ff-cli
+  summary: An independently maintained fantasy-football decision tool with a public repository and releases.
+  topics: [fantasy-football]
+  availability: [public-source, package, demo]
+  source_refs: [https://github.com/ssmanji89/ff-cli]
+  related_ids: [independent-interests]
+  authored_fields: []

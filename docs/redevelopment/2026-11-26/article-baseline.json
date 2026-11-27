@@ -1,0 +1,225 @@
+{
+  "source_commit": "634948ca25602ac6ad908126a58a252dec27b1ac",
+  "articles": [
+    {
+      "url": "/notes/accessibility-statement-maintenance-contract",
+      "published_on": "2026-11-10"
+    },
+    {
+      "url": "/notes/agent-safety",
+      "published_on": null
+    },
+    {
+      "url": "/notes/ai-acceleration-estimate-capacity-plan",
+      "published_on": "2026-11-07"
+    },
+    {
+      "url": "/notes/ai-agent-identity-authorization",
+      "published_on": "2026-10-24"
+    },
+    {
+      "url": "/notes/ai-application-scanning-pilot",
+      "published_on": "2026-10-30"
+    },
+    {
+      "url": "/notes/ai-protein-binding-evidence-ladder",
+      "published_on": "2026-11-24"
+    },
+    {
+      "url": "/notes/ai-security-patch-acceptance",
+      "published_on": "2026-10-24"
+    },
+    {
+      "url": "/notes/ai-vulnerability-triage-evidence",
+      "published_on": "2026-10-23"
+    },
+    {
+      "url": "/notes/baseline-security-mode-change-record",
+      "published_on": "2026-11-25"
+    },
+    {
+      "url": "/notes/bepicolombo-milestone-success-ranges",
+      "published_on": "2026-11-25"
+    },
+    {
+      "url": "/notes/blockntlmv1sso-exit-plan",
+      "published_on": "2026-11-09"
+    },
+    {
+      "url": "/notes/build-an-ai-kill-switch-defender-sophos-agentic-ops",
+      "published_on": "2026-11-03"
+    },
+    {
+      "url": "/notes/chatgpt-locked-chats-compliance-boundary",
+      "published_on": "2026-11-02"
+    },
+    {
+      "url": "/notes/classic-outlook-november-change-rds-help-desks",
+      "published_on": "2026-11-06"
+    },
+    {
+      "url": "/notes/copilot-adoption-metrics-data-quality-gate",
+      "published_on": "2026-11-08"
+    },
+    {
+      "url": "/notes/cyber-risk-register-executive-decision",
+      "published_on": "2026-10-26"
+    },
+    {
+      "url": "/notes/dependency-reachability-priority-signal",
+      "published_on": "2026-10-29"
+    },
+    {
+      "url": "/notes/digital-sovereignty-workload-decision",
+      "published_on": "2026-10-27"
+    },
+    {
+      "url": "/notes/dotnet-8-end-of-support-readiness",
+      "published_on": "2026-10-26"
+    },
+    {
+      "url": "/notes/emergency-patching-service-decision",
+      "published_on": "2026-10-23"
+    },
+    {
+      "url": "/notes/ercot-data-center-disclosure-project-state",
+      "published_on": "2026-11-25"
+    },
+    {
+      "url": "/notes/escapade-designed-wait-state",
+      "published_on": "2026-11-07"
+    },
+    {
+      "url": "/notes/ews-reprieve-migration-evidence",
+      "published_on": "2026-10-26"
+    },
+    {
+      "url": "/notes/executive-call-payment-authorization",
+      "published_on": "2026-11-08"
+    },
+    {
+      "url": "/notes/git-security-patch-execution-surfaces",
+      "published_on": "2026-11-11"
+    },
+    {
+      "url": "/notes/github-actions-lockfile-trust-decision",
+      "published_on": "2026-10-30"
+    },
+    {
+      "url": "/notes/github-actions-log-secret-response",
+      "published_on": "2026-11-10"
+    },
+    {
+      "url": "/notes/github-notification-reason-work-queue",
+      "published_on": "2026-11-24"
+    },
+    {
+      "url": "/notes/github-security-advisory-decision-rights",
+      "published_on": "2026-11-25"
+    },
+    {
+      "url": "/notes/github-ssh-change-client-test",
+      "published_on": "2026-10-27"
+    },
+    {
+      "url": "/notes/github-stateless-tokens-two-runbooks",
+      "published_on": "2026-11-07"
+    },
+    {
+      "url": "/notes/github-user-id-usage-report-migration",
+      "published_on": "2026-11-24"
+    },
+    {
+      "url": "/notes/github-webhook-ip-range-authentication",
+      "published_on": "2026-10-30"
+    },
+    {
+      "url": "/notes/google-workspace-agent-interface-inventory",
+      "published_on": "2026-11-25"
+    },
+    {
+      "url": "/notes/intune-policy-verification",
+      "published_on": "2026-10-23"
+    },
+    {
+      "url": "/notes/late-october-skywatching-binoculars-telescope",
+      "published_on": "2026-10-24"
+    },
+    {
+      "url": "/notes/llm-usage-spike-identity-incident",
+      "published_on": "2026-11-02"
+    },
+    {
+      "url": "/notes/matter-smart-home-purchase-checklist",
+      "published_on": "2026-10-25"
+    },
+    {
+      "url": "/notes/microsoft-to-do-retirement-workflow-inventory",
+      "published_on": "2026-11-24"
+    },
+    {
+      "url": "/notes/package-version-artifact-identity",
+      "published_on": "2026-10-25"
+    },
+    {
+      "url": "/notes/post-quantum-migration-dependency-map",
+      "published_on": "2026-10-29"
+    },
+    {
+      "url": "/notes/ppfl-testbed-privacy-verdict",
+      "published_on": "2026-11-08"
+    },
+    {
+      "url": "/notes/pre-draft-cryptography-review-inventory",
+      "published_on": "2026-11-06"
+    },
+    {
+      "url": "/notes/pull-request-target-trust-review",
+      "published_on": "2026-11-05"
+    },
+    {
+      "url": "/notes/reject-direct-send-sender-migration",
+      "published_on": "2026-11-24"
+    },
+    {
+      "url": "/notes/safe-vault-incident-boundary",
+      "published_on": "2026-11-26"
+    },
+    {
+      "url": "/notes/seasonal-outlook-test-calendar",
+      "published_on": "2026-10-29"
+    },
+    {
+      "url": "/notes/targeted-release-retirement-validation-ring",
+      "published_on": "2026-10-25"
+    },
+    {
+      "url": "/notes/top-search-result-supplier-verification",
+      "published_on": "2026-11-26"
+    },
+    {
+      "url": "/notes/trading-dashboard-asset-existence",
+      "published_on": "2026-11-24"
+    },
+    {
+      "url": "/notes/voyager-one-light-day-latency",
+      "published_on": "2026-10-28"
+    },
+    {
+      "url": "/notes/windows-11-23h2-exception-register",
+      "published_on": "2026-11-06"
+    },
+    {
+      "url": "/notes/windows-update-certificate-recovery-test",
+      "published_on": "2026-11-09"
+    },
+    {
+      "url": "/notes/work-outlasts-agent-session",
+      "published_on": "2026-10-22"
+    },
+    {
+      "url": "/notes/zero-data-retention-route-acceptance",
+      "published_on": "2026-11-24"
+    }
+  ]
+}

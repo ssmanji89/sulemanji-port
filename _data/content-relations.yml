@@ -1,0 +1,52 @@
+- from_id: market-systems
+  to_id: finbots
+  relation: implementation
+  reason: finBots is one public historical implementation in the market project family.
+- from_id: market-systems
+  to_id: robinbots
+  relation: continuation
+  reason: robinBots carries forward part of the finBots implementation in a later project structure.
+- from_id: market-systems
+  to_id: auxiliary-signal-experiments
+  relation: shared-question
+  reason: The prototype explores how signals, confirmation, and human review fit into market decisions.
+- from_id: market-systems
+  to_id: botstuff
+  relation: explanation
+  reason: The public case account explains the historical experiment family without linking private source.
+- from_id: market-systems
+  to_id: tradingagents-rh
+  relation: shared-question
+  reason: The extensions explore decision records and human review around the credited upstream framework.
+- from_id: service-integrations
+  to_id: halopsa-workflows-mcp
+  relation: implementation
+  reason: HaloPSA workflow tools are one published service-platform integration.
+- from_id: service-integrations
+  to_id: mcp-connectwise-manage
+  relation: implementation
+  reason: ConnectWise Manage has a distinct package and change-control approach.
+- from_id: service-integrations
+  to_id: n8n-nodes-cavelo
+  relation: implementation
+  reason: Cavelo resource operations are available as nodes for n8n workflows.
+- from_id: service-integrations
+  to_id: toast-pos-mcp
+  relation: continuation
+  reason: Toast reporting is a public implementation whose package release remains pending.
+- from_id: service-operations
+  to_id: service-integrations
+  relation: continuation
+  reason: The integration case shows distinct tools used to connect service-platform workflows.
+- from_id: knowledge-tools
+  to_id: mathematical-verification
+  relation: shared-question
+  reason: Both preserve checkable evidence so another person can inspect the reasoning.
+- from_id: independent-interests
+  to_id: mathematical-verification
+  relation: explanation
+  reason: These are separate examples of curiosity pursued through observation and careful checking.
+- from_id: independent-interests
+  to_id: ff-cli
+  relation: continuation
+  reason: ff-cli applies a similar interest in evidence and decision support to fantasy football.

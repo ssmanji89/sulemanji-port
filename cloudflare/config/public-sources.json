@@ -1,0 +1,52 @@
+[
+  {
+    "id": "cloudflare-blog",
+    "url": "https://blog.cloudflare.com/rss/",
+    "format": "rss",
+    "topic_ids": ["infrastructure", "integrations", "service-operations"],
+    "allowed_hostnames": ["blog.cloudflare.com"],
+    "min_interval_seconds": 21600,
+    "max_age_seconds": 2592000,
+    "enabled": true
+  },
+  {
+    "id": "cloudflare-workers-sdk-releases",
+    "url": "https://github.com/cloudflare/workers-sdk/releases.atom",
+    "format": "atom",
+    "topic_ids": ["infrastructure", "integrations"],
+    "allowed_hostnames": ["github.com"],
+    "min_interval_seconds": 21600,
+    "max_age_seconds": 7776000,
+    "enabled": true
+  },
+  {
+    "id": "federal-reserve-press-releases",
+    "url": "https://www.federalreserve.gov/feeds/press_all.xml",
+    "format": "rss",
+    "topic_ids": ["markets", "mathematics"],
+    "allowed_hostnames": ["www.federalreserve.gov"],
+    "min_interval_seconds": 21600,
+    "max_age_seconds": 7776000,
+    "enabled": true
+  },
+  {
+    "id": "nist-standards",
+    "url": "https://www.nist.gov/news-events/standards/rss.xml",
+    "format": "rss",
+    "topic_ids": ["professional-practice", "service-operations", "knowledge-work"],
+    "allowed_hostnames": ["www.nist.gov"],
+    "min_interval_seconds": 21600,
+    "max_age_seconds": 15552000,
+    "enabled": true
+  },
+  {
+    "id": "nist-mathematics-statistics",
+    "url": "https://www.nist.gov/news-events/Mathematics%20and%20Statistics/rss.xml",
+    "format": "rss",
+    "topic_ids": ["mathematics", "knowledge-work"],
+    "allowed_hostnames": ["www.nist.gov"],
+    "min_interval_seconds": 21600,
+    "max_age_seconds": 15552000,
+    "enabled": true
+  }
+]

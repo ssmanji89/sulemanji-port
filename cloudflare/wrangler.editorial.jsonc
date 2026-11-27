@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "sulemanji-editorial",
+  "main": "src/editorial/index.ts",
+  "compatibility_date": "2026-11-26",
+  "workers_dev": false,
+  "routes": [{ "pattern": "editorial.sulemanji.com/*", "zone_name": "sulemanji.com" }],
+  "triggers": { "crons": ["0 * * * *"] },
+  "vars": { "DEPLOYMENT_ENV": "production", "KNOWLEDGE_POLICY_REVISION": "pending-activation-record" },
+  "d1_databases": [{ "binding": "DB", "database_name": "sulemanji-editorial-production", "database_id": "SET_AFTER_AUTHORIZED_PROVISIONING", "migrations_dir": "migrations" }],
+  "workflows": [{ "name": "sulemanji-editorial-production", "binding": "EDITORIAL_WORKFLOW", "class_name": "EditorialWorkflow" }]
+}

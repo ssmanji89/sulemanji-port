@@ -146,6 +146,22 @@ describe('editorial runtime config policy wiring', () => {
     }
   });
 
+  it('renders the OpenAI profile for the official chat endpoint', () => {
+    const model = { ...modelSettings, endpoint: 'https://api.openai.com/v1/chat/completions',
+      model_id: 'gpt-6.1-terra', request_profile: 'openai' };
+    const { outputDirectory, result } = render(JSON.stringify(validPolicy), 'staging', {
+      EDITORIAL_MODEL_CONFIG_JSON: JSON.stringify(model),
+      EDITORIAL_GITHUB_CONFIG_JSON: JSON.stringify(fixturePublisher),
+    });
+    try {
+      expect(result.status).toBe(0);
+      const config = JSON.parse(readFileSync(resolve(outputDirectory, outputName), 'utf8'));
+      expect(JSON.parse(config.vars.EDITORIAL_MODEL_CONFIG_JSON)).toEqual(model);
+    } finally {
+      rmSync(outputDirectory, { recursive: true, force: true });
+    }
+  });
+
   it('blocks automated releases when both runtime settings are missing', () => {
     const { outputDirectory, result } = render(JSON.stringify(validPolicy), 'production', {
       EDITORIAL_REQUIRE_RUNTIME_SETTINGS: 'true',

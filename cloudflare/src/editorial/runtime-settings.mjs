@@ -10,10 +10,19 @@ function hasExactKeys(value, keys) {
   return Object.keys(value).sort().join('\0') === [...keys].sort().join('\0');
 }
 
+export function isOpenAIChatEndpoint(url) {
+  return url.href === 'https://api.openai.com/v1/chat/completions';
+}
+
 function parseModelSettings(raw) {
   const value = objectFromJson(raw);
+  if (!value) return null;
   const keys = ['endpoint', 'model_id', 'pricing_revision', 'input_usd_per_million', 'output_usd_per_million', 'max_input_chars', 'max_output_tokens'];
-  if (!value || !hasExactKeys(value, keys) || typeof value.endpoint !== 'string' || typeof value.model_id !== 'string' || !value.model_id.trim() ||
+  if (Object.hasOwn(value, 'request_profile')) {
+    if (value.request_profile !== 'openai') return null;
+    keys.push('request_profile');
+  }
+  if (!hasExactKeys(value, keys) || typeof value.endpoint !== 'string' || typeof value.model_id !== 'string' || !value.model_id.trim() ||
       typeof value.pricing_revision !== 'string' || !value.pricing_revision.trim() ||
       !Number.isFinite(value.input_usd_per_million) || Number(value.input_usd_per_million) < 0 ||
       !Number.isFinite(value.output_usd_per_million) || Number(value.output_usd_per_million) < 0 ||
@@ -22,6 +31,7 @@ function parseModelSettings(raw) {
   try {
     const url = new URL(value.endpoint);
     if (url.protocol !== 'https:' || url.username || url.password || url.hash) return null;
+    if (value.request_profile === 'openai' && !isOpenAIChatEndpoint(url)) return null;
   } catch { return null; }
   return value;
 }

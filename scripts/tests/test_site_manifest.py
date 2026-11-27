@@ -28,6 +28,9 @@ class SiteManifestTests(unittest.TestCase):
         self.baseline = [{
             'url': '/writing/notes', 'published_on': '2024-03-10',
             'content_sha256': hashlib.sha256(b'Research article.').hexdigest(),
+            'canonical': 'https://www.sulemanji.com/writing/notes', 'title': 'Research note',
+            'description': 'Research note description', 'og_title': 'Research note',
+            'h1': 'Research note', 'robots': '', 'indexable': True,
         }]
 
     def tearDown(self):

@@ -6,12 +6,14 @@ import json
 import re
 import subprocess
 import tempfile
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlparse
+from zoneinfo import ZoneInfo
 
 from scripts.build_site_manifest import article_content_sha256, page_content_sha256
 from scripts.site_release import ReleaseError, verify_artifact
@@ -36,6 +38,9 @@ REQUIRED_ROUTE_CONTRACTS = {
 RETIRED_ROUTE = '/workshop-intake/'
 MISSING_ROUTE = '/__release-verification-must-404__/'
 SUPPLEMENTAL_RESPONSE_COUNT = 5  # manifest, social image, retired path, missing path, apex redirect
+SITE_ROUTE_RULES = json.loads((Path(__file__).resolve().parents[1] / 'cloudflare/config/site-routes.json').read_text(encoding='utf-8'))
+ATOM_NS = '{http://www.w3.org/2005/Atom}'
+SITEMAP_NS = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
 COMMIT_RE = re.compile(r'^[0-9a-f]{40}$')
 DIGEST_RE = re.compile(r'^sha256:[0-9a-f]{64}$')
 BUILT_AT_RE = re.compile(r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$')
@@ -193,6 +198,64 @@ def _fetch(fetcher, url: str, expected_status: int, label: str) -> LiveResponse:
     return response
 
 
+def _xml_root(body: str, expected_tag: str, label: str) -> ET.Element:
+    if '<!DOCTYPE' in body.upper() or '<!ENTITY' in body.upper():
+        raise LiveReleaseError(f'{label} XML contains a forbidden declaration')
+    try:
+        root = ET.fromstring(body)
+    except ET.ParseError as error:
+        raise LiveReleaseError(f'{label} XML is malformed or truncated') from error
+    if root.tag != expected_tag:
+        raise LiveReleaseError(f'{label} XML has an unexpected root element')
+    return root
+
+
+def _article_discovery_paths(articles: list[dict], key_pages: set[str], feed_body: str, sitemap_body: str):
+    expected_feed_dates = {}
+    for article in articles:
+        route = _safe_article_path(article.get('url') if isinstance(article, dict) else None)
+        if route and article.get('indexable') and article.get('published_on'):
+            expected_feed_dates[route[1]] = article['published_on']
+    feed_root = _xml_root(feed_body, ATOM_NS + 'feed', 'Atom feed')
+    feed_paths: list[str] = []
+    for entry in feed_root.findall(ATOM_NS + 'entry'):
+        ids = entry.findall(ATOM_NS + 'id')
+        titles = entry.findall(ATOM_NS + 'title')
+        published = entry.findall(ATOM_NS + 'published')
+        links = [link for link in entry.findall(ATOM_NS + 'link')
+                 if link.attrib.get('rel', 'alternate') == 'alternate' and link.attrib.get('href')]
+        if len(ids) != 1 or not (ids[0].text or '').strip() or len(titles) != 1 or not (titles[0].text or '').strip() or len(published) != 1 or not links:
+            raise LiveReleaseError('Atom feed contains an incomplete entry')
+        path = _safe_feed_path(links[0].attrib['href'])
+        if path is None or _safe_feed_path((ids[0].text or '').strip()) != path:
+            raise LiveReleaseError('Atom feed entry identity is not canonical')
+        published_date = (published[0].text or '').strip()[:10]
+        if (not re.fullmatch(r'\d{4}-\d{2}-\d{2}', published_date)
+                or expected_feed_dates.get(path) != published_date):
+            raise LiveReleaseError(f'Atom feed publication date changed for {path}')
+        feed_paths.append(path)
+    if len(feed_paths) != len(set(feed_paths)):
+        raise LiveReleaseError('Atom feed contains duplicate article entries')
+
+    sitemap_root = _xml_root(sitemap_body, SITEMAP_NS + 'urlset', 'sitemap')
+    sitemap_paths: list[str] = []
+    for entry in sitemap_root.findall(SITEMAP_NS + 'url'):
+        locations = entry.findall(SITEMAP_NS + 'loc')
+        if len(locations) != 1 or not (locations[0].text or '').strip():
+            raise LiveReleaseError('sitemap XML contains an incomplete URL entry')
+        path = _safe_feed_path((locations[0].text or '').strip())
+        if path is None:
+            raise LiveReleaseError('sitemap XML contains a noncanonical URL')
+        sitemap_paths.append(path)
+    if len(sitemap_paths) != len(set(sitemap_paths)):
+        raise LiveReleaseError('sitemap XML contains duplicate URLs')
+    sitemap_set = set(sitemap_paths)
+    normalized_key_pages = {_safe_article_path(page)[1] for page in key_pages if _safe_article_path(page)}
+    if not normalized_key_pages.issubset(sitemap_set):
+        raise LiveReleaseError('sitemap is missing a required key page')
+    return set(feed_paths), sitemap_set
+
+
 def verify_live_release(base_url: str, expected_commit: str, expected_manifest: dict,
                         fetcher=fetch_live, staging: bool = False) -> dict:
     """Verify the public site against a locally validated build artifact manifest."""
@@ -308,34 +371,81 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
         raise LiveReleaseError('Writing alias does not target the canonical /writing path')
     route_count += 1
 
+    for rule in SITE_ROUTE_RULES:
+        source = rule.get('source')
+        if not isinstance(source, str) or source == '/writing/':
+            continue
+        kind = rule.get('kind')
+        expected_status = rule.get('status', 410 if kind == 'gone' else None)
+        if kind not in {'redirect', 'gone'} or not isinstance(expected_status, int):
+            raise LiveReleaseError('site route rules contain an invalid retirement contract')
+        label = 'retired route' if kind == 'gone' else f'configured route {source}'
+        response = _fetch(fetcher, base_url.rstrip('/') + source, expected_status, label)
+        if kind == 'redirect':
+            target = rule.get('target')
+            if not isinstance(target, str) or not target.startswith('/'):
+                raise LiveReleaseError(f'configured redirect target is invalid for {source}')
+            expected_target = (base_origin if staging else CANONICAL_ORIGIN) + target
+            location = {key.lower(): value for key, value in (response.headers or {}).items()}.get('location')
+            if location != expected_target:
+                raise LiveReleaseError(f'route disposition for {source} does not match its configured redirect')
+            route_count += 1
+
     writing_facts = PageIdentity()
     writing_facts.feed(writing_response.body if writing_response else '')
     writing_paths = {normalized for link in writing_facts.links if (parsed := _safe_article_path(link)) for normalized in (parsed[1],)}
-    sitemap_paths = set(re.findall(r'<loc>https://www\.sulemanji\.com([^<]+)</loc>', sitemap_response.body if sitemap_response else ''))
     if 'Sitemap: https://www.sulemanji.com/sitemap.xml' not in (robots_response.body if robots_response else ''):
         raise LiveReleaseError('robots.txt does not advertise the canonical sitemap')
-    feed_text = feed_response.body if feed_response else ''
-    feed_urls = re.findall(r'<link\b[^>]*\bhref=["\']([^"\']+)', feed_text, re.I)
-    feed_urls.extend(re.findall(r'<link>(.*?)</link>', feed_text, re.I | re.S))
-    feed_paths = {path for value in feed_urls if (path := _safe_feed_path(value)) is not None}
+    feed_paths, sitemap_paths = _article_discovery_paths(
+        articles, expected_page_paths, feed_response.body if feed_response else '',
+        sitemap_response.body if sitemap_response else '',
+    )
     article_count = 0
-    article_dates: list[tuple[str, str]] = []
+    expected_feed_paths: set[str] = set()
+    expected_sitemap_article_paths: set[str] = set()
+    future_cutoff = parsed_built_at.astimezone(ZoneInfo('America/Chicago')).date()
     for article in articles:
         route = _safe_article_path(article.get('url') if isinstance(article, dict) else None)
         published_on = article.get('published_on') if isinstance(article, dict) else None
         content_sha256 = article.get('content_sha256') if isinstance(article, dict) else None
         valid_date = isinstance(published_on, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', published_on)
-        if (route is None or not isinstance(article, dict) or 'published_on' not in article
+        metadata_keys = {'canonical', 'title', 'description', 'og_title', 'h1', 'robots', 'indexable'}
+        if (route is None or not isinstance(article, dict) or set(article) !=
+                {'url', 'published_on', 'content_sha256', *metadata_keys}
                 or (published_on is not None and not valid_date)
-                or not isinstance(content_sha256, str) or not re.fullmatch(r'[0-9a-f]{64}', content_sha256)):
+                or not isinstance(content_sha256, str) or not re.fullmatch(r'[0-9a-f]{64}', content_sha256)
+                or not all(isinstance(article.get(key), str) and article[key]
+                           for key in ('canonical', 'title', 'description', 'og_title', 'h1'))
+                or not isinstance(article.get('robots'), str) or not isinstance(article.get('indexable'), bool)
+                or article['canonical'] != CANONICAL_ORIGIN + article['url']
+                or article['indexable'] != ('noindex' not in [token.strip().lower() for token in article['robots'].split(',')])):
             raise LiveReleaseError('live release manifest contains an invalid article identity')
         article_path, normalized = route
-        if normalized not in writing_paths:
-            raise LiveReleaseError(f'Writing index is missing article {article_path}')
-        if article_path not in sitemap_paths and article_path.rstrip('/') not in sitemap_paths:
-            raise LiveReleaseError(f'sitemap is missing article {article_path}')
-        if published_on is not None and normalized not in feed_paths:
-            raise LiveReleaseError(f'feed.xml is missing dated article {article_path}')
+        if published_on is not None:
+            try:
+                publication_day = date.fromisoformat(published_on)
+            except ValueError as error:
+                raise LiveReleaseError(f'article publication date is invalid for {article_path}') from error
+            if publication_day > future_cutoff and article['indexable']:
+                raise LiveReleaseError(f'future-dated article is indexable in the qualified artifact: {article_path}')
+        if article['indexable']:
+            expected_sitemap_article_paths.add(normalized)
+            if published_on is not None:
+                expected_feed_paths.add(normalized)
+            if normalized not in writing_paths:
+                raise LiveReleaseError(f'Writing index is missing article {article_path}')
+            article_in_sitemap = normalized in sitemap_paths
+            if not article_in_sitemap:
+                raise LiveReleaseError(f'sitemap is missing article {article_path}')
+            if published_on is not None and normalized not in feed_paths:
+                raise LiveReleaseError(f'feed.xml is missing dated article {article_path}')
+        else:
+            if normalized in writing_paths:
+                raise LiveReleaseError(f'Writing index exposes excluded article {article_path}')
+            if normalized in sitemap_paths:
+                raise LiveReleaseError(f'sitemap exposes excluded article {article_path}')
+            if normalized in feed_paths:
+                raise LiveReleaseError(f'feed.xml exposes excluded article {article_path}')
         article_response = _fetch(fetcher, base_url.rstrip('/') + article_path, 200, f'article {article_path}')
         _check_identity_headers(article_response, expected_commit, digest, built_at, article_path)
         _check_content_type(article_response, 'text/html', article_path)
@@ -343,8 +453,11 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
         facts.feed(article_response.body)
         if facts.canonical != CANONICAL_ORIGIN + article_path:
             raise LiveReleaseError(f'article canonical URL changed for {article_path}')
-        if not facts.title or not facts.meta.get('description') or not facts.meta.get('og:title') or not any(facts.headings):
-            raise LiveReleaseError(f'article metadata or heading is missing for {article_path}')
+        robots = facts.meta.get('robots', '')
+        if (facts.title != article['title'] or facts.meta.get('description') != article['description']
+                or facts.meta.get('og:title') != article['og_title'] or facts.headings != [article['h1']]
+                or robots != article['robots']):
+            raise LiveReleaseError(f'article metadata does not match the qualified artifact for {article_path}')
         try:
             actual_content_sha256 = article_content_sha256(article_response.body)
         except ValueError as error:
@@ -356,10 +469,17 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
         if published_on is not None and facts.published_on != published_on:
             raise LiveReleaseError(f'article publication date changed for {article_path}')
         article_count += 1
-        if published_on is not None:
-            article_dates.append((published_on, normalized))
 
-    if not article_dates:
+    writing_article_paths = {route[1] for link in writing_facts.links
+                             if (route := _safe_article_path(link)) is not None and route[1].startswith('/notes/')}
+    if writing_article_paths != expected_sitemap_article_paths:
+        raise LiveReleaseError('Writing index article set does not match the qualified artifact')
+    actual_sitemap_article_paths = {path for path in sitemap_paths if path.startswith('/notes/')}
+    if actual_sitemap_article_paths != expected_sitemap_article_paths:
+        raise LiveReleaseError('sitemap article set does not match the qualified artifact')
+    if feed_paths != expected_feed_paths:
+        raise LiveReleaseError('Atom feed article set does not match the qualified artifact')
+    if not expected_feed_paths:
         raise LiveReleaseError('live release manifest has no dated articles')
 
     home_facts = PageIdentity()
@@ -377,7 +497,6 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
         raise LiveReleaseError('Home social image did not return an image MIME type')
     _check_identity_headers(image, expected_commit, digest, built_at, image_url.path)
 
-    _fetch(fetcher, base_url.rstrip('/') + RETIRED_ROUTE, 410, 'retired route')
     _fetch(fetcher, base_url.rstrip('/') + MISSING_ROUTE, 404, 'unknown route')
     if not staging:
         apex = _fetch(fetcher, APEX_ORIGIN + '/', 301, 'apex redirect')

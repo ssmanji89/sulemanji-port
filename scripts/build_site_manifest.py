@@ -76,26 +76,34 @@ class _PageMetadata(HTMLParser):
         super().__init__(convert_charrefs=True)
         self.title_depth = 0
         self.title_parts: list[str] = []
+        self.heading_depth = 0
+        self.heading_parts: list[str] = []
         self.values: dict[str, str] = {}
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         values = dict(attrs)
         if tag == 'title':
             self.title_depth += 1
+        elif tag == 'h1':
+            self.heading_depth += 1
         elif tag == 'link' and 'canonical' in (values.get('rel') or '').split():
             self.values['canonical'] = values.get('href') or ''
         elif tag == 'meta':
             key = (values.get('property') or values.get('name') or '').lower()
-            if key in {'description', 'og:title'}:
+            if key in {'description', 'og:title', 'robots'}:
                 self.values[key] = values.get('content') or ''
 
     def handle_endtag(self, tag: str) -> None:
         if tag == 'title' and self.title_depth:
             self.title_depth -= 1
+        elif tag == 'h1' and self.heading_depth:
+            self.heading_depth -= 1
 
     def handle_data(self, data: str) -> None:
         if self.title_depth:
             self.title_parts.append(data)
+        if self.heading_depth:
+            self.heading_parts.append(data)
 
     def normalized_values(self) -> dict[str, str]:
         return {
@@ -103,6 +111,8 @@ class _PageMetadata(HTMLParser):
             'title': ' '.join(' '.join(self.title_parts).split()),
             'description': self.values.get('description', ''),
             'og_title': self.values.get('og:title', ''),
+            'h1': ' '.join(' '.join(self.heading_parts).split()),
+            'robots': self.values.get('robots', ''),
         }
 
 
@@ -135,7 +145,8 @@ def _page_identity(site_root: Path) -> list[dict[str, str]]:
         metadata = _PageMetadata()
         metadata.feed(rendered)
         metadata.close()
-        page_metadata = metadata.normalized_values()
+        all_metadata = metadata.normalized_values()
+        page_metadata = {key: all_metadata[key] for key in ('canonical', 'title', 'description', 'og_title')}
         if page_metadata['canonical'] != PUBLIC_ORIGIN + url or not all(
                 page_metadata[key] for key in ('title', 'description', 'og_title')):
             raise ValueError(f'{html_path}: public page metadata is incomplete or noncanonical')
@@ -173,8 +184,17 @@ def build_manifest(root: Path, source_commit: str, articles: list[dict[str, str 
             raise ValueError(f'invalid publication date for {url}')
         if not isinstance(content_sha256, str) or not re.fullmatch(r'[0-9a-f]{64}', content_sha256):
             raise ValueError(f'invalid visible article content digest for {url}')
+        metadata = {key: article.get(key) for key in ('canonical', 'title', 'description', 'og_title', 'h1', 'robots', 'indexable')}
+        if (not all(isinstance(metadata[key], str) for key in ('canonical', 'title', 'description', 'og_title', 'h1', 'robots'))
+                or metadata['canonical'] != PUBLIC_ORIGIN + url
+                or not all(metadata[key] for key in ('title', 'description', 'og_title', 'h1'))
+                or not isinstance(metadata['indexable'], bool)
+                or metadata['indexable'] != ('noindex' not in [token.strip().lower() for token in metadata['robots'].split(',')])):
+            raise ValueError(f'invalid article metadata identity for {url}')
         seen_urls.add(url)
-        normalized_articles.append({'url': url, 'published_on': published_on, 'content_sha256': content_sha256})
+        normalized_articles.append({
+            'url': url, 'published_on': published_on, 'content_sha256': content_sha256, **metadata,
+        })
     pages = _page_identity(root)
     files = {}
     for path in sorted(root.rglob('*')):
@@ -234,15 +254,12 @@ def _article_identity(site_root: Path) -> list[dict[str, str | None]]:
     articles = []
     for html_path in sorted(notes_dir.rglob('*.html')):
         rendered = html_path.read_text(encoding='utf-8', errors='replace')
-        canonical = re.search(r'<link[^>]+rel=["\']canonical["\'][^>]+href=["\']([^"\']+)', rendered, re.I)
-        if not canonical:
-            canonical = re.search(r'<link[^>]+href=["\']([^"\']+)["\'][^>]+rel=["\']canonical', rendered, re.I)
-        if canonical:
-            from urllib.parse import urlparse
-            url = urlparse(canonical.group(1)).path
-        else:
-            relative = html_path.relative_to(site_root).with_suffix('')
-            url = '/' + relative.as_posix().removesuffix('/index')
+        metadata = _PageMetadata()
+        metadata.feed(rendered)
+        metadata.close()
+        values = metadata.normalized_values()
+        from urllib.parse import urlparse
+        url = urlparse(values['canonical']).path
         published = re.search(r'<time[^>]+data-published-on[^>]+datetime=["\'](\d{4}-\d{2}-\d{2})', rendered, re.I)
         if not published:
             published = re.search(r'"datePublished"\s*:\s*"(\d{4}-\d{2}-\d{2})', rendered, re.I)
@@ -254,6 +271,8 @@ def _article_identity(site_root: Path) -> list[dict[str, str | None]]:
             'url': url,
             'published_on': published.group(1) if published else None,
             'content_sha256': content_sha256,
+            **values,
+            'indexable': 'noindex' not in [token.strip().lower() for token in values['robots'].split(',')],
         })
     if not articles:
         raise ValueError('no rendered note pages found')

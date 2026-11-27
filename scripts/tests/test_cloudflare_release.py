@@ -29,7 +29,10 @@ def add_public_pages(root):
 def add_article(root):
     notes = root / 'notes'
     notes.mkdir(exist_ok=True)
-    rendered = ('<html><head><link rel="canonical" href="https://www.sulemanji.com/notes/a"></head>'
+    rendered = ('<html><head><title>Known title | Sulemanji</title>'
+                '<link rel="canonical" href="https://www.sulemanji.com/notes/a">'
+                '<meta name="description" content="Known description">'
+                '<meta property="og:title" content="Known title"></head>'
                 '<body><h1>Known title</h1><time data-published-on datetime="2024-01-01"></time>'
                 '<div data-writing-body>Known content.</div></body></html>')
     (notes / 'a.html').write_text(rendered, encoding='utf-8')
@@ -37,6 +40,9 @@ def add_article(root):
         'url': '/notes/a',
         'published_on': '2024-01-01',
         'content_sha256': article_content_sha256(rendered),
+        'canonical': 'https://www.sulemanji.com/notes/a',
+        'title': 'Known title | Sulemanji', 'description': 'Known description',
+        'og_title': 'Known title', 'h1': 'Known title', 'robots': '', 'indexable': True,
     }]
 
 

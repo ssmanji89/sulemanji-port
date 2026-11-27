@@ -19,13 +19,24 @@ from scripts.verify_cloudflare_live import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+SITE_ROUTE_RULES = json.loads((ROOT / 'cloudflare/config/site-routes.json').read_text(encoding='utf-8'))
 COMMIT = 'a' * 40
 DIGEST = 'sha256:' + 'b' * 64
-BUILT_AT = '2026-11-20T00:00:00Z'
+BUILT_AT = '2026-11-27T15:00:00Z'
 ARTICLE_BODY = 'Article body text.'
 ARTICLE_DIGEST = hashlib.sha256(ARTICLE_BODY.encode()).hexdigest()
-ARTICLE = {'url': '/notes/example-article', 'published_on': '2026-11-20', 'content_sha256': ARTICLE_DIGEST}
-LEGACY_ARTICLE = {'url': '/notes/agent-safety', 'published_on': None, 'content_sha256': ARTICLE_DIGEST}
+ARTICLE = {
+    'url': '/notes/example-article', 'canonical': f'{CANONICAL_ORIGIN}/notes/example-article',
+    'published_on': '2026-11-20', 'content_sha256': ARTICLE_DIGEST,
+    'title': 'Article | Sulemanji', 'description': 'Article description', 'og_title': 'Article',
+    'h1': 'Article title', 'robots': '', 'indexable': True,
+}
+LEGACY_ARTICLE = {**ARTICLE, 'url': '/notes/agent-safety', 'canonical': f'{CANONICAL_ORIGIN}/notes/agent-safety', 'published_on': None}
+NOINDEX_ARTICLE = {
+    **ARTICLE, 'url': '/notes/hidden-article', 'canonical': f'{CANONICAL_ORIGIN}/notes/hidden-article',
+    'published_on': '2027-01-01', 'robots': 'noindex,follow', 'indexable': False,
+}
 
 
 @dataclass
@@ -37,11 +48,12 @@ class Response:
 
 def site_manifest(source_commit=COMMIT, articles=None):
     articles = articles if articles is not None else [ARTICLE]
+    indexed_articles = [article for article in articles if article.get('indexable', True)]
     pages = []
     for path, (_, heading) in REQUIRED_ROUTE_CONTRACTS.items():
         if heading is None:
             continue
-        body = ''.join(f'<a href="{article["url"]}">Article</a>' for article in articles) if path == '/writing' else f'<p>Public section for {path}.</p>'
+        body = ''.join(f'<a href="{article["url"]}">Article</a>' for article in indexed_articles) if path == '/writing' else f'<p>Public section for {path}.</p>'
         pages.append({
             'url': path,
             'canonical': f'{CANONICAL_ORIGIN}{path}',
@@ -77,6 +89,12 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         if path == '/writing/':
             location = self.overrides.get('writing_alias_location', f'{parsed.scheme}://{parsed.netloc}/writing')
             return Response(301, headers={'location': location})
+        route_rule = next((rule for rule in SITE_ROUTE_RULES if rule['source'] == path), None)
+        if route_rule and path != '/writing/':
+            status = self.overrides.get(path, self.overrides.get(f'route_status:{path}', route_rule.get('status', 410)))
+            target = route_rule.get('target') or route_rule.get('destination')
+            location = self.overrides.get(f'route_location:{path}', f'{parsed.scheme}://{parsed.netloc}{target}')
+            return Response(status, headers={'location': location} if target else {})
         if path == '/release.json':
             return Response(200, json.dumps(self.public_manifest), self.response_headers(path))
         if path == '/assets/images/site-social.png':
@@ -88,20 +106,47 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         if isinstance(self.overrides.get(path), int):
             return Response(self.overrides[path])
         if path == '/writing':
-            articles = [] if self.overrides.get('missing_writing_entry') else self.public_manifest['articles']
+            articles = [article for article in self.public_manifest['articles'] if article.get('indexable', True)]
+            if self.overrides.get('missing_writing_entry'):
+                articles = []
             links = ''.join(f'<a href="{article["url"]}">Article</a>' for article in articles)
             return Response(200, self.page_html(path, links), self.response_headers(path))
-        if path == ARTICLE['url']:
-            return Response(200, self.article_html(ARTICLE), self.response_headers(path))
-        if path == LEGACY_ARTICLE['url']:
-            return Response(200, self.article_html(LEGACY_ARTICLE), self.response_headers(path))
+        article = next((item for item in self.public_manifest['articles'] if item['url'] == path), None)
+        if article:
+            return Response(200, self.article_html(article), self.response_headers(path))
         if path == '/sitemap.xml':
-            locations = ''.join(f'<url><loc>https://www.sulemanji.com{article["url"]}</loc></url>' for article in self.public_manifest['articles'])
-            return Response(200, f'<urlset>{locations}</urlset>', self.response_headers(path))
+            if self.overrides.get('malformed_sitemap'):
+                return Response(200, '<urlset><url><loc>https://www.sulemanji.com' + ARTICLE['url'] + '</loc>', self.response_headers(path))
+            paths = [path for path, (_, heading) in REQUIRED_ROUTE_CONTRACTS.items() if heading is not None]
+            paths.extend(article['url'] for article in self.public_manifest['articles'] if article.get('indexable', True))
+            locations = ''.join(f'<url><loc>https://www.sulemanji.com{path}</loc></url>' for path in paths)
+            return Response(200, f'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{locations}</urlset>', self.response_headers(path))
         if path == '/feed.xml':
-            feed_url = self.overrides.get('feed_url', f'https://www.sulemanji.com{ARTICLE["url"]}')
-            link = '' if self.overrides.get('missing_feed_entry') else f'<entry><link href="{feed_url}" /></entry>'
-            return Response(200, link, self.response_headers(path))
+            if self.overrides.get('malformed_feed'):
+                feed_url = f'https://www.sulemanji.com{ARTICLE["url"]}'
+                truncated = ('<feed xmlns="http://www.w3.org/2005/Atom"><title>Writing</title>'
+                             f'<entry><id>{feed_url}</id><title>Article</title><published>2026-11-20T00:00:00Z</published>'
+                             f'<link href="{feed_url}" /></entry>')
+                return Response(200, truncated, self.response_headers(path))
+            dated = [article for article in self.public_manifest['articles']
+                     if article.get('indexable', True) and article.get('published_on')]
+            if self.overrides.get('missing_feed_entry'):
+                dated = []
+            omitted_path = self.overrides.get('missing_feed_entry_path')
+            if omitted_path:
+                dated = [article for article in dated if article['url'] != omitted_path]
+            entries = []
+            for article in dated:
+                feed_url = self.overrides.get('feed_url', f'https://www.sulemanji.com{article["url"]}')
+                entries.append(
+                    f'<entry><id>{feed_url}</id><title>{article.get("title", "Article")}</title>'
+                    f'<published>{article["published_on"]}T00:00:00Z</published>'
+                    f'<link href="{feed_url}" /></entry>'
+                )
+            body = ('<feed xmlns="http://www.w3.org/2005/Atom"><title>Writing</title>'
+                    '<id>https://www.sulemanji.com/feed.xml</id><updated>2026-11-20T00:00:00Z</updated>'
+                    + ''.join(entries) + '</feed>')
+            return Response(200, body, self.response_headers(path))
         if path == '/robots.txt':
             return Response(200, 'User-agent: *\nSitemap: https://www.sulemanji.com/sitemap.xml\n', self.response_headers(path))
         if path in ('/', '/explore/', '/writing', '/about/', '/experience/', '/contact/', '/work/market-systems/',
@@ -128,11 +173,16 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         date = article['published_on']
         time = f'<time data-published-on datetime="{date}"></time>' if date else ''
         body = 'Altered article body.' if self.overrides.get('alter_article_body') else ARTICLE_BODY
-        return (f'<html><head><title>Article | Suleman Manji</title>'
-                f'<link rel="canonical" href="{CANONICAL_ORIGIN}{article["url"]}">'
-                '<meta name="description" content="Article description">'
-                '<meta property="og:title" content="Article"></head>'
-                f'<body><main><h1>Article title</h1><div data-writing-body>{body}</div>{time}</main></body></html>')
+        title = 'Changed title | Suleman Manji' if self.overrides.get('alter_article_metadata') else article['title']
+        description = 'Changed description' if self.overrides.get('alter_article_metadata') else article['description']
+        og_title = 'Changed social title' if self.overrides.get('alter_article_metadata') else article['og_title']
+        heading = 'Changed heading' if self.overrides.get('alter_article_metadata') else article['h1']
+        robots = f'<meta name="robots" content="{article["robots"]}">' if article.get('robots') else ''
+        return (f'<html><head><title>{title}</title>'
+                f'<link rel="canonical" href="{article["canonical"]}">'
+                f'<meta name="description" content="{description}">'
+                f'<meta property="og:title" content="{og_title}">{robots}</head>'
+                f'<body><main><h1>{heading}</h1><div data-writing-body>{body}</div>{time}</main></body></html>')
 
     def release_headers(self):
         built_at = '2026-11-21T00:00:00Z' if self.overrides.get('wrong_built_at') else BUILT_AT
@@ -170,7 +220,7 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         self.assertEqual(receipt['article_count'], 1)
         self.assertTrue(self.calls)
         self.assertTrue(all(urlparse(url).netloc == urlparse(staging_origin).netloc for url in self.calls))
-        self.assertEqual(receipt['checked_response_count'], 18)
+        self.assertEqual(receipt['checked_response_count'], 25)
 
     def test_staging_mode_rejects_canonical_production_origin(self):
         for origin in (CANONICAL_ORIGIN, 'https://www.sulemanji.com:443', 'https://sulemanji.com:443'):
@@ -222,7 +272,7 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
 
     def test_checked_response_count_includes_supplemental_checks(self):
         receipt = self.verify()
-        self.assertEqual(receipt['checked_response_count'], 19)
+        self.assertEqual(receipt['checked_response_count'], 26)
 
     def test_invalid_artifact_digest_fails_before_live_requests(self):
         invalid_manifest = json.loads(json.dumps(self.expected_manifest))
@@ -251,6 +301,44 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         with self.assertRaisesRegex(LiveReleaseError, 'page metadata does not match the qualified artifact for /contact/'):
             self.verify()
 
+    def test_article_metadata_must_match_the_qualified_artifact(self):
+        self.overrides['alter_article_metadata'] = True
+        with self.assertRaisesRegex(LiveReleaseError, 'article metadata does not match the qualified artifact'):
+            self.verify()
+
+    def test_noindex_article_remains_served_but_stays_out_of_discovery(self):
+        self.expected_manifest = site_manifest(articles=[ARTICLE, NOINDEX_ARTICLE])
+        self.public_manifest = json.loads(json.dumps(self.expected_manifest))
+        try:
+            receipt = self.verify()
+        except LiveReleaseError as error:
+            self.fail(f'valid noindex article should remain available without blocking release: {error}')
+        self.assertEqual(receipt['article_count'], 2)
+        noindex_url = 'https://www.sulemanji.com' + NOINDEX_ARTICLE['url']
+        self.assertIn(noindex_url, self.calls)
+
+    def test_all_configured_business_retirement_redirects_are_verified(self):
+        self.verify()
+        for rule in SITE_ROUTE_RULES:
+            if rule['source'].startswith('/work-with-me'):
+                route_url = 'https://www.sulemanji.com' + rule['source']
+                self.assertIn(route_url, self.calls)
+
+    def test_wrong_business_retirement_redirect_target_fails(self):
+        self.overrides['route_location:/work-with-me/quote'] = 'https://www.sulemanji.com/work-with-me/quote'
+        with self.assertRaisesRegex(LiveReleaseError, 'route disposition'):
+            self.verify()
+
+    def test_truncated_atom_feed_fails_even_when_article_link_is_present(self):
+        self.overrides['malformed_feed'] = True
+        with self.assertRaisesRegex(LiveReleaseError, 'Atom feed'):
+            self.verify()
+
+    def test_truncated_sitemap_fails_even_when_article_location_is_present(self):
+        self.overrides['malformed_sitemap'] = True
+        with self.assertRaisesRegex(LiveReleaseError, 'sitemap XML'):
+            self.verify()
+
     def test_writing_slash_alias_redirects_to_canonical_path(self):
         self.verify()
         self.assertIn('https://www.sulemanji.com/writing/', self.calls)
@@ -272,13 +360,15 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
 
     def test_feed_does_not_accept_article_path_from_foreign_host(self):
         self.overrides['feed_url'] = f'https://evil.example{ARTICLE["url"]}'
-        with self.assertRaisesRegex(LiveReleaseError, 'feed.xml is missing dated article'):
+        with self.assertRaisesRegex(LiveReleaseError, 'Atom feed'):
             self.verify()
 
     def test_feed_must_include_older_dated_articles(self):
-        older = {'url': '/notes/older-article', 'published_on': '2026-11-01', 'content_sha256': ARTICLE_DIGEST}
+        older = {**ARTICLE, 'url': '/notes/older-article', 'canonical': f'{CANONICAL_ORIGIN}/notes/older-article',
+                 'published_on': '2026-11-01'}
         self.expected_manifest = site_manifest(articles=[older, ARTICLE])
         self.public_manifest = json.loads(json.dumps(self.expected_manifest))
+        self.overrides['missing_feed_entry_path'] = older['url']
         with self.assertRaisesRegex(LiveReleaseError, 'feed.xml is missing dated article /notes/older-article'):
             self.verify()
 

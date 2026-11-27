@@ -95,7 +95,9 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths };
     },
     async publish(proposal, review, signal) {
-      const store = new D1PublishEffectStore(env.DB, review.owner_epoch);
+      const store = new D1PublishEffectStore(env.DB, review.owner_epoch, {
+        new_articles: policy.max_new_articles_daily, refreshes: policy.max_refreshes_daily,
+      });
       const attempt = await publishContent(proposal, review, { store, github, readAuthority: () => readControl(env.DB), async currentState() {
         const guardedSourceFetch: typeof fetch = async (input, init) => {
           const before = await readControl(env.DB);

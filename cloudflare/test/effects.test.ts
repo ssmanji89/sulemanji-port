@@ -1,5 +1,71 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { D1PublishEffectStore } from '../src/editorial/effects.js';
+
+const limits = { new_articles: 1, refreshes: 1 };
+const creation = { new_articles: 1, refreshes: 0 };
+const refresh = { new_articles: 0, refreshes: 1 };
+
+function sqliteD1() {
+  const sqlite = new DatabaseSync(':memory:');
+  const migrations = new URL('../migrations/', import.meta.url);
+  for (const name of readdirSync(migrations).filter((file) => file.endsWith('.sql')).sort()) {
+    sqlite.exec(readFileSync(new URL(name, migrations), 'utf8'));
+  }
+  sqlite.exec('UPDATE editorial_control SET paused = 0');
+  const db = { prepare(sql: string) {
+    const statement = sqlite.prepare(sql);
+    let bindings: SQLInputValue[] = [];
+    return {
+      bind(...values: SQLInputValue[]) { bindings = values; return this; },
+      async first() { return statement.get(...bindings) ?? null; },
+      async run() { return { meta: { changes: Number(statement.run(...bindings).changes) } }; },
+    };
+  } } as unknown as D1Database;
+  return { sqlite, db };
+}
+
+async function seedMergeable(store: D1PublishEffectStore, ...ids: string[]) {
+  for (const id of ids) {
+    await store.ensureIntent(id, `publication:${id}`, `editorial/${id}`, 1, 'a'.repeat(64));
+    await store.record(id, { state: 'SOURCE_PUBLISHED', pull_request: 1, source_commit: 'b'.repeat(40) });
+  }
+}
+
+describe('daily merge capacity on SQLite', () => {
+  it('admits only one concurrent new article, preserves replay and keeps refresh capacity separate', async () => {
+    const { db, sqlite } = sqliteD1();
+    try {
+      const store = new D1PublishEffectStore(db, 1, limits, () => new Date('2026-11-27T12:00:00Z'));
+      await seedMergeable(store, 'first', 'second', 'refresh', 'extra-refresh');
+      const results = await Promise.all(['first', 'second'].map((id) => store.reserveMergeCapacity(id, creation)));
+      expect(results.filter(Boolean)).toHaveLength(1);
+      const winner = results[0] ? 'first' : 'second';
+      await expect(store.reserveMergeCapacity(winner, creation)).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('refresh', refresh)).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('extra-refresh', refresh)).resolves.toBe(false);
+      sqlite.exec('UPDATE editorial_control SET paused=1, owner_epoch=2');
+      await expect(store.reserveMergeCapacity(winner, creation)).rejects.toThrow('WORKFLOW_AUTHORITY_CHANGED');
+    } finally { sqlite.close(); }
+  });
+
+  it('carries an unresolved merge across Chicago midnight and frees capacity only after a later day', async () => {
+    const { db, sqlite } = sqliteD1();
+    try {
+      let now = new Date('2026-11-27T05:59:00Z');
+      const store = new D1PublishEffectStore(db, 1, limits, () => now);
+      await seedMergeable(store, 'late', 'next');
+      await expect(store.reserveMergeCapacity('late', creation)).resolves.toBe(true);
+      now = new Date('2026-11-27T06:01:00Z');
+      await expect(store.reserveMergeCapacity('next', creation)).resolves.toBe(false);
+      await store.record('late', { state: 'MERGED', merge_commit: 'c'.repeat(40) });
+      await expect(store.reserveMergeCapacity('next', creation)).resolves.toBe(false);
+      now = new Date('2026-11-28T06:01:00Z');
+      await expect(store.reserveMergeCapacity('next', creation)).resolves.toBe(true);
+    } finally { sqlite.close(); }
+  });
+});
 
 class EffectsD1 {
   control = { paused: 0, owner_epoch: 1 };
@@ -23,7 +89,7 @@ class EffectsD1 {
           return { meta: { changes: 1 } };
         }
         if (sql.includes('UPDATE publication_effects')) {
-          const candidateId = String(args[5]);
+          const candidateId = String(args[6]);
           const current = this.rows.get(candidateId);
           if (!current) return { meta: { changes: 0 } };
           const [pullRequest, sourceCommit, mergeCommit, state] = args;
@@ -41,21 +107,21 @@ class EffectsD1 {
 describe('owner-epoch fenced publication effects', () => {
   it('rejects intent and state writes after pause or owner-epoch change', async () => {
     const db = new EffectsD1();
-    const store = new D1PublishEffectStore(db as unknown as D1Database, 1);
+    const store = new D1PublishEffectStore(db as unknown as D1Database, 1, limits);
     await store.ensureIntent('candidate', 'publication:candidate', 'editorial/candidate', 1, 'a'.repeat(64));
     expect(await store.read('candidate')).toMatchObject({ state: 'INTENT', owner_epoch: 1 });
 
     db.control = { paused: 1, owner_epoch: 2 };
     await expect(store.record('candidate', { state: 'MERGED', merge_commit: 'b'.repeat(40) })).rejects.toThrow('WORKFLOW_AUTHORITY_CHANGED');
     expect(await store.read('candidate')).toMatchObject({ state: 'INTENT', merge_commit: null });
-    await expect(new D1PublishEffectStore(db as unknown as D1Database, 1).ensureIntent('other', 'publication:other', 'editorial/other', 1, 'c'.repeat(64)))
+    await expect(new D1PublishEffectStore(db as unknown as D1Database, 1, limits).ensureIntent('other', 'publication:other', 'editorial/other', 1, 'c'.repeat(64)))
       .rejects.toThrow('WORKFLOW_AUTHORITY_CHANGED');
     expect(await store.read('other')).toBeNull();
   });
 
   it('records effect readback under the matching active epoch', async () => {
     const db = new EffectsD1();
-    const store = new D1PublishEffectStore(db as unknown as D1Database, 1);
+    const store = new D1PublishEffectStore(db as unknown as D1Database, 1, limits);
     await store.ensureIntent('candidate', 'publication:candidate', 'editorial/candidate', 1, 'a'.repeat(64));
     await store.record('candidate', { state: 'MERGED', merge_commit: 'b'.repeat(40) });
     expect(await store.read('candidate')).toMatchObject({ state: 'MERGED', merge_commit: 'b'.repeat(40), owner_epoch: 1 });

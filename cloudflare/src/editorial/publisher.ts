@@ -16,9 +16,11 @@ export type PublishEffect = {
   effect_id: string; branch: string; owner_epoch: number; content_digest: string;
   pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string;
 };
+export type PublicationCounts = { new_articles: number; refreshes: number };
 export interface PublishEffectStore {
   ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string): Promise<void>;
   read(candidateId: string): Promise<PublishEffect | null>;
+  reserveMergeCapacity(candidateId: string, counts: PublicationCounts): Promise<boolean>;
   record(candidateId: string, patch: { pull_request?: number; source_commit?: string; merge_commit?: string; state: string }): Promise<void>;
 }
 type PublicationAuthority = Pick<PublicationState, 'owner_epoch' | 'paused'>;
@@ -125,6 +127,13 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
     const beforeMerge = await deps.currentState();
     const finalDecision = await canPublish(proposal, receipt, beforeMerge);
     if (!finalDecision.allowed) { await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'FAILED' }); return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'FAILED'); }
+    const articleFiles = proposal.files.filter((file) => ARTICLE.test(file.path));
+    const newArticles = articleFiles.filter((file) => file.operation === 'create').length;
+    if (!(await deps.store.reserveMergeCapacity(proposal.candidate_id, {
+      new_articles: newArticles, refreshes: articleFiles.length - newArticles,
+    }))) {
+      return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'CAPACITY_HELD');
+    }
     let mergeCommit: string;
     try { mergeCommit = (await deps.github.mergePullRequest(pull.number, pull.head_sha)).merge_commit_sha; }
     catch {

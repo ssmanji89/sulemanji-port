@@ -25,12 +25,18 @@ async function fixture() {
 
 class FakeStore implements PublishEffectStore {
   value: Record<string, unknown> | null = null;
+  allowMerge = true;
+  capacityRequests: Array<{ new_articles: number; refreshes: number }> = [];
   async ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string) {
     if (this.value && this.value.content_digest !== contentDigest) throw new Error('conflicting intent');
     this.value ??= { candidate_id: candidateId, effect_id: effectId, branch, owner_epoch: ownerEpoch, content_digest: contentDigest, state: 'INTENT' };
   }
   async read() { return this.value as PublishEffect | null; }
   async record(_candidateId: string, patch: Record<string, unknown>) { Object.assign(this.value ?? {}, patch); }
+  async reserveMergeCapacity(_candidateId: string, counts: { new_articles: number; refreshes: number }) {
+    this.capacityRequests.push(counts);
+    return this.allowMerge;
+  }
 }
 class FakeGitHub implements GitHubPublisher {
   pr: PullRequestState | null = null;
@@ -65,7 +71,25 @@ describe('guarded source publication effects', () => {
     expect(attempt).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12 });
     expect(github.creates).toBe(1);
     expect(github.merges).toBe(0);
+    expect(store.capacityRequests).toEqual([]);
     expect(store.value).toMatchObject({ state: 'SOURCE_PUBLISHED', pull_request: 12 });
+  });
+
+  it('holds an exact reviewed pull request before merge when its daily allowance is exhausted', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () => state };
+    await publishContent(proposal, receipt, deps);
+    github.pr!.checks = 'success';
+    store.allowMerge = false;
+
+    const result = await publishContent(proposal, receipt, deps);
+
+    expect(result).toMatchObject({ status: 'CAPACITY_HELD', pull_request: 12 });
+    expect(store.capacityRequests).toEqual([{ new_articles: 0, refreshes: 1 }]);
+    expect(github.merges).toBe(0);
+    expect(store.value).toMatchObject({ state: 'SOURCE_PUBLISHED' });
   });
 
   it('reconciles a successful merge when the merge response is lost', async () => {

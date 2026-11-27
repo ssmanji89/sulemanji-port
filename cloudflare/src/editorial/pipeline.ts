@@ -142,6 +142,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         if (probe) await step.sleep(`await-checks-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
         const publication = await step.do(`publish-content-${key}${suffix}`, () => deps.publish(proposal, review, input.signal));
         const attempt = publication.attempt;
+        if (attempt.status === 'CAPACITY_HELD') return { status: 'held', reason: 'The daily publication allowance would be exceeded.' };
         if (attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.source_commit ||
             !attempt.pull_request || attempt.status !== 'SOURCE_PUBLISHED') {
           return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };

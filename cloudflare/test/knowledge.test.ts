@@ -132,8 +132,10 @@ describe('signed public knowledge import', () => {
   it.each(['https://localhost/private', 'https://localhost./private', 'https://printer/private',
     'https://api.local/private', 'https://127.0.0.1/private',
     'https://0177.0.0.1/private', 'https://１２７.０.０.１/private', 'https://0x7f.０.０.１/private',
+    'https://127.0.0.%31/private', 'https://127.0.0.%EF%BC%91/private', 'https://127%2E0%2E0%2E1/private',
     'https://10.0.0.4/private', 'https://100.64.0.1/private',
     'https://192.0.2.1/private', 'https://192.168.1.2/private', 'https://@example.org/private', 'https://[::1]/private',
+    'https://192.0.0.8/private', 'https://192.0.0.11/private',
     'https://[fd12::1]/private', 'https://[fe80::1]/private', 'https://[ff02::1]/private',
     'https://[2001:db8::1]/private', 'https://[2001:2::1]/private', 'https://[2001:4::1]/private',
     'https://[2001:40::1]/private',
@@ -145,10 +147,11 @@ describe('signed public knowledge import', () => {
     expect(db.rows.size).toBe(0);
   });
 
-  it.each(['https://[2001:1::1]/public', 'https://[2001:3::1]/public',
+  it.each(['https://192.0.0.9/public', 'https://192.0.0.10/public',
+    'https://[2001:1::1]/public', 'https://[2001:3::1]/public',
     'https://[2001:4:112::1]/public', 'https://[2001:20::1]/public', 'https://[2001:21::1]/public',
     'https://[2001:2f:ffff::1]/public', 'https://[2001:20:1000::1]/public',
-    'https://[2001:30:1000::1]/public', 'https://[2001:3f:ffff::1]/public'])('accepts globally reachable IPv6 exception %s', async (url) => {
+    'https://[2001:30:1000::1]/public', 'https://[2001:3f:ffff::1]/public'])('accepts producer-global source address %s', async (url) => {
     const validPayload = { ...payload, public_sources: [{ ...payload.public_sources[0], url }] };
     const result = await importEnvelope(await makeEnvelope({ payload: validPayload, payload_sha256: await digest(validPayload) }));
     expect(result).toMatchObject({ status: 'accepted' });

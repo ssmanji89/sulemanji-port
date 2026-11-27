@@ -115,11 +115,12 @@ function isPublicHostname(hostname: string): boolean {
   if (octets.length !== 4 || octets.some((part) => !/^\d{1,3}$/.test(part))) {
     return host.includes('.') && !host.startsWith('.') && !host.endsWith('.');
   }
-  const [first, second, third] = octets.map(Number);
+  const [first, second, third, fourth] = octets.map(Number);
   if (octets.some((part) => Number(part) > 255) || first === 0 || first >= 224 || first === 10 || first === 127) return false;
   if ((first === 100 && second >= 64 && second <= 127) || (first === 169 && second === 254) ||
       (first === 172 && second >= 16 && second <= 31) || (first === 192 && second === 168) ||
-      (first === 192 && second === 0 && (third === 0 || third === 2)) || (first === 192 && second === 88 && third === 99) ||
+      (first === 192 && second === 0 && ((third === 0 && fourth !== 9 && fourth !== 10) || third === 2)) ||
+      (first === 192 && second === 88 && third === 99) ||
       (first === 198 && ((second === 18 || second === 19) || (second === 51 && third === 100))) ||
       (first === 203 && second === 0 && third === 113)) return false;
   return true;

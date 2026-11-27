@@ -20,7 +20,7 @@
 - `npm run check` in `cloudflare`: PASS, 56 passed / 4 skipped; 229 built assets; 55 preserved articles; both static Worker configs dry-run.
 - Editorial Worker configs: both dry-run with separate bindings. Migrations 0001–0003 applied remotely in staging and production; `editorial_control` read back `paused=1, owner_epoch=1` on both databases. Workflow inventory confirms both resources. Production Cron attached; staging Cron disabled as recorded above.
 - Public `https://editorial.sulemanji.com/` currently fails DNS resolution. The production Worker Route exists, but no DNS record was added; the Viyu producer cannot reach the endpoint over that hostname.
-- `bash scripts/check_site_release.sh`: stopped before release qualification because the working tree was dirty; rerun after commit. Earlier clean-main Writing fixture failures remain recorded in `EXECUTION.md` and must be retested.
+- `bash scripts/check_site_release.sh`: passed on the clean committed tree after the Writing fixture test-helper path fix recorded in `EXECUTION.md`. A final rerun after this ledger update is still required.
 - Generated `test-results/` remains untracked and intentionally preserved.
 
 ## T11 correction persistence follow-up

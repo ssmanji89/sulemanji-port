@@ -110,6 +110,21 @@ class EditorialWorkflowTests(unittest.TestCase):
             rejected = subprocess.run(["node", str(verifier), fixture.name, "staging", sha], capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
 
+    def test_deployment_readback_rejects_invalid_or_timezone_free_timestamps(self):
+        verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-deployment.mjs"
+        sha = "a" * 40
+        for created_on in ("2026-11-27T00:00:00", "2026-02-31T00:00:00Z"):
+            payload = [{
+                "id": "deployment-id", "created_on": created_on,
+                "annotations": {"workers/message": f"service staging {sha}"},
+                "versions": [{"version_id": "version-id", "percentage": 100}],
+            }]
+            with self.subTest(created_on=created_on), tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as fixture:
+                json.dump(payload, fixture)
+                fixture.flush()
+                rejected = subprocess.run(["node", str(verifier), fixture.name, "staging", sha], capture_output=True, text=True)
+                self.assertNotEqual(rejected.returncode, 0)
+
     def test_migration_readback_rejects_pending_migrations(self):
         verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-migrations.mjs"
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as fixture:

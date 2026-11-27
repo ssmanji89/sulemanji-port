@@ -122,36 +122,46 @@ class EditorialWorkflowTests(unittest.TestCase):
     def test_deployment_readback_requires_exact_sha_and_full_traffic(self):
         verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-deployment.mjs"
         sha = "a" * 40
+        version_id = "123e4567-e89b-12d3-a456-426614174000"
         payload = [
-            {"id": "old-deployment", "created_on": "2026-11-26T23:00:00Z", "annotations": {"workers/message": "service staging stale"}, "versions": [{"version_id": "old-version", "percentage": 100}]},
-            {"id": "deployment-id", "created_on": "2026-11-27T00:00:00Z", "annotations": {"workers/message": f"service staging {sha}"}, "versions": [{"version_id": "version-id", "percentage": 100}]},
+            {"id": "old-deployment", "created_on": "2026-11-26T23:00:00Z", "versions": [{"version_id": "old-version", "percentage": 100}]},
+            {"id": "deployment-id", "created_on": "2026-11-27T00:00:00Z", "annotations": {"workers/message": "Automatic deployment on upload."}, "versions": [{"version_id": version_id, "percentage": 100}]},
         ]
-        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as fixture:
-            json.dump(payload, fixture)
-            fixture.flush()
-            subprocess.run(["node", str(verifier), fixture.name, "staging", sha], check=True, capture_output=True, text=True)
-            payload[1]["annotations"]["workers/message"] = "service staging stale"
-            fixture.seek(0)
-            fixture.truncate()
-            json.dump(payload, fixture)
-            fixture.flush()
-            rejected = subprocess.run(["node", str(verifier), fixture.name, "staging", sha], capture_output=True, text=True)
-            self.assertNotEqual(rejected.returncode, 0)
+        with tempfile.TemporaryDirectory() as directory:
+            deployments = Path(directory) / "deployments.json"
+            version = Path(directory) / "version.json"
+            deployments.write_text(json.dumps(payload), encoding="utf-8")
+            base = ["node", str(verifier), str(deployments)]
+            selected = subprocess.run([*base, "--active-version"], check=True, capture_output=True, text=True)
+            self.assertEqual(selected.stdout.strip(), version_id)
+            metadata = {"id": version_id, "annotations": {"workers/message": f"service staging {sha}"}}
+            version.write_text(json.dumps(metadata), encoding="utf-8")
+            command = [*base, "staging", sha, str(version)]
+            subprocess.run(command, check=True, capture_output=True, text=True)
+
+            for incorrect in ({**metadata, "id": "other-version"}, {**metadata, "annotations": {"workers/message": "service staging stale"}}):
+                with self.subTest(incorrect=incorrect):
+                    version.write_text(json.dumps(incorrect), encoding="utf-8")
+                    self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+
+            version.write_text(json.dumps(metadata), encoding="utf-8")
+            payload[1]["versions"][0]["percentage"] = 50
+            deployments.write_text(json.dumps(payload), encoding="utf-8")
+            self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 
     def test_deployment_readback_rejects_invalid_or_timezone_free_timestamps(self):
         verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-deployment.mjs"
-        sha = "a" * 40
         for created_on in ("2026-11-27T00:00:00", "2026-02-31T00:00:00Z"):
             payload = [{
                 "id": "deployment-id", "created_on": created_on,
-                "annotations": {"workers/message": f"service staging {sha}"},
-                "versions": [{"version_id": "version-id", "percentage": 100}],
+                "versions": [{"version_id": "123e4567-e89b-12d3-a456-426614174000", "percentage": 100}],
             }]
             with self.subTest(created_on=created_on), tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as fixture:
                 json.dump(payload, fixture)
                 fixture.flush()
-                rejected = subprocess.run(["node", str(verifier), fixture.name, "staging", sha], capture_output=True, text=True)
+                rejected = subprocess.run(["node", str(verifier), fixture.name, "--active-version"], capture_output=True, text=True)
                 self.assertNotEqual(rejected.returncode, 0)
+                self.assertIn("EDITORIAL_DEPLOYMENT_TIMESTAMP_INVALID", rejected.stderr)
 
     def test_migration_readback_rejects_pending_migrations(self):
         verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-migrations.mjs"

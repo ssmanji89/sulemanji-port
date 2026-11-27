@@ -1,6 +1,9 @@
 import type { ContentProposal, PublicationReceipt, PublicationState, PublishAttempt, ReviewReceipt } from './contracts.js';
 import * as parse5 from 'parse5';
-import { verifyRequiredMedia } from './review.js';
+import { articleSourcePath, verifyRequiredMedia } from './review.js';
+import { CANONICAL_SITE_ORIGIN } from './site-readback.js';
+import { encodeSocialCard, isSocialCardPng, MAX_CARD_BYTES, socialCardPath } from './social-card-format.js';
+import { readDiscoveryLinks } from './discovery-readback.js';
 
 export type PublishDecision = { allowed: true } | { allowed: false; reasons: string[] };
 export type PullRequestState = { number: number; head_sha: string; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; checks: 'pending' | 'success' | 'failure' };
@@ -9,12 +12,21 @@ export interface GitHubPublisher {
   createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState>;
   mergePullRequest(number: number, expectedHead: string): Promise<{ merge_commit_sha: string }>;
 }
+export type PublishEffect = {
+  effect_id: string; branch: string; owner_epoch: number; content_digest: string;
+  pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string;
+};
 export interface PublishEffectStore {
   ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string): Promise<void>;
-  read(candidateId: string): Promise<{ pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string } | null>;
+  read(candidateId: string): Promise<PublishEffect | null>;
   record(candidateId: string, patch: { pull_request?: number; source_commit?: string; merge_commit?: string; state: string }): Promise<void>;
 }
-export type PublishDependencies = { store: PublishEffectStore; github: GitHubPublisher; currentState(): Promise<PublicationState>; now?: () => Date };
+type PublicationAuthority = Pick<PublicationState, 'owner_epoch' | 'paused'>;
+export type PublishDependencies = {
+  store: PublishEffectStore; github: GitHubPublisher;
+  readAuthority(): Promise<PublicationAuthority>;
+  currentState(): Promise<PublicationState>;
+};
 
 const ARTICLE = /^notes\/[a-z0-9]+(?:-[a-z0-9]+)*\.md$/;
 const MEDIA = /^assets\/images\/articles\/[a-z0-9][a-z0-9._-]{0,150}\.(?:svg|png|webp|jpe?g)$/i;
@@ -44,7 +56,9 @@ export async function canPublish(proposal: ContentProposal, receipt: ReviewRecei
   if (!proposal.files.length || proposal.files.some((file) => !safePath(file.path) || !state.allowed_paths.includes(file.path) || !['create', 'update'].includes(file.operation))) reasons.push('Changed path is outside the guarded publication allowlist.');
   if (new Set(proposal.files.map((file) => file.path)).size !== proposal.files.length) reasons.push('Proposal contains duplicate paths.');
   if (!proposal.public_urls.length || proposal.expected_content.length !== proposal.public_urls.length || proposal.expected_content.some((item) => !proposal.public_urls.includes(item.url) || !item.title || !/^[0-9a-f]{64}$/.test(item.text_sha256))) reasons.push('Expected public content is incomplete.');
-  if (!verifyRequiredMedia(proposal, state.allowed_paths)) reasons.push('Required media is missing or unsafe.');
+  if (proposal.files.some((file) => file.operation === 'create' && ARTICLE.test(file.path) &&
+      !proposal.expected_content.some((item) => item.social_image && articleSourcePath(item.url) === file.path)) ||
+      !verifyRequiredMedia(proposal, state.allowed_paths)) reasons.push('Required media is missing or unsafe.');
   for (const file of proposal.files) {
     if (file.content.length > 262_144 || !/^[0-9a-f]{64}$/.test(file.content_sha256)) { reasons.push(`File payload is invalid or too large: ${file.path}.`); continue; }
     if (await sha256(file.content) !== file.content_sha256) reasons.push(`File digest mismatch: ${file.path}.`);
@@ -54,16 +68,31 @@ export async function canPublish(proposal: ContentProposal, receipt: ReviewRecei
   return reasons.length ? { allowed: false, reasons } : { allowed: true };
 }
 
-function attemptFor(proposal: ContentProposal, state: PublicationState, branch: string, pullRequest: number | null, sourceCommit: string | null, status: PublishAttempt['status']): PublishAttempt {
+function attemptFor(proposal: ContentProposal, state: PublicationAuthority, branch: string, pullRequest: number | null, sourceCommit: string | null, status: PublishAttempt['status']): PublishAttempt {
   return { id: `publication:${proposal.candidate_id}`, candidate_id: proposal.candidate_id, owner_epoch: state.owner_epoch, branch, pull_request: pullRequest,
     source_commit: sourceCommit, deployment_version: null, public_urls: proposal.public_urls, expected_content: proposal.expected_content, status };
 }
 
 export async function publishContent(proposal: ContentProposal, receipt: ReviewReceipt, deps: PublishDependencies): Promise<PublishAttempt> {
-  const state = await deps.currentState();
-  const decision = await canPublish(proposal, receipt, state);
   const branch = `editorial/candidate-${proposal.candidate_id.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 80)}`;
   const attemptId = `publication:${proposal.candidate_id}`;
+  const recorded = await deps.store.read(proposal.candidate_id);
+  if (recorded?.state === 'MERGED') {
+    const authority = await deps.readAuthority();
+    const exact = recorded.pull_request && recorded.merge_commit && recorded.effect_id === attemptId &&
+      recorded.branch === branch && recorded.owner_epoch === authority.owner_epoch && recorded.content_digest === proposal.content_digest;
+    // This observes an existing effect. Mutable upstream checks authorize only new effects.
+    const replay = exact && await canPublish(proposal, receipt, {
+      ...authority, base_commit: proposal.base_commit, policy_revision: proposal.policy_revision,
+      knowledge_revision: proposal.knowledge_revision, source_digest: proposal.source_digest,
+      allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id,
+    });
+    return replay && replay.allowed
+      ? attemptFor(proposal, authority, branch, recorded.pull_request, recorded.merge_commit, 'SOURCE_PUBLISHED')
+      : attemptFor(proposal, authority, branch, null, null, 'FAILED');
+  }
+  const state = await deps.currentState();
+  const decision = await canPublish(proposal, receipt, state);
   if (!decision.allowed) return attemptFor(proposal, state, branch, null, null, 'FAILED');
   await deps.store.ensureIntent(proposal.candidate_id, attemptId, branch, state.owner_epoch, proposal.content_digest);
   const effect = await deps.store.read(proposal.candidate_id);
@@ -125,25 +154,51 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   }
 }
 
-export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher: typeof fetch): Promise<{ receipt: PublicationReceipt; failure?: string }> {
+async function readCardBytes(response: Response): Promise<Uint8Array> {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('social card response body is missing');
+  const bytes = new Uint8Array(MAX_CARD_BYTES);
+  let size = 0;
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) return bytes.subarray(0, size);
+      if (size + value.length > MAX_CARD_BYTES) {
+        await reader.cancel();
+        throw new Error('social card response exceeds bound');
+      }
+      bytes.set(value, size);
+      size += value.length;
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher: typeof fetch,
+  readback: 'public' | 'private-binding' = 'public'): Promise<{ receipt: PublicationReceipt; failure?: string }> {
   if (!attempt.source_commit) return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: '', deployment_version: '', public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'UNCERTAIN' }, failure: 'merged source commit missing' };
   try {
-    const pages: Array<{ url: string; html: string }> = [];
+    const articleUrls: string[] = [];
     let releaseAssetDigest: string | null = null;
     let releaseBuiltAt: string | null = null;
     for (const url of attempt.public_urls) {
-      const expectedUrl = new URL(url, 'https://www.sulemanji.com');
-      const response = await fetcher(expectedUrl, { redirect: 'follow' });
-      if (!response.ok || new URL(response.url).origin !== expectedUrl.origin) throw new Error('page unavailable or redirected off canonical host');
+      const expectedUrl = new URL(url, CANONICAL_SITE_ORIGIN);
+      if (expectedUrl.origin !== CANONICAL_SITE_ORIGIN || expectedUrl.username || expectedUrl.password ||
+          expectedUrl.search || expectedUrl.hash) throw new Error('publication readback URL is outside the canonical origin');
+      const response = await fetcher(expectedUrl, { redirect: 'error' });
+      const originMatches = response.url ? new URL(response.url).origin === expectedUrl.origin : readback === 'private-binding';
+      if (!response.ok || !originMatches) throw new Error('page unavailable or redirected off canonical host');
       const html = await response.text();
       if (html.length > 2_000_000) throw new Error('article response exceeds bound');
-      pages.push({ url, html });
+      articleUrls.push(expectedUrl.href);
       const item = attempt.expected_content.find((expected) => expected.url === url);
       if (!item) throw new Error('expected article absent');
       const page = parse5.parse(html) as unknown as { childNodes?: Array<{ tagName?: string; childNodes?: unknown[] }> };
       const titles: string[] = [];
       const articles: string[] = [];
       const canonicalUrls: string[] = [];
+      const socialImages: string[] = [];
       const walk = (node: unknown): void => {
         if (!node || typeof node !== 'object') return;
         const row = node as { tagName?: string; attrs?: Array<{ name: string; value: string }>; childNodes?: unknown[] };
@@ -151,6 +206,9 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
         if (row.tagName === 'div' && row.attrs?.some((attr) => attr.name === 'data-writing-body')) articles.push(normalizeNodeText(node));
         if (row.tagName === 'link' && row.attrs?.some((attr) => attr.name === 'rel' && attr.value === 'canonical')) {
           const href = row.attrs.find((attr) => attr.name === 'href')?.value; if (href) canonicalUrls.push(new URL(href, expectedUrl).toString());
+        }
+        if (row.tagName === 'meta' && row.attrs?.some((attr) => attr.name === 'property' && attr.value === 'og:image')) {
+          socialImages.push(row.attrs.find((attr) => attr.name === 'content')?.value ?? '');
         }
         for (const child of row.childNodes ?? []) walk(child);
       };
@@ -170,19 +228,36 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       if (releaseAssetDigest !== null && (releaseAssetDigest !== assetDigest || releaseBuiltAt !== builtAt)) throw new Error('public pages came from different deployed releases');
       releaseAssetDigest = assetDigest;
       releaseBuiltAt = builtAt;
+      if (item.social_image) {
+        const { path, content_sha256: cardDigest } = item.social_image;
+        const articlePath = articleSourcePath(item.url);
+        if (!articlePath || path !== socialCardPath(articlePath)) {
+          throw new Error('social card path does not match the article');
+        }
+        const target = new URL(path, CANONICAL_SITE_ORIGIN);
+        if (socialImages.length !== 1 || socialImages[0] !== target.href) throw new Error('social card metadata mismatch');
+        const card = await fetcher(target, { redirect: 'error' });
+        if (!card.ok || (card.url ? card.url !== target.href : readback !== 'private-binding') ||
+            card.headers.get('content-type') !== 'image/png' || card.headers.get('x-site-source-commit') !== sourceCommit ||
+            card.headers.get('x-site-asset-digest') !== assetDigest || card.headers.get('x-site-built-at') !== builtAt) {
+          throw new Error('social card does not match the deployed release');
+        }
+        const bytes = await readCardBytes(card);
+        if (!isSocialCardPng(bytes) || await sha256(encodeSocialCard(bytes)) !== cardDigest) throw new Error('social card bytes mismatch');
+      }
     }
-    const first = pages[0];
-    const siteOrigin = new URL(first.url, 'https://www.sulemanji.com').origin;
-    const writing = await fetcher(new URL('/writing/', siteOrigin));
-    const feed = await fetcher(new URL('/feed.xml', siteOrigin));
-    const sitemap = await fetcher(new URL('/sitemap.xml', siteOrigin));
-    if (!writing.ok || !feed.ok || !sitemap.ok) throw new Error('writing, feed, or sitemap unavailable');
-    const writingHtml = await writing.text(); const feedXml = await feed.text(); const sitemapXml = await sitemap.text();
-    for (const page of pages) {
-      const route = new URL(page.url, siteOrigin).pathname.replace(/\/$/, '');
-      if (!writingHtml.includes(route) || !feedXml.includes(route) || !sitemapXml.includes(route)) throw new Error('article discovery, feed, or sitemap readback mismatch');
+    if (!articleUrls.length || !releaseAssetDigest || !releaseBuiltAt) throw new Error('deployed asset release identity missing');
+    for (const [kind, path] of [['writing', '/writing'], ['feed', '/feed.xml'], ['sitemap', '/sitemap.xml']] as const) {
+      const target = new URL(path, CANONICAL_SITE_ORIGIN);
+      const response = await fetcher(target, { redirect: 'error' });
+      const originMatches = response.url ? new URL(response.url).origin === target.origin : readback === 'private-binding';
+      if (!response.ok || !originMatches || response.headers.get('x-site-source-commit') !== attempt.source_commit ||
+          response.headers.get('x-site-asset-digest') !== releaseAssetDigest || response.headers.get('x-site-built-at') !== releaseBuiltAt) {
+        throw new Error(`${kind} discovery does not match the deployed release`);
+      }
+      const links = readDiscoveryLinks(kind, await response.text());
+      if (articleUrls.some((url) => !links.has(url))) throw new Error(`${kind} discovery does not include the exact article URL`);
     }
-    if (!releaseAssetDigest || !releaseBuiltAt) throw new Error('deployed asset release identity missing');
     const deploymentVersion = await sha256(`${attempt.source_commit}\n${releaseAssetDigest}\n${releaseBuiltAt}`);
     return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: attempt.source_commit, deployment_version: deploymentVersion,
       public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'VERIFIED' } };

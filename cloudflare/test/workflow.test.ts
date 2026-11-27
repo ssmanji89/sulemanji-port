@@ -7,6 +7,7 @@ import { OperationsD1 } from './operations.test-support.js';
 
 class DurableStep {
   values = new Map<string, unknown>();
+  async sleep(_name: string, _milliseconds: number) {}
   async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
     if (!this.values.has(name)) this.values.set(name, await callback());
     return this.values.get(name) as T;

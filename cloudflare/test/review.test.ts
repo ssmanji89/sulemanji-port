@@ -1,6 +1,7 @@
+import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { canPublish } from '../src/editorial/publisher.js';
-import { normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, reviseContent, verifyRequiredMedia } from '../src/editorial/review.js';
+import { attachSocialCard, normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, reviseContent, verifyRequiredMedia } from '../src/editorial/review.js';
 import type { Candidate, ContentProposal, PreparationContext, ReviewContext } from '../src/editorial/contracts.js';
 import type { ModelGateway, ModelRequest, ModelResult } from '../src/editorial/models.js';
 
@@ -40,6 +41,26 @@ function state(proposal: ContentProposal) {
 }
 
 describe('independent content preparation and review', () => {
+  it('refreshes the exact tracked article when the catalog uses an absolute canonical URL', async () => {
+    const initial = await prepareContent(candidate, context, new FakeModels());
+    const file = initial.files[0];
+    const target = { id: 'existing', title: output.title, url: new URL(initial.public_urls[0], 'https://www.sulemanji.com').href, topics: output.topics };
+    const refresh = { ...candidate, action: 'REFRESH' as const, target_id: target.id };
+    const ordinaryYaml = file.content.replace(/^title: .*$/m, `title: '${target.title}'`)
+      .replace(/^permalink: .*$/m, `permalink: ${new URL(target.url).pathname}`);
+    const existing = { ...context, catalog: [...context.catalog, target],
+      existing_paths: [file.path], existing_files: { [file.path]: ordinaryYaml } };
+    const result = await prepareContent(refresh, existing, new FakeModels());
+    expect(result.files[0]).toMatchObject({ path: file.path, operation: 'update' });
+    expect(result.public_urls).toEqual([target.url]);
+    expect(result.files[0].content.match(/^published_on: .*$/m)?.[0]).toBe(file.content.match(/^published_on: .*$/m)?.[0]);
+    await expect(reviseContent(result, refresh, existing, [{ code: 'CLARITY', detail: 'Explain the source.' }],
+      new FakeModels(), 'author:ordinary-yaml')).resolves.toMatchObject({ public_urls: [target.url] });
+    const noSource = new FakeModels();
+    await expect(prepareContent(refresh, { ...existing, existing_files: {} }, noSource)).rejects.toThrow('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
+    expect(noSource.calls).toHaveLength(0);
+  });
+
   it('keeps article identity and authority server-assigned', async () => {
     const models = new FakeModels();
     const proposal = await prepareContent(candidate, context, models);
@@ -78,7 +99,11 @@ describe('independent content preparation and review', () => {
   });
 
   it('invalidates clearance when content, source, policy, knowledge, or base changes', async () => {
-    const proposal = await makeProposal();
+    const draft = await makeProposal();
+    expect(await canPublish(draft, review(draft), state(draft))).toMatchObject({ allowed: false });
+    const proposal = await attachSocialCard(draft, async () => new Uint8Array(await readFile(
+      new URL('../../assets/images/articles/agent-safety-social.png', import.meta.url))));
+    expect(await canPublish({ ...proposal, required_media_paths: [] }, review(proposal), state(proposal))).toMatchObject({ allowed: false });
     const receipt = review(proposal);
     expect(await canPublish(proposal, receipt, state(proposal))).toEqual({ allowed: true });
     const changed = { ...proposal, content_digest: 'd'.repeat(64) };

@@ -3,6 +3,7 @@
   "name": "runtime-worker",
   "main": "src/editorial/index.ts",
   "compatibility_date": "2026-11-26",
+  "compatibility_flags": ["global_fetch_strictly_public"],
   "workers_dev": false,
   "routes": [],
   "rules": [{ "type": "Data", "globs": ["**/*.ttf"], "fallthrough": true }],

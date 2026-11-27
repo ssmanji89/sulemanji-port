@@ -24,15 +24,15 @@ const validPolicy = {
   model_pricing_revision: 'synthetic-pricing-r1',
 };
 
-function render(policy: string | undefined) {
+function render(policy: string | undefined, environment: 'staging' | 'production' = 'staging') {
   const outputDirectory = mkdtempSync(resolve(tmpdir(), 'editorial-render-test-'));
-  const result = spawnSync(process.execPath, [renderer, 'staging', outputDirectory], {
+  const result = spawnSync(process.execPath, [renderer, environment, outputDirectory], {
     cwd: cloudflareDirectory,
     encoding: 'utf8',
     env: {
       PATH: process.env.PATH ?? '',
       EDITORIAL_DATABASE_ID: '11111111-1111-4111-8111-111111111111',
-      EDITORIAL_WORKER_NAME: 'editorial-test-staging',
+      EDITORIAL_WORKER_NAME: 'editorial-test-' + environment,
       EDITORIAL_WORKFLOW_NAME: 'editorial-test-workflow',
       EDITORIAL_DATABASE_NAME: 'editorial-test-database',
       EDITORIAL_POLICY_REVISION: 'synthetic-knowledge-policy-r1',
@@ -82,6 +82,23 @@ describe('editorial runtime config policy wiring', () => {
       expect(config.vars.EDITORIAL_POLICY_JSON).toBe(policy);
     } finally {
       rmSync(outputDirectory, { recursive: true, force: true });
+    }
+  });
+
+  it('routes production fetches through the canonical Worker route while staging stays on its private binding', () => {
+    const production = render(JSON.stringify(validPolicy), 'production');
+    const staging = render(JSON.stringify(validPolicy));
+    try {
+      expect(production.result.status).toBe(0);
+      expect(staging.result.status).toBe(0);
+      const productionConfig = JSON.parse(readFileSync(resolve(production.outputDirectory, 'wrangler.editorial.runtime.jsonc'), 'utf8'));
+      const stagingConfig = JSON.parse(readFileSync(resolve(staging.outputDirectory, outputName), 'utf8'));
+      expect(productionConfig.compatibility_flags ?? []).toContain('global_fetch_strictly_public');
+      expect(stagingConfig.compatibility_flags ?? []).not.toContain('global_fetch_strictly_public');
+      expect(stagingConfig.services).toContainEqual({ binding: 'EDITORIAL_FIXTURE_SITE', service: 'sulemanji-editorial-fixture-site' });
+    } finally {
+      rmSync(production.outputDirectory, { recursive: true, force: true });
+      rmSync(staging.outputDirectory, { recursive: true, force: true });
     }
   });
 });

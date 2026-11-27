@@ -8,7 +8,13 @@ test('Explore shows broad real-content paths without JavaScript', async ({ brows
   for (const title of ['Market automation and decision systems', 'Cavelo nodes for n8n', 'Reproduce the calculation', 'Looking up']) {
     await expect(page.getByRole('link', { name: title, exact: true }).first()).toBeVisible();
   }
-  await expect(page.locator('[data-content-item]')).toHaveCount(70);
+  const catalogResponse = await context.request.get('/content-index.json');
+  expect(catalogResponse.ok()).toBe(true);
+  const catalog: { items: { canonical_url: string }[] } = await catalogResponse.json();
+  const renderedPaths = await page.locator('[data-content-item]').evaluateAll((cards) =>
+    cards.map((card) => card.querySelector('h3 a')?.getAttribute('href'))
+  );
+  expect(renderedPaths).toEqual(catalog.items.map((item) => item.canonical_url));
   await context.close();
 });
 

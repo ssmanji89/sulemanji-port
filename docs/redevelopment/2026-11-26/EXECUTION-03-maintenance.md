@@ -50,7 +50,7 @@
 
 - The private producer URL fix merged as `0ed4de6cfb7e5583b73c02edcbbc707c776f069c` after exact-head CI passed on PR #177 head `24a5df963bc4693e42eed942109e8eef8e2c66a6`.
 - Site PR #110 head `f9c53d28b2d4855afeb4fc13282c90766e576d31` merged as `691608a89e307b69f6ece6cba6f4679728eb9992` after exact-head build passed. It requires exact top-level authored fields, unique fields, nonempty public sources, safe text, and rejects local/private/reserved source addresses. Local importer and release gates and independent review passed before merge.
-- The source corrections have not yet been deployed. Fresh Wrangler readback confirms the public Worker route is live (unsigned `POST /internal/knowledge` returns 401 AUTH), production and staging controls are paused at epoch 1, both Worker secret lists are empty, and each D1 has zero claims, candidates, receipts, public knowledge rows, and usage reservations.
+- At the source-merge readback, the source corrections had not yet been deployed. The route was live (unsigned `POST /internal/knowledge` returned 401 AUTH), production and staging controls were paused at epoch 1, both Worker secret lists were empty, and each D1 had zero claims, candidates, receipts, public knowledge rows, and usage reservations.
 - T07 remains partial. No signed authorized derivative, producer-side delivery, renewal, or withdrawal has been exercised. The GitHub `cloudflare-production` environment still lacks `CLOUDFLARE_API_TOKEN`; local Wrangler OAuth was not copied into CI.
 
 ## Activation blocker readback (2026-11-27)
@@ -58,3 +58,10 @@
 - The site Worker and both editorial Workers exist and their latest deployed versions receive 100% traffic. The editorial Worker responds on the custom hostname; `GET` to unsupported paths returns 404, while an unsigned JSON `POST /internal/knowledge` returns 401 AUTH as designed.
 - Current main source performs durable public-signal discovery and safely records NO_CHANGE or holds actionable candidates. It does not yet wire authoring, independent review, publication, or public readback adapters. No provider/publisher configuration or signed knowledge is present. D1 remains paused; no natural eligible run is claimed.
 - The deployment token is an Actions deployment prerequisite, not a substitute for the missing editorial runtime configuration or activation evidence.
+
+## Exact-main deployment readback (2026-11-27)
+
+- Main `79b6bcc0077755c360f21f7e73c9b3f60a439092` passed hosted build and release gates in run `45942270781`; its production deployment job failed before writing because `CLOUDFLARE_API_TOKEN` was empty.
+- The immutable artifact from that exact run verified successfully and was manually deployed with the existing local Wrangler OAuth session. Public `/release.json` now reports source `79b6bcc`, digest `sha256:2adeeae2cf7204fe0f4d7cfe24ca00752ae384f3350de7fa7e620fbd38956fda`, 229 assets, and 55 articles. Canonical route readback passed for Home, Writing and its slash redirect, the market project, a preserved article, retired intake (410), and an unknown article (404); the apex redirects to `www`.
+- The importer fix is now deployed on both editorial Workers at 100%. Production retains its hourly Cron and staging remains manual. Both D1 controls remain paused at owner epoch 1, with zero schedule claims, candidates, receipts, public knowledge, and usage reservations; both Worker secret lists remain empty. Unsigned knowledge POSTs return 401 AUTH on both hosts.
+- No signed producer delivery, authorized knowledge acceptance/renewal/withdrawal, model call, publication, or natural eligible schedule run is claimed. The production Actions token and editorial provider/publisher configuration remain separate unresolved requirements.

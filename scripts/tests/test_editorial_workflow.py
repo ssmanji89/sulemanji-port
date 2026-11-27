@@ -78,6 +78,7 @@ class EditorialWorkflowTests(unittest.TestCase):
                 "EDITORIAL_WORKER_NAME": "test-worker",
                 "EDITORIAL_WORKFLOW_NAME": "test-workflow",
                 "EDITORIAL_POLICY_REVISION": "test-policy",
+                "EDITORIAL_POLICY_JSON": json.dumps({"revision": "synthetic-policy-r1"}),
                 "EDITORIAL_CUSTOM_DOMAIN": "example.invalid",
                 "EDITORIAL_WORKERS_DEV": "true",
                 "EDITORIAL_CRON_SCHEDULE": "* * * * *",
@@ -88,6 +89,7 @@ class EditorialWorkflowTests(unittest.TestCase):
             self.assertEqual(generated["d1_databases"][0]["database_id"], environment["EDITORIAL_DATABASE_ID"])
             self.assertEqual(generated["d1_databases"][0]["database_name"], "test-database")
             self.assertEqual(generated["workflows"][0]["name"], "test-workflow")
+            self.assertEqual(json.loads(generated["vars"]["EDITORIAL_POLICY_JSON"]), json.loads(environment["EDITORIAL_POLICY_JSON"]))
             self.assertEqual(generated["routes"], [{"pattern": "example.invalid", "custom_domain": True}])
             self.assertEqual(generated["triggers"]["crons"], ["* * * * *"])
 

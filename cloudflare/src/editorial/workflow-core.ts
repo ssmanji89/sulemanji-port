@@ -2,12 +2,24 @@ import sourceRegistry from '../../config/public-sources.json' with { type: 'json
 import type { ActionDecision, Candidate, CatalogItem, EditorialEnv, PublicKnowledge, RecentHistory, Signal, SignalBatch, SourceConfig, SourceFailure } from './contracts.js';
 import { collectSignals } from './sources.js';
 import { chooseAction } from './relevance.js';
-import { getPublicKnowledge } from './knowledge.js';
+import { fingerprintPublicKnowledge, getPublicKnowledge } from './knowledge.js';
 import { parseEditorialPolicy, type EditorialPolicy } from './scheduler.js';
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 
-type DurableStep = { do<T>(name: string, callback: () => Promise<T> | T): Promise<T> };
+export type DurableStep = { do<T>(name: string, callback: () => Promise<T> | T): Promise<T> };
+export type CandidateProcessOutcome = { status: 'verified' | 'held'; reason: string };
+export type EditorialCandidateProcessor = {
+  processCandidate(input: {
+    candidate: Candidate;
+    signal: Signal;
+    catalog: CatalogItem[];
+    knowledge: PublicKnowledge[];
+    policy: EditorialPolicy;
+    owner_epoch: number;
+    step: DurableStep;
+  }): Promise<CandidateProcessOutcome>;
+};
 type EditorialWorkflowEnv = EditorialEnv & { EDITORIAL_POLICY_JSON?: string };
 type ReceiptRow = { id: string; action: string; result_json: string; created_at: string };
 type CandidateRow = { id: string; state: string; revision: string; payload_json: string };
@@ -45,7 +57,7 @@ async function readCatalog(fetcher: typeof fetch): Promise<CatalogItem[]> {
   return catalog;
 }
 
-async function readKnowledge(db: D1Database, now: Date): Promise<PublicKnowledge[]> {
+export async function readKnowledge(db: D1Database, now: Date): Promise<PublicKnowledge[]> {
   const rows = await db.prepare(`SELECT DISTINCT subject_id FROM public_knowledge
     WHERE action = 'UPSERT' AND expires_at > ? ORDER BY subject_id LIMIT 100`).bind(now.toISOString()).all<{ subject_id: string }>();
   const items: PublicKnowledge[] = [];
@@ -262,7 +274,8 @@ async function collectCoveredSignals(sources: SourceConfig[], maxFetches: number
   return { signals: uniqueSignals, failures, uncovered: [...new Set(uncovered)], stale: fetcher.isStale() };
 }
 
-export async function runEditorialAdmission(params: WorkflowParams, env: EditorialWorkflowEnv, step: DurableStep): Promise<WorkflowResult> {
+export async function runEditorialAdmission(params: WorkflowParams, env: EditorialWorkflowEnv, step: DurableStep,
+  processor?: EditorialCandidateProcessor): Promise<WorkflowResult> {
   if (!params.slot_claim_id || params.slot_claim_id.length > 128 || !/^[a-zA-Z0-9:_-]+$/.test(params.slot_claim_id)) {
     return held(params, 'Schedule slot identity is invalid.');
   }
@@ -296,6 +309,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
 
   const now = await step.do('capture-editorial-run-time', () => new Date().toISOString());
   const knowledge = await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now)));
+  const knowledgeRevision = await step.do('fingerprint-authorized-public-knowledge', () => fingerprintPublicKnowledge(knowledge));
   const historyRows = await step.do('read-recent-editorial-history', async () => {
     const [receipts, candidates] = await Promise.all([
       env.DB.prepare('SELECT id, action, result_json, created_at FROM editorial_receipts ORDER BY created_at DESC LIMIT ?').bind(HISTORY_LIMIT).all<ReceiptRow>(),
@@ -350,9 +364,26 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   }
 
   for (const { signal, decision } of actionable) {
-    const candidate = decision.candidate;
+    const candidate = { ...decision.candidate, knowledge_revision: knowledgeRevision };
     const saved = await step.do(`persist-held-candidate-${candidate.id.slice(0, 48)}`, () => persistHeldCandidate(env.DB, candidate, signal, policy, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the candidate could be recorded.');
+  }
+  if (processor) {
+    const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [];
+    for (const { signal, decision } of actionable) {
+      const outcome = await processor.processCandidate({ candidate: { ...decision.candidate, knowledge_revision: knowledgeRevision }, signal, catalog, knowledge, policy,
+        owner_epoch: control.owner_epoch, step });
+      outcomes.push({ candidate_id: decision.candidate.id, status: outcome.status, reason: outcome.reason });
+      if (outcome.status !== 'verified') break;
+    }
+    const verified = outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');
+    const reason = verified ? 'All admitted candidates passed publication and public readback.' :
+      outcomes.find((outcome) => outcome.status === 'held')?.reason ?? 'Candidate processing did not complete.';
+    const action = verified ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
+    const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
+      actionable[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes }, control.owner_epoch));
+    if (!saved) return held(params, 'Workflow authority changed before the publication result could be recorded.');
+    return verified ? { status: 'admitted', reason, slot_claim_id: params.slot_claim_id } : held(params, reason);
   }
   const reason = 'Candidate awaits configured author, reviewer, publisher, and readback adapters.';
   const first = actionable[0];

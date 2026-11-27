@@ -53,6 +53,26 @@ export class GitHubApiPublisher implements GitHubPublisher {
     return pending ? 'pending' : 'success';
   }
 
+  async readDefaultBranchHead(): Promise<string> {
+    const ref = await this.request<{ object?: { sha?: unknown } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${encodeURIComponent(this.branch)}`);
+    if (typeof ref.object?.sha !== 'string' || !/^[0-9a-f]{40}$/i.test(ref.object.sha)) throw new Error('GITHUB_BASE_HEAD_INVALID');
+    return ref.object.sha;
+  }
+
+  async readTextFile(path: string, ref: string): Promise<string> {
+    if (!/^notes\/[a-z0-9]+(?:-[a-z0-9]+)*\.md$/.test(path) || !/^[0-9a-f]{40}$/i.test(ref)) throw new Error('GITHUB_PATH_REJECTED');
+    const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+    const query = new URLSearchParams({ ref });
+    const file = await this.request<{ type?: string; encoding?: string; content?: string }>(`/repos/${this.owner}/${this.repo}/contents/${encodedPath}?${query}`);
+    if (file.type !== 'file' || file.encoding !== 'base64' || typeof file.content !== 'string' || file.content.length > 350_000) throw new Error('GITHUB_FILE_RESPONSE_INVALID');
+    const compact = file.content.replace(/\s/g, '');
+    if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(compact)) throw new Error('GITHUB_FILE_BASE64_INVALID');
+    let decoded: Uint8Array;
+    try { decoded = Uint8Array.from(atob(compact), (char) => char.charCodeAt(0)); } catch { throw new Error('GITHUB_FILE_BASE64_INVALID'); }
+    if (decoded.byteLength > 262_144) throw new Error('GITHUB_FILE_TOO_LARGE');
+    try { return new TextDecoder('utf-8', { fatal: true }).decode(decoded); } catch { throw new Error('GITHUB_FILE_UTF8_INVALID'); }
+  }
+
   async findPullRequest(branch: string): Promise<PullRequestState | null> {
     const query = new URLSearchParams({ head: `${this.owner}:${branch}`, state: 'all', per_page: '100' });
     const rows = await this.request<PullRequestApi[]>(`/repos/${this.owner}/${this.repo}/pulls?${query}`);

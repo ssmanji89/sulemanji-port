@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runEditorialAdmission } from '../src/editorial/workflow-core.js';
 import { parseEditorialPolicy } from '../src/editorial/scheduler.js';
+import { fingerprintPublicKnowledge } from '../src/editorial/knowledge.js';
 import sourceRegistry from '../config/public-sources.json' with { type: 'json' };
 import { OperationsD1 } from './operations.test-support.js';
 
@@ -282,7 +283,28 @@ describe('deterministic signal workflow', () => {
     expect(result).toMatchObject({ status: 'held', reason: 'Candidate awaits configured author, reviewer, publisher, and readback adapters.' });
     expect([...db.candidates.values()]).toHaveLength(1);
     expect([...db.candidates.values()][0]).toMatchObject({ state: 'HELD' });
+    const savedPayload = JSON.parse(String([...db.candidates.values()][0].payload_json));
+    expect(savedPayload.candidate.knowledge_revision).toBe(await fingerprintPublicKnowledge([]));
     expect([...db.receipts.values()].map((row) => row.action)).toEqual(['HELD_PROVIDER_UNCONFIGURED']);
+  });
+
+  it('hands an actionable candidate to configured durable publication adapters', async () => {
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const db = new PipelineD1();
+    const processed: Array<{ candidate_id: string; source_id: string }> = [];
+    const adapters = {
+      async processCandidate({ candidate, signal }: { candidate: { id: string }; signal: { source_id: string } }) {
+        processed.push({ candidate_id: candidate.id, source_id: signal.source_id });
+        return { status: 'verified' as const, reason: 'Fixture publication verified.' };
+      },
+    };
+    const result = await runEditorialAdmission({ slot_claim_id: '2026-11-27:13:05' },
+      { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep(), adapters as never);
+
+    expect(result).toMatchObject({ status: 'admitted', reason: 'All admitted candidates passed publication and public readback.' });
+    expect(processed).toHaveLength(1);
+    expect(processed[0]).toMatchObject({ source_id: 'cloudflare-blog' });
+    expect([...db.receipts.values()].map((row) => row.action)).toEqual(['VERIFIED']);
   });
 
   it('holds a failed source batch instead of reporting NO_CHANGE', async () => {

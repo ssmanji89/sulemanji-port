@@ -78,6 +78,10 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
         files: proposal.files, title: `Editorial: ${proposal.expected_content[0].title}`, body: `Candidate ${proposal.candidate_id}\nContent digest ${proposal.content_digest}\nIndependent review ${receipt.reviewer_run_id}` });
       await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'SOURCE_PUBLISHED' });
     } else {
+      if (!effect || effect.pull_request !== pull.number || effect.source_commit !== pull.head_sha) {
+        await deps.store.record(proposal.candidate_id, { state: 'UNCERTAIN' });
+        return attemptFor(proposal, state, branch, null, null, 'UNCERTAIN');
+      }
       await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'SOURCE_PUBLISHED' });
     }
     if (pull.merged && pull.merge_commit_sha) {
@@ -107,11 +111,12 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   } catch {
     let readback: PullRequestState | null = null;
     try { readback = await deps.github.findPullRequest(branch); } catch { /* Preserve the uncertain intent for later reconciliation. */ }
-    if (readback?.merged && readback.merge_commit_sha) {
+    const knownPull = Boolean(effect && readback && effect.pull_request === readback.number && effect.source_commit === readback.head_sha);
+    if (knownPull && readback?.merged && readback.merge_commit_sha) {
       await deps.store.record(proposal.candidate_id, { pull_request: readback.number, source_commit: readback.head_sha, merge_commit: readback.merge_commit_sha, state: 'MERGED' });
       return attemptFor(proposal, state, branch, readback.number, readback.merge_commit_sha, 'SOURCE_PUBLISHED');
     }
-    if (readback?.state === 'open') {
+    if (knownPull && readback?.state === 'open') {
       await deps.store.record(proposal.candidate_id, { pull_request: readback.number, source_commit: readback.head_sha, state: 'SOURCE_PUBLISHED' });
       return attemptFor(proposal, state, branch, readback.number, readback.head_sha, readback.checks === 'failure' ? 'FAILED' : 'SOURCE_PUBLISHED');
     }

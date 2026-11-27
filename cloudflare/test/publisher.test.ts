@@ -69,13 +69,42 @@ describe('guarded source publication effects', () => {
 
   it('reconciles a successful merge when the merge response is lost', async () => {
     const { proposal, receipt, state } = await fixture();
-    const github = new FakeGitHub(); github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' }; github.loseMergeResponse = true;
-    const store = new FakeStore();
+    const github = new FakeGitHub(); const store = new FakeStore();
+    await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
+    github.loseMergeResponse = true;
     const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
     expect(attempt).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12, source_commit: 'e'.repeat(40) });
-    expect(github.creates).toBe(0);
+    expect(github.creates).toBe(1);
     expect(github.merges).toBe(1);
     expect(store.value).toMatchObject({ state: 'MERGED', merge_commit: 'e'.repeat(40) });
+  });
+
+  it('does not adopt or merge a preexisting branch PR without a matching durable source head', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
+    const store = new FakeStore();
+    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+
+    expect(attempt.status).toBe('UNCERTAIN');
+    expect(github.creates).toBe(0);
+    expect(github.merges).toBe(0);
+    expect(store.value).toMatchObject({ state: 'UNCERTAIN' });
+    expect(store.value).not.toHaveProperty('source_commit');
+  });
+
+  it('holds when a previously recorded publication branch has been edited', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub(); const store = new FakeStore();
+    await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+    github.pr = { number: 12, head_sha: 'f'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'success' };
+
+    const attempt = await publishContent(proposal, receipt, { store, github, currentState: async () => state });
+
+    expect(attempt.status).toBe('UNCERTAIN');
+    expect(github.merges).toBe(0);
+    expect(store.value).toMatchObject({ source_commit: 'd'.repeat(40), state: 'UNCERTAIN' });
   });
 
   it('invalidates the reviewed attempt if the owner epoch pauses or changes', async () => {

@@ -40,5 +40,12 @@ describe.skipIf(!base)('built site in Wrangler Worker runtime', () => {
     expect(manifest.asset_digest).toMatch(/^sha256:[0-9a-f]{64}$/);
     expect(manifest.built_at).toBeTruthy();
     expect(manifest.articles).toHaveLength(55);
+    expect(release.headers.get('x-site-source-commit')).toBe(manifest.source_commit);
+    expect(release.headers.get('x-site-asset-digest')).toBe(manifest.asset_digest);
+    expect(release.headers.get('x-site-built-at')).toBe(manifest.built_at);
+    const home = await fetch(`${base}/`);
+    expect(home.headers.get('x-site-source-commit')).toBe(manifest.source_commit);
+    expect(home.headers.get('x-site-asset-digest')).toBe(manifest.asset_digest);
+    expect(home.headers.get('x-site-built-at')).toBe(manifest.built_at);
   });
 });

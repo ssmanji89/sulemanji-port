@@ -6,7 +6,7 @@ import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from scripts.build_site_manifest import build_manifest
+from scripts.build_site_manifest import build_manifest, render_release_headers
 from scripts.verify_cloudflare_deployment import verify_deployment
 from scripts.site_release import ReleaseError, fetch_public_manifest, verify_artifact
 
@@ -57,6 +57,23 @@ class CloudflareReleaseTests(unittest.TestCase):
             manifest['asset_digest'] = 'sha256:' + ('0' * 64)
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ReleaseError, 'digest'):
+                verify_artifact(root, '1111111', '1111111')
+
+    def test_artifact_requires_manifest_bound_static_identity_headers(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
+            articles = [{'url': '/notes/a', 'published_on': '2024-01-01'}]
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'identity headers'):
+                verify_artifact(root, '1111111', '1111111')
+
+            (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
+            self.assertEqual(verify_artifact(root, '1111111', '1111111'), manifest)
+
+            (root / '_headers').write_text('/*\n  X-Site-Source-Commit: 2222222\n', encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'identity headers'):
                 verify_artifact(root, '1111111', '1111111')
 
     def test_operational_docs_and_test_code_stay_out_of_public_build(self):

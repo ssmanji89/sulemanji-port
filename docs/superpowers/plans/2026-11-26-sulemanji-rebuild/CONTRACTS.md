@@ -288,7 +288,7 @@ interface CorrectionStore {
 Corrections remain private when their content or lineage is private.
 Only an authorized public derivative enters this site's knowledge boundary.
 Do not broaden a correction's scope because a generated summary uses stronger wording.
-T11 documents the exact implemented operator commands and their authentication requirements.
+Keep exact operator commands and authentication requirements in access-controlled operations records. Public documentation describes the behavior and safety boundary without internal identifiers, live status, or authentication details.
 
 ## Contract changes
 

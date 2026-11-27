@@ -161,8 +161,12 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       if (sourceCommit !== attempt.source_commit) throw new Error('deployed source revision mismatch');
       const assetDigest = response.headers.get('x-site-asset-digest');
       const builtAt = response.headers.get('x-site-built-at');
-      if (!assetDigest || !/^[0-9a-f]{64}$/.test(assetDigest) || !builtAt || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(builtAt) ||
-          new Date(builtAt).toISOString() !== builtAt) throw new Error('deployed asset release identity is invalid');
+      let canonicalBuiltAt = false;
+      if (builtAt && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(builtAt)) {
+        const parsedBuiltAt = new Date(builtAt);
+        canonicalBuiltAt = !Number.isNaN(parsedBuiltAt.getTime()) && parsedBuiltAt.toISOString().replace('.000Z', 'Z') === builtAt;
+      }
+      if (!assetDigest || !/^sha256:[0-9a-f]{64}$/.test(assetDigest) || !canonicalBuiltAt) throw new Error('deployed asset release identity is invalid');
       if (releaseAssetDigest !== null && (releaseAssetDigest !== assetDigest || releaseBuiltAt !== builtAt)) throw new Error('public pages came from different deployed releases');
       releaseAssetDigest = assetDigest;
       releaseBuiltAt = builtAt;

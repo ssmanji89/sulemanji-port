@@ -60,6 +60,31 @@ def build_manifest(root: Path, source_commit: str, articles: list[dict[str, str 
     }
 
 
+def render_release_headers(manifest: dict[str, Any]) -> str:
+    """Bind Cloudflare-served static assets to the release manifest identity."""
+    source_commit = manifest.get('source_commit')
+    asset_digest = manifest.get('asset_digest')
+    built_at = manifest.get('built_at')
+    if not isinstance(source_commit, str) or not re.fullmatch(r'[0-9a-fA-F]{7,64}|local|test', source_commit):
+        raise ValueError('release header source commit is invalid')
+    if not isinstance(asset_digest, str) or not re.fullmatch(r'sha256:[0-9a-f]{64}', asset_digest):
+        raise ValueError('release header asset digest is invalid')
+    if not isinstance(built_at, str) or not re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z', built_at):
+        raise ValueError('release header build timestamp is invalid')
+    try:
+        parsed = datetime.fromisoformat(built_at.replace('Z', '+00:00'))
+    except ValueError as error:
+        raise ValueError('release header build timestamp is invalid') from error
+    if parsed.isoformat(timespec='seconds').replace('+00:00', 'Z') != built_at:
+        raise ValueError('release header build timestamp is not canonical UTC')
+    return (
+        '/*\n'
+        f'  X-Site-Source-Commit: {source_commit}\n'
+        f'  X-Site-Asset-Digest: {asset_digest}\n'
+        f'  X-Site-Built-At: {built_at}\n'
+    )
+
+
 def _article_identity(site_root: Path) -> list[dict[str, str | None]]:
     notes_dir = site_root / 'notes'
     if not notes_dir.is_dir():
@@ -108,6 +133,7 @@ def main() -> int:
     output = args.output or args.site_root / 'release.json'
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    (Path(args.site_root).resolve() / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
     print(f"{len(manifest['files'])} assets; {len(articles)} preserved articles; {manifest['asset_digest']}")
     return 0
 

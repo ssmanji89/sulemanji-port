@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.build_site_manifest import build_manifest
+from scripts.build_site_manifest import build_manifest, render_release_headers
 
 
 class SiteManifestTests(unittest.TestCase):
@@ -33,6 +33,19 @@ class SiteManifestTests(unittest.TestCase):
         self.assertNotIn('/users/', serialized)
         self.assertNotIn('api_key', serialized)
         self.assertNotIn('private', serialized)
+
+    def test_release_headers_bind_static_assets_to_manifest_identity(self):
+        result = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')
+        headers = render_release_headers(result)
+        self.assertEqual(headers, (
+            '/*\n'
+            '  X-Site-Source-Commit: abc1234\n'
+            f'  X-Site-Asset-Digest: {result["asset_digest"]}\n'
+            '  X-Site-Built-At: 2026-11-26T00:00:00Z\n'
+        ))
+        (self.root / '_headers').write_text(headers, encoding='utf-8')
+        changed = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')
+        self.assertEqual(changed['asset_digest'], result['asset_digest'])
 
 
 if __name__ == '__main__':

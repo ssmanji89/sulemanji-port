@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { canPublish, publishContent, type GitHubPublisher, type PullRequestState, type PublishEffectStore } from '../src/editorial/publisher.js';
-import type { ContentProposal, PublicationState, ReviewReceipt } from '../src/editorial/contracts.js';
+import { canPublish, publishContent, verifyPublicationDetailed, type GitHubPublisher, type PullRequestState, type PublishEffectStore } from '../src/editorial/publisher.js';
+import type { ContentProposal, PublicationState, PublishAttempt, ReviewReceipt } from '../src/editorial/contracts.js';
 
 async function sha(value: string): Promise<string> {
   const bytes = new TextEncoder().encode(value);
@@ -113,5 +113,39 @@ describe('guarded source publication effects', () => {
     const attempt = await publishContent(proposal, receipt, { store: new FakeStore(), github, currentState: async () => ({ ...state, paused: true, owner_epoch: 8 }) });
     expect(attempt.status).toBe('FAILED');
     expect(github.creates).toBe(0);
+  });
+});
+
+describe('public publication identity verification', () => {
+  it('accepts the digest and timestamp formats emitted by the Jekyll release manifest', async () => {
+    const body = 'A source-backed reader explanation.';
+    const url = 'https://www.sulemanji.com/notes/reviewed-article';
+    const attempt: PublishAttempt = {
+      id: 'attempt-42', candidate_id: 'candidate-42', owner_epoch: 7, branch: 'editorial/candidate-42', pull_request: 12,
+      source_commit: 'd'.repeat(40), deployment_version: null, public_urls: ['/notes/reviewed-article'],
+      expected_content: [{ url: '/notes/reviewed-article', title: 'Reviewed title', text_sha256: await sha(body) }], status: 'SOURCE_PUBLISHED',
+    };
+    const digest = `sha256:${'a'.repeat(64)}`;
+    const builtAt = '2026-11-27T14:00:00Z';
+    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body>${body}</div></body></html>`;
+    const response = (content: string, responseUrl: string, headers?: HeadersInit) => {
+      const result = new Response(content, { headers });
+      Object.defineProperty(result, 'url', { value: responseUrl });
+      return result;
+    };
+    const fetcher: typeof fetch = async (input) => {
+      const requestUrl = new URL(input instanceof Request ? input.url : input.toString());
+      if (requestUrl.pathname === '/notes/reviewed-article') return response(article, url, {
+        'x-site-source-commit': attempt.source_commit!, 'x-site-asset-digest': digest, 'x-site-built-at': builtAt,
+      });
+      if (requestUrl.pathname === '/writing/') return response('/notes/reviewed-article', requestUrl.toString());
+      if (requestUrl.pathname === '/feed.xml' || requestUrl.pathname === '/sitemap.xml') return response('/notes/reviewed-article', requestUrl.toString());
+      return response('missing', requestUrl.toString());
+    };
+
+    const result = await verifyPublicationDetailed(attempt, fetcher);
+
+    expect(result.failure).toBeUndefined();
+    expect(result.receipt.outcome).toBe('VERIFIED');
   });
 });

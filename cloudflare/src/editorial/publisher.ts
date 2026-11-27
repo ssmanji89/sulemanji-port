@@ -78,6 +78,10 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
         files: proposal.files, title: `Editorial: ${proposal.expected_content[0].title}`, body: `Candidate ${proposal.candidate_id}\nContent digest ${proposal.content_digest}\nIndependent review ${receipt.reviewer_run_id}` });
       await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'SOURCE_PUBLISHED' });
     } else {
+      if (!effect || effect.pull_request !== pull.number || effect.source_commit !== pull.head_sha) {
+        await deps.store.record(proposal.candidate_id, { state: 'UNCERTAIN' });
+        return attemptFor(proposal, state, branch, null, null, 'UNCERTAIN');
+      }
       await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'SOURCE_PUBLISHED' });
     }
     if (pull.merged && pull.merge_commit_sha) {
@@ -107,11 +111,12 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   } catch {
     let readback: PullRequestState | null = null;
     try { readback = await deps.github.findPullRequest(branch); } catch { /* Preserve the uncertain intent for later reconciliation. */ }
-    if (readback?.merged && readback.merge_commit_sha) {
+    const knownPull = Boolean(effect && readback && effect.pull_request === readback.number && effect.source_commit === readback.head_sha);
+    if (knownPull && readback?.merged && readback.merge_commit_sha) {
       await deps.store.record(proposal.candidate_id, { pull_request: readback.number, source_commit: readback.head_sha, merge_commit: readback.merge_commit_sha, state: 'MERGED' });
       return attemptFor(proposal, state, branch, readback.number, readback.merge_commit_sha, 'SOURCE_PUBLISHED');
     }
-    if (readback?.state === 'open') {
+    if (knownPull && readback?.state === 'open') {
       await deps.store.record(proposal.candidate_id, { pull_request: readback.number, source_commit: readback.head_sha, state: 'SOURCE_PUBLISHED' });
       return attemptFor(proposal, state, branch, readback.number, readback.head_sha, readback.checks === 'failure' ? 'FAILED' : 'SOURCE_PUBLISHED');
     }
@@ -124,6 +129,8 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
   if (!attempt.source_commit) return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: '', deployment_version: '', public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'UNCERTAIN' }, failure: 'merged source commit missing' };
   try {
     const pages: Array<{ url: string; html: string }> = [];
+    let releaseAssetDigest: string | null = null;
+    let releaseBuiltAt: string | null = null;
     for (const url of attempt.public_urls) {
       const expectedUrl = new URL(url, 'https://www.sulemanji.com');
       const response = await fetcher(expectedUrl, { redirect: 'follow' });
@@ -152,6 +159,13 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       if (!canonicalUrls.includes(expectedUrl.toString()) || !titles.some((title) => title === item.title) || !matchingText.includes(item.text_sha256)) throw new Error('canonical URL, title, or visible article text mismatch');
       const sourceCommit = response.headers.get('x-site-source-commit');
       if (sourceCommit !== attempt.source_commit) throw new Error('deployed source revision mismatch');
+      const assetDigest = response.headers.get('x-site-asset-digest');
+      const builtAt = response.headers.get('x-site-built-at');
+      if (!assetDigest || !/^[0-9a-f]{64}$/.test(assetDigest) || !builtAt || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(builtAt) ||
+          new Date(builtAt).toISOString() !== builtAt) throw new Error('deployed asset release identity is invalid');
+      if (releaseAssetDigest !== null && (releaseAssetDigest !== assetDigest || releaseBuiltAt !== builtAt)) throw new Error('public pages came from different deployed releases');
+      releaseAssetDigest = assetDigest;
+      releaseBuiltAt = builtAt;
     }
     const first = pages[0];
     const siteOrigin = new URL(first.url, 'https://www.sulemanji.com').origin;
@@ -164,7 +178,8 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       const route = new URL(page.url, siteOrigin).pathname.replace(/\/$/, '');
       if (!writingHtml.includes(route) || !feedXml.includes(route) || !sitemapXml.includes(route)) throw new Error('article discovery, feed, or sitemap readback mismatch');
     }
-    const deploymentVersion = await sha256(pages.map(({ url, html }) => `${url}\n${html}`).join('\n'));
+    if (!releaseAssetDigest || !releaseBuiltAt) throw new Error('deployed asset release identity missing');
+    const deploymentVersion = await sha256(`${attempt.source_commit}\n${releaseAssetDigest}\n${releaseBuiltAt}`);
     return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: attempt.source_commit, deployment_version: deploymentVersion,
       public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'VERIFIED' } };
   } catch (error) {

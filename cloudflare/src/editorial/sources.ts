@@ -94,6 +94,10 @@ async function sha(value: string): Promise<string> {
   return [...result].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+export function sourceSetDigest(sources: PublicSource[]): Promise<string> {
+  return sha(sources.map((source) => `${source.url}\n${source.content_sha256}`).sort().join('\n'));
+}
+
 async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fetch): Promise<Signal[]> {
   if (!source.enabled) return [];
   if (!source.id || !Array.isArray(source.topic_ids) || source.topic_ids.length === 0 ||
@@ -150,4 +154,13 @@ export async function collectSignals(registry: SourceConfig[], now: Date, fetche
     }
   }
   return { signals, failures };
+}
+
+export async function revalidateSignalSourceDigest(signal: Signal, registry: SourceConfig[], now: Date, fetcher: typeof fetch = fetch): Promise<string | null> {
+  const source = registry.find((item) => item.id === signal.source_id);
+  if (!source) return null;
+  const current = await collectSignals([source], now, fetcher);
+  if (current.failures.length) return null;
+  const matching = current.signals.find((item) => item.id === signal.id);
+  return matching ? sourceSetDigest(matching.evidence) : null;
 }

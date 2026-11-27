@@ -2,6 +2,7 @@ import { marked } from 'marked';
 import * as parse5 from 'parse5';
 import type { Candidate, ContentProposal, FileChange, PreparationContext, PublicSource, ReviewContext, ReviewReceipt } from './contracts.js';
 import type { ModelGateway, ModelRequest } from './models.js';
+import { sourceSetDigest } from './sources.js';
 
 const FAMILY_FIELDS = new Set(['professional-analysis', 'technical-guide', 'research-note', 'field-note', 'experiment']);
 const HORIZONS = new Set(['timely', 'durable']);
@@ -135,10 +136,6 @@ function frontMatterScalar(header: string, key: string): string | null {
   } catch {
     return /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,180}$/.test(serialized) ? serialized : null;
   }
-}
-
-function sourceSetDigest(sources: PublicSource[]): Promise<string> {
-  return sha256(sources.map((source) => `${source.url}\n${source.content_sha256}`).sort().join('\n'));
 }
 
 function canonicalArticleUrl(permalink: string): string | null {

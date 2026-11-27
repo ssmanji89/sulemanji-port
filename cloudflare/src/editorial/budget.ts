@@ -2,10 +2,11 @@ import { localBudgetPeriod } from './scheduler.js';
 
 export type UsageReservation = { id: string; candidate_id: string; attempt_id: string; maximum_usd: number; pricing_revision: string; requested_at: string };
 export type ReservationResult = { status: 'reserved' | 'existing'; reservation_id: string } | { status: 'denied'; reason: string };
+export type UsageLimits = { candidate_usd: number; daily_usd: number; monthly_usd: number };
 export const proposedLimits = { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 } as const;
 const micros = (usd: number): number => Math.ceil(usd * 1_000_000);
 
-export async function reserveUsage(db: D1Database, request: UsageReservation, limits = proposedLimits): Promise<ReservationResult> {
+export async function reserveUsage(db: D1Database, request: UsageReservation, limits: UsageLimits = proposedLimits): Promise<ReservationResult> {
   if (!Number.isFinite(request.maximum_usd) || request.maximum_usd < 0 || !request.id || !request.attempt_id || !request.candidate_id || !request.pricing_revision) {
     return { status: 'denied', reason: 'Reservation request is invalid.' };
   }

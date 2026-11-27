@@ -14,6 +14,8 @@ export type EditorialPolicy = {
   model_pricing_revision: string;
 };
 export type SlotClaim = { id: string; local_date: string; slot: string; claimed_at: string };
+export const MAX_MODEL_CALLS_PER_CANDIDATE = 6;
+export const MAX_REVIEW_ROUNDS_PER_CANDIDATE = 3;
 
 const POLICY_FIELDS = [
   'revision', 'timezone', 'slots', 'max_new_articles_daily', 'max_refreshes_daily', 'max_candidates_per_scan',
@@ -39,7 +41,8 @@ export function parseEditorialPolicy(raw: string | undefined): EditorialPolicy |
   if (record.timezone !== 'America/Chicago' || !Array.isArray(record.slots) || !record.slots.length ||
       record.slots.some((slot) => typeof slot !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(slot)) ||
       new Set(record.slots).size !== record.slots.length) return null;
-  if (Number(record.max_model_calls_per_candidate) > 6 || Number(record.max_review_rounds_per_candidate) > 3 ||
+  if (Number(record.max_model_calls_per_candidate) > MAX_MODEL_CALLS_PER_CANDIDATE ||
+      Number(record.max_review_rounds_per_candidate) > MAX_REVIEW_ROUNDS_PER_CANDIDATE ||
       Number(record.max_candidates_per_scan) > 100 || Number(record.max_fetches_per_scan) > 100 ||
       Number(record.max_candidate_usd) > Number(record.max_daily_usd) || Number(record.max_daily_usd) > Number(record.max_monthly_usd)) return null;
   return record as unknown as EditorialPolicy;

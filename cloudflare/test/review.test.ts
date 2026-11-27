@@ -174,7 +174,9 @@ describe('independent content preparation and review', () => {
     const revised = await reviseContent(proposal, refreshCandidate, refreshContext, [{ code: 'CLARITY', detail: 'Make the application explicit.' }], models, 'author:revision-refresh');
 
     expect(revised.public_urls).toEqual([url]);
-    expect(revised.files[0].content).toContain('published_on: "2026-11-26"');
+    const originalPublishedOn = initial.files[0].content.match(/^published_on: .*$/m)?.[0];
+    expect(originalPublishedOn).toBeTruthy();
+    expect(revised.files[0].content).toContain(originalPublishedOn!);
     expect(revised.files[0].content).toContain('topics:\n  - infrastructure');
     expect(revised.files[0].content).toContain('reader: technical-practitioner');
     const wrongTargetModels = new FakeModels(); wrongTargetModels.outputs = [{ ...output, body: articleBody }];

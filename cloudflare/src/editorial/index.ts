@@ -1,13 +1,12 @@
 import type { EditorialEnv } from './contracts.js';
 import { ingestKnowledge } from './knowledge.js';
 import { operatorRequest } from './operator.js';
-import { claimScheduleSlot, markScheduleDispatched, pendingScheduleClaims, type EditorialPolicy } from './scheduler.js';
+import { claimScheduleSlot, markScheduleDispatched, pendingScheduleClaims, parseEditorialPolicy } from './scheduler.js';
 import { readControl } from './state.js';
 import { EditorialWorkflow, type WorkflowParams } from './workflow.js';
-import proposedPolicy from '../../config/editorial-policy.example.json' with { type: 'json' };
 
 export { EditorialWorkflow };
-type Env = EditorialEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string };
+type Env = EditorialEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string; EDITORIAL_POLICY_JSON?: string };
 
 async function readBody(request: Request, limit: number): Promise<Uint8Array | null> {
   const declared = Number(request.headers.get('content-length'));
@@ -31,7 +30,8 @@ async function readBody(request: Request, limit: number): Promise<Uint8Array | n
 
 async function dispatchDueSlot(now: Date, env: Env): Promise<void> {
   if ((await readControl(env.DB)).paused) return;
-  const policy = proposedPolicy as EditorialPolicy;
+  const policy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
+  if (!policy) return;
   await claimScheduleSlot(env.DB, now, policy);
   for (const claim of await pendingScheduleClaims(env.DB)) {
     const workflowId = `slot-${claim.local_date}-${claim.slot.replace(':', '')}`;

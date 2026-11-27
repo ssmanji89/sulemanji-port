@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseEditorialPolicy } from '../src/editorial/policy.mjs';
+import { parseEditorialRuntimeSettings } from '../src/editorial/runtime-settings.mjs';
 
 const cloudflareDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [environment, outputDirectory = cloudflareDir] = process.argv.slice(2);
@@ -35,6 +36,14 @@ config.triggers.crons = process.env.EDITORIAL_CRON_SCHEDULE?.trim()
 config.vars.DEPLOYMENT_ENV = environment;
 config.vars.KNOWLEDGE_POLICY_REVISION = process.env.EDITORIAL_POLICY_REVISION;
 config.vars.EDITORIAL_POLICY_JSON = JSON.stringify(editorialPolicy);
+const model = process.env.EDITORIAL_MODEL_CONFIG_JSON?.trim();
+const publisher = process.env.EDITORIAL_GITHUB_CONFIG_JSON?.trim();
+if (model || publisher || process.env.EDITORIAL_REQUIRE_RUNTIME_SETTINGS === 'true') {
+  const settings = parseEditorialRuntimeSettings(model, publisher, environment, editorialPolicy.model_pricing_revision);
+  if (!settings) throw new Error('EDITORIAL_RUNTIME_SETTINGS_MISSING_OR_INVALID');
+  config.vars.EDITORIAL_MODEL_CONFIG_JSON = JSON.stringify(settings.model);
+  config.vars.EDITORIAL_GITHUB_CONFIG_JSON = JSON.stringify(settings.publisher);
+}
 config.d1_databases[0].database_name = process.env.EDITORIAL_DATABASE_NAME;
 config.d1_databases[0].database_id = databaseId;
 config.workflows[0].name = process.env.EDITORIAL_WORKFLOW_NAME;

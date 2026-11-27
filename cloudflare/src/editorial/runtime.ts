@@ -14,6 +14,7 @@ import type { SocialCardRenderer } from './social-card-format.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
 import { fixtureSiteFetcher } from './site-readback.js';
 import { articleSourcePath } from './review.js';
+import { parseEditorialRuntimeSettings } from './runtime-settings.mjs';
 
 export type EditorialRuntimeEnv = EditorialEnv & {
   EDITORIAL_POLICY_JSON?: string;
@@ -22,52 +23,7 @@ export type EditorialRuntimeEnv = EditorialEnv & {
   EDITORIAL_GITHUB_CONFIG_JSON?: string;
   EDITORIAL_GITHUB_TOKEN?: string;
 };
-type ModelSettings = Omit<ModelConfig, 'api_key'>;
-type PublisherSettings = { repository: string; required_checks: string[]; default_branch: string };
 type CandidateRow = { state: string; revision: string; payload_json: string };
-
-function objectFromJson(raw: string | undefined): Record<string, unknown> | null {
-  if (!raw) return null;
-  try {
-    const value: unknown = JSON.parse(raw);
-    return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null;
-  } catch { return null; }
-}
-
-function hasExactKeys(value: Record<string, unknown>, keys: string[]): boolean {
-  return Object.keys(value).sort().join('\0') === [...keys].sort().join('\0');
-}
-
-function parseModelSettings(raw: string | undefined): ModelSettings | null {
-  const value = objectFromJson(raw);
-  const keys = ['endpoint', 'model_id', 'pricing_revision', 'input_usd_per_million', 'output_usd_per_million', 'max_input_chars', 'max_output_tokens'];
-  if (!value || !hasExactKeys(value, keys) || typeof value.endpoint !== 'string' || typeof value.model_id !== 'string' || !value.model_id.trim() ||
-      typeof value.pricing_revision !== 'string' || !value.pricing_revision.trim() ||
-      !Number.isFinite(value.input_usd_per_million) || Number(value.input_usd_per_million) < 0 ||
-      !Number.isFinite(value.output_usd_per_million) || Number(value.output_usd_per_million) < 0 ||
-      !Number.isSafeInteger(value.max_input_chars) || Number(value.max_input_chars) < 1 || Number(value.max_input_chars) > 100_000 ||
-      !Number.isSafeInteger(value.max_output_tokens) || Number(value.max_output_tokens) < 1 || Number(value.max_output_tokens) > 4_000) return null;
-  try {
-    const url = new URL(value.endpoint);
-    if (url.protocol !== 'https:' || url.username || url.password || url.hash) return null;
-  } catch { return null; }
-  return value as unknown as ModelSettings;
-}
-
-const PUBLICATION_REPOSITORIES = {
-  production: 'ssmanji89/sulemanji-port',
-  staging: 'ssmanji89/sulemanji-editorial-fixture',
-};
-
-function parsePublisherSettings(raw: string | undefined, repository: string): PublisherSettings | null {
-  const value = objectFromJson(raw);
-  if (!value || !hasExactKeys(value, ['repository', 'required_checks', 'default_branch']) ||
-      value.repository !== repository || value.default_branch !== 'main' ||
-      !Array.isArray(value.required_checks) || value.required_checks.length < 1 || value.required_checks.length > 20 ||
-      value.required_checks.some((check) => typeof check !== 'string' || !/^[A-Za-z0-9 _.-]{1,100}$/.test(check)) ||
-      new Set(value.required_checks).size !== value.required_checks.length) return null;
-  return value as unknown as PublisherSettings;
-}
 
 async function persistCandidateCheckpoint(db: D1Database, candidateId: string, ownerEpoch: number,
   state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'VERIFIED', checkpoint: CandidateCheckpoint): Promise<boolean> {
@@ -107,15 +63,15 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
   const staging = environment === 'staging';
   if (staging && !env.EDITORIAL_FIXTURE_SITE) return null;
   const policy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
-  const modelSettings = parseModelSettings(env.EDITORIAL_MODEL_CONFIG_JSON);
-  const publisherSettings = parsePublisherSettings(env.EDITORIAL_GITHUB_CONFIG_JSON, PUBLICATION_REPOSITORIES[environment]);
+  if (!policy) return null;
+  const settings = parseEditorialRuntimeSettings(env.EDITORIAL_MODEL_CONFIG_JSON, env.EDITORIAL_GITHUB_CONFIG_JSON,
+    environment, policy.model_pricing_revision);
   const modelApiKey = env.EDITORIAL_MODEL_API_KEY;
   const githubToken = env.EDITORIAL_GITHUB_TOKEN;
-  if (!policy || !modelSettings || !publisherSettings || !modelApiKey?.trim() || !githubToken?.trim() ||
-      modelSettings.pricing_revision !== policy.model_pricing_revision) return null;
+  if (!settings || !modelApiKey?.trim() || !githubToken?.trim()) return null;
 
-  const model: ModelConfig = { ...modelSettings, api_key: modelApiKey };
-  const github = new GitHubApiPublisher({ ...publisherSettings, token: githubToken, require_private: staging }, fetcher);
+  const model: ModelConfig = { ...settings.model, api_key: modelApiKey };
+  const github = new GitHubApiPublisher({ ...settings.publisher, token: githubToken, require_private: staging }, fetcher);
   const provider = new JsonSchemaGateway(model, fetcher);
   return createEditorialCandidatePipeline({
     renderSocialCard,

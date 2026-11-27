@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import * as parse5 from 'parse5';
+import { isMap, parseDocument } from 'yaml';
 import type { Candidate, ContentProposal, FileChange, PreparationContext, PublicSource, ReviewContext, ReviewReceipt } from './contracts.js';
 import type { ModelGateway, ModelRequest } from './models.js';
 import { sourceSetDigest } from './sources.js';
@@ -113,42 +114,45 @@ async function outputSchema(candidate: Candidate, context: PreparationContext, m
   return (await models.generate(request)).output;
 }
 
-function frontMatterParts(content: string): { header: string; body: string } | null {
+function frontMatterParts(content: string): { header: string; metadata: Record<string, unknown> } | null {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
-  return match ? { header: match[1], body: match[2] } : null;
-}
-
-function frontMatterValue<T>(header: string, key: string): T | null {
-  const line = header.split(/\r?\n/).find((item) => item.startsWith(`${key}:`));
-  if (!line) return null;
-  const serialized = line.slice(key.length + 1).trim();
-  try { return JSON.parse(serialized) as T; } catch { return null; }
-}
-
-function frontMatterScalar(header: string, key: string): string | null {
-  const line = header.split(/\r?\n/).find((item) => item.startsWith(`${key}:`));
-  if (!line) return null;
-  const serialized = line.slice(key.length + 1).trim();
-  if (!serialized) return null;
+  if (!match || match[1].length > 16_384) return null;
   try {
-    const parsed: unknown = JSON.parse(serialized);
-    return typeof parsed === 'string' ? parsed : null;
-  } catch {
-    return /^[A-Za-z0-9][A-Za-z0-9 _.-]{0,180}$/.test(serialized) ? serialized : null;
-  }
+    const document = parseDocument(match[1], { schema: 'core', strict: true, uniqueKeys: true });
+    if (document.errors.length || document.warnings.length || !isMap(document.contents)) return null;
+    return { header: match[1], metadata: document.toJS({ maxAliasCount: 0 }) as Record<string, unknown> };
+  } catch { return null; }
 }
 
 function canonicalArticleUrl(permalink: string): string | null {
   try {
     const url = new URL(permalink, 'https://www.sulemanji.com');
-    if (url.origin !== 'https://www.sulemanji.com' || url.search || url.hash || !url.pathname.startsWith('/notes/')) return null;
+    if (url.origin !== 'https://www.sulemanji.com' || url.username || url.password || url.search || url.hash || !url.pathname.startsWith('/notes/')) return null;
     return url.href;
   } catch { return null; }
+}
+
+export function articleSourcePath(url: string): string | null {
+  const canonical = canonicalArticleUrl(url);
+  const path = canonical ? `${new URL(canonical).pathname.slice(1)}.md` : '';
+  return ARTICLE_PATH.test(path) ? path : null;
 }
 
 export async function prepareContent(candidate: Candidate, context: PreparationContext, models: ModelGateway, stableRunId = `author:${candidate.id}`): Promise<ContentProposal> {
   if (candidate.action === 'PROPOSE' || candidate.action === 'REPAIR') throw new Error('CANDIDATE_REQUIRES_OWNER_OR_REPAIR_PIPELINE');
   if (!context.policy_revision || context.policy_revision === 'editorial-policy-unbound' || !context.base_commit) throw new Error('PUBLICATION_CONTEXT_UNQUALIFIED');
+  const target = candidate.action === 'REFRESH' ? context.catalog.find((item) => item.id === candidate.target_id) : undefined;
+  const refreshPath = target ? articleSourcePath(target.url) : null;
+  const previous = refreshPath ? context.existing_files?.[refreshPath] : undefined;
+  if (candidate.action === 'REFRESH' && (!target || !refreshPath || !previous || !context.existing_paths?.includes(refreshPath))) {
+    throw new Error('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
+  }
+  const original = previous ? frontMatterParts(previous) : null;
+  if (target && (!original || original.metadata.writing_schema !== 2 || original.metadata.title !== target.title ||
+      typeof original.metadata.permalink !== 'string' ||
+      canonicalArticleUrl(original.metadata.permalink) !== canonicalArticleUrl(target.url))) {
+    throw new Error('EXISTING_ARTICLE_FRONTMATTER_INVALID');
+  }
   const authorRunId = stableRunId;
   const modelOutput = await outputSchema(candidate, context, models, authorRunId);
   if (!validGenerated(modelOutput)) throw new Error('MODEL_ARTICLE_SCHEMA_REJECTED');
@@ -164,16 +168,11 @@ export async function prepareContent(candidate: Candidate, context: PreparationC
   let path = `notes/${articleSlug}.md`;
   let operation: FileChange['operation'] = 'create';
   let content = frontMatter(article, articleSlug, date, permalink);
-  const existingPath = context.catalog.find((item) => item.id === candidate.target_id)?.url.replace(/^\//, '') + '.md';
-  if (candidate.action === 'REFRESH' && existingPath && context.existing_files?.[existingPath]) {
-    const previous = context.existing_files[existingPath];
-    const front = previous.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
-    if (!front || !/^writing_schema:\s*2\s*$/m.test(front[1])) throw new Error('EXISTING_ARTICLE_FRONTMATTER_INVALID');
-    path = existingPath;
+  if (refreshPath && original) {
+    path = refreshPath;
     operation = 'update';
-    const header = front[1].replace(/^updated_on:\s*.*\n?/m, '').trimEnd();
+    const header = original.header.replace(/^updated_on:[ \t]*[^\r\n]*\r?\n?/m, '').trimEnd();
     content = `---\n${header}\nupdated_on: ${JSON.stringify(date)}\n---\n\n${article.body.trim()}\n`;
-    if (!context.existing_paths?.includes(path)) throw new Error('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
   }
   if (!ARTICLE_PATH.test(path) || !safeArticleLinks(article.body, context.sources, context.existing_paths ?? [], [path])) throw new Error('ARTICLE_PATH_OR_CITATION_REJECTED');
   const rendered = marked.parse(article.body, { async: false });
@@ -182,10 +181,10 @@ export async function prepareContent(candidate: Candidate, context: PreparationC
   const file: FileChange = { path, operation, encoding: 'utf-8', content, content_sha256: await sha256(content) };
   const contentDigest = await sha256(`${path}\n${file.content_sha256}`);
   const sourceDigest = await sha256(context.sources.map((source) => `${source.url}\n${source.content_sha256}`).sort().join('\n'));
-  const url = operation === 'update' ? context.catalog.find((item) => item.id === candidate.target_id)!.url : permalink;
+  const url = target?.url ?? permalink;
   return { candidate_id: candidate.id, author_run_id: authorRunId, content_digest: contentDigest, source_digest: sourceDigest,
     policy_revision: context.policy_revision, knowledge_revision: context.knowledge_revision, base_commit: context.base_commit, owner_epoch: context.owner_epoch,
-    files: [file], public_sources: context.sources, required_media_paths: [], public_urls: [url], expected_content: [{ url, title: operation === 'update' ? context.catalog.find((item) => item.id === candidate.target_id)!.title : article.title, text_sha256: textHash }] };
+    files: [file], public_sources: context.sources, required_media_paths: [], public_urls: [url], expected_content: [{ url, title: target?.title ?? article.title, text_sha256: textHash }] };
 }
 
 export async function reviseContent(previous: ContentProposal, candidate: Candidate, context: PreparationContext, findings: ReviewReceipt['findings'],
@@ -202,16 +201,16 @@ export async function reviseContent(previous: ContentProposal, candidate: Candid
   if (!ARTICLE_PATH.test(file.path) || file.encoding !== 'utf-8' || !['create', 'update'].includes(file.operation) || await sha256(file.content) !== file.content_sha256) throw new Error('REVISION_FILE_INVALID');
   if (await sha256(`${file.path}\n${file.content_sha256}`) !== previous.content_digest) throw new Error('REVISION_PROPOSAL_DIGEST_MISMATCH');
   const parts = frontMatterParts(file.content);
-  const permalink = parts ? frontMatterScalar(parts.header, 'permalink') : null;
-  const canonicalUrl = permalink ? canonicalArticleUrl(permalink) : null;
+  const permalink = parts?.metadata.permalink;
+  const canonicalUrl = typeof permalink === 'string' ? canonicalArticleUrl(permalink) : null;
   const proposalUrl = previous.public_urls[0].startsWith('/') ? canonicalArticleUrl(previous.public_urls[0]) : previous.public_urls[0];
-  const publishedOn = parts ? frontMatterScalar(parts.header, 'published_on') : null;
-  const publishedDateIsValid = Boolean(publishedOn && /^\d{4}-\d{2}-\d{2}$/.test(publishedOn) &&
+  const publishedOn = parts?.metadata.published_on;
+  const publishedDateIsValid = Boolean(typeof publishedOn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(publishedOn) &&
     !Number.isNaN(Date.parse(`${publishedOn}T00:00:00.000Z`)) && new Date(`${publishedOn}T00:00:00.000Z`).toISOString().slice(0, 10) === publishedOn);
   const existingItem = file.operation === 'update' ? context.catalog.find((item) => item.url === previous.public_urls[0]) : undefined;
-  const articleTopics = parts ? (frontMatterValue<string[]>(parts.header, 'topics') ?? existingItem?.topics ?? null) : null;
-  if (!parts || frontMatterValue<number>(parts.header, 'writing_schema') !== 2 || frontMatterValue<string>(parts.header, 'title') !== previous.expected_content[0].title ||
-      !canonicalUrl || canonicalUrl !== proposalUrl || !publishedDateIsValid || frontMatterValue<boolean>(parts.header, 'published') !== true ||
+  const articleTopics = parts?.metadata.topics ?? existingItem?.topics;
+  if (!parts || parts.metadata.writing_schema !== 2 || parts.metadata.title !== previous.expected_content[0].title ||
+      !canonicalUrl || canonicalUrl !== proposalUrl || !publishedDateIsValid || parts.metadata.published !== true ||
       (file.operation === 'create' && candidate.action !== 'CREATE' && candidate.action !== 'CONNECT') ||
       (file.operation === 'update' && (candidate.action !== 'REFRESH' || !existingItem || candidate.target_id !== existingItem.id || !context.existing_paths?.includes(file.path)))) throw new Error('REVISION_FRONTMATTER_INVALID');
 
@@ -222,10 +221,10 @@ export async function reviseContent(previous: ContentProposal, candidate: Candid
   const allowedTopics = new Set(context.catalog.flatMap((item) => item.topics));
   if (article.topics.some((topic) => !allowedTopics.has(topic))) throw new Error('MODEL_TOPIC_NOT_IN_CATALOG');
   if (article.commercial_intent !== 'none') throw new Error('ARTICLE_REQUIRES_NONCOMMERCIAL_INTENT');
-  if (article.publication_family !== frontMatterScalar(parts.header, 'publication_family') ||
-      article.commercial_intent !== frontMatterScalar(parts.header, 'commercial_intent') ||
-      article.time_horizon !== frontMatterScalar(parts.header, 'time_horizon') ||
-      article.reader !== frontMatterScalar(parts.header, 'reader') || !articleTopics ||
+  if (article.publication_family !== parts.metadata.publication_family ||
+      article.commercial_intent !== parts.metadata.commercial_intent ||
+      article.time_horizon !== parts.metadata.time_horizon ||
+      article.reader !== parts.metadata.reader || !Array.isArray(articleTopics) ||
       JSON.stringify(article.topics) !== JSON.stringify(articleTopics)) throw new Error('MODEL_REVISION_METADATA_REJECTED');
   if (!safeArticleLinks(article.body, context.sources, context.existing_paths ?? [], [file.path])) throw new Error('ARTICLE_PATH_OR_CITATION_REJECTED');
 

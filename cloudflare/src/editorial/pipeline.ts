@@ -2,8 +2,9 @@ import type { Candidate, CatalogItem, ContentProposal, PreparationContext, Publi
 import type { ModelGateway } from './models.js';
 import type { EditorialPolicy } from './scheduler.js';
 import { prepareContent, reviewContent, reviseContent } from './review.js';
+import type { DurableStep } from './workflow-core.js';
 
-type DurableStep = { do<T>(name: string, callback: () => Promise<T> | T): Promise<T> };
+const PUBLICATION_WAIT_MS = [30_000, 60_000, 90_000, 120_000, 180_000];
 type CandidatePipelineInput = {
   candidate: Candidate;
   signal: Signal;
@@ -77,29 +78,48 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       }
       if (!cleared) return { status: 'held', reason: 'Independent review did not clear the candidate.' };
 
-      const publication = await step.do(`publish-content-${key}`, () => deps.publish(proposal, cleared!, input.signal));
-      checkpoint = { proposal, review: cleared, attempt: publication.attempt };
-      if (!(await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED`, () => deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', checkpoint)))) {
-        return { status: 'held', reason: 'Workflow authority changed before the publication effect could be checkpointed.' };
+      const review = cleared;
+      let mergedAttempt: PublishAttempt | undefined;
+      for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
+        const suffix = probe ? `-poll-${probe}` : '';
+        if (probe) await step.sleep(`await-checks-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
+        const publication = await step.do(`publish-content-${key}${suffix}`, () => deps.publish(proposal, review, input.signal));
+        const attempt = publication.attempt;
+        if (attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.source_commit ||
+            !attempt.pull_request || attempt.status !== 'SOURCE_PUBLISHED') {
+          return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };
+        }
+        const publishedCheckpoint = { proposal, review, attempt };
+        if (!(await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED${suffix}`, () =>
+          deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', publishedCheckpoint)))) {
+          return { status: 'held', reason: 'Workflow authority changed before the publication effect could be checkpointed.' };
+        }
+        if (publication.merged) { mergedAttempt = attempt; break; }
       }
-      if (!publication.merged || publication.attempt.candidate_id !== candidate.id || publication.attempt.owner_epoch !== ownerEpoch ||
-          !publication.attempt.source_commit || publication.attempt.status === 'UNCERTAIN' || publication.attempt.status === 'FAILED') {
-        return { status: 'held', reason: 'Reviewed source publication is pending or requires reconciliation.' };
-      }
+      if (!mergedAttempt) return { status: 'held', reason: 'Required pull request checks did not finish within the publication wait.' };
 
-      const verification = await step.do(`verify-publication-${key}`, () => deps.verify(publication.attempt));
-      checkpoint = { proposal, review: cleared, attempt: publication.attempt, publication: verification.receipt };
-      const receipt = verification.receipt;
-      if (receipt.outcome !== 'VERIFIED' || receipt.candidate_id !== candidate.id || receipt.owner_epoch !== ownerEpoch ||
-          receipt.source_commit !== publication.attempt.source_commit || !receipt.deployment_version ||
-          JSON.stringify(receipt.public_urls) !== JSON.stringify(publication.attempt.public_urls) || verification.failure) {
-        await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED-readback`, () => deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', checkpoint));
-        return { status: 'held', reason: 'Public deployment readback did not verify the exact reviewed publication.' };
+      const attempt = mergedAttempt;
+      for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
+        const suffix = probe ? `-poll-${probe}` : '';
+        if (probe) await step.sleep(`await-deployment-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
+        const verification = await step.do(`verify-publication-${key}${suffix}`, () => deps.verify(attempt));
+        const receipt = verification.receipt;
+        const verifiedCheckpoint = { proposal, review, attempt, publication: receipt };
+        if (receipt.outcome !== 'VERIFIED' || verification.failure) {
+          if (probe === PUBLICATION_WAIT_MS.length) await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED-readback`, () =>
+            deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', verifiedCheckpoint));
+          continue;
+        }
+        if (receipt.candidate_id !== candidate.id || receipt.owner_epoch !== ownerEpoch || receipt.source_commit !== attempt.source_commit ||
+            !receipt.deployment_version || JSON.stringify(receipt.public_urls) !== JSON.stringify(attempt.public_urls)) {
+          return { status: 'held', reason: 'Deployment readback did not bind to the exact reviewed publication.' };
+        }
+        if (!(await step.do(`persist-candidate-${key}-VERIFIED`, () => deps.persist(candidate.id, ownerEpoch, 'VERIFIED', verifiedCheckpoint)))) {
+          return { status: 'held', reason: 'Workflow authority changed before verified publication could be checkpointed.' };
+        }
+        return { status: 'verified', reason: 'Publication and exact readback are verified.' };
       }
-      if (!(await step.do(`persist-candidate-${key}-VERIFIED`, () => deps.persist(candidate.id, ownerEpoch, 'VERIFIED', checkpoint)))) {
-        return { status: 'held', reason: 'Workflow authority changed before verified publication could be checkpointed.' };
-      }
-      return { status: 'verified', reason: 'Publication and exact public readback are verified.' };
+      return { status: 'held', reason: 'Deployment readback did not verify the exact reviewed publication within the wait.' };
     },
   };
 }

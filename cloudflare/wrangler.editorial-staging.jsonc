@@ -7,6 +7,7 @@
   "routes": [],
   "triggers": { "crons": [] },
   "vars": { "DEPLOYMENT_ENV": "runtime", "KNOWLEDGE_POLICY_REVISION": "unbound" },
+  "services": [{ "binding": "EDITORIAL_FIXTURE_SITE", "service": "sulemanji-editorial-fixture-site" }],
   "d1_databases": [{ "binding": "DB", "database_name": "runtime-database", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
   "workflows": [{ "name": "runtime-workflow", "binding": "EDITORIAL_WORKFLOW", "class_name": "EditorialWorkflow" }]
 }

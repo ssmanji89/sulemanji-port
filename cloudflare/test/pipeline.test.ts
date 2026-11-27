@@ -31,7 +31,9 @@ class Models implements ModelGateway {
 
 class Steps implements DurableStep {
   names: string[] = [];
+  waits = new Map<string, number>();
   values = new Map<string, unknown>();
+  async sleep(name: string, milliseconds: number) { this.waits.set(name, milliseconds); }
   async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
     this.names.push(name);
     if (!this.values.has(name)) this.values.set(name, await callback());
@@ -46,6 +48,31 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it('uses durable waits for pending checks and deployment without repeating authoring on replay', async () => {
+    const models = new Models();
+    const step = new Steps();
+    let publishes = 0;
+    let reads = 0;
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, preparationContext: async () => context, persist: async () => true,
+      publish: async (proposal) => ({ attempt: attempt(proposal), merged: ++publishes === 2 }),
+      verify: async (value) => {
+        const ready = ++reads === 2;
+        return { receipt: { candidate_id: value.candidate_id, owner_epoch: value.owner_epoch,
+          source_commit: value.source_commit!, deployment_version: ready ? 'e'.repeat(64) : '',
+          public_urls: value.public_urls, verified_at: new Date().toISOString(), outcome: ready ? 'VERIFIED' : 'UNCERTAIN' } };
+      },
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step };
+    expect((await pipeline.processCandidate(input)).status).toBe('verified');
+    expect((await pipeline.processCandidate(input)).status).toBe('verified');
+    expect(publishes).toBe(2);
+    expect(reads).toBe(2);
+    expect(step.waits.size).toBe(2);
+    expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review']);
+  });
+
   it('publishes only after independent clearance and admits only exact verified readback', async () => {
     const models = new Models();
     const published: ContentProposal[] = [];

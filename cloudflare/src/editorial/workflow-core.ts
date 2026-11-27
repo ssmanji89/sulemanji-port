@@ -6,8 +6,12 @@ import { fingerprintPublicKnowledge, getPublicKnowledge } from './knowledge.js';
 import { parseEditorialPolicy, type EditorialPolicy } from './scheduler.js';
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
+import { fixtureSiteFetcher } from './site-readback.js';
 
-export type DurableStep = { do<T>(name: string, callback: () => Promise<T> | T): Promise<T> };
+export type DurableStep = {
+  do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
+  sleep(name: string, milliseconds: number): Promise<void>;
+};
 export type CandidateProcessOutcome = { status: 'verified' | 'held'; reason: string };
 export type EditorialCandidateProcessor = {
   processCandidate(input: {
@@ -296,7 +300,8 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   }
 
   let catalog: CatalogItem[];
-  const catalogFetcher = createGuardedFetcher(env.DB, control.owner_epoch, fetch);
+  const catalogReader = env.DEPLOYMENT_ENV === 'staging' ? fixtureSiteFetcher(env.EDITORIAL_FIXTURE_SITE) : fetch;
+  const catalogFetcher = createGuardedFetcher(env.DB, control.owner_epoch, catalogReader);
   try {
     catalog = await step.do('read-public-content-index', () => readCatalog(catalogFetcher.fetcher));
   } catch {

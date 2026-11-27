@@ -6,7 +6,18 @@ if (!deploymentPath || !['staging', 'production'].includes(environment) || !/^[0
 }
 
 const deployments = JSON.parse(readFileSync(deploymentPath, 'utf8'));
-const latest = Array.isArray(deployments) ? deployments[0] : undefined;
+if (!Array.isArray(deployments) || deployments.length === 0) {
+  throw new Error('EDITORIAL_DEPLOYMENT_READBACK_EMPTY');
+}
+const dated = deployments.map((deployment) => {
+  const createdOn = Date.parse(deployment?.created_on ?? '');
+  if (!Number.isFinite(createdOn)) throw new Error('EDITORIAL_DEPLOYMENT_TIMESTAMP_INVALID');
+  return { deployment, createdOn };
+});
+const newestTime = Math.max(...dated.map(({ createdOn }) => createdOn));
+const newest = dated.filter(({ createdOn }) => createdOn === newestTime);
+if (newest.length !== 1) throw new Error('EDITORIAL_DEPLOYMENT_TIMESTAMP_AMBIGUOUS');
+const latest = newest[0].deployment;
 const expectedMessage = `service ${environment} ${sourceSha}`;
 const versions = latest?.versions;
 if (latest?.annotations?.['workers/message'] !== expectedMessage ||

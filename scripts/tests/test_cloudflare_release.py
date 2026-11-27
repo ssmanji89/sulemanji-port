@@ -7,6 +7,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 from scripts.build_site_manifest import build_manifest
+from scripts.verify_cloudflare_deployment import verify_deployment
 from scripts.site_release import ReleaseError, fetch_public_manifest, verify_artifact
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -111,6 +112,19 @@ class CloudflareReleaseTests(unittest.TestCase):
         self.assertEqual([route['pattern'] for route in config['routes']], ['www.sulemanji.com/*'])
         self.assertEqual(config['routes'][0]['zone_name'], 'sulemanji.com')
         self.assertNotIn('custom_domain', self.production_config)
+
+    def test_worker_deployment_readback_selects_newest_timestamp(self):
+        expected_message = 'site ' + ('a' * 40)
+        payload = [
+            {'created_on': '2026-11-26T23:00:00Z', 'annotations': {'workers/message': 'site stale'},
+             'versions': [{'version_id': 'old-version', 'percentage': 100}]},
+            {'created_on': '2026-11-27T00:00:00Z', 'annotations': {'workers/message': expected_message},
+             'versions': [{'version_id': 'new-version', 'percentage': 100}]},
+        ]
+        self.assertEqual(verify_deployment(payload, expected_message), 'new-version')
+        payload[1]['annotations']['workers/message'] = 'site stale'
+        with self.assertRaisesRegex(ValueError, 'latest deployment source'):
+            verify_deployment(payload, expected_message)
 
 
 if __name__ == '__main__':

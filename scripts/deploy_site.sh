@@ -60,19 +60,7 @@ PY
 cd "$CF"
 ./node_modules/.bin/wrangler deploy --config "$TEMP_CONFIG" --message "site $SOURCE_COMMIT" >"$TEMP_LOG" 2>&1
 ./node_modules/.bin/wrangler deployments list --name "$WORKER_NAME" --json --config "$TEMP_CONFIG" >"$TEMP_DEPLOYMENTS" 2>>"$TEMP_LOG"
-VERSION_ID="$(python3 - "$TEMP_DEPLOYMENTS" <<'PY'
-import json,sys
-from pathlib import Path
-data=json.loads(Path(sys.argv[1]).read_text())
-deployments=data.get('deployments',data) if isinstance(data,dict) else data
-if not isinstance(deployments,list) or not deployments: raise SystemExit('deployment readback returned no deployments')
-versions=deployments[0].get('versions',[])
-if not isinstance(versions,list) or len(versions)!=1: raise SystemExit('active deployment is not a single-version release')
-version=versions[0]
-if version.get('percentage',100)!=100: raise SystemExit('active deployment is not serving 100 percent')
-print(version.get('version_id') or version.get('id') or '')
-PY
-)"
+VERSION_ID="$(python3 "$ROOT/scripts/verify_cloudflare_deployment.py" "$TEMP_DEPLOYMENTS" "site $SOURCE_COMMIT")"
 [[ -n "$VERSION_ID" ]] || { echo "deployment readback omitted worker version id" >&2; exit 1; }
 if [[ "$ENVIRONMENT" == staging ]]; then TARGET_HOST="${SITE_TARGET_HOST%/}"; fi
 [[ "$TARGET_HOST" =~ ^https://[a-zA-Z0-9.-]+(:[0-9]+)?$ ]] || { echo "target host must be HTTPS" >&2; exit 2; }

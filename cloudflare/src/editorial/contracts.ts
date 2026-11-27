@@ -78,7 +78,7 @@ export type RecentHistory = { source_revisions: string[]; episode_ids: string[];
 export type ActionDecision = { action: 'NO_CHANGE'; reason: string; signal_ids: string[] } | { action: Candidate['action']; candidate: Candidate };
 
 export type FileChange = { path: string; operation: 'create' | 'update'; encoding: 'utf-8' | 'base64'; content: string; content_sha256: string };
-export type ExpectedContent = { url: string; title: string; text_sha256: string };
+export type ExpectedContent = { url: string; title: string; text_sha256: string; social_image?: { path: string; content_sha256: string } };
 export type ContentProposal = {
   candidate_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string;
   base_commit: string; owner_epoch: number; files: FileChange[]; public_sources: PublicSource[]; required_media_paths: string[]; public_urls: string[]; expected_content: ExpectedContent[];

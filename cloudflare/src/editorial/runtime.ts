@@ -10,6 +10,7 @@ import { publishContent, verifyPublicationDetailed } from './publisher.js';
 import { readControl } from './state.js';
 import { readKnowledge } from './workflow-core.js';
 import { revalidateSignalSourceDigest } from './sources.js';
+import type { SocialCardRenderer } from './social-card-format.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
 import { fixtureSiteFetcher } from './site-readback.js';
 import { articleSourcePath } from './review.js';
@@ -100,7 +101,7 @@ function pathForRefresh(candidate: Candidate, catalog: Array<{ id: string; url: 
   return path;
 }
 
-export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, fetcher: typeof fetch = fetch) {
+export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, renderSocialCard: SocialCardRenderer, fetcher: typeof fetch = fetch) {
   const environment = env.DEPLOYMENT_ENV;
   if (environment !== 'production' && environment !== 'staging') return null;
   const staging = environment === 'staging';
@@ -117,6 +118,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, fetc
   const github = new GitHubApiPublisher({ ...publisherSettings, token: githubToken, require_private: staging }, fetcher);
   const provider = new JsonSchemaGateway(model, fetcher);
   return createEditorialCandidatePipeline({
+    renderSocialCard,
     modelsFor(candidate, ownerEpoch, activePolicy) {
       return new BudgetedModelGateway(provider, model, { db: env.DB, candidate_id: candidate.id, owner_epoch: ownerEpoch,
         max_model_calls: activePolicy.max_model_calls_per_candidate, max_review_rounds: activePolicy.max_review_rounds_per_candidate,

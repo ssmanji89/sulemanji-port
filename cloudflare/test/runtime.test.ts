@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createEditorialCandidateProcessor } from '../src/editorial/runtime.js';
 
+const renderSocialCard = async () => new Uint8Array();
+
 describe('editorial runtime configuration', () => {
   it('binds publication to the environment and requires private staging readback', () => {
     const env = {
@@ -16,7 +18,7 @@ describe('editorial runtime configuration', () => {
     };
     const create = (environment: string, repository: string, site?: { fetch: typeof fetch }) =>
       createEditorialCandidateProcessor({ ...env, DEPLOYMENT_ENV: environment, EDITORIAL_FIXTURE_SITE: site,
-        EDITORIAL_GITHUB_CONFIG_JSON: JSON.stringify({ repository, required_checks: ['build'], default_branch: 'main' }) } as never);
+        EDITORIAL_GITHUB_CONFIG_JSON: JSON.stringify({ repository, required_checks: ['build'], default_branch: 'main' }) } as never, renderSocialCard);
     const production = 'ssmanji89/sulemanji-port';
     const fixture = 'ssmanji89/sulemanji-editorial-fixture';
     const binding = { fetch: async () => new Response('fixture') };
@@ -29,7 +31,7 @@ describe('editorial runtime configuration', () => {
   });
 
   it('fails closed when explicit model and publisher configuration is absent', () => {
-    const processor = createEditorialCandidateProcessor({ DB: {} as D1Database } as never);
+    const processor = createEditorialCandidateProcessor({ DB: {} as D1Database } as never, renderSocialCard);
     expect(processor).toBeNull();
   });
 
@@ -42,7 +44,7 @@ describe('editorial runtime configuration', () => {
     const publisher = JSON.stringify({ repository: 'ssmanji89/sulemanji-port', required_checks: ['site-release'], default_branch: 'main' });
     const processor = createEditorialCandidateProcessor({ DB: {} as D1Database, EDITORIAL_POLICY_JSON: policy,
       EDITORIAL_MODEL_CONFIG_JSON: model, EDITORIAL_MODEL_API_KEY: 'fixture',
-      EDITORIAL_GITHUB_CONFIG_JSON: publisher, EDITORIAL_GITHUB_TOKEN: 'fixture' } as never);
+      EDITORIAL_GITHUB_CONFIG_JSON: publisher, EDITORIAL_GITHUB_TOKEN: 'fixture' } as never, renderSocialCard);
     expect(processor).toBeNull();
   });
 });

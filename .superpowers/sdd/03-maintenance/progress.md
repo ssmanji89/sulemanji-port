@@ -116,3 +116,11 @@ Wire the deterministic public-signal discovery and relevance path into durable W
 - Final review minor deferred: `publisher.ts` public route discovery uses substring matching and can accept a longer sibling URL. Exact link normalization is recommended; deferred by the one-pass review procedure.
 - Whole-site `bash scripts/check_site_release.sh` was attempted before commit and correctly refused the dirty source tree before running its gate. Rerun after committing this fix pass.
 - Fresh live account readback confirms the production editorial script is `sulemanji-editorial` and its Workflow resource is `sulemanji-editorial-production`; staging script/Workflow also exist. Both D1 databases exist with zero tables. Both editorial Wrangler configs still contain `SET_AFTER_AUTHORIZED_PROVISIONING` as `database_id`; `wrangler d1 migrations list ... --remote` fails with Invalid UUID at that placeholder. No migration, deployment, secret, or remote write was performed. This is the next concrete Cloudflare activation repair; do not create duplicate Workers.
+
+## Exact-main staging readback correction (2026-11-27 11:38 UTC)
+
+- Refreshed `origin/main` to `c5f9b8725064ead0ecdcbee53b0f0a773e6ac741`; PRs #117 and #118 are merged. The stale plan ledger above predates their merge and this staging qualification.
+- Rendered the current staging config from GitHub environment variables, then deployed only the staging editorial Worker from exact current main with the existing local Wrangler OAuth session. Cloudflare readback matched the exact-main deployment annotation and confirmed 100% traffic. The staging Worker remains on workers.dev, has no custom route or Cron, and is bound to policy revision `pending-activation-record`.
+- Read-only staging D1 state: migrations 0001–0005 applied; `paused=1`, `owner_epoch=1`; zero `public_knowledge`, `editorial_candidates`, and `editorial_receipts` rows. No D1 mutation occurred.
+- Unsigned staging `POST /internal/knowledge` returned HTTP 401 `AUTH`, confirming reachable route and fail-closed authentication only. No authorized derivative, model call, publishing, or natural run was exercised.
+- T07/T09/T10 remain partial. CI deployment tokens, authorized Viyu producer configuration and renewal, approved model/pricing budget, one-writer qualification, and two natural eligible runs remain open.

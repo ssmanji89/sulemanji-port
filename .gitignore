@@ -80,6 +80,8 @@ node_modules/
 .npm/
 
 .wrangler/
+cloudflare/wrangler.editorial.runtime.jsonc
+cloudflare/wrangler.editorial-staging.runtime.jsonc
 worker/.dev.vars
 worker/coverage/
 .superpowers/

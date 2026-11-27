@@ -1,11 +1,12 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "sulemanji-editorial-staging",
+  "name": "runtime-worker",
   "main": "src/editorial/index.ts",
   "compatibility_date": "2026-11-26",
-  "workers_dev": true,
+  "workers_dev": false,
+  "routes": [],
   "triggers": { "crons": [] },
-  "vars": { "DEPLOYMENT_ENV": "staging", "KNOWLEDGE_POLICY_REVISION": "pending-activation-record" },
-  "d1_databases": [{ "binding": "DB", "database_name": "sulemanji-editorial-staging", "database_id": "SET_AFTER_AUTHORIZED_PROVISIONING", "migrations_dir": "migrations" }],
-  "workflows": [{ "name": "sulemanji-editorial-staging", "binding": "EDITORIAL_WORKFLOW", "class_name": "EditorialWorkflow" }]
+  "vars": { "DEPLOYMENT_ENV": "runtime", "KNOWLEDGE_POLICY_REVISION": "unbound" },
+  "d1_databases": [{ "binding": "DB", "database_name": "runtime-database", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
+  "workflows": [{ "name": "runtime-workflow", "binding": "EDITORIAL_WORKFLOW", "class_name": "EditorialWorkflow" }]
 }

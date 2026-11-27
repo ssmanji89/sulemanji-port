@@ -85,12 +85,36 @@ def _article_identity(site_root: Path) -> list[dict[str, str | None]]:
     return articles
 
 
+def validate_article_baseline(articles: list[dict[str, str | None]], baseline: list[dict[str, str | None]]) -> bool:
+    """Require every baseline article URL and date while allowing new articles."""
+    def by_url(rows: list[dict[str, str | None]]) -> dict[str, str | None]:
+        result: dict[str, str | None] = {}
+        for row in rows:
+            url = row.get('url')
+            if not isinstance(url, str) or not url.startswith('/') or url.startswith('//'):
+                raise ValueError(f'invalid article URL in baseline check: {url}')
+            if url in result:
+                raise ValueError(f'duplicate article URL: {url}')
+            result[url] = row.get('published_on')
+        return result
+
+    actual = by_url(articles)
+    expected = by_url(baseline)
+    missing = sorted(expected.keys() - actual.keys())
+    if missing:
+        raise ValueError(f'missing baseline article: {", ".join(missing)}')
+    changed = sorted(url for url in expected if actual[url] != expected[url])
+    if changed:
+        raise ValueError(f'published date changed for baseline article: {", ".join(changed)}')
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--site-root', type=Path, default=Path('_site'))
     parser.add_argument('--source-commit')
     parser.add_argument('--output', type=Path)
-    parser.add_argument('--baseline', type=Path, help='JSON file with articles [{url,published_on}] to preserve exactly')
+    parser.add_argument('--baseline', type=Path, help='JSON file with article URLs and dates that must remain unchanged; additions are allowed')
     parser.add_argument('--allow-dirty', action='store_true', help='label a local test artifact as source_commit=local when the checkout is dirty')
     args = parser.parse_args()
     root = Path(subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip())
@@ -102,8 +126,10 @@ def main() -> int:
     if args.baseline:
         baseline_payload = json.loads(args.baseline.read_text(encoding='utf-8'))
         baseline = baseline_payload.get('articles', baseline_payload)
-        if sorted(articles, key=lambda item: item['url']) != sorted(baseline, key=lambda item: item['url']):
-            raise SystemExit('built article URLs or dates differ from the approved baseline')
+        try:
+            validate_article_baseline(articles, baseline)
+        except ValueError as exc:
+            raise SystemExit(f'built article URLs or dates differ from the approved baseline: {exc}') from exc
     manifest = build_manifest(args.site_root, source_commit, articles)
     output = args.output or args.site_root / 'release.json'
     output.parent.mkdir(parents=True, exist_ok=True)

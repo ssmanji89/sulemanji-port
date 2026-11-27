@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.build_site_manifest import build_manifest
+from scripts.build_site_manifest import build_manifest, validate_article_baseline
 
 
 class SiteManifestTests(unittest.TestCase):
@@ -33,6 +33,20 @@ class SiteManifestTests(unittest.TestCase):
         self.assertNotIn('/users/', serialized)
         self.assertNotIn('api_key', serialized)
         self.assertNotIn('private', serialized)
+
+    def test_approved_article_baseline_allows_additions_but_keeps_existing_identities(self):
+        current = [*self.baseline, {'url': '/notes/new-article', 'published_on': '2026-11-26'}]
+        self.assertTrue(validate_article_baseline(current, self.baseline))
+
+    def test_approved_article_baseline_rejects_removed_or_changed_articles(self):
+        with self.assertRaisesRegex(ValueError, 'missing baseline article'):
+            validate_article_baseline([], self.baseline)
+        with self.assertRaisesRegex(ValueError, 'published date changed'):
+            validate_article_baseline([{'url': '/writing/notes', 'published_on': '2024-03-11'}], self.baseline)
+
+    def test_approved_article_baseline_rejects_duplicate_routes(self):
+        with self.assertRaisesRegex(ValueError, 'duplicate article URL'):
+            validate_article_baseline([*self.baseline, self.baseline[0]], self.baseline)
 
 
 if __name__ == '__main__':

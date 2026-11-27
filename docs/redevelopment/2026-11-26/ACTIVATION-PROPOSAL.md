@@ -1,17 +1,17 @@
 # Maintenance activation proposal
 
-Status: site preview approved. The public site Worker and paused maintenance resources are deployed. Editorial publication remains paused; no model credentials, model spend, DNS record, or publisher cutover has been activated.
+Status: site preview approved. The public site Worker and paused maintenance resources are deployed. The production editorial endpoint now uses a Cloudflare Custom Domain and public DNS resolves it. Editorial publication remains paused; no model credentials, model spend, or publisher cutover has been activated.
 
 ## Cloudflare resources
 
 | Environment | Worker | D1 | Workflow | Schedule | Exposure |
 |---|---|---|---|---|---|
 | Staging | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | Disabled; manual staging only | Workers Dev; isolated staging D1 |
-| Production | `sulemanji-editorial` | `sulemanji-editorial-production` | `sulemanji-editorial-production` | Hourly UTC trigger, Chicago local slot filter; D1 control remains paused | `editorial.sulemanji.com/*` Worker Route |
+| Production | `sulemanji-editorial` | `sulemanji-editorial-production` | `sulemanji-editorial-production` | Hourly UTC trigger, Chicago local slot filter; D1 control remains paused | `editorial.sulemanji.com` Custom Domain (deployed) |
 
-Both environments have separate D1 and Workflow resources. Migrations 0001–0003 are applied remotely, and both control rows read back `paused=1, owner_epoch=1`. Production has its hourly Cron. Staging Cron was removed after Cloudflare enforced the Free-plan limit of five Cron triggers per account; no existing trigger was changed. Current Cloudflare docs list five triggers on Free and 250 on Paid, with Paid starting at $5/month. No plan upgrade was made. The maintenance Worker has no visitor inference path. The site is the separate `sulemanji-site` static-assets Worker, active at 100% on `www.sulemanji.com/*`.
+Both environments have separate D1 and Workflow resources. Migrations 0001–0003 are applied remotely, and both control rows read back `paused=1, owner_epoch=1`. Production has its hourly Cron. Staging Cron was removed after Cloudflare enforced the Free-plan limit of five Cron triggers per account; no existing trigger was changed. Cloudflare's [current Workers limits](https://developers.cloudflare.com/workers/platform/limits/) list five triggers on Free and 1,000 on Paid; the [Paid plan starts at $5/month](https://developers.cloudflare.com/workers/platform/pricing/). No plan upgrade was made. The maintenance Worker has no visitor inference path. The site is the separate `sulemanji-site` static-assets Worker, active at 100% on `www.sulemanji.com/*`.
 
-Wrangler OAuth is authorized for the Cloudflare account; the connected Cloudflare app still returns `UNAUTHORIZED`. The unrelated `sulemanji-work-with-me` D1 was not reused. Public DNS for `editorial.sulemanji.com` currently fails to resolve; the Worker Route is configured, but no DNS record was created. The production knowledge endpoint is therefore not reachable by the private producer yet. Resource identifiers are intentionally omitted from public documentation.
+Wrangler OAuth is authorized for the Cloudflare account; the connected Cloudflare app still returns `UNAUTHORIZED`. The unrelated `sulemanji-work-with-me` D1 was not reused. The first Worker Route lacked its required proxied DNS record. The production hostname is now configured as a Custom Domain; public resolvers 1.1.1.1 and 8.8.8.8 return Cloudflare addresses, TLS verifies, and a synthetic request with an invalid signature receives HTTP 401. The local system resolver still failed during the check, so producer-side reachability must be verified from Viyu. Resource identifiers are intentionally omitted from public documentation.
 
 ## Model and cost estimate
 
@@ -46,4 +46,4 @@ Cloudflare's published Workers Paid starting price is $5/month; the current acco
 
 ## Current decision boundary
 
-The product preview was approved as presented. The public homepage is served through the active Cloudflare site Worker. The editorial Worker, D1 databases, Workflows, and production Cron now exist; both D1 controls remain paused. The editorial hostname does not resolve publicly because its DNS record is absent. Model provider/model, model spend envelopes, DNS record, authorized knowledge delivery/renewal, one-writer cutover, and two natural eligible schedule runs remain unresolved. No model-spending or Workers Paid upgrade authorization is inferred from this proposal.
+The product preview was approved as presented. The public homepage is served through the active Cloudflare site Worker. The editorial Worker, D1 databases, Workflows, and production Cron now exist; both D1 controls remain paused. The editorial hostname is a Cloudflare Custom Domain with public DNS and TLS; an unsigned synthetic POST to `/internal/knowledge` returned HTTP 401 AUTH on 2026-11-27. That proves endpoint reachability only. The Viyu producer's network path, authenticated knowledge delivery, model provider/model, model spend envelope, one-writer cutover, and two natural eligible schedule runs remain unresolved. No model-spending or Workers Paid upgrade authorization is inferred from this proposal.

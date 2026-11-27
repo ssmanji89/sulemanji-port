@@ -135,11 +135,27 @@ function isPublicIpv6(address: string): boolean {
     const low = Number.parseInt(parts[1], 16);
     return isPublicHostname(`${high >>> 8}.${high & 255}.${low >>> 8}.${low & 255}`);
   }
-  const [firstText, secondText] = ip.split(':');
-  const first = Number.parseInt(firstText || '0', 16);
-  const second = Number.parseInt(secondText || '0', 16);
-  if (first < 0x2000 || first > 0x3fff || first === 0x2002 || (first === 0x3fff && second < 0x1000)) return false;
-  if (first === 0x2001 && (second === 0 || second === 0x0010 || second === 0x0020 || second === 0x0db8)) return false;
+  const halves = ip.split('::');
+  const left = halves[0] ? halves[0].split(':') : [];
+  const right = halves.length > 1 && halves[1] ? halves[1].split(':') : [];
+  const groups = halves.length > 1
+    ? [...left, ...Array<string>(8 - left.length - right.length).fill('0'), ...right]
+    : left;
+  const [first = '0', second = '0', third = '0'] = groups;
+  const firstWord = Number.parseInt(first, 16);
+  const secondWord = Number.parseInt(second, 16);
+  const thirdWord = Number.parseInt(third, 16);
+  const special2001Exception = firstWord === 0x2001 && (
+    (secondWord === 1 && groups.slice(2, 7).every((group) => Number.parseInt(group, 16) === 0) &&
+      (Number.parseInt(groups[7] ?? '0', 16) === 1 || Number.parseInt(groups[7] ?? '0', 16) === 2)) ||
+    secondWord === 3 ||
+    (secondWord === 4 && thirdWord === 0x112) ||
+    ((secondWord === 0x20 || secondWord === 0x30) && thirdWord < 0x1000)
+  );
+  if (firstWord < 0x2000 || firstWord > 0x3fff || firstWord === 0x2002 ||
+      (firstWord === 0x3fff && secondWord < 0x1000)) return false;
+  if (firstWord === 0x2001 && secondWord === 0x0db8) return false;
+  if (firstWord === 0x2001 && secondWord <= 0x01ff && !special2001Exception) return false;
   return true;
 }
 

@@ -5,7 +5,7 @@ from PIL.PngImagePlugin import PngInfo
 from pathlib import Path
 from unittest.mock import patch
 
-from PIL import Image
+from PIL import Image, ImageFont
 
 from scripts.generate_article_images import font_path, generate, render_card, validate_custom_image
 
@@ -62,6 +62,16 @@ class SocialCardTests(unittest.TestCase):
             self.assertEqual(first.read_bytes(), second.read_bytes())
             with Image.open(first) as image:
                 self.assertEqual((1200, 630), image.size)
+
+    def test_render_uses_platform_independent_basic_text_layout(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "scripts.generate_article_images.ImageFont.truetype", wraps=ImageFont.truetype
+        ) as load_font:
+            render_card("Deterministic title", "Suleman Manji", Path(temp) / "card.png")
+        self.assertEqual(3, load_font.call_count)
+        self.assertTrue(
+            all(call.kwargs["layout_engine"] is ImageFont.Layout.BASIC for call in load_font.call_args_list)
+        )
 
     def test_custom_image_decodes_declared_dimensions(self):
         with tempfile.TemporaryDirectory() as temp:

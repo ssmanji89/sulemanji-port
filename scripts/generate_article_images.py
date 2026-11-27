@@ -79,9 +79,12 @@ def render_card(title, author, output):
     output.parent.mkdir(parents=True, exist_ok=True)
     image = Image.new("RGB", (WIDTH, HEIGHT), "#17232a")
     draw = ImageDraw.Draw(image)
-    title_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 58)
-    author_font = ImageFont.truetype(str(font_path("DejaVuSans.ttf")), 30)
-    kicker_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 24)
+    # BASIC avoids host-specific libraqm shaping, keeping PNG pixels stable
+    # across Pillow builds with different optional text-layout libraries.
+    layout_engine = ImageFont.Layout.BASIC
+    title_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 58, layout_engine=layout_engine)
+    author_font = ImageFont.truetype(str(font_path("DejaVuSans.ttf")), 30, layout_engine=layout_engine)
+    kicker_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 24, layout_engine=layout_engine)
     draw.rounded_rectangle((56, 54, 1144, 576), radius=24, fill="#f7f6f2")
     draw.text((104, 102), "WRITING", font=kicker_font, fill="#a64b2a")
     lines = wrapped_lines(draw, title, title_font, 982)

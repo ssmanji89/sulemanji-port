@@ -6,9 +6,12 @@ export async function transitionCandidate(db: D1Database, id: string, from: Cand
   return (result.meta.changes ?? 0) === 1;
 }
 
-export async function recordModelCall(db: D1Database, candidateId: string, maximum = 6): Promise<boolean> {
-  const result = await db.prepare('UPDATE editorial_candidates SET model_calls = model_calls + 1, updated_at = ? WHERE id = ? AND model_calls < ?')
-    .bind(new Date().toISOString(), candidateId, maximum).run();
+export async function recordModelCall(db: D1Database, candidateId: string, ownerEpoch: number, maximum = 6): Promise<boolean> {
+  if (!Number.isSafeInteger(ownerEpoch) || ownerEpoch < 1 || !Number.isSafeInteger(maximum) || maximum < 1 || maximum > 6) return false;
+  const result = await db.prepare(`UPDATE editorial_candidates SET model_calls = model_calls + 1, updated_at = ?
+    WHERE id = ? AND model_calls < ? AND EXISTS (
+      SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
+    )`).bind(new Date().toISOString(), candidateId, maximum, ownerEpoch).run();
   return (result.meta.changes ?? 0) === 1;
 }
 

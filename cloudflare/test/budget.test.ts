@@ -33,8 +33,9 @@ describe('atomic bounded model reservations', () => {
 
   it('keeps model-call and review-round caps across workflow resumes', async () => {
     const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
     db.candidates.set('candidate', { model_calls: 0, review_rounds: 0 });
-    for (let i = 0; i < 7; i += 1) await recordModelCall(db as unknown as D1Database, 'candidate');
+    for (let i = 0; i < 7; i += 1) await recordModelCall(db as unknown as D1Database, 'candidate', 1);
     for (let i = 0; i < 4; i += 1) await recordReviewRound(db as unknown as D1Database, 'candidate');
     expect(db.candidates.get('candidate')).toMatchObject({ model_calls: 6, review_rounds: 3 });
   });

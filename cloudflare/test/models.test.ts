@@ -37,16 +37,18 @@ describe('budgeted model gateway', () => {
       .toBe(estimateModelInputTokenUpperBound(config, request) + request.max_output_tokens);
     const gateway = new BudgetedModelGateway(provider, config, {
       db: db as unknown as D1Database, candidate_id: 'candidate-a',
+      owner_epoch: 1, max_model_calls: 6,
       limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: 'prices-test-1',
       now: () => new Date('2026-11-27T14:00:00.000Z'),
     });
+    db.control = { paused: 0, owner_epoch: 1 };
 
     await expect(gateway.generate(request)).resolves.toEqual(provider.result);
     expect(provider.calls).toBe(1);
     expect([...db.reservations.values()][0]).toMatchObject({
       maximum_micros: estimateModelInputTokenUpperBound(config, request) + request.max_output_tokens, actual_micros: 2_000,
     });
-    expect(db.candidates.get('candidate-a')).toMatchObject({ model_calls: 0, review_rounds: 0 });
+    expect(db.candidates.get('candidate-a')).toMatchObject({ model_calls: 1, review_rounds: 0 });
   });
 
   it('rejects a pricing revision that differs from the approved policy before reserving or calling', async () => {
@@ -55,6 +57,7 @@ describe('budgeted model gateway', () => {
     const provider = new FakeModels();
     const gateway = new BudgetedModelGateway(provider, config, {
       db: db as unknown as D1Database, candidate_id: 'candidate-a',
+      owner_epoch: 1, max_model_calls: 6,
       limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: 'prices-other',
       now: () => new Date('2026-11-27T14:00:00.000Z'),
     });
@@ -70,6 +73,7 @@ describe('budgeted model gateway', () => {
     const provider = new FakeModels();
     const gateway = new BudgetedModelGateway(provider, config, {
       db: db as unknown as D1Database, candidate_id: 'candidate-a',
+      owner_epoch: 1, max_model_calls: 6,
       limits: { candidate_usd: 0.004, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: 'prices-test-1',
       now: () => new Date('2026-11-27T14:00:00.000Z'),
     });
@@ -82,11 +86,13 @@ describe('budgeted model gateway', () => {
 
   it('keeps an unknown provider cost fully reserved after a timeout', async () => {
     const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
     db.candidates.set('candidate-a', { model_calls: 0, review_rounds: 0 });
     const provider = new FakeModels();
     provider.generate = async () => { provider.calls += 1; throw new Error('provider timeout'); };
     const gateway = new BudgetedModelGateway(provider, config, {
       db: db as unknown as D1Database, candidate_id: 'candidate-a',
+      owner_epoch: 1, max_model_calls: 6,
       limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: 'prices-test-1',
       now: () => new Date('2026-11-27T14:00:00.000Z'),
     });
@@ -95,5 +101,38 @@ describe('budgeted model gateway', () => {
     expect([...db.reservations.values()][0]).toMatchObject({
       maximum_micros: estimateModelInputTokenUpperBound(config, request) + request.max_output_tokens, actual_micros: null,
     });
+  });
+
+  it('does not call the provider or charge the reservation when the durable model-call cap is exhausted', async () => {
+    const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
+    db.candidates.set('candidate-a', { model_calls: 6, review_rounds: 0 });
+    const provider = new FakeModels();
+    const gateway = new BudgetedModelGateway(provider, config, {
+      db: db as unknown as D1Database, candidate_id: 'candidate-a', owner_epoch: 1, max_model_calls: 6,
+      limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: 'prices-test-1',
+      now: () => new Date('2026-11-27T14:00:00.000Z'),
+    });
+
+    await expect(gateway.generate(request)).rejects.toThrow('MODEL_CALL_LIMIT_HOLD');
+    expect(provider.calls).toBe(0);
+    expect([...db.reservations.values()][0]).toMatchObject({ actual_micros: 0 });
+  });
+
+  it('does not call the provider when the owner epoch is stale or paused', async () => {
+    const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 2 };
+    db.candidates.set('candidate-a', { model_calls: 0, review_rounds: 0 });
+    const provider = new FakeModels();
+    const gateway = new BudgetedModelGateway(provider, config, {
+      db: db as unknown as D1Database, candidate_id: 'candidate-a', owner_epoch: 1, max_model_calls: 6,
+      limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: 'prices-test-1',
+      now: () => new Date('2026-11-27T14:00:00.000Z'),
+    });
+
+    await expect(gateway.generate(request)).rejects.toThrow('WORKFLOW_AUTHORITY_CHANGED');
+    expect(provider.calls).toBe(0);
+    expect([...db.reservations.values()][0]).toMatchObject({ actual_micros: 0 });
+    expect(db.candidates.get('candidate-a')).toMatchObject({ model_calls: 0 });
   });
 });

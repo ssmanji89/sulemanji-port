@@ -56,7 +56,9 @@ export class OperationsD1 {
           const [paused] = v; this.control = { paused: Number(paused), owner_epoch: this.control.owner_epoch + 1 }; return { meta: { changes: 1 } };
         }
         if (sql.includes('UPDATE editorial_candidates SET model_calls')) {
-          const [, id, max] = v; const row = this.candidates.get(String(id)); if (!row || Number(row.model_calls) >= Number(max)) return { meta: { changes: 0 } };
+          const [, id, max, epoch] = v; const row = this.candidates.get(String(id));
+          if (!row || Number(row.model_calls) >= Number(max) ||
+              (sql.includes('EXISTS (') && (this.control.paused !== 0 || this.control.owner_epoch !== Number(epoch)))) return { meta: { changes: 0 } };
           row.model_calls = Number(row.model_calls) + 1; return { meta: { changes: 1 } };
         }
         if (sql.includes('UPDATE editorial_candidates SET review_rounds')) {

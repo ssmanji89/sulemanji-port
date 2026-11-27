@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runEditorialAdmission as runWorkerAdmission } from '../src/editorial/workflow-core.js';
-import { parseEditorialPolicy } from '../src/editorial/scheduler.js';
+import { nextChicagoBudgetDay, parseEditorialPolicy } from '../src/editorial/scheduler.js';
 import { fingerprintPublicKnowledge } from '../src/editorial/knowledge.js';
 import sourceRegistry from '../config/public-sources.json' with { type: 'json' };
 import { OperationsD1 } from './operations.test-support.js';
@@ -103,6 +103,14 @@ class PipelineD1 {
     const statement = {
       bind: (...values: unknown[]) => { args = values; return statement; },
       first: async <T>() => {
+        if (sql.includes('SET publication_retry_claim')) {
+          const [slot, lease, epoch, , due] = args;
+          if (this.control.paused || this.control.owner_epoch !== epoch) return null;
+          const row = [...this.candidates.values()].find((candidate) => candidate.state === 'CAPACITY_HELD' &&
+            (candidate.publication_retry_claim === slot || String(candidate.publication_retry_after) <= String(due)));
+          if (row) Object.assign(row, { publication_retry_claim: slot, publication_retry_after: lease });
+          return (row ?? null) as T | null;
+        }
         if (sql.includes('FROM editorial_control')) return this.control as T;
         if (sql.includes('FROM schedule_claims')) {
           const row = this.slots.get(String(args[0]));
@@ -223,6 +231,39 @@ describe('deterministic signal workflow', () => {
       .toEqual(canContinue ? ['held', 'held', laterSharedHold ? 'held' : 'verified'] : ['held']);
     expect(await runEditorialAdmission(params, env, step, processor)).toEqual(result);
     expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
+  });
+
+  it('resumes a previously held exact proposal in a later slot before new source discovery', async () => {
+    const now = new Date('2026-11-28T14:00:00Z');
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+    const db = new PipelineD1();
+    const candidate = { id: 'deferred', source_digest: 'stored-source', signal_ids: ['source'], target_id: 'markets' };
+    const signal = { id: 'source' };
+    const proposal = { candidate_id: candidate.id, owner_epoch: 1, content_digest: 'stored-content' };
+    const review = { ...proposal, decision: 'CLEAR' };
+    const attempt = { ...proposal, status: 'CAPACITY_HELD', pull_request: 13 };
+    db.candidates.set(candidate.id, { id: candidate.id, revision: candidate.source_digest, state: 'CAPACITY_HELD',
+      publication_retry_after: '2026-11-28T06:00:00Z', payload_json: JSON.stringify({ owner_epoch: 1,
+        candidate, pipeline: { proposal, review, attempt, signal } }) });
+    const fetcher = vi.fn(async () => Response.json({ schema_version: 1, items: [] }));
+    vi.stubGlobal('fetch', fetcher);
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Exact prior proposal verified.' }));
+    const params = { slot_claim_id: '2026-11-28:08:00' };
+    const env = { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never;
+    const step = new DurableStep();
+    const first = await runEditorialAdmission(params, env, step, { processCandidate });
+    expect(first.status).toBe('admitted');
+    expect(processCandidate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ candidate, signal,
+      resumeCapacity: expect.objectContaining({ proposal, review, attempt }) }));
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(await runEditorialAdmission(params, env, step, { processCandidate })).toEqual(first);
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses Chicago midnight on both sides of a daylight-saving transition', () => {
+    expect(nextChicagoBudgetDay(new Date('2026-03-08T06:00:00Z'))).toBe(Date.parse('2026-03-09T05:00:00Z'));
+    expect(nextChicagoBudgetDay(new Date('2026-11-01T05:00:00Z'))).toBe(Date.parse('2026-11-02T06:00:00Z'));
   });
 
   it('holds when the catalog redirects away from its exact URL', async () => {

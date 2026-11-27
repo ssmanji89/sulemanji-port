@@ -48,3 +48,9 @@ export function localBudgetPeriod(now: Date): { local_date: string; local_month:
   const { date, month } = chicagoParts(now);
   return { local_date: date, local_month: month };
 }
+
+export function nextChicagoBudgetDay(now: Date): number {
+  const midnightInDaylightTime = new Date(`${localBudgetPeriod(now).local_date}T05:00:00Z`);
+  midnightInDaylightTime.setUTCDate(midnightInDaylightTime.getUTCDate() + 1);
+  return midnightInDaylightTime.getTime() + (chicagoParts(midnightInDaylightTime).slot === '00:00' ? 0 : 3_600_000);
+}

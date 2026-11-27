@@ -97,6 +97,46 @@ describe('GitHub publication read adapters', () => {
     expect(fetcher.mock.calls.some(([input]) => String(input).endsWith('/pulls'))).toBe(false);
   });
 
+  it('requires active strict checks and calls the final authority guard before the merge request', async () => {
+    let active = false;
+    let merges = 0;
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/rules/branches/main')) return Response.json(active ? [{
+        type: 'required_status_checks', parameters: { strict_required_status_checks_policy: true,
+          required_status_checks: [{ context: 'site-release' }] },
+      }] : []);
+      if (url.endsWith('/pulls/9/merge') && init?.method === 'PUT') {
+        merges += 1;
+        return Response.json({ merged: true, sha: 'd'.repeat(40) });
+      }
+      throw new Error('Unexpected GitHub request');
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port',
+      required_checks: ['site-release'] }, fetcher as typeof fetch);
+    await expect(github.hasStrictMergeChecks()).resolves.toBe(false);
+    active = true;
+    await expect(github.hasStrictMergeChecks()).resolves.toBe(true);
+    await expect(github.mergePullRequest(9, 'a'.repeat(40), async () => false)).resolves.toEqual({ refused: true });
+    expect(merges).toBe(0);
+    await expect(github.mergePullRequest(9, 'a'.repeat(40), async () => true)).resolves.toEqual({ merge_commit_sha: 'd'.repeat(40) });
+    expect(merges).toBe(1);
+  });
+
+  it('recognizes a merged PR from the list-pulls response without a merged field or check reads', async () => {
+    const branch = 'editorial/candidate-42';
+    const head = 'a'.repeat(40);
+    const merge = 'b'.repeat(40);
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      if (!String(input).includes('/pulls?')) throw new Error('Merged PR must not require current checks');
+      return Response.json([{ number: 9, state: 'closed', merged_at: '2026-11-27T19:20:30Z', merge_commit_sha: merge,
+        head: { ref: branch, sha: head }, base: { ref: 'main' } }]);
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port',
+      required_checks: ['site-release'] }, fetcher as typeof fetch);
+    await expect(github.findPullRequest(branch)).resolves.toMatchObject({ number: 9, head_sha: head, merged: true, merge_commit_sha: merge });
+  });
+
   it('does not adopt an unrelated PR when creating the reviewed PR races with an existing branch PR', async () => {
     const base = 'a'.repeat(40);
     const branch = 'editorial/candidate-42';

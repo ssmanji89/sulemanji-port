@@ -25,21 +25,35 @@ async function fixture() {
 
 class FakeStore implements PublishEffectStore {
   value: Record<string, unknown> | null = null;
+  allowMerge = true;
+  capacityReleased = 0;
+  loseCapacityResponse = false;
+  capacityRequests: Array<{ new_articles: number; refreshes: number }> = [];
   async ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string) {
     if (this.value && this.value.content_digest !== contentDigest) throw new Error('conflicting intent');
     this.value ??= { candidate_id: candidateId, effect_id: effectId, branch, owner_epoch: ownerEpoch, content_digest: contentDigest, state: 'INTENT' };
   }
   async read() { return this.value as PublishEffect | null; }
   async record(_candidateId: string, patch: Record<string, unknown>) { Object.assign(this.value ?? {}, patch); }
+  async hasMergeDispatch() { return true; }
+  async releaseUndispatchedMerge() { this.capacityReleased += 1; }
+  async reserveMergeCapacity(_candidateId: string, counts: { new_articles: number; refreshes: number }) {
+    this.capacityRequests.push(counts);
+    if (this.loseCapacityResponse) throw new Error('D1 admission response was lost');
+    return this.allowMerge;
+  }
 }
 class FakeGitHub implements GitHubPublisher {
   pr: PullRequestState | null = null;
   creates = 0;
   merges = 0;
   loseMergeResponse = false;
+  strictMergeChecks = true;
   async findPullRequest() { return this.pr; }
   async createReviewedBranchAndPullRequest() { this.creates += 1; this.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'pending' }; return this.pr; }
-  async mergePullRequest() {
+  async hasStrictMergeChecks() { return this.strictMergeChecks; }
+  async mergePullRequest(_number: number, _head: string, authorize: () => Promise<boolean>) {
+    if (!(await authorize())) return { refused: true as const };
     this.merges += 1;
     this.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'closed', merged: true, merge_commit_sha: 'e'.repeat(40), checks: 'success' };
     if (this.loseMergeResponse) throw new Error('response lost');
@@ -65,7 +79,59 @@ describe('guarded source publication effects', () => {
     expect(attempt).toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12 });
     expect(github.creates).toBe(1);
     expect(github.merges).toBe(0);
+    expect(store.capacityRequests).toEqual([]);
     expect(store.value).toMatchObject({ state: 'SOURCE_PUBLISHED', pull_request: 12 });
+  });
+
+  it('holds an exact reviewed pull request before merge when its daily allowance is exhausted', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () => state };
+    await publishContent(proposal, receipt, deps);
+    github.pr!.checks = 'success';
+    store.allowMerge = false;
+
+    const result = await publishContent(proposal, receipt, deps);
+
+    expect(result).toMatchObject({ status: 'CAPACITY_HELD', pull_request: 12 });
+    expect(store.capacityRequests).toEqual([{ new_articles: 0, refreshes: 1 }]);
+    expect(github.merges).toBe(0);
+    expect(store.value).toMatchObject({ state: 'SOURCE_PUBLISHED' });
+  });
+
+  it('releases the exact admission attempt if its D1 response is lost before dispatch', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () => state };
+    await publishContent(proposal, receipt, deps);
+    github.pr!.checks = 'success';
+    store.loseCapacityResponse = true;
+
+    await publishContent(proposal, receipt, deps);
+    expect(store.capacityRequests).toHaveLength(1);
+    expect(store.capacityReleased).toBe(1);
+    expect(github.merges).toBe(0);
+  });
+
+  it('requires strict branch checks and rereads the reviewed base after capacity is reserved', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () =>
+      ({ ...state, base_commit: store.capacityRequests.length ? 'f'.repeat(40) : state.base_commit }) };
+    await publishContent(proposal, receipt, deps);
+    github.pr!.checks = 'success';
+    github.strictMergeChecks = false;
+    await expect(publishContent(proposal, receipt, deps)).resolves.toMatchObject({ status: 'BRANCH_UNQUALIFIED' });
+    expect(store.capacityRequests).toHaveLength(0);
+
+    github.strictMergeChecks = true;
+    await expect(publishContent(proposal, receipt, deps)).resolves.toMatchObject({ status: 'FAILED' });
+    expect(store.capacityRequests).toHaveLength(1);
+    expect(store.capacityReleased).toBe(1);
+    expect(github.merges).toBe(0);
   });
 
   it('reconciles a successful merge when the merge response is lost', async () => {
@@ -91,6 +157,21 @@ describe('guarded source publication effects', () => {
     });
     expect(paused.status).toBe('FAILED');
     expect(github.merges).toBe(1);
+  });
+
+  it('settles an unresolved exact merge after the merge advances the reviewed base', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub(); const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () => state };
+    await publishContent(proposal, receipt, deps);
+    await store.record(proposal.candidate_id, { state: 'UNCERTAIN' });
+    github.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'closed', merged: true, merge_commit_sha: 'e'.repeat(40), checks: 'success' };
+
+    await expect(publishContent(proposal, receipt, { ...deps,
+      currentState: async () => ({ ...state, base_commit: 'e'.repeat(40) }),
+    })).resolves.toMatchObject({ status: 'SOURCE_PUBLISHED', pull_request: 12, source_commit: 'e'.repeat(40) });
+    expect(store.value).toMatchObject({ state: 'MERGED', merge_commit: 'e'.repeat(40) });
+    expect(github.merges).toBe(0);
   });
 
   it('does not adopt or merge a preexisting branch PR without a matching durable source head', async () => {

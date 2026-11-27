@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
-import { createEditorialCandidatePipeline } from '../src/editorial/pipeline.js';
+import { createEditorialCandidatePipeline, type DeferredReview } from '../src/editorial/pipeline.js';
 import type { Candidate, ContentProposal, PreparationContext, PublicationReceipt, PublishAttempt, Signal } from '../src/editorial/contracts.js';
 import type { EditorialPolicy } from '../src/editorial/scheduler.js';
 import { BudgetedModelGateway, ModelAdmissionHoldError, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
@@ -52,6 +52,43 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it('keeps the exact reviewed PR through a capacity hold and resumes without model work', async () => {
+    const models = new Models();
+    const steps = new Steps();
+    const proposals: string[] = [];
+    let pending: DeferredReview | undefined;
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, renderSocialCard, preparationContext: async () => context,
+      persist: async (_id, _epoch, state, checkpoint) => {
+        if (state === 'CAPACITY_HELD') {
+          expect(checkpoint.retry_after).toBeTruthy();
+          expect(checkpoint.signal?.id).toBe('signal-1');
+          pending = { proposal: checkpoint.proposal!, review: checkpoint.review!, attempt: checkpoint.attempt!, claim: 'later-slot' };
+        }
+        return true;
+      },
+      publish: async (proposal, review) => {
+        proposals.push(proposal.content_digest);
+        expect(review.content_digest).toBe(proposal.content_digest);
+        const held = proposals.length <= 2;
+        return { attempt: { ...attempt(proposal), status: held ? 'CAPACITY_HELD' : 'SOURCE_PUBLISHED' }, merged: !held };
+      },
+      verify: async (published) => ({ receipt: { candidate_id: published.candidate_id, owner_epoch: 1,
+        source_commit: published.source_commit!, deployment_version: 'fixture', public_urls: published.public_urls,
+        verified_at: '2026-11-28T12:00:00Z', outcome: 'VERIFIED' } }),
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: steps };
+    await expect(pipeline.processCandidate(input)).resolves.toMatchObject({ status: 'held',
+      continue_after_hold: true });
+    expect(pending).toBeDefined();
+    await expect(pipeline.processCandidate({ ...input, step: new Steps(), resumeCapacity: pending })).resolves.toMatchObject({ status: 'held' });
+    await expect(pipeline.processCandidate({ ...input, step: new Steps(), resumeCapacity: pending })).resolves.toMatchObject({ status: 'verified' });
+    expect(proposals).toHaveLength(3);
+    expect(new Set(proposals).size).toBe(1);
+    expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review']);
+  });
+
   it('holds a portfolio refresh before preparing content and allows work on a separate target', async () => {
     const models = new Models();
     const target = { id: 'market-systems', title: 'Market systems', url: '/work/market-systems/', topics: ['markets'] };

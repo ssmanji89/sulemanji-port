@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseEditorialPolicy } from '../src/editorial/policy.mjs';
 
 const cloudflareDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [environment, outputDirectory = cloudflareDir] = process.argv.slice(2);
@@ -13,10 +14,12 @@ if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
   throw new Error('EDITORIAL_DATABASE_ID_MUST_BE_A_UUID');
 }
 
-const requiredValues = ['EDITORIAL_WORKER_NAME', 'EDITORIAL_WORKFLOW_NAME', 'EDITORIAL_DATABASE_NAME', 'EDITORIAL_POLICY_REVISION'];
+const requiredValues = ['EDITORIAL_WORKER_NAME', 'EDITORIAL_WORKFLOW_NAME', 'EDITORIAL_DATABASE_NAME', 'EDITORIAL_POLICY_REVISION', 'EDITORIAL_POLICY_JSON'];
 for (const key of requiredValues) {
   if (!process.env[key]?.trim()) throw new Error(`${key}_IS_REQUIRED`);
 }
+const editorialPolicy = parseEditorialPolicy(process.env.EDITORIAL_POLICY_JSON);
+if (!editorialPolicy) throw new Error('EDITORIAL_POLICY_JSON_MISSING_OR_INVALID');
 
 const configName = environment === 'staging' ? 'wrangler.editorial-staging.jsonc' : 'wrangler.editorial.jsonc';
 const outputName = environment === 'staging' ? 'wrangler.editorial-staging.runtime.jsonc' : 'wrangler.editorial.runtime.jsonc';
@@ -31,6 +34,7 @@ config.triggers.crons = process.env.EDITORIAL_CRON_SCHEDULE?.trim()
   : [];
 config.vars.DEPLOYMENT_ENV = environment;
 config.vars.KNOWLEDGE_POLICY_REVISION = process.env.EDITORIAL_POLICY_REVISION;
+config.vars.EDITORIAL_POLICY_JSON = JSON.stringify(editorialPolicy);
 config.d1_databases[0].database_name = process.env.EDITORIAL_DATABASE_NAME;
 config.d1_databases[0].database_id = databaseId;
 config.workflows[0].name = process.env.EDITORIAL_WORKFLOW_NAME;

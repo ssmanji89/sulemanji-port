@@ -78,6 +78,21 @@ class EditorialWorkflowTests(unittest.TestCase):
                 "EDITORIAL_WORKER_NAME": "test-worker",
                 "EDITORIAL_WORKFLOW_NAME": "test-workflow",
                 "EDITORIAL_POLICY_REVISION": "test-policy",
+                "EDITORIAL_POLICY_JSON": json.dumps({
+                    "revision": "synthetic-policy-r1",
+                    "timezone": "America/Chicago",
+                    "slots": ["08:00", "13:00", "19:00", "22:00"],
+                    "max_new_articles_daily": 1,
+                    "max_refreshes_daily": 1,
+                    "max_candidates_per_scan": 10,
+                    "max_fetches_per_scan": 10,
+                    "max_model_calls_per_candidate": 6,
+                    "max_review_rounds_per_candidate": 3,
+                    "max_candidate_usd": 0.75,
+                    "max_daily_usd": 2,
+                    "max_monthly_usd": 30,
+                    "model_pricing_revision": "synthetic-pricing-r1",
+                }),
                 "EDITORIAL_CUSTOM_DOMAIN": "example.invalid",
                 "EDITORIAL_WORKERS_DEV": "true",
                 "EDITORIAL_CRON_SCHEDULE": "* * * * *",
@@ -88,6 +103,7 @@ class EditorialWorkflowTests(unittest.TestCase):
             self.assertEqual(generated["d1_databases"][0]["database_id"], environment["EDITORIAL_DATABASE_ID"])
             self.assertEqual(generated["d1_databases"][0]["database_name"], "test-database")
             self.assertEqual(generated["workflows"][0]["name"], "test-workflow")
+            self.assertEqual(json.loads(generated["vars"]["EDITORIAL_POLICY_JSON"]), json.loads(environment["EDITORIAL_POLICY_JSON"]))
             self.assertEqual(generated["routes"], [{"pattern": "example.invalid", "custom_domain": True}])
             self.assertEqual(generated["triggers"]["crons"], ["* * * * *"])
 

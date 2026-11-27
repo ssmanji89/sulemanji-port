@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runEditorialAdmission } from '../src/editorial/workflow-core.js';
 import { parseEditorialPolicy } from '../src/editorial/scheduler.js';
+import sourceRegistry from '../config/public-sources.json' with { type: 'json' };
 import { OperationsD1 } from './operations.test-support.js';
 
 class DurableStep {
@@ -42,6 +43,7 @@ class PipelineD1 {
   control = { paused: 0, owner_epoch: 1 };
   receipts = new Map<string, Record<string, unknown>>();
   candidates = new Map<string, Record<string, unknown>>();
+  sourceStates = new Map<string, Record<string, unknown>>();
   prepare(sql: string) {
     let args: unknown[] = [];
     const statement = {
@@ -50,10 +52,12 @@ class PipelineD1 {
         if (sql.includes('FROM editorial_control')) return this.control as T;
         if (sql.includes('FROM editorial_receipts WHERE id = ?')) return (this.receipts.get(String(args[0])) ?? null) as T | null;
         if (sql.includes('FROM editorial_candidates WHERE id = ?')) return (this.candidates.get(String(args[0])) ?? null) as T | null;
+        if (sql.includes('FROM editorial_source_state WHERE source_id = ?')) return (this.sourceStates.get(String(args[0])) ?? null) as T | null;
         return null;
       },
       all: async <T>() => {
         if (sql.includes('FROM public_knowledge')) return { results: [] as T[] };
+        if (sql.includes('FROM editorial_source_state')) return { results: [...this.sourceStates.values()] as T[] };
         if (sql.includes('FROM editorial_receipts')) return { results: [...this.receipts.values()].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, Number(args[0])) as T[] };
         if (sql.includes('FROM editorial_candidates')) return { results: [...this.candidates.values()].slice(0, Number(args[0])) as T[] };
         return { results: [] as T[] };
@@ -61,14 +65,22 @@ class PipelineD1 {
       run: async () => {
         if (sql.includes('INSERT OR IGNORE INTO editorial_receipts')) {
           const [id, candidate_id, action, result_json, created_at] = args;
+          if (sql.includes('owner_epoch = ?') && (this.control.paused !== 0 || this.control.owner_epoch !== Number(args.at(-1)))) return { meta: { changes: 0 } };
           if (this.receipts.has(String(id))) return { meta: { changes: 0 } };
           this.receipts.set(String(id), { id, candidate_id, action, result_json, created_at });
           return { meta: { changes: 1 } };
         }
         if (sql.includes('INSERT OR IGNORE INTO editorial_candidates')) {
           const [id, revision, payload_json, updated_at] = args;
+          if (sql.includes('owner_epoch = ?') && (this.control.paused !== 0 || this.control.owner_epoch !== Number(args.at(-1)))) return { meta: { changes: 0 } };
           if (this.candidates.has(String(id))) return { meta: { changes: 0 } };
           this.candidates.set(String(id), { id, state: 'HELD', revision, payload_json, model_calls: 0, review_rounds: 0, updated_at });
+          return { meta: { changes: 1 } };
+        }
+        if (sql.includes('editorial_source_state')) {
+          const [source_id, fetched_at, signals_json, ownerEpoch] = args;
+          if (this.control.paused !== 0 || this.control.owner_epoch !== Number(ownerEpoch)) return { meta: { changes: 0 } };
+          this.sourceStates.set(String(source_id), { source_id, fetched_at, signals_json });
           return { meta: { changes: 1 } };
         }
         return { meta: { changes: 0 } };
@@ -97,6 +109,69 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
 }
 
 describe('deterministic signal workflow', () => {
+  it('holds instead of declaring NO_CHANGE when the fetch cap leaves enabled sources uncovered', async () => {
+    sourceFetchCalls = 0;
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: false }));
+    const db = new PipelineD1();
+    const limitedPolicy = JSON.stringify({ ...JSON.parse(policy), max_fetches_per_scan: 1 });
+    const result = await runEditorialAdmission({ slot_claim_id: 'coverage-limited' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: limitedPolicy } as never, new DurableStep());
+    expect(result).toMatchObject({ status: 'held', reason: 'Enabled public sources remain uncovered by this scan.' });
+    expect([...db.receipts.values()].map((row) => row.action)).toEqual(['HELD_SOURCE_COVERAGE_INCOMPLETE']);
+    expect(db.sourceStates.size).toBe(1);
+  });
+
+  it('uses successful persisted source reads until each configured interval is due', async () => {
+    sourceFetchCalls = 0;
+    const db = new PipelineD1();
+    const now = Date.now();
+    for (const source of (sourceRegistry as Array<{ id: string }>)) {
+      db.sourceStates.set(source.id, { source_id: source.id, fetched_at: new Date(now - 60 * 60 * 1000).toISOString(), signals_json: '[]' });
+    }
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: false }));
+    const result = await runEditorialAdmission({ slot_claim_id: 'source-cache-fresh' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
+    expect(result.status).toBe('no_change');
+    expect(sourceFetchCalls).toBe(1);
+
+    const firstSource = (sourceRegistry as Array<{ id: string }>)[0];
+    db.sourceStates.set(firstSource.id, { source_id: firstSource.id, fetched_at: new Date(now - 7 * 60 * 60 * 1000).toISOString(), signals_json: '[]' });
+    sourceFetchCalls = 0;
+    const dueResult = await runEditorialAdmission({ slot_claim_id: 'source-cache-due' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
+    expect(dueResult.status).toBe('no_change');
+    expect(sourceFetchCalls).toBe(2);
+    expect(Date.parse(String(db.sourceStates.get(firstSource.id)?.fetched_at))).toBeGreaterThan(now - 60 * 60 * 1000);
+  });
+
+  it('does not persist NO_CHANGE after the owner epoch changes during source reads', async () => {
+    const db = new PipelineD1();
+    const base = sourceFetcher({ candidate: false });
+    let feeds = 0;
+    vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(String(input));
+      const response = await base(input, init);
+      if (url.pathname !== '/content-index.json' && ++feeds === 5) db.control = { paused: 0, owner_epoch: 2 };
+      return response;
+    }) as typeof fetch);
+    const result = await runEditorialAdmission({ slot_claim_id: 'stale-no-change' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
+    expect(result.status).toBe('held');
+    expect([...db.receipts.values()].some((row) => row.action === 'NO_CHANGE')).toBe(false);
+  });
+
+  it('does not persist an actionable candidate after the owner epoch changes during source reads', async () => {
+    const db = new PipelineD1();
+    const base = sourceFetcher({ candidate: true });
+    let feedCalls = 0;
+    vi.stubGlobal('fetch', (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = new URL(String(input));
+      const response = await base(input, init);
+      if (url.pathname !== '/content-index.json' && ++feedCalls === 1) db.control = { paused: 0, owner_epoch: 2 };
+      return response;
+    }) as typeof fetch);
+    const result = await runEditorialAdmission({ slot_claim_id: 'stale-candidate' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
+    expect(result.status).toBe('held');
+    expect(db.candidates.size).toBe(0);
+    expect([...db.receipts.values()].some((row) => row.action === 'HELD_PROVIDER_UNCONFIGURED')).toBe(false);
+  });
+
   it('persists one successful NO_CHANGE receipt without calling a model when sources have no new items', async () => {
     sourceFetchCalls = 0;
     const fetcher = sourceFetcher({ candidate: false });

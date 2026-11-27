@@ -31,12 +31,29 @@ test('mathematical work exposes its question, checkers, attribution, and limits'
 });
 
 test('ff-cli stays an independent tool with its demonstration state visible', async ({ page }) => {
+  const videoPath = '/assets/ffcli/demo.mp4';
+  let videoRequests = 0;
+  page.on('request', (request) => {
+    if (new URL(request.url()).pathname === videoPath) videoRequests += 1;
+  });
   await page.goto('/work/ff-cli/');
   await expect(page.locator('[data-work-format="tool"]')).toBeVisible();
   await expect(page.getByText(/actual league uses a snake draft/).first()).toBeVisible();
   const video = page.locator('video[controls]');
   await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute('loading', 'lazy');
   await expect(video).toHaveAttribute('preload', 'none');
   await expect(video).toHaveAttribute('poster', '/assets/ffcli/warroom-full-board.png');
+  await expect(video).toHaveAttribute('width', '1280');
+  await expect(video).toHaveAttribute('height', '800');
   await expect(page.getByRole('link', { name: 'View an auction board screenshot' })).toBeVisible();
+  await video.scrollIntoViewIfNeeded();
+  await video.focus();
+  expect(videoRequests).toBe(0);
+  const [videoResponse] = await Promise.all([
+    page.waitForResponse((response) => new URL(response.url()).pathname === videoPath),
+    page.keyboard.press('Space'),
+  ]);
+  expect(videoResponse.ok()).toBe(true);
+  await expect.poll(() => video.evaluate((element) => (element as HTMLVideoElement).currentTime)).toBeGreaterThan(0);
 });

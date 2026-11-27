@@ -64,6 +64,7 @@ Staging, production, merge, publisher cutover, and schedule activation: not star
 - Remote migrations 0001–0003 are applied in both editorial databases. Both control rows read back paused at owner epoch 1. The Worker code itself returns `HELD_PIPELINE_UNCONFIGURED` until the full discovery-to-public-readback workflow is connected.
 - Public DNS for `editorial.sulemanji.com` does not resolve. No DNS record, API model secret, model spend, publisher cutover, or owner unpause was performed. The Viyu producer has not delivered a real authorized derivative, and no durable receipt or renewal has been observed.
 - The connected Cloudflare app remains unauthorized; local Wrangler OAuth performed the deployment. Current Cloudflare docs show the Free account's five-Cron limit and a $5/month Paid starting plan. A plan upgrade was not made.
+- A clean-tree `bash scripts/check_site_release.sh` rerun reached the local Writing suite, then stopped at 60 runs / 180 assertions with 7 failures and 14 errors. The failing fixtures render `/writing` without the required single `<html>` root. This reproduces the previously documented local/CI mismatch after earlier build-context attempts; no fixture change was guessed. The remaining local gate is open, and PR #105 hosted validation is still pending.
 
 ## Release gate
 

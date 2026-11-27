@@ -52,13 +52,15 @@ describe('resumable editorial workflow admission', () => {
     expect(db.receipts.size).toBe(0);
   });
 
-  it('returns the durable admitted result when a verified slot is resumed', async () => {
+  it.each([false, true])('returns the durable receipt when a slot is resumed (cached missing receipt: %s)', async (cachedMissing) => {
     const db = new PipelineD1();
     const params = { slot_claim_id: 'verified-slot' };
     db.receipts.set('slot-result:verified-slot', { id: 'slot-result:verified-slot', action: 'VERIFIED',
       result_json: JSON.stringify({ reason: 'All candidates were verified.', owner_epoch: 1 }), created_at: new Date().toISOString() });
 
-    const result = await runEditorialAdmission(params, { DB: db as unknown as D1Database } as never, new DurableStep());
+    const step = new DurableStep();
+    if (cachedMissing) step.values.set('read-existing-slot-result', null);
+    const result = await runEditorialAdmission(params, { DB: db as unknown as D1Database } as never, step);
 
     expect(result).toMatchObject({ status: 'admitted', reason: 'All candidates were verified.', slot_claim_id: params.slot_claim_id });
   });
@@ -172,14 +174,18 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
 }
 
 describe('deterministic signal workflow', () => {
-  it.each([true, false])('only continues independently after an explicitly safe candidate hold (%s)', async (canContinue) => {
+  it.each([
+    { canContinue: true, laterSharedHold: false },
+    { canContinue: true, laterSharedHold: true },
+    { canContinue: false, laterSharedHold: false },
+  ])('only continues independently after an explicitly safe candidate hold ($canContinue, $laterSharedHold)', async ({ canContinue, laterSharedHold }) => {
     const now = new Date('2026-11-27T14:00:00.000Z');
     vi.useFakeTimers();
     vi.setSystemTime(now);
     const db = new PipelineD1();
     const catalog = [
-      { id: 'workers', canonical_url: '/work/cloudflare/', title: 'Cloudflare Workers', topics: ['infrastructure'] },
-      { id: 'markets', canonical_url: '/work/market-systems/', title: 'Market systems', topics: ['markets'] },
+      { id: 'workers', canonical_url: '/notes/cloudflare-workers', title: 'Cloudflare Workers', topics: ['infrastructure'] },
+      { id: 'markets', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] },
     ];
     function entry(title: string, url: string) {
       return `<item><title>${title}</title><description>New documented details.</description><link>${url}</link><pubDate>${now.toUTCString()}</pubDate></item>`;
@@ -200,6 +206,7 @@ describe('deterministic signal workflow', () => {
       processed.push(candidate.target_id);
       if (processed.length === 1) return { status: 'held' as const, reason: 'Original candidate needs review.',
         ...(canContinue ? { continue_after_hold: true as const } : {}) };
+      if (laterSharedHold) return { status: 'held' as const, reason: 'The provider requires reconciliation.' };
       return { status: 'verified' as const, reason: 'Exact publication was verified.' };
     }) };
     const params = { slot_claim_id: 'independent-candidate-hold' };
@@ -208,12 +215,12 @@ describe('deterministic signal workflow', () => {
     const result = await runEditorialAdmission(params, env, step, processor);
 
     expect(db.candidates.size).toBe(3);
-    expect(result).toMatchObject({ status: 'held', reason: 'Original candidate needs review.' });
+    expect(result).toMatchObject({ status: 'held', reason: laterSharedHold ? 'The provider requires reconciliation.' : 'Original candidate needs review.' });
     expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
     const receipt = db.receipts.get(`slot-result:${params.slot_claim_id}`)!;
     expect(receipt.action).toBe('HELD_PUBLICATION_PIPELINE');
     expect(JSON.parse(String(receipt.result_json)).outcomes.map((outcome: { status: string }) => outcome.status))
-      .toEqual(canContinue ? ['held', 'held', 'verified'] : ['held']);
+      .toEqual(canContinue ? ['held', 'held', laterSharedHold ? 'held' : 'verified'] : ['held']);
     expect(await runEditorialAdmission(params, env, step, processor)).toEqual(result);
     expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
   });

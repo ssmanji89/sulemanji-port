@@ -52,6 +52,27 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it('holds a portfolio refresh before preparing content and allows work on a separate target', async () => {
+    const models = new Models();
+    const target = { id: 'market-systems', title: 'Market systems', url: '/work/market-systems/', topics: ['markets'] };
+    const checkpoints: string[] = [];
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, renderSocialCard,
+      preparationContext: async () => { throw new Error('Portfolio refresh entered the article-only pipeline'); },
+      persist: async (_id, _epoch, state) => { checkpoints.push(state); return true; },
+      publish: async () => { throw new Error('Unexpected publication'); },
+      verify: async () => { throw new Error('Unexpected verification'); },
+    });
+    const result = await pipeline.processCandidate({
+      candidate: { ...candidate, action: 'REFRESH', target_id: target.id },
+      signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: [target], knowledge: [], policy, owner_epoch: 1, step: new Steps(),
+    });
+    expect(result).toMatchObject({ status: 'held', continue_after_hold: true });
+    expect(checkpoints).toEqual(['NEEDS_OWNER']);
+    expect(models.calls).toEqual([]);
+  });
+
   it('records the review limit before a Workflow retry can misclassify it as an uncertain call', async () => {
     const db = new OperationsD1();
     db.control = { paused: 0, owner_epoch: 1 };

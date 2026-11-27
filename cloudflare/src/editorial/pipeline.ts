@@ -2,7 +2,7 @@ import type { Candidate, CatalogItem, ContentProposal, PreparationContext, Publi
 import { ModelAdmissionHoldError, type ModelGateway } from './models.js';
 import type { EditorialPolicy } from './scheduler.js';
 import { SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
-import { attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
+import { articleSourcePath, attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
 import type { CandidateProcessOutcome, DurableStep } from './workflow-core.js';
 
 const PUBLICATION_WAIT_MS = [30_000, 60_000, 90_000, 120_000, 180_000];
@@ -62,6 +62,15 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         return { status: 'held', reason: 'Candidate publication context is not qualified.' };
       }
       const key = stepPart(candidate.id);
+      if (candidate.action === 'REFRESH') {
+        const target = input.catalog.find((item) => item.id === candidate.target_id);
+        if (target && !articleSourcePath(target.url)) {
+          const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-target`, () =>
+            deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', {}));
+          if (!recorded) return { status: 'held', reason: 'Could not checkpoint the portfolio refresh hold.' };
+          return { status: 'held', reason: 'A portfolio refresh requires owner review.', continue_after_hold: true };
+        }
+      }
       const context = await step.do(`prepare-context-${key}`, () => deps.preparationContext(input));
       const models = deps.modelsFor(candidate, ownerEpoch, policy);
       const draftProposal = await runModelStep(step, `prepare-content-${key}`,
@@ -112,7 +121,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         }
         if (receipt.decision === 'HOLD' || round === maximumRounds) {
           const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', checkpoint));
-          if (!recorded) return { status: 'held', reason: 'Workflow authority changed before the review hold could be checkpointed.' };
+          if (!recorded) return { status: 'held', reason: 'Could not checkpoint the independent review hold.' };
           return { status: 'held', reason: receipt.decision === 'HOLD' ? 'Independent review requires an owner decision.' : 'Review rounds were exhausted before clearance.', continue_after_hold: true };
         }
         const revision = await runModelStep(step, `revise-content-${key}-round-${round}`, () => reviseContent(proposal, candidate, context, receipt.findings,

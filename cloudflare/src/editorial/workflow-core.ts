@@ -7,7 +7,7 @@ import { nextChicagoBudgetDay, parseEditorialPolicy, readScheduleClaim, schedule
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
-import type { ReviewedPublication } from './pipeline.js';
+import type { DeferredReview } from './pipeline.js';
 
 export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
@@ -25,7 +25,7 @@ export type EditorialCandidateProcessor = {
     policy: EditorialPolicy;
     owner_epoch: number;
     step: DurableStep;
-    resumeCapacity?: ReviewedPublication;
+    resumeCapacity?: DeferredReview;
   }): Promise<CandidateProcessOutcome>;
 };
 type EditorialWorkflowEnv = EditorialEnv & { EDITORIAL_POLICY_JSON?: string };
@@ -130,7 +130,7 @@ async function persistHeldCandidate(db: D1Database, candidate: Candidate, signal
   return true;
 }
 
-type DeferredPublication = ReviewedPublication & { candidate: Candidate; signal: Signal };
+type DeferredPublication = DeferredReview & { candidate: Candidate; signal: Signal };
 
 export async function claimDeferredPublication(db: D1Database, slotId: string, now: Date, ownerEpoch: number): Promise<DeferredPublication | null> {
   // A failed Workflow leaves the candidate available for a later date. Replaying the same claim is idempotent.
@@ -153,7 +153,7 @@ export async function claimDeferredPublication(db: D1Database, slotId: string, n
       !review || review.candidate_id !== candidate.id || review.owner_epoch !== ownerEpoch ||
       !attempt || attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.pull_request ||
       attempt.status !== 'CAPACITY_HELD' || !signal || !Array.isArray(candidate.signal_ids) || !candidate.signal_ids.includes(signal.id)) throw new Error('DEFERRED_PUBLICATION_CHECKPOINT_INVALID');
-  return { candidate, signal, proposal, review, attempt };
+  return { candidate, signal, proposal, review, attempt, claim: slotId };
 }
 
 function held(params: WorkflowParams, reason: string): WorkflowResult {

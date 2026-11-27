@@ -11,7 +11,7 @@ export interface GitHubPublisher {
   findPullRequest(branch: string): Promise<PullRequestState | null>;
   createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState>;
   hasStrictMergeChecks(): Promise<boolean>;
-  mergePullRequest(number: number, expectedHead: string, authorize: () => Promise<boolean>): Promise<{ merge_commit_sha: string }>;
+  mergePullRequest(number: number, expectedHead: string, authorize: () => Promise<boolean>): Promise<{ merge_commit_sha: string } | { refused: true }>;
 }
 export type PublishEffect = {
   effect_id: string; branch: string; owner_epoch: number; content_digest: string;
@@ -21,7 +21,9 @@ export type PublicationCounts = { new_articles: number; refreshes: number };
 export interface PublishEffectStore {
   ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string): Promise<void>;
   read(candidateId: string): Promise<PublishEffect | null>;
-  reserveMergeCapacity(candidateId: string, counts: PublicationCounts): Promise<boolean>;
+  reserveMergeCapacity(candidateId: string, counts: PublicationCounts, dispatchId: string): Promise<boolean>;
+  hasMergeDispatch(candidateId: string, dispatchId: string): Promise<boolean>;
+  releaseUndispatchedMerge(candidateId: string, dispatchId: string): Promise<void>;
   record(candidateId: string, patch: { pull_request?: number; source_commit?: string; merge_commit?: string; state: string }): Promise<void>;
 }
 type PublicationAuthority = Pick<PublicationState, 'owner_epoch' | 'paused'>;
@@ -142,19 +144,25 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
     if (!finalDecision.allowed) { await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'FAILED' }); return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'FAILED'); }
     const articleFiles = proposal.files.filter((file) => ARTICLE.test(file.path));
     const newArticles = articleFiles.filter((file) => file.operation === 'create').length;
+    const dispatchId = crypto.randomUUID();
     if (!(await deps.store.reserveMergeCapacity(proposal.candidate_id, {
       new_articles: newArticles, refreshes: articleFiles.length - newArticles,
-    }))) {
+    }, dispatchId))) {
       return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'CAPACITY_HELD');
     }
     let mergeCommit: string;
     try {
-      mergeCommit = (await deps.github.mergePullRequest(pull.number, pull.head_sha, async () => {
+      const merged = await deps.github.mergePullRequest(pull.number, pull.head_sha, async () => {
         const current = await deps.currentState();
-        if (!(await canPublish(proposal, receipt, current)).allowed) return false;
+        if (!(await canPublish(proposal, receipt, current)).allowed || !(await deps.store.hasMergeDispatch(proposal.candidate_id, dispatchId))) return false;
         const authority = await deps.readAuthority();
         return !authority.paused && authority.owner_epoch === receipt.owner_epoch;
-      })).merge_commit_sha;
+      });
+      if ('refused' in merged) {
+        await deps.store.releaseUndispatchedMerge(proposal.candidate_id, dispatchId);
+        return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'FAILED');
+      }
+      mergeCommit = merged.merge_commit_sha;
     } catch {
       const readback = await deps.github.findPullRequest(branch);
       if (!readback?.merged || !readback.merge_commit_sha || readback.number !== pull.number || readback.head_sha !== pull.head_sha) {

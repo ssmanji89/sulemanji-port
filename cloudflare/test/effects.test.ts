@@ -60,14 +60,30 @@ describe('daily merge capacity on SQLite', () => {
     try {
       const store = new D1PublishEffectStore(db, 1, limits, () => new Date('2026-11-27T12:00:00Z'));
       await seedMergeable(store, 'first', 'second', 'refresh', 'extra-refresh');
-      const results = await Promise.all(['first', 'second'].map((id) => store.reserveMergeCapacity(id, creation)));
+      const results = await Promise.all(['first', 'second'].map((id) => store.reserveMergeCapacity(id, creation, String(id))));
       expect(results.filter(Boolean)).toHaveLength(1);
       const winner = results[0] ? 'first' : 'second';
-      await expect(store.reserveMergeCapacity(winner, creation)).resolves.toBe(true);
-      await expect(store.reserveMergeCapacity('refresh', refresh)).resolves.toBe(true);
-      await expect(store.reserveMergeCapacity('extra-refresh', refresh)).resolves.toBe(false);
+      await expect(store.reserveMergeCapacity(winner, creation, String(winner))).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('refresh', refresh, String('refresh'))).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('extra-refresh', refresh, String('extra-refresh'))).resolves.toBe(false);
       sqlite.exec('UPDATE editorial_control SET paused=1, owner_epoch=2');
-      await expect(store.reserveMergeCapacity(winner, creation)).rejects.toThrow('WORKFLOW_AUTHORITY_CHANGED');
+      await expect(store.reserveMergeCapacity(winner, creation, String(winner))).rejects.toThrow('WORKFLOW_AUTHORITY_CHANGED');
+    } finally { sqlite.close(); }
+  });
+
+  it('releases a definitively unsent merge using only its unique dispatch ID', async () => {
+    const { db, sqlite } = sqliteD1();
+    try {
+      const store = new D1PublishEffectStore(db, 1, limits, () => new Date('2026-11-27T12:00:00Z'));
+      await seedMergeable(store, 'first', 'next');
+      await expect(store.reserveMergeCapacity('first', creation, 'original')).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('first', creation, 'contender')).resolves.toBe(false);
+      await store.releaseUndispatchedMerge('first', 'contender');
+      await expect(store.hasMergeDispatch('first', 'original')).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('next', creation, 'next')).resolves.toBe(false);
+      await store.releaseUndispatchedMerge('first', 'original');
+      await expect(store.hasMergeDispatch('first', 'original')).resolves.toBe(false);
+      await expect(store.reserveMergeCapacity('next', creation, 'next')).resolves.toBe(true);
     } finally { sqlite.close(); }
   });
 
@@ -76,7 +92,7 @@ describe('daily merge capacity on SQLite', () => {
     try {
       const prior = new D1PublishEffectStore(db, 1, limits, () => new Date('2026-11-27T05:00:00Z'));
       await seedMergeable(prior, 'prior');
-      await expect(prior.reserveMergeCapacity('prior', creation)).resolves.toBe(true);
+      await expect(prior.reserveMergeCapacity('prior', creation, String('prior'))).resolves.toBe(true);
       sqlite.exec('UPDATE editorial_control SET owner_epoch = 2');
       let now = new Date('2026-11-27T12:00:00Z');
       const current = new D1PublishEffectStore(db, 2, limits, () => now);
@@ -90,9 +106,9 @@ describe('daily merge capacity on SQLite', () => {
       expect(await current.read('prior')).toMatchObject({ state: 'MERGED', owner_epoch: 1, merge_commit: 'c'.repeat(40) });
       await current.ensureIntent('next', 'publication:next', 'editorial/next', 2, 'a'.repeat(64));
       await current.record('next', { state: 'SOURCE_PUBLISHED', pull_request: 2, source_commit: 'b'.repeat(40) });
-      await expect(current.reserveMergeCapacity('next', creation)).resolves.toBe(false);
+      await expect(current.reserveMergeCapacity('next', creation, String('next'))).resolves.toBe(false);
       now = new Date('2026-11-28T06:01:00Z');
-      await expect(current.reserveMergeCapacity('next', creation)).resolves.toBe(true);
+      await expect(current.reserveMergeCapacity('next', creation, String('next'))).resolves.toBe(true);
     } finally { sqlite.close(); }
   });
 
@@ -126,13 +142,13 @@ describe('daily merge capacity on SQLite', () => {
       let now = new Date('2026-11-27T05:59:00Z');
       const store = new D1PublishEffectStore(db, 1, limits, () => now);
       await seedMergeable(store, 'late', 'next');
-      await expect(store.reserveMergeCapacity('late', creation)).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('late', creation, String('late'))).resolves.toBe(true);
       now = new Date('2026-11-27T06:01:00Z');
-      await expect(store.reserveMergeCapacity('next', creation)).resolves.toBe(false);
+      await expect(store.reserveMergeCapacity('next', creation, String('next'))).resolves.toBe(false);
       await store.record('late', { state: 'MERGED', merge_commit: 'c'.repeat(40) });
-      await expect(store.reserveMergeCapacity('next', creation)).resolves.toBe(false);
+      await expect(store.reserveMergeCapacity('next', creation, String('next'))).resolves.toBe(false);
       now = new Date('2026-11-28T06:01:00Z');
-      await expect(store.reserveMergeCapacity('next', creation)).resolves.toBe(true);
+      await expect(store.reserveMergeCapacity('next', creation, String('next'))).resolves.toBe(true);
     } finally { sqlite.close(); }
   });
 });

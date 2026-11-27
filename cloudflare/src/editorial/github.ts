@@ -186,13 +186,17 @@ export class GitHubApiPublisher implements GitHubPublisher {
       this.config.required_checks.every((name) => rule.parameters?.required_status_checks?.some(({ context }) => name === context)));
   }
 
-  async mergePullRequest(number: number, expectedHead: string, authorize: () => Promise<boolean>): Promise<{ merge_commit_sha: string }> {
-    await this.assertPrivateFixture();
-    if (!(await authorize())) throw new Error('GITHUB_MERGE_AUTHORITY_CHANGED');
+  async mergePullRequest(number: number, expectedHead: string, authorize: () => Promise<boolean>): Promise<{ merge_commit_sha: string } | { refused: true }> {
+    try {
+      await this.assertPrivateFixture();
+      if (!(await authorize())) return { refused: true };
+    } catch {
+      return { refused: true };
+    }
     const result = await this.request<{ merged: boolean; sha: string }>(`/repos/${this.owner}/${this.repo}/pulls/${number}/merge`, {
       method: 'PUT', body: JSON.stringify({ sha: expectedHead, merge_method: 'squash' }),
     });
-    if (!result.merged || !result.sha) throw new Error('GITHUB_MERGE_NOT_CONFIRMED');
+    if (!result.merged || typeof result.sha !== 'string' || !/^[0-9a-f]{40}$/i.test(result.sha)) throw new Error('GITHUB_MERGE_NOT_CONFIRMED');
     return { merge_commit_sha: result.sha };
   }
 }

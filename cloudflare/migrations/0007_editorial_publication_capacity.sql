@@ -24,6 +24,7 @@ DROP TABLE publication_capacity_cutover;
 
 ALTER TABLE publication_effects ADD COLUMN merge_admission_date TEXT;
 ALTER TABLE publication_effects ADD COLUMN merge_settled_date TEXT;
+ALTER TABLE publication_effects ADD COLUMN merge_dispatch_id TEXT;
 ALTER TABLE publication_effects ADD COLUMN new_articles INTEGER NOT NULL DEFAULT 0 CHECK (new_articles >= 0);
 ALTER TABLE publication_effects ADD COLUMN refreshes INTEGER NOT NULL DEFAULT 0 CHECK (refreshes >= 0);
 

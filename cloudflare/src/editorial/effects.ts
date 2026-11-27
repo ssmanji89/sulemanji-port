@@ -30,12 +30,12 @@ export class D1PublishEffectStore implements PublishEffectStore {
       FROM publication_effects WHERE candidate_id = ?`).bind(candidateId).first<PublishEffect>();
   }
 
-  async reserveMergeCapacity(candidateId: string, counts: PublicationCounts): Promise<boolean> {
+  async reserveMergeCapacity(candidateId: string, counts: PublicationCounts, dispatchId: string): Promise<boolean> {
     if ([counts.new_articles, counts.refreshes, this.limits.new_articles, this.limits.refreshes]
       .some((number) => !Number.isSafeInteger(number) || number < 0)) throw new Error('PUBLICATION_CAPACITY_INVALID');
     const { local_date: date } = localBudgetPeriod(this.clock());
     // Unresolved attempts carry forward. A merge settled after midnight counts on both days.
-    await this.db.prepare(`UPDATE publication_effects SET merge_admission_date = ?, new_articles = ?, refreshes = ?
+    await this.db.prepare(`UPDATE publication_effects SET merge_admission_date = ?, new_articles = ?, refreshes = ?, merge_dispatch_id = ?
       WHERE candidate_id = ? AND owner_epoch = ? AND state = 'SOURCE_PUBLISHED' AND merge_commit IS NULL
         AND merge_admission_date IS NULL AND merge_settled_date IS NULL AND EXISTS (
           SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
@@ -45,18 +45,33 @@ export class D1PublishEffectStore implements PublishEffectStore {
             FROM publication_effects WHERE merge_admission_date IS NOT NULL
               AND (merge_admission_date = ? OR merge_settled_date IS NULL OR merge_settled_date >= ?)
           ) WHERE (? = 0 OR used_new <= ?) AND (? = 0 OR used_refreshes <= ?)
-        )`).bind(date, counts.new_articles, counts.refreshes, candidateId, this.ownerEpoch, this.ownerEpoch,
+        )`).bind(date, counts.new_articles, counts.refreshes, dispatchId, candidateId, this.ownerEpoch, this.ownerEpoch,
       date, date, counts.new_articles, this.limits.new_articles - counts.new_articles,
       counts.refreshes, this.limits.refreshes - counts.refreshes).run();
-    const row = await this.db.prepare(`SELECT effect.merge_admission_date, effect.new_articles, effect.refreshes
+    const row = await this.db.prepare(`SELECT effect.merge_dispatch_id, effect.new_articles, effect.refreshes
       FROM publication_effects AS effect JOIN editorial_control AS control
         ON control.singleton = 1 AND control.paused = 0 AND control.owner_epoch = effect.owner_epoch
       WHERE effect.candidate_id = ? AND effect.owner_epoch = ? AND effect.state = 'SOURCE_PUBLISHED' AND effect.merge_commit IS NULL AND effect.merge_settled_date IS NULL`)
-      .bind(candidateId, this.ownerEpoch).first<{ merge_admission_date: string | null; new_articles: number; refreshes: number }>();
+      .bind(candidateId, this.ownerEpoch).first<{ merge_dispatch_id: string | null; new_articles: number; refreshes: number }>();
     if (!row) throw new Error('WORKFLOW_AUTHORITY_CHANGED');
-    if (!row.merge_admission_date) return false;
+    if (row.merge_dispatch_id !== dispatchId) return false;
     if (row.new_articles !== counts.new_articles || row.refreshes !== counts.refreshes) throw new Error('PUBLICATION_CAPACITY_CONFLICT');
     return true;
+  }
+
+  async hasMergeDispatch(candidateId: string, dispatchId: string): Promise<boolean> {
+    return Boolean(await this.db.prepare(`SELECT 1 FROM publication_effects
+      WHERE candidate_id = ? AND owner_epoch = ? AND merge_dispatch_id = ?
+        AND state = 'SOURCE_PUBLISHED' AND merge_settled_date IS NULL AND merge_commit IS NULL`)
+      .bind(candidateId, this.ownerEpoch, dispatchId).first());
+  }
+
+  async releaseUndispatchedMerge(candidateId: string, dispatchId: string): Promise<void> {
+    // The uniquely identified request never reached GitHub. This releases only its own charge, even after pause.
+    await this.db.prepare(`UPDATE publication_effects
+      SET merge_admission_date = NULL, merge_dispatch_id = NULL, new_articles = 0, refreshes = 0
+      WHERE candidate_id = ? AND owner_epoch = ? AND merge_dispatch_id = ?
+        AND merge_settled_date IS NULL AND merge_commit IS NULL`).bind(candidateId, this.ownerEpoch, dispatchId).run();
   }
 
   async reconcileMergeCapacity(readPull: (branch: string) => Promise<PullRequestState | null>): Promise<void> {
@@ -69,7 +84,7 @@ export class D1PublishEffectStore implements PublishEffectStore {
       let pull: PullRequestState | null;
       try { pull = await readPull(effect.branch); } catch { continue; }
       if (!pull || pull.state !== 'closed' || pull.number !== effect.pull_request || pull.head_sha !== effect.source_commit ||
-          (pull.merged && !pull.merge_commit_sha)) continue;
+          (pull.merged ? !pull.merge_commit_sha : effect.owner_epoch === this.ownerEpoch)) continue;
       const now = this.clock();
       // A current owner may reconcile a prior charge, but this cannot dispatch any GitHub write.
       await this.db.prepare(`UPDATE publication_effects SET state = ?, merge_commit = ?, merge_settled_date = ?, updated_at = ?

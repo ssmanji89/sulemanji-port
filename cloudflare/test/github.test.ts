@@ -117,7 +117,7 @@ describe('GitHub publication read adapters', () => {
     await expect(github.hasStrictMergeChecks()).resolves.toBe(false);
     active = true;
     await expect(github.hasStrictMergeChecks()).resolves.toBe(true);
-    await expect(github.mergePullRequest(9, 'a'.repeat(40), async () => false)).rejects.toThrow('GITHUB_MERGE_AUTHORITY_CHANGED');
+    await expect(github.mergePullRequest(9, 'a'.repeat(40), async () => false)).resolves.toEqual({ refused: true });
     expect(merges).toBe(0);
     await expect(github.mergePullRequest(9, 'a'.repeat(40), async () => true)).resolves.toEqual({ merge_commit_sha: 'd'.repeat(40) });
     expect(merges).toBe(1);

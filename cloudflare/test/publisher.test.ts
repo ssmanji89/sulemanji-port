@@ -26,6 +26,7 @@ async function fixture() {
 class FakeStore implements PublishEffectStore {
   value: Record<string, unknown> | null = null;
   allowMerge = true;
+  capacityReleased = 0;
   capacityRequests: Array<{ new_articles: number; refreshes: number }> = [];
   async ensureIntent(candidateId: string, effectId: string, branch: string, ownerEpoch: number, contentDigest: string) {
     if (this.value && this.value.content_digest !== contentDigest) throw new Error('conflicting intent');
@@ -33,6 +34,8 @@ class FakeStore implements PublishEffectStore {
   }
   async read() { return this.value as PublishEffect | null; }
   async record(_candidateId: string, patch: Record<string, unknown>) { Object.assign(this.value ?? {}, patch); }
+  async hasMergeDispatch() { return true; }
+  async releaseUndispatchedMerge() { this.capacityReleased += 1; }
   async reserveMergeCapacity(_candidateId: string, counts: { new_articles: number; refreshes: number }) {
     this.capacityRequests.push(counts);
     return this.allowMerge;
@@ -48,7 +51,7 @@ class FakeGitHub implements GitHubPublisher {
   async createReviewedBranchAndPullRequest() { this.creates += 1; this.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'pending' }; return this.pr; }
   async hasStrictMergeChecks() { return this.strictMergeChecks; }
   async mergePullRequest(_number: number, _head: string, authorize: () => Promise<boolean>) {
-    if (!(await authorize())) throw new Error('authority changed');
+    if (!(await authorize())) return { refused: true as const };
     this.merges += 1;
     this.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'closed', merged: true, merge_commit_sha: 'e'.repeat(40), checks: 'success' };
     if (this.loseMergeResponse) throw new Error('response lost');
@@ -108,8 +111,9 @@ describe('guarded source publication effects', () => {
     expect(store.capacityRequests).toHaveLength(0);
 
     github.strictMergeChecks = true;
-    await expect(publishContent(proposal, receipt, deps)).resolves.toMatchObject({ status: 'UNCERTAIN' });
+    await expect(publishContent(proposal, receipt, deps)).resolves.toMatchObject({ status: 'FAILED' });
     expect(store.capacityRequests).toHaveLength(1);
+    expect(store.capacityReleased).toBe(1);
     expect(github.merges).toBe(0);
   });
 

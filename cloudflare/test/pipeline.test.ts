@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
-import { createEditorialCandidatePipeline, type ReviewedPublication } from '../src/editorial/pipeline.js';
+import { createEditorialCandidatePipeline, type DeferredReview } from '../src/editorial/pipeline.js';
 import type { Candidate, ContentProposal, PreparationContext, PublicationReceipt, PublishAttempt, Signal } from '../src/editorial/contracts.js';
 import type { EditorialPolicy } from '../src/editorial/scheduler.js';
 import { BudgetedModelGateway, ModelAdmissionHoldError, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
@@ -56,14 +56,14 @@ describe('durable candidate publication pipeline', () => {
     const models = new Models();
     const steps = new Steps();
     const proposals: string[] = [];
-    let pending: ReviewedPublication | undefined;
+    let pending: DeferredReview | undefined;
     const pipeline = createEditorialCandidatePipeline({
       modelsFor: () => models, renderSocialCard, preparationContext: async () => context,
       persist: async (_id, _epoch, state, checkpoint) => {
         if (state === 'CAPACITY_HELD') {
           expect(checkpoint.retry_after).toBeTruthy();
           expect(checkpoint.signal?.id).toBe('signal-1');
-          pending = { proposal: checkpoint.proposal!, review: checkpoint.review!, attempt: checkpoint.attempt! };
+          pending = { proposal: checkpoint.proposal!, review: checkpoint.review!, attempt: checkpoint.attempt!, claim: 'later-slot' };
         }
         return true;
       },

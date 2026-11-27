@@ -14,6 +14,17 @@ class DurableStep {
 }
 
 describe('resumable editorial workflow admission', () => {
+  it('returns the durable admitted result when a verified slot is resumed', async () => {
+    const db = new PipelineD1();
+    const params = { slot_claim_id: 'verified-slot' };
+    db.receipts.set('slot-result:verified-slot', { id: 'slot-result:verified-slot', action: 'VERIFIED',
+      result_json: JSON.stringify({ reason: 'All candidates were verified.', owner_epoch: 1 }), created_at: new Date().toISOString() });
+
+    const result = await runEditorialAdmission(params, { DB: db as unknown as D1Database } as never, new DurableStep());
+
+    expect(result).toMatchObject({ status: 'admitted', reason: 'All candidates were verified.', slot_claim_id: params.slot_claim_id });
+  });
+
   it('records a typed policy hold when no approved runtime policy is configured', async () => {
     const db = new PipelineD1();
     db.control.paused = 0;

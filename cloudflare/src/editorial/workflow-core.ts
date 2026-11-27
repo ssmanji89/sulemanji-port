@@ -129,7 +129,8 @@ function held(params: WorkflowParams, reason: string): WorkflowResult {
 function resultFromReceipt(params: WorkflowParams, receipt: ReceiptRow, ownerEpoch: number): WorkflowResult {
   const result = parseJson<{ reason?: string; owner_epoch?: number }>(receipt.result_json);
   if (result?.owner_epoch !== ownerEpoch) return held(params, 'The durable slot result belongs to an earlier owner epoch.');
-  return { status: receipt.action === 'NO_CHANGE' ? 'no_change' : 'held', reason: result?.reason ?? 'A durable result already exists for this slot.', slot_claim_id: params.slot_claim_id };
+  const status = receipt.action === 'NO_CHANGE' ? 'no_change' : receipt.action === 'VERIFIED' ? 'admitted' : 'held';
+  return { status, reason: result?.reason ?? 'A durable result already exists for this slot.', slot_claim_id: params.slot_claim_id };
 }
 
 function parseCachedSignals(sourceId: string, row: SourceStateRow | undefined, now: Date): Signal[] | null {

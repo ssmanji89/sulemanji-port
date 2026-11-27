@@ -135,6 +135,8 @@ class CloudflareReleaseTests(unittest.TestCase):
         live_verifier = (ROOT / 'scripts' / 'verify_cloudflare_live.py').read_text(encoding='utf-8')
         self.assertIn('-m scripts.site_release', deploy)
         self.assertIn('-m scripts.verify_cloudflare_live', deploy)
+        self.assertIn('if [[ "$ENVIRONMENT" == staging ]]; then VERIFY_ARGS+=(--staging); fi', deploy)
+        self.assertIn('scripts.verify_cloudflare_live "${VERIFY_ARGS[@]}"', deploy)
         self.assertIn('--manifest "$ARTIFACT/release.json"', deploy)
         self.assertIn("['curl', '--silent', '--show-error'", live_verifier)
         self.assertNotIn('urllib.request.urlopen', live_verifier)

@@ -11,4 +11,9 @@ python3 -m scripts.verify_cloudflare_live \
   --manifest _site/release.json
 ```
 
+For the isolated HTTPS staging Worker, use its configured host as `--base-url`
+and add `--staging`. The verifier still requires canonical production metadata
+and source links, but fetches the candidate pages and social image from staging
+and leaves the production apex redirect check to the production run.
+
 Use the manifest from the exact built artifact. Keep credentials, resource identifiers, internal design, and operational receipts out of public Git history.

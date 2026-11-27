@@ -91,10 +91,13 @@ check_status /work/market-systems/ 200
 check_status /notes/late-october-skywatching-binoculars-telescope 200
 check_status /workshop-intake/ 410
 check_status /notes/does-not-exist 404
-PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.verify_cloudflare_live \
-  --base-url "$TARGET_HOST" \
-  --expected-commit "$SOURCE_COMMIT" \
+VERIFY_ARGS=(
+  --base-url "$TARGET_HOST"
+  --expected-commit "$SOURCE_COMMIT"
   --manifest "$ARTIFACT/release.json"
+)
+if [[ "$ENVIRONMENT" == staging ]]; then VERIFY_ARGS+=(--staging); fi
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.verify_cloudflare_live "${VERIFY_ARGS[@]}"
 python3 - "$RECEIPT" <<'PY'
 import json,sys
 from pathlib import Path

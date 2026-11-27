@@ -194,11 +194,17 @@ def _fetch(fetcher, url: str, expected_status: int, label: str) -> LiveResponse:
 
 
 def verify_live_release(base_url: str, expected_commit: str, expected_manifest: dict,
-                        fetcher=fetch_live) -> dict:
+                        fetcher=fetch_live, staging: bool = False) -> dict:
     """Verify the public site against a locally validated build artifact manifest."""
     parsed_base = urlparse(base_url)
-    if (parsed_base.scheme != 'https' or parsed_base.netloc != 'www.sulemanji.com'
+    if (parsed_base.scheme != 'https' or not parsed_base.hostname or parsed_base.username or parsed_base.password
             or parsed_base.path not in ('', '/') or parsed_base.query or parsed_base.fragment):
+        raise LiveReleaseError('base URL must be an HTTPS origin without a path, credentials, query, or fragment')
+    base_origin = f'{parsed_base.scheme}://{parsed_base.netloc}'
+    production_host = parsed_base.hostname.lower() in {'www.sulemanji.com', 'sulemanji.com'}
+    if (staging and production_host) or (not staging and parsed_base.netloc != 'www.sulemanji.com'):
+        if staging:
+            raise LiveReleaseError('staging origin must be separate from the canonical production hosts')
         raise LiveReleaseError(f'base URL must be the canonical origin {CANONICAL_ORIGIN}')
     if not COMMIT_RE.fullmatch(expected_commit):
         raise LiveReleaseError('expected source commit is invalid')
@@ -297,7 +303,8 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
 
     writing_alias = _fetch(fetcher, base_url.rstrip('/') + '/writing/', 301, 'Writing alias')
     writing_alias_location = {key.lower(): value for key, value in (writing_alias.headers or {}).items()}.get('location')
-    if writing_alias_location != CANONICAL_ORIGIN + '/writing':
+    expected_writing_alias = (base_origin if staging else CANONICAL_ORIGIN) + '/writing'
+    if writing_alias_location != expected_writing_alias:
         raise LiveReleaseError('Writing alias does not target the canonical /writing path')
     route_count += 1
 
@@ -363,7 +370,8 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
     image_url = urlparse(image_value)
     if image_url.scheme != 'https' or image_url.netloc != 'www.sulemanji.com' or not image_url.path.startswith('/'):
         raise LiveReleaseError('Home social image is not served from the canonical site')
-    image = _fetch(fetcher, image_value, 200, 'Home social image')
+    image_fetch_url = base_origin + image_url.path if staging else image_value
+    image = _fetch(fetcher, image_fetch_url, 200, 'Home social image')
     image_headers = {key.lower(): value for key, value in (image.headers or {}).items()}
     if not image_headers.get('content-type', '').lower().startswith('image/'):
         raise LiveReleaseError('Home social image did not return an image MIME type')
@@ -371,16 +379,17 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
 
     _fetch(fetcher, base_url.rstrip('/') + RETIRED_ROUTE, 410, 'retired route')
     _fetch(fetcher, base_url.rstrip('/') + MISSING_ROUTE, 404, 'unknown route')
-    apex = _fetch(fetcher, APEX_ORIGIN + '/', 301, 'apex redirect')
-    location = {key.lower(): value for key, value in (apex.headers or {}).items()}.get('location')
-    if location != CANONICAL_ORIGIN + '/':
-        raise LiveReleaseError('apex redirect does not target the canonical host')
+    if not staging:
+        apex = _fetch(fetcher, APEX_ORIGIN + '/', 301, 'apex redirect')
+        location = {key.lower(): value for key, value in (apex.headers or {}).items()}.get('location')
+        if location != CANONICAL_ORIGIN + '/':
+            raise LiveReleaseError('apex redirect does not target the canonical host')
 
     return {
         'source_commit': expected_commit,
         'asset_digest': digest,
         'built_at': built_at,
-        'checked_response_count': route_count + article_count + SUPPLEMENTAL_RESPONSE_COUNT,
+        'checked_response_count': route_count + article_count + SUPPLEMENTAL_RESPONSE_COUNT - int(staging),
         'article_count': article_count,
     }
 
@@ -390,11 +399,12 @@ def main() -> int:
     parser.add_argument('--base-url', required=True)
     parser.add_argument('--expected-commit', required=True)
     parser.add_argument('--manifest', type=Path, required=True, help='release.json from the exact built artifact')
+    parser.add_argument('--staging', action='store_true', help='verify an isolated non-production HTTPS staging origin')
     args = parser.parse_args()
     try:
         manifest_path = args.manifest.resolve()
         expected_manifest = verify_artifact(manifest_path.parent, args.expected_commit, args.expected_commit)
-        receipt = verify_live_release(args.base_url, args.expected_commit, expected_manifest)
+        receipt = verify_live_release(args.base_url, args.expected_commit, expected_manifest, staging=args.staging)
     except (LiveReleaseError, ReleaseError, OSError, ValueError, json.JSONDecodeError) as error:
         parser.error(str(error))
     print('PASS live public-site checks: ' + json.dumps(receipt, sort_keys=True))

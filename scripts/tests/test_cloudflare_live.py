@@ -75,7 +75,7 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         if parsed.netloc == 'sulemanji.com':
             return Response(301, headers={'location': 'https://www.sulemanji.com/'})
         if path == '/writing/':
-            location = self.overrides.get('writing_alias_location', 'https://www.sulemanji.com/writing')
+            location = self.overrides.get('writing_alias_location', f'{parsed.scheme}://{parsed.netloc}/writing')
             return Response(301, headers={'location': location})
         if path == '/release.json':
             return Response(200, json.dumps(self.public_manifest), self.response_headers(path))
@@ -147,18 +147,43 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             content_type = 'text/plain'
         return {**self.release_headers(), 'content-type': content_type}
 
-    def verify(self, expected_manifest=None, base_url='https://www.sulemanji.com'):
+    def verify(self, expected_manifest=None, base_url='https://www.sulemanji.com', staging=False):
         return verify_live_release(
             base_url=base_url,
             expected_commit=COMMIT,
             expected_manifest=expected_manifest or self.expected_manifest,
             fetcher=self.fetch,
+            staging=staging,
         )
 
     def test_wrong_origin_fails(self):
         with self.assertRaisesRegex(LiveReleaseError, 'canonical origin'):
-            self.verify(base_url='https://example.invalid')
+            self.verify(base_url='https://example.invalid', staging=False)
         self.assertEqual(self.calls, [])
+
+    def test_staging_origin_is_verified_without_reading_production_host(self):
+        staging_origin = 'https://sulemanji-site-staging.preview.workers.dev'
+        try:
+            receipt = self.verify(base_url=staging_origin, staging=True)
+        except (TypeError, LiveReleaseError) as error:
+            self.fail(f'isolated staging release should pass its configured readback: {error}')
+        self.assertEqual(receipt['article_count'], 1)
+        self.assertTrue(self.calls)
+        self.assertTrue(all(urlparse(url).netloc == urlparse(staging_origin).netloc for url in self.calls))
+        self.assertEqual(receipt['checked_response_count'], 18)
+
+    def test_staging_mode_rejects_canonical_production_origin(self):
+        for origin in (CANONICAL_ORIGIN, 'https://www.sulemanji.com:443', 'https://sulemanji.com:443'):
+            with self.subTest(origin=origin):
+                try:
+                    self.verify(base_url=origin, staging=True)
+                except TypeError as error:
+                    self.fail(f'staging mode must reject a production origin through release validation: {error}')
+                except LiveReleaseError as error:
+                    self.assertIn('staging origin', str(error))
+                else:
+                    self.fail('staging mode accepted the production origin')
+                self.assertEqual(self.calls, [])
 
     def test_wrong_revision_fails(self):
         self.public_manifest = site_manifest('c' * 40)

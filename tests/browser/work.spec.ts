@@ -34,6 +34,9 @@ test('ff-cli stays an independent tool with its demonstration state visible', as
   await page.goto('/work/ff-cli/');
   await expect(page.locator('[data-work-format="tool"]')).toBeVisible();
   await expect(page.getByText(/actual league uses a snake draft/).first()).toBeVisible();
-  await expect(page.locator('video[controls]')).toBeVisible();
+  const video = page.locator('video[controls]');
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute('preload', 'none');
+  await expect(video).toHaveAttribute('poster', '/assets/ffcli/warroom-full-board.png');
   await expect(page.getByRole('link', { name: 'View an auction board screenshot' })).toBeVisible();
 });

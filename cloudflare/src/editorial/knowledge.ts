@@ -71,20 +71,39 @@ async function verifySignature(raw: Uint8Array, signature: string, keyId: string
 }
 
 function isoDate(value: unknown): value is string {
-  if (typeof value !== 'string' || !ISO_UTC_MS.test(value)) return false;
+  if (typeof value !== 'string' || !ISO_UTC_MS.test(value) || Number(value.slice(0, 4)) === 0) return false;
   const date = new Date(value);
   return Number.isFinite(date.getTime()) && date.toISOString() === value;
+}
+
+function isWellFormedUnicode(value: string): boolean {
+  for (let i = 0; i < value.length; i += 1) {
+    const unit = value.charCodeAt(i);
+    if (unit >= 0xd800 && unit <= 0xdbff) {
+      const next = value.charCodeAt(i + 1);
+      if (!(next >= 0xdc00 && next <= 0xdfff)) return false;
+      i += 1;
+    } else if (unit >= 0xdc00 && unit <= 0xdfff) return false;
+  }
+  return true;
+}
+
+function safeText(value: unknown, maxCodePoints: number): value is string {
+  return typeof value === 'string' && isWellFormedUnicode(value) && !value.includes('\0') &&
+    Array.from(value).length <= maxCodePoints;
 }
 
 function validSource(source: unknown): source is PublicSource {
   if (!exactKeys(source, ['url', 'title', 'retrieved_at', 'source_date', 'content_sha256'])) return false;
   const item = source as unknown as PublicSource;
+  if (!safeText(item.url, 2048) || !item.url.trim() || item.url.includes('\\') ||
+      !safeText(item.title, 300) || !item.title.trim()) return false;
+  const separator = item.url.indexOf('://');
+  if (separator < 0 || item.url.slice(separator + 3).split(/[/?#]/, 1)[0].includes('@')) return false;
   let url: URL;
   try { url = new URL(item.url); } catch { return false; }
-  return typeof item.url === 'string' && item.url.length <= 2048 && !item.url.includes('\0') && !item.url.includes('\\') &&
-    url.protocol === 'https:' && !url.username && !url.password && !url.hash && isPublicHostname(url.hostname) &&
+  return url.protocol === 'https:' && !url.username && !url.password && !url.hash && isPublicHostname(url.hostname) &&
     ![...url.searchParams.keys()].some((key) => /token|secret|password|credential|auth|key/i.test(key)) &&
-    typeof item.title === 'string' && item.title.trim().length > 0 && item.title.length <= 300 && !item.title.includes('\0') &&
     isoDate(item.retrieved_at) && (item.source_date === null || isoDate(item.source_date)) && HEX_256.test(item.content_sha256);
 }
 
@@ -93,7 +112,9 @@ function isPublicHostname(hostname: string): boolean {
   if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
   if (host.startsWith('[') && host.endsWith(']')) return isPublicIpv6(host.slice(1, -1));
   const octets = host.split('.');
-  if (octets.length !== 4 || octets.some((part) => !/^\d{1,3}$/.test(part))) return true;
+  if (octets.length !== 4 || octets.some((part) => !/^\d{1,3}$/.test(part))) {
+    return host.includes('.') && !host.startsWith('.') && !host.endsWith('.');
+  }
   const [first, second, third] = octets.map(Number);
   if (octets.some((part) => Number(part) > 255) || first === 0 || first >= 224 || first === 10 || first === 127) return false;
   if ((first === 100 && second >= 64 && second <= 127) || (first === 169 && second === 254) ||
@@ -117,14 +138,16 @@ function isPublicIpv6(address: string): boolean {
   const [firstText, secondText] = ip.split(':');
   const first = Number.parseInt(firstText || '0', 16);
   const second = Number.parseInt(secondText || '0', 16);
-  return first >= 0x2000 && first <= 0x3fff && !(first === 0x2001 && (second < 0x0200 || second === 0x0db8));
+  if (first < 0x2000 || first > 0x3fff || first === 0x2002 || (first === 0x3fff && second < 0x1000)) return false;
+  if (first === 0x2001 && (second === 0 || second === 0x0010 || second === 0x0020 || second === 0x0db8)) return false;
+  return true;
 }
 
 function validPayload(payload: unknown): payload is PublicKnowledge {
   if (!exactKeys(payload, ['subject_id', 'summary', 'allowed_uses', 'public_sources', 'authored_fields'])) return false;
   const p = payload as unknown as PublicKnowledge;
   return typeof p.subject_id === 'string' && /^[a-z0-9][a-z0-9._:-]{0,127}$/i.test(p.subject_id) &&
-    typeof p.summary === 'string' && p.summary.trim().length > 0 && p.summary.length <= 20_000 && !p.summary.includes('\0') &&
+    safeText(p.summary, 20_000) && p.summary.trim().length > 0 &&
     Array.isArray(p.allowed_uses) && p.allowed_uses.length > 0 && p.allowed_uses.every((use) => USES.has(use)) &&
     new Set(p.allowed_uses).size === p.allowed_uses.length &&
     Array.isArray(p.public_sources) && p.public_sources.length > 0 && p.public_sources.length <= 40 && p.public_sources.every(validSource) &&
@@ -137,10 +160,10 @@ function parseEnvelope(value: unknown): value is KnowledgeEnvelope {
   if (!exactKeys(value, ['schema_version', 'derivative_id', 'revision', 'sequence', 'action', 'target', 'issued_at', 'expires_at', 'policy_revision', 'payload_sha256', 'payload'])) return false;
   const e = value as unknown as KnowledgeEnvelope;
   return e.schema_version === 1 && typeof e.derivative_id === 'string' && /^[a-z0-9][a-z0-9._:-]{0,127}$/i.test(e.derivative_id) &&
-    typeof e.revision === 'string' && e.revision.length > 0 && e.revision.length <= 256 &&
+    safeText(e.revision, 256) && e.revision.length > 0 &&
     Number.isSafeInteger(e.sequence) && e.sequence > 0 && ['UPSERT', 'WITHDRAW'].includes(e.action) &&
     e.target === 'sulemanji.com' && isoDate(e.issued_at) && isoDate(e.expires_at) &&
-    typeof e.policy_revision === 'string' && e.policy_revision.length > 0 && e.policy_revision.length <= 128 && HEX_256.test(e.payload_sha256) &&
+    safeText(e.policy_revision, 128) && e.policy_revision.length > 0 && HEX_256.test(e.payload_sha256) &&
     ((e.action === 'UPSERT' && validPayload(e.payload)) || (e.action === 'WITHDRAW' && e.payload === null));
 }
 

@@ -11,8 +11,8 @@ async function sha(value: string): Promise<string> {
 const articleUrl = 'https://www.sulemanji.com/notes/reviewed-article';
 const title = 'A nested article that is verified';
 const body = '<p>Nested public text remains visible to the reader, <strong>including the exact bold words</strong> inside this article body.</p><ul><li>A separate list item with useful evidence.</li></ul>';
-const assetDigest = 'b'.repeat(64);
-const builtAt = '2026-11-27T14:00:00.000Z';
+const assetDigest = `sha256:${'b'.repeat(64)}`;
+const builtAt = '2026-11-27T14:00:00Z';
 function response(url: string, body: string, headers: Record<string, string> = {}, status = 200): Response {
   const result = new Response(body, { status, headers });
   Object.defineProperty(result, 'url', { value: url });
@@ -62,7 +62,7 @@ describe('deployed page readback', () => {
     const fetcher: typeof fetch = async (input) => {
       const url = new URL(String(input));
       if (url.pathname === '/notes/reviewed-article') return response(articleUrl, html(articleUrl), { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': assetDigest, 'x-site-built-at': builtAt });
-      if (url.pathname === '/notes/second-reviewed-article') return response(secondUrl, html(secondUrl), { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': 'c'.repeat(64), 'x-site-built-at': builtAt });
+      if (url.pathname === '/notes/second-reviewed-article') return response(secondUrl, html(secondUrl), { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': `sha256:${'c'.repeat(64)}`, 'x-site-built-at': builtAt });
       if (url.pathname === '/writing/') return response(url.toString(), '<a href="/notes/reviewed-article">first</a><a href="/notes/second-reviewed-article">second</a>');
       if (url.pathname === '/feed.xml') return response(url.toString(), `<feed>${articleUrl}${secondUrl}</feed>`);
       if (url.pathname === '/sitemap.xml') return response(url.toString(), `<url>${articleUrl}${secondUrl}</url>`);

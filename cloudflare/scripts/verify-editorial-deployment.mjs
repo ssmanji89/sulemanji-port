@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 
-const [deploymentPath, environment, sourceSha] = process.argv.slice(2);
-if (!deploymentPath || !['staging', 'production'].includes(environment) || !/^[0-9a-f]{40}$/i.test(sourceSha ?? '')) {
+const [deploymentPath, environment, sourceSha, versionPath] = process.argv.slice(2);
+const selectVersion = environment === '--active-version';
+if (!deploymentPath || (!selectVersion &&
+    (!['staging', 'production'].includes(environment) || !/^[0-9a-f]{40}$/i.test(sourceSha ?? '') || !versionPath))) {
   throw new Error('EDITORIAL_DEPLOYMENT_READBACK_ARGUMENTS_INVALID');
 }
 
@@ -37,13 +39,19 @@ const dated = deployments.map((deployment) => {
 const newestTime = Math.max(...dated.map(({ createdOn }) => createdOn));
 const newest = dated.filter(({ createdOn }) => createdOn === newestTime);
 if (newest.length !== 1) throw new Error('EDITORIAL_DEPLOYMENT_TIMESTAMP_AMBIGUOUS');
-const latest = newest[0].deployment;
-const expectedMessage = `service ${environment} ${sourceSha}`;
-const versions = latest?.versions;
-if (latest?.annotations?.['workers/message'] !== expectedMessage ||
-    !Array.isArray(versions) || versions.length !== 1 ||
-    versions[0]?.percentage !== 100 || typeof versions[0]?.version_id !== 'string') {
-  throw new Error('EDITORIAL_DEPLOYMENT_DOES_NOT_MATCH_EXPECTED_SOURCE');
+const versions = newest[0].deployment?.versions;
+const activeVersionId = versions?.[0]?.version_id;
+if (!Array.isArray(versions) || versions.length !== 1 || versions[0]?.percentage !== 100 ||
+    typeof activeVersionId !== 'string' || !/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(activeVersionId)) {
+  throw new Error('EDITORIAL_DEPLOYMENT_REQUIRES_ONE_ACTIVE_VERSION');
 }
 
-console.log(`Verified ${environment} deployment for ${sourceSha} at 100% traffic`);
+if (selectVersion) {
+  console.log(activeVersionId);
+} else {
+  const version = JSON.parse(readFileSync(versionPath, 'utf8'));
+  if (version?.id !== activeVersionId || version?.annotations?.['workers/message'] !== `service ${environment} ${sourceSha}`) {
+    throw new Error('EDITORIAL_DEPLOYMENT_DOES_NOT_MATCH_EXPECTED_SOURCE');
+  }
+  console.log(`Verified ${environment} deployment for ${sourceSha} at 100% traffic`);
+}

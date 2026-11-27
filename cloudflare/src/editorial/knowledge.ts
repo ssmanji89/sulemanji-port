@@ -5,6 +5,7 @@ const MAX_ENVELOPE_LIFETIME_MS = 24 * 60 * 60 * 1000;
 const HEX_256 = /^[0-9a-f]{64}$/;
 const ISO_UTC_MS = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const USES = new Set(['context', 'factual-update', 'public-explanation']);
+const AUTHORABLE_FIELDS = new Set(['subject_id', 'summary', 'allowed_uses', 'public_sources']);
 
 function source(bytes: Uint8Array): ArrayBuffer {
   return bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer;
@@ -80,22 +81,56 @@ function validSource(source: unknown): source is PublicSource {
   const item = source as unknown as PublicSource;
   let url: URL;
   try { url = new URL(item.url); } catch { return false; }
-  return url.protocol === 'https:' && !url.username && !url.password && !url.hash &&
+  return typeof item.url === 'string' && item.url.length <= 2048 && !item.url.includes('\0') && !item.url.includes('\\') &&
+    url.protocol === 'https:' && !url.username && !url.password && !url.hash && isPublicHostname(url.hostname) &&
     ![...url.searchParams.keys()].some((key) => /token|secret|password|credential|auth|key/i.test(key)) &&
-    typeof item.title === 'string' && item.title.length > 0 && item.title.length <= 300 &&
+    typeof item.title === 'string' && item.title.trim().length > 0 && item.title.length <= 300 && !item.title.includes('\0') &&
     isoDate(item.retrieved_at) && (item.source_date === null || isoDate(item.source_date)) && HEX_256.test(item.content_sha256);
+}
+
+function isPublicHostname(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  if (!host || host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return false;
+  if (host.startsWith('[') && host.endsWith(']')) return isPublicIpv6(host.slice(1, -1));
+  const octets = host.split('.');
+  if (octets.length !== 4 || octets.some((part) => !/^\d{1,3}$/.test(part))) return true;
+  const [first, second, third] = octets.map(Number);
+  if (octets.some((part) => Number(part) > 255) || first === 0 || first >= 224 || first === 10 || first === 127) return false;
+  if ((first === 100 && second >= 64 && second <= 127) || (first === 169 && second === 254) ||
+      (first === 172 && second >= 16 && second <= 31) || (first === 192 && second === 168) ||
+      (first === 192 && second === 0 && (third === 0 || third === 2)) || (first === 192 && second === 88 && third === 99) ||
+      (first === 198 && ((second === 18 || second === 19) || (second === 51 && third === 100))) ||
+      (first === 203 && second === 0 && third === 113)) return false;
+  return true;
+}
+
+function isPublicIpv6(address: string): boolean {
+  const ip = address.toLowerCase();
+  if (ip.startsWith('::ffff:')) {
+    const mapped = ip.slice('::ffff:'.length);
+    const parts = mapped.split(':');
+    if (parts.length !== 2 || parts.some((part) => !/^[0-9a-f]{1,4}$/.test(part))) return false;
+    const high = Number.parseInt(parts[0], 16);
+    const low = Number.parseInt(parts[1], 16);
+    return isPublicHostname(`${high >>> 8}.${high & 255}.${low >>> 8}.${low & 255}`);
+  }
+  const [firstText, secondText] = ip.split(':');
+  const first = Number.parseInt(firstText || '0', 16);
+  const second = Number.parseInt(secondText || '0', 16);
+  return first >= 0x2000 && first <= 0x3fff && !(first === 0x2001 && (second < 0x0200 || second === 0x0db8));
 }
 
 function validPayload(payload: unknown): payload is PublicKnowledge {
   if (!exactKeys(payload, ['subject_id', 'summary', 'allowed_uses', 'public_sources', 'authored_fields'])) return false;
   const p = payload as unknown as PublicKnowledge;
   return typeof p.subject_id === 'string' && /^[a-z0-9][a-z0-9._:-]{0,127}$/i.test(p.subject_id) &&
-    typeof p.summary === 'string' && p.summary.trim().length > 0 && p.summary.length <= 20_000 &&
+    typeof p.summary === 'string' && p.summary.trim().length > 0 && p.summary.length <= 20_000 && !p.summary.includes('\0') &&
     Array.isArray(p.allowed_uses) && p.allowed_uses.length > 0 && p.allowed_uses.every((use) => USES.has(use)) &&
     new Set(p.allowed_uses).size === p.allowed_uses.length &&
-    Array.isArray(p.public_sources) && p.public_sources.length <= 40 && p.public_sources.every(validSource) &&
+    Array.isArray(p.public_sources) && p.public_sources.length > 0 && p.public_sources.length <= 40 && p.public_sources.every(validSource) &&
     Array.isArray(p.authored_fields) && p.authored_fields.length <= 100 &&
-    p.authored_fields.every((field) => typeof field === 'string' && /^[a-z][a-z0-9_.-]{0,127}$/i.test(field));
+    p.authored_fields.every((field) => typeof field === 'string' && AUTHORABLE_FIELDS.has(field)) &&
+    new Set(p.authored_fields).size === p.authored_fields.length;
 }
 
 function parseEnvelope(value: unknown): value is KnowledgeEnvelope {

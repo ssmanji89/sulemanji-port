@@ -62,7 +62,7 @@ const payload: PublicKnowledge = {
   summary: 'A sanitized, authorized project summary.',
   allowed_uses: ['context', 'public-explanation'],
   public_sources: [{ url: 'https://example.com/project', title: 'Project', retrieved_at: '2026-11-26T17:00:00.000Z', source_date: null, content_sha256: 'a'.repeat(64) }],
-  authored_fields: ['project.status'],
+  authored_fields: ['summary'],
 };
 
 const db = new MemoryD1();
@@ -120,6 +120,36 @@ describe('signed public knowledge import', () => {
     expect(await importEnvelope(await makeEnvelope({ policy_revision: 'unapproved' }))).toMatchObject({ status: 'rejected', code: 'INVALID' });
     expect(await importEnvelope(await makeEnvelope({ payload_sha256: '0'.repeat(64) }))).toMatchObject({ status: 'rejected', code: 'INVALID' });
     expect(await importEnvelope(await makeEnvelope({ payload: { ...payload, unexpected: true } as PublicKnowledge }))).toMatchObject({ status: 'rejected', code: 'INVALID' });
+  });
+
+  it.each(['project.status', 'summary.details', 'authored_fields', 'unknown'])('rejects non-contract authored field %s', async (field) => {
+    const invalidPayload = { ...payload, authored_fields: [field] };
+    const result = await importEnvelope(await makeEnvelope({ payload: invalidPayload, payload_sha256: await digest(invalidPayload) }));
+    expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
+    expect(db.rows.size).toBe(0);
+  });
+
+  it.each(['https://localhost/private', 'https://api.local/private', 'https://127.0.0.1/private',
+    'https://0177.0.0.1/private', 'https://10.0.0.4/private', 'https://100.64.0.1/private',
+    'https://192.0.2.1/private', 'https://192.168.1.2/private', 'https://[::1]/private',
+    'https://[fd12::1]/private', 'https://[fe80::1]/private', 'https://[ff02::1]/private',
+    'https://[2001:db8::1]/private', 'https://[::ffff:10.0.0.1]/private'])('rejects non-public source address %s', async (url) => {
+    const invalidPayload = { ...payload, public_sources: [{ ...payload.public_sources[0], url }] };
+    const result = await importEnvelope(await makeEnvelope({ payload: invalidPayload, payload_sha256: await digest(invalidPayload) }));
+    expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
+    expect(db.rows.size).toBe(0);
+  });
+
+  it('rejects empty source lists, duplicate authored fields, and NUL text', async () => {
+    for (const invalidPayload of [
+      { ...payload, public_sources: [] },
+      { ...payload, authored_fields: ['summary', 'summary'] },
+      { ...payload, summary: 'Public summary.\0hidden' },
+    ]) {
+      const result = await importEnvelope(await makeEnvelope({ payload: invalidPayload, payload_sha256: await digest(invalidPayload) }));
+      expect(result).toMatchObject({ status: 'rejected', code: 'INVALID' });
+      expect(db.rows.size).toBe(0);
+    }
   });
 
   it('rejects oversize requests without touching D1', async () => {

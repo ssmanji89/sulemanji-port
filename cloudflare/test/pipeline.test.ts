@@ -3,8 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { createEditorialCandidatePipeline } from '../src/editorial/pipeline.js';
 import type { Candidate, ContentProposal, PreparationContext, PublicationReceipt, PublishAttempt, Signal } from '../src/editorial/contracts.js';
 import type { EditorialPolicy } from '../src/editorial/scheduler.js';
-import { ModelAttemptAlreadyReservedError, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
+import { BudgetedModelGateway, ModelAdmissionHoldError, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
 import type { DurableStep } from '../src/editorial/workflow-core.js';
+import { OperationsD1 } from './operations.test-support.js';
 
 const article = {
   title: 'A careful release evidence update',
@@ -51,6 +52,48 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it('records the review limit before a Workflow retry can misclassify it as an uncertain call', async () => {
+    const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
+    db.candidates.set(candidate.id, { model_calls: 0, review_rounds: 0 });
+    const models = new Models();
+    const steps = new Steps();
+    let retries = 0;
+    const step: DurableStep = {
+      sleep: steps.sleep.bind(steps),
+      do: <T>(name: string, callback: () => Promise<T> | T) => steps.do(name, async () => {
+        try {
+          return await callback();
+        } catch {
+          retries += 1;
+          return callback();
+        }
+      }),
+    };
+    const gateway = new BudgetedModelGateway(models, {
+      endpoint: 'https://models.example.test/v1/chat/completions', api_key: 'fixture', model_id: 'fixture',
+      pricing_revision: policy.model_pricing_revision, input_usd_per_million: 1, output_usd_per_million: 1,
+      max_input_chars: 48_000, max_output_tokens: 4_000,
+    }, {
+      db: db as unknown as D1Database, candidate_id: candidate.id, owner_epoch: 1, max_model_calls: 1, max_review_rounds: 1,
+      limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: policy.model_pricing_revision,
+    });
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => gateway, renderSocialCard, preparationContext: async () => context, persist: async () => true,
+      publish: async () => { throw new Error('A held candidate must not publish'); },
+      verify: async () => { throw new Error('A held candidate must not run public readback'); },
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step };
+
+    const held = { status: 'held', reason: 'The candidate reached its model-call or independent review limit.' };
+    await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
+    await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
+    expect(retries).toBe(0);
+    expect(models.calls.map((call) => call.purpose)).toEqual(['author']);
+    expect(db.reservations.get(`review:${candidate.id}:round-1`)).toMatchObject({ actual_micros: 0 });
+  });
+
   it.each(['author', 'review', 'revise'] as const)('records an uncertain %s attempt as a durable hold', async (purpose) => {
     const models = new Models();
     models.outputs[1] = { decision: 'FIX_REQUIRED', findings: [{ code: 'EVIDENCE', detail: 'Clarify the evidence.' }] };
@@ -58,7 +101,7 @@ describe('durable candidate publication pipeline', () => {
     models.generate = async (request) => {
       if (request.purpose !== purpose) return generate(request);
       models.calls.push(request);
-      throw new ModelAttemptAlreadyReservedError();
+      throw new ModelAdmissionHoldError('MODEL_ATTEMPT_ALREADY_RESERVED');
     };
     const pipeline = createEditorialCandidatePipeline({
       modelsFor: () => models, renderSocialCard, preparationContext: async () => context, persist: async () => true,

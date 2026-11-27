@@ -80,9 +80,19 @@ export function reserveMaximumUsd(config: ModelConfig, inputTokenUpperBound: num
   return (inputTokenUpperBound * config.input_usd_per_million + maxOutputTokens * config.output_usd_per_million) / 1_000_000;
 }
 
-export class ModelAttemptAlreadyReservedError extends Error {
-  constructor() {
-    super('MODEL_ATTEMPT_ALREADY_RESERVED');
+const modelHoldReasons = {
+  MODEL_ATTEMPT_ALREADY_RESERVED: 'A prior model attempt needs reconciliation before it can be retried.',
+  MODEL_BUDGET_HOLD: 'The candidate, daily, or monthly model budget would be exceeded.',
+  MODEL_CALL_LIMIT_HOLD: 'The candidate reached its model-call limit.',
+  MODEL_REVIEW_ROUND_LIMIT_HOLD: 'The candidate reached its model-call or independent review limit.',
+} as const;
+
+export class ModelAdmissionHoldError extends Error {
+  readonly reason: string;
+
+  constructor(code: keyof typeof modelHoldReasons, reason: string = modelHoldReasons[code]) {
+    super(code);
+    this.reason = reason;
   }
 }
 
@@ -109,8 +119,8 @@ export class BudgetedModelGateway implements ModelGateway {
       pricing_revision: this.model.pricing_revision,
       requested_at: requestedAt.toISOString(),
     }, this.options.limits);
-    if (reservation.status === 'denied') throw new Error('MODEL_BUDGET_HOLD');
-    if (reservation.status === 'existing') throw new ModelAttemptAlreadyReservedError();
+    if (reservation.status === 'denied') throw new ModelAdmissionHoldError('MODEL_BUDGET_HOLD', reservation.reason);
+    if (reservation.status === 'existing') throw new ModelAdmissionHoldError('MODEL_ATTEMPT_ALREADY_RESERVED');
 
     const isReview = request.purpose === 'review';
     const callAllowed = await recordModelCall(this.options.db, this.options.candidate_id, this.options.owner_epoch,
@@ -119,7 +129,7 @@ export class BudgetedModelGateway implements ModelGateway {
       await settleUsage(this.options.db, reservation.reservation_id, 0, now());
       const control = await readControl(this.options.db);
       if (control.paused || control.owner_epoch !== this.options.owner_epoch) throw new Error('WORKFLOW_AUTHORITY_CHANGED');
-      throw new Error(isReview ? 'MODEL_REVIEW_ROUND_LIMIT_HOLD' : 'MODEL_CALL_LIMIT_HOLD');
+      throw new ModelAdmissionHoldError(isReview ? 'MODEL_REVIEW_ROUND_LIMIT_HOLD' : 'MODEL_CALL_LIMIT_HOLD');
     }
     const control = await readControl(this.options.db);
     if (control.paused || control.owner_epoch !== this.options.owner_epoch) {

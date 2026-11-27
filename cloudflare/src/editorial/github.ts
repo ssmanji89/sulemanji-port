@@ -1,7 +1,7 @@
 import type { ContentProposal } from './contracts.js';
 import type { GitHubPublisher, PullRequestState } from './publisher.js';
 
-type GitHubConfig = { token: string; repository: string; required_checks: string[]; default_branch?: string; api_origin?: string };
+type GitHubConfig = { token: string; repository: string; required_checks: string[]; default_branch?: string; api_origin?: string; require_private?: boolean };
 type PullRequestApi = { number: number; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; head: { ref: string; sha: string }; base: { ref: string } };
 type CheckRunsApi = { check_runs?: Array<{ name: string; status: string; conclusion: string | null }> };
 
@@ -58,7 +58,17 @@ export class GitHubApiPublisher implements GitHubPublisher {
     return pending ? 'pending' : 'success';
   }
 
+  private async assertPrivateFixture(): Promise<void> {
+    if (this.config.require_private) {
+      const repo = await this.request<{ full_name?: unknown; visibility?: unknown; private?: unknown; default_branch?: unknown }>(
+        `/repos/${this.owner}/${this.repo}`);
+      if (repo.full_name !== this.config.repository || repo.visibility !== 'private' ||
+          repo.private !== true || repo.default_branch !== this.branch) throw new Error('GITHUB_FIXTURE_REPOSITORY_REJECTED');
+    }
+  }
+
   async readDefaultBranchHead(): Promise<string> {
+    await this.assertPrivateFixture();
     const ref = await this.request<{ object?: { sha?: unknown } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${encodeURIComponent(this.branch)}`);
     if (typeof ref.object?.sha !== 'string' || !/^[0-9a-f]{40}$/i.test(ref.object.sha)) throw new Error('GITHUB_BASE_HEAD_INVALID');
     return ref.object.sha;
@@ -114,6 +124,7 @@ export class GitHubApiPublisher implements GitHubPublisher {
   }
 
   async createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState> {
+    await this.assertPrivateFixture();
     const ref = await this.request<{ object: { sha: string } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${this.branch}`);
     if (ref.object.sha !== input.base_commit) throw new Error('GITHUB_BASE_HEAD_CHANGED');
     const commit = await this.request<{ tree: { sha: string } }>(`/repos/${this.owner}/${this.repo}/git/commits/${input.base_commit}`);
@@ -161,6 +172,7 @@ export class GitHubApiPublisher implements GitHubPublisher {
   }
 
   async mergePullRequest(number: number, expectedHead: string): Promise<{ merge_commit_sha: string }> {
+    await this.assertPrivateFixture();
     const result = await this.request<{ merged: boolean; sha: string }>(`/repos/${this.owner}/${this.repo}/pulls/${number}/merge`, {
       method: 'PUT', body: JSON.stringify({ sha: expectedHead, merge_method: 'squash' }),
     });

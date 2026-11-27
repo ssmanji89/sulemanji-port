@@ -124,3 +124,10 @@ Wire the deterministic public-signal discovery and relevance path into durable W
 - Read-only staging D1 state: migrations 0001–0005 applied; `paused=1`, `owner_epoch=1`; zero `public_knowledge`, `editorial_candidates`, and `editorial_receipts` rows. No D1 mutation occurred.
 - Unsigned staging `POST /internal/knowledge` returned HTTP 401 `AUTH`, confirming reachable route and fail-closed authentication only. No authorized derivative, model call, publishing, or natural run was exercised.
 - T07/T09/T10 remain partial. CI deployment tokens, authorized Viyu producer configuration and renewal, approved model/pricing budget, one-writer qualification, and two natural eligible runs remain open.
+
+## T10 private fixture publishing boundary
+
+- Base: c1b99a97a93dc871b5d54c74ec1c904d68ffb3c7. Current staging previously accepted production publication configuration. The regression test failed on that exact configuration before the change.
+- Ruling: Use a private fixture repository and a Workers service binding for its static readback. This exercises branch creation, merge, and artifact deployment with the real adapters while keeping synthetic articles away from public routes. The cost is a scoped fixture repository token, a fixture-only deployment credential, and a private static Worker.
+- Production remains pinned to the production repository and canonical host. Staging checks that the fixture repository is private before read and write operations and requires its own bound site for catalog and readback. The fixture deployment lane admits only a push to the private fixture repository main branch and disables all public and preview routes. A deployed fixture Worker receipt alone does not prove editorial verification.
+- Focused and Cloudflare suites passed, including wrong-environment, private repository, and private readback regressions. Live fixture provisioning and qualification, signed authorized knowledge with renewal, required-image proof, real provider use, one-writer cutover, and two natural production runs are still pending.

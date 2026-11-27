@@ -36,6 +36,7 @@ export interface EditorialEnv {
   DB: D1Database;
   EDITORIAL_WORKFLOW: Workflow;
   DEPLOYMENT_ENV: 'staging' | 'production';
+  EDITORIAL_FIXTURE_SITE?: import('./site-readback.js').EditorialFixtureSite;
   KNOWLEDGE_KEYS_JSON: string;
   KNOWLEDGE_POLICY_REVISION: string;
 }

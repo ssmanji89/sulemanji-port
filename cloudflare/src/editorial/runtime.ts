@@ -11,6 +11,7 @@ import { readControl } from './state.js';
 import { readKnowledge } from './workflow-core.js';
 import { revalidateSignalSourceDigest } from './sources.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
+import { fixtureSiteFetcher } from './site-readback.js';
 
 export type EditorialRuntimeEnv = EditorialEnv & {
   EDITORIAL_POLICY_JSON?: string;
@@ -51,10 +52,15 @@ function parseModelSettings(raw: string | undefined): ModelSettings | null {
   return value as unknown as ModelSettings;
 }
 
-function parsePublisherSettings(raw: string | undefined): PublisherSettings | null {
+const PUBLICATION_REPOSITORIES = {
+  production: 'ssmanji89/sulemanji-port',
+  staging: 'ssmanji89/sulemanji-editorial-fixture',
+};
+
+function parsePublisherSettings(raw: string | undefined, repository: string): PublisherSettings | null {
   const value = objectFromJson(raw);
   if (!value || !hasExactKeys(value, ['repository', 'required_checks', 'default_branch']) ||
-      value.repository !== 'ssmanji89/sulemanji-port' || value.default_branch !== 'main' ||
+      value.repository !== repository || value.default_branch !== 'main' ||
       !Array.isArray(value.required_checks) || value.required_checks.length < 1 || value.required_checks.length > 20 ||
       value.required_checks.some((check) => typeof check !== 'string' || !/^[A-Za-z0-9 _.-]{1,100}$/.test(check)) ||
       new Set(value.required_checks).size !== value.required_checks.length) return null;
@@ -95,16 +101,20 @@ function pathForRefresh(candidate: Candidate, catalog: Array<{ id: string; url: 
 }
 
 export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, fetcher: typeof fetch = fetch) {
+  const environment = env.DEPLOYMENT_ENV;
+  if (environment !== 'production' && environment !== 'staging') return null;
+  const staging = environment === 'staging';
+  if (staging && !env.EDITORIAL_FIXTURE_SITE) return null;
   const policy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
   const modelSettings = parseModelSettings(env.EDITORIAL_MODEL_CONFIG_JSON);
-  const publisherSettings = parsePublisherSettings(env.EDITORIAL_GITHUB_CONFIG_JSON);
+  const publisherSettings = parsePublisherSettings(env.EDITORIAL_GITHUB_CONFIG_JSON, PUBLICATION_REPOSITORIES[environment]);
   const modelApiKey = env.EDITORIAL_MODEL_API_KEY;
   const githubToken = env.EDITORIAL_GITHUB_TOKEN;
   if (!policy || !modelSettings || !publisherSettings || !modelApiKey?.trim() || !githubToken?.trim() ||
       modelSettings.pricing_revision !== policy.model_pricing_revision) return null;
 
   const model: ModelConfig = { ...modelSettings, api_key: modelApiKey };
-  const github = new GitHubApiPublisher({ ...publisherSettings, token: githubToken }, fetcher);
+  const github = new GitHubApiPublisher({ ...publisherSettings, token: githubToken, require_private: staging }, fetcher);
   const provider = new JsonSchemaGateway(model, fetcher);
   return createEditorialCandidatePipeline({
     modelsFor(candidate, ownerEpoch, activePolicy) {
@@ -149,7 +159,8 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, fetc
       const effect = await store.read(proposal.candidate_id);
       return { attempt, merged: Boolean(effect?.merge_commit) };
     },
-    verify: (attempt) => verifyPublicationDetailed(attempt, fetcher),
+    verify: (attempt) => verifyPublicationDetailed(attempt,
+      staging ? fixtureSiteFetcher(env.EDITORIAL_FIXTURE_SITE) : fetcher, staging ? 'private-binding' : 'public'),
     persist: (candidateId, ownerEpoch, state, checkpoint) => persistCandidateCheckpoint(env.DB, candidateId, ownerEpoch, state, checkpoint),
   });
 }

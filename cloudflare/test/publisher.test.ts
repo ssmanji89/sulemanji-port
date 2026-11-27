@@ -138,7 +138,7 @@ describe('public publication identity verification', () => {
       if (requestUrl.pathname === '/notes/reviewed-article') return response(article, url, {
         'x-site-source-commit': attempt.source_commit!, 'x-site-asset-digest': digest, 'x-site-built-at': builtAt,
       });
-      if (requestUrl.pathname === '/writing/') return response('/notes/reviewed-article', requestUrl.toString());
+      if (requestUrl.pathname === '/writing') return response('/notes/reviewed-article', requestUrl.toString());
       if (requestUrl.pathname === '/feed.xml' || requestUrl.pathname === '/sitemap.xml') return response('/notes/reviewed-article', requestUrl.toString());
       return response('missing', requestUrl.toString());
     };

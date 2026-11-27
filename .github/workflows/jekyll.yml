@@ -56,11 +56,11 @@ jobs:
         run: bash scripts/check_site_release.sh
 
       - name: Upload Pages artifact
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.SITE_DEPLOY_TARGET != 'cloudflare'
+        if: github.repository == 'ssmanji89/sulemanji-port' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.SITE_DEPLOY_TARGET != 'cloudflare'
         uses: actions/upload-pages-artifact@v3
 
       - name: Upload immutable Cloudflare artifact
-        if: github.repository == 'ssmanji89/sulemanji-port' && vars.SITE_DEPLOY_TARGET == 'cloudflare' && ((github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'staging'))
+        if: (github.repository == 'ssmanji89/sulemanji-port' && vars.SITE_DEPLOY_TARGET == 'cloudflare' && ((github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'staging'))) || (github.repository == 'ssmanji89/sulemanji-editorial-fixture' && github.event.repository.private == true && github.ref == 'refs/heads/main' && github.event_name == 'push')
         uses: actions/upload-artifact@v4
         with:
           name: site-${{ github.sha }}
@@ -124,6 +124,47 @@ jobs:
           path: ${{ runner.temp }}/sulemanji-staging-${{ github.sha }}.json
           if-no-files-found: ignore
           retention-days: 30
+
+  deploy-editorial-fixture:
+    needs: build
+    if: github.repository == 'ssmanji89/sulemanji-editorial-fixture' && github.event.repository.private == true && github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: cloudflare-editorial-fixture
+    env:
+      SITE_DEPLOY_TARGET: cloudflare
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_FIXTURE_DEPLOY_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout exact artifact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Cloudflare CLI
+        run: npm ci --prefix cloudflare
+      - name: Download immutable site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+          path: _site
+      - name: Deploy privately for editorial readback
+        run: bash scripts/deploy_site.sh --environment editorial-fixture --source-commit "${{ github.sha }}" --artifact _site
+      - name: Preserve private deployment receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-receipt-editorial-fixture-${{ github.sha }}
+          path: ${{ runner.temp }}/sulemanji-editorial-fixture-${{ github.sha }}.json
+          if-no-files-found: ignore
+          retention-days: 14
 
   deploy-cloudflare:
     needs: build

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { verifyPublicationDetailed } from '../src/editorial/publisher.js';
 import { normalizeVisibleText } from '../src/editorial/review.js';
 import type { PublishAttempt } from '../src/editorial/contracts.js';
+import { fixtureSiteFetcher } from '../src/editorial/site-readback.js';
 
 async function sha(value: string): Promise<string> {
   const bytes = new TextEncoder().encode(value);
@@ -24,12 +25,33 @@ function attempt(textHash: string): PublishAttempt {
 }
 
 describe('deployed page readback', () => {
+  it('verifies the fixture artifact through the private binding without a public response URL', async () => {
+    const paths: string[] = [];
+    const binding = { async fetch(input: RequestInfo | URL) {
+      if (!(input instanceof Request)) throw new Error('Expected a bound request');
+      expect(input.redirect).toBe('error');
+      const url = new URL(input.url);
+      paths.push(url.pathname);
+      const html = url.pathname.startsWith('/notes/')
+        ? `<link rel="canonical" href="${articleUrl}"><h1>${title}</h1><div data-writing-body>${body}</div>`
+        : `<a href="${articleUrl}">${title}</a>`;
+      return new Response(html, { headers: { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': assetDigest, 'x-site-built-at': builtAt } });
+    } };
+    const candidate = attempt(await sha(normalizeVisibleText(body)));
+    const boundFetch = fixtureSiteFetcher(binding);
+    expect((await verifyPublicationDetailed(candidate, boundFetch, 'private-binding')).receipt.outcome).toBe('VERIFIED');
+    expect(paths).toEqual(['/notes/reviewed-article', '/writing', '/feed.xml', '/sitemap.xml']);
+    expect((await verifyPublicationDetailed(candidate, boundFetch)).receipt.outcome).toBe('UNCERTAIN');
+    await expect(fixtureSiteFetcher(undefined)(articleUrl)).rejects.toThrow('EDITORIAL_FIXTURE_SITE_NOT_BOUND');
+    await expect(boundFetch('https://elsewhere.example.test/notes/reviewed-article')).rejects.toThrow('EDITORIAL_FIXTURE_SITE_REQUEST_REJECTED');
+  });
+
   it('parses nested HTML, verifies exact content and release revision, then confirms writing/feed/sitemap', async () => {
     const html = `<!doctype html><html><head><link rel="canonical" href="${articleUrl}"></head><body><article><h1>${title}</h1><div data-writing-body>${body}</div></article></body></html>`;
     const fetcher: typeof fetch = async (input) => {
       const url = new URL(String(input));
       if (url.pathname === '/notes/reviewed-article') return response(articleUrl, html, { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': assetDigest, 'x-site-built-at': builtAt });
-      if (url.pathname === '/writing/') return response(url.toString(), `<a href="/notes/reviewed-article">${title}</a>`);
+      if (url.pathname === '/writing') return response(url.toString(), `<a href="/notes/reviewed-article">${title}</a>`);
       if (url.pathname === '/feed.xml') return response(url.toString(), `<feed><link>${articleUrl}</link></feed>`);
       if (url.pathname === '/sitemap.xml') return response(url.toString(), `<url><loc>${articleUrl}</loc></url>`);
       return response(url.toString(), '', {}, 404);
@@ -47,7 +69,7 @@ describe('deployed page readback', () => {
     const fetcher: typeof fetch = async (input) => {
       const url = new URL(String(input));
       if (url.pathname === '/notes/reviewed-article') return response(articleUrl, html, { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': 'not-a-digest', 'x-site-built-at': builtAt });
-      if (url.pathname === '/writing/') return response(url.toString(), '<a href="/notes/reviewed-article">article</a>');
+      if (url.pathname === '/writing') return response(url.toString(), '<a href="/notes/reviewed-article">article</a>');
       if (url.pathname === '/feed.xml') return response(url.toString(), '<feed><link>article</link></feed>');
       if (url.pathname === '/sitemap.xml') return response(url.toString(), '<url><loc>article</loc></url>');
       return response(url.toString(), '', {}, 404);
@@ -63,7 +85,7 @@ describe('deployed page readback', () => {
       const url = new URL(String(input));
       if (url.pathname === '/notes/reviewed-article') return response(articleUrl, html(articleUrl), { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': assetDigest, 'x-site-built-at': builtAt });
       if (url.pathname === '/notes/second-reviewed-article') return response(secondUrl, html(secondUrl), { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': `sha256:${'c'.repeat(64)}`, 'x-site-built-at': builtAt });
-      if (url.pathname === '/writing/') return response(url.toString(), '<a href="/notes/reviewed-article">first</a><a href="/notes/second-reviewed-article">second</a>');
+      if (url.pathname === '/writing') return response(url.toString(), '<a href="/notes/reviewed-article">first</a><a href="/notes/second-reviewed-article">second</a>');
       if (url.pathname === '/feed.xml') return response(url.toString(), `<feed>${articleUrl}${secondUrl}</feed>`);
       if (url.pathname === '/sitemap.xml') return response(url.toString(), `<url>${articleUrl}${secondUrl}</url>`);
       return response(url.toString(), '', {}, 404);

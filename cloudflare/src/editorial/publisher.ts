@@ -1,6 +1,7 @@
 import type { ContentProposal, PublicationReceipt, PublicationState, PublishAttempt, ReviewReceipt } from './contracts.js';
 import * as parse5 from 'parse5';
 import { verifyRequiredMedia } from './review.js';
+import { CANONICAL_SITE_ORIGIN } from './site-readback.js';
 
 export type PublishDecision = { allowed: true } | { allowed: false; reasons: string[] };
 export type PullRequestState = { number: number; head_sha: string; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; checks: 'pending' | 'success' | 'failure' };
@@ -125,16 +126,20 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   }
 }
 
-export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher: typeof fetch): Promise<{ receipt: PublicationReceipt; failure?: string }> {
+export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher: typeof fetch,
+  readback: 'public' | 'private-binding' = 'public'): Promise<{ receipt: PublicationReceipt; failure?: string }> {
   if (!attempt.source_commit) return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: '', deployment_version: '', public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'UNCERTAIN' }, failure: 'merged source commit missing' };
   try {
     const pages: Array<{ url: string; html: string }> = [];
     let releaseAssetDigest: string | null = null;
     let releaseBuiltAt: string | null = null;
     for (const url of attempt.public_urls) {
-      const expectedUrl = new URL(url, 'https://www.sulemanji.com');
-      const response = await fetcher(expectedUrl, { redirect: 'follow' });
-      if (!response.ok || new URL(response.url).origin !== expectedUrl.origin) throw new Error('page unavailable or redirected off canonical host');
+      const expectedUrl = new URL(url, CANONICAL_SITE_ORIGIN);
+      if (expectedUrl.origin !== CANONICAL_SITE_ORIGIN || expectedUrl.username || expectedUrl.password ||
+          expectedUrl.search || expectedUrl.hash) throw new Error('publication readback URL is outside the canonical origin');
+      const response = await fetcher(expectedUrl, { redirect: 'error' });
+      const originMatches = response.url ? new URL(response.url).origin === expectedUrl.origin : readback === 'private-binding';
+      if (!response.ok || !originMatches) throw new Error('page unavailable or redirected off canonical host');
       const html = await response.text();
       if (html.length > 2_000_000) throw new Error('article response exceeds bound');
       pages.push({ url, html });
@@ -172,10 +177,10 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       releaseBuiltAt = builtAt;
     }
     const first = pages[0];
-    const siteOrigin = new URL(first.url, 'https://www.sulemanji.com').origin;
-    const writing = await fetcher(new URL('/writing/', siteOrigin));
-    const feed = await fetcher(new URL('/feed.xml', siteOrigin));
-    const sitemap = await fetcher(new URL('/sitemap.xml', siteOrigin));
+    const siteOrigin = new URL(first.url, CANONICAL_SITE_ORIGIN).origin;
+    const writing = await fetcher(new URL('/writing', siteOrigin), { redirect: 'error' });
+    const feed = await fetcher(new URL('/feed.xml', siteOrigin), { redirect: 'error' });
+    const sitemap = await fetcher(new URL('/sitemap.xml', siteOrigin), { redirect: 'error' });
     if (!writing.ok || !feed.ok || !sitemap.ok) throw new Error('writing, feed, or sitemap unavailable');
     const writingHtml = await writing.text(); const feedXml = await feed.text(); const sitemapXml = await sitemap.text();
     for (const page of pages) {

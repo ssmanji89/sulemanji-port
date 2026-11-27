@@ -29,12 +29,24 @@ class EditorialWorkflowTests(unittest.TestCase):
         self.assertIn("inputs.deploy_environment == 'staging'", staging)
         self.assertIn("github.event_name == 'push'", production)
         self.assertIn("inputs.deploy_environment == 'production'", production)
-        self.assertIn("group: editorial-production", production)
+        self.assertIn("group: editorial-${{ inputs.deploy_environment", self.workflow.split("\njobs:\n", 1)[0])
         self.assertIn("git ls-remote origin refs/heads/main", production)
         self.assertIn("name: cloudflare-staging", staging)
         self.assertIn("name: cloudflare-production", production)
         self.assertNotIn("secrets.CLOUDFLARE_STAGING_API_TOKEN", self.workflow)
         self.assertNotIn("secrets.CLOUDFLARE_EDITORIAL_API_TOKEN", self.workflow)
+
+    def test_deployment_jobs_do_not_compete_with_their_workflow_concurrency_group(self):
+        workflow = self.workflow.split("\njobs:\n", 1)[0]
+        self.assertIn("group: editorial-${{ inputs.deploy_environment", workflow)
+        for job_name in ("deploy-staging", "deploy-production"):
+            match = re.search(
+                rf"^  {job_name}:\n(?P<body>.*?)(?=^  [A-Za-z0-9_-]+:|\Z)",
+                self.workflow,
+                re.M | re.S,
+            )
+            self.assertIsNotNone(match, f"missing {job_name} job")
+            self.assertNotRegex(match.group("body"), r"(?m)^    concurrency:\s*$")
 
     def test_environments_supply_private_identity_values(self):
         self.assertIn("secrets[vars.EDITORIAL_TOKEN_SECRET_NAME]", self.workflow)

@@ -19,7 +19,16 @@
   {% if case.projects and case.projects.size > 0 %}<section class="case-section"><h2>Projects and current state</h2><ul class="case-projects">{% for project in case.projects %}<li{% if project.anchor %} id="{{ project.anchor | escape }}"{% endif %}><strong>{{ project.name | escape }}</strong> <span class="project-state">({{ project.state | escape }})</span> — {{ project.description | escape }}{% if project.href %} <a href="{{ project.href | escape }}"{% if project.href contains 'http' %} rel="noopener"{% endif %}>Project details</a>{% endif %}</li>{% endfor %}</ul></section>{% endif %}
 
   {% if page.case_slug == 'ff-cli' %}
-  <section class="case-section"><h2>A public auction demonstration</h2><p>The recording uses synthetic owner names. It shows an offline auction interface; the actual league uses a snake draft.</p><video controls preload="metadata" width="960" height="540" aria-describedby="ffcli-video-description"><source src="{{ '/assets/ffcli/demo.mp4' | relative_url }}" type="video/mp4">Your browser does not support this video.</video><p id="ffcli-video-description">Silent screen recording of the ff-cli auction board, including player values, roster needs, budgets, and draft actions. The interface is a demonstration; actual league play uses a snake draft.</p><p><a href="{{ '/assets/ffcli/warroom-full-board.png' | relative_url }}">View an auction board screenshot</a></p></section>
+  <section class="case-section">
+    <h2>A public auction demonstration</h2>
+    <p>The recording uses synthetic owner names. It shows an offline auction interface; the actual league uses a snake draft.</p>
+    {% assign auction_board_image = '/assets/ffcli/warroom-full-board.png' | relative_url %}
+    <video src="{{ '/assets/ffcli/demo.mp4' | relative_url }}" controls loading="lazy" preload="none" poster="{{ auction_board_image }}" width="1280" height="800" aria-describedby="ffcli-video-description">
+      Your browser does not support this video.
+    </video>
+    <p id="ffcli-video-description">Silent screen recording of the ff-cli auction board, including player values, roster needs, budgets, and draft actions. The interface is a demonstration; actual league play uses a snake draft.</p>
+    <p><a href="{{ auction_board_image }}">View an auction board screenshot</a></p>
+  </section>
   {% endif %}
 
   {% if case.sources and case.sources.size > 0 %}<section class="case-section"><h2>Sources</h2><ul>{% for source in case.sources %}<li><a href="{{ source.href | escape }}" rel="noopener">{{ source.label | escape }}</a></li>{% endfor %}</ul></section>{% endif %}

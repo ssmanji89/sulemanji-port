@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { canPublish } from '../src/editorial/publisher.js';
-import { normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, verifyRequiredMedia } from '../src/editorial/review.js';
+import { normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, reviseContent, verifyRequiredMedia } from '../src/editorial/review.js';
 import type { Candidate, ContentProposal, PreparationContext, ReviewContext } from '../src/editorial/contracts.js';
 import type { ModelGateway, ModelRequest, ModelResult } from '../src/editorial/models.js';
 
@@ -25,6 +25,10 @@ class FakeModels implements ModelGateway {
 }
 
 async function makeProposal(): Promise<ContentProposal> { return prepareContent(candidate, context, new FakeModels()); }
+async function sha256(value: string): Promise<string> {
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)));
+  return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
 function review(proposal: ContentProposal, overrides: Partial<ReviewContext> = {}) {
   return { candidate_id: proposal.candidate_id, reviewer_run_id: 'reviewer-run', author_run_id: proposal.author_run_id, content_digest: proposal.content_digest,
     source_digest: proposal.source_digest, policy_revision: context.policy_revision, knowledge_revision: context.knowledge_revision, base_commit: context.base_commit, owner_epoch: proposal.owner_epoch,
@@ -107,5 +111,76 @@ describe('independent content preparation and review', () => {
     expect(result.status).toBe('HOLD');
     expect(models.calls.filter((call) => call.purpose === 'review')).toHaveLength(3);
     expect(revisions).toBe(2);
+  });
+
+  it('revises reviewed content while preserving its URL, publication date, and server metadata', async () => {
+    const initial = await makeProposal();
+    const findings = [{ code: 'SUPPORT', detail: 'Explain why the release timestamp changes the reader decision.' }];
+    const models = new FakeModels();
+    models.outputs = [
+      { decision: 'FIX_REQUIRED', findings },
+      { ...output, body: `${articleBody}\n\nThe revision states how the primary release record affects the reader's decision.` },
+      { decision: 'CLEAR', findings: [] },
+    ];
+    const result = await reviewThroughBoundedRounds(initial, (_proposal, reviewer_run_id) => ({ ...context, reviewer_run_id }), models,
+      (proposal, reviewFindings, round) => reviseContent(proposal, candidate, context, reviewFindings, models, `author:${candidate.id}:revision-${round}`));
+
+    expect(result.status).toBe('CLEAR');
+    expect(result.receipt?.decision).toBe('CLEAR');
+    expect(result.proposal.author_run_id).toBe(`author:${candidate.id}:revision-1`);
+    expect(result.proposal.content_digest).not.toBe(initial.content_digest);
+    expect(result.proposal.public_urls).toEqual(initial.public_urls);
+    expect(result.proposal.expected_content[0].title).toBe(initial.expected_content[0].title);
+    expect(result.proposal.files[0].path).toBe(initial.files[0].path);
+    expect(result.proposal.files[0].operation).toBe(initial.files[0].operation);
+    expect(result.proposal.files[0].content.match(/^published_on:.*$/m)?.[0]).toBe(initial.files[0].content.match(/^published_on:.*$/m)?.[0]);
+    expect(result.proposal.files[0].content).toContain('The revision states how the primary release record affects the reader\'s decision.');
+    expect(models.calls.map((call) => call.purpose)).toEqual(['review', 'revise', 'review']);
+    expect(models.calls[1].input).toContain(findings[0].detail);
+  });
+
+  it('holds a revision that tries to change the article title and URL identity', async () => {
+    const initial = await makeProposal();
+    const models = new FakeModels(); models.outputs = [{ ...output, title: 'A different article identity' }];
+    await expect(reviseContent(initial, candidate, context, [{ code: 'FIX', detail: 'Clarify the conclusion.' }], models, 'author:revision-1'))
+      .rejects.toThrow('MODEL_REVISION_IDENTITY_REJECTED');
+  });
+
+  it('rejects a proposal whose content digest no longer matches its file', async () => {
+    const initial = await makeProposal();
+    const models = new FakeModels(); models.outputs = [output];
+    await expect(reviseContent({ ...initial, content_digest: 'tampered' }, candidate, context, [], models, 'author:revision-1'))
+      .rejects.toThrow('REVISION_PROPOSAL_DIGEST_MISMATCH');
+    expect(models.calls).toHaveLength(0);
+  });
+
+  it('revises an existing article with ordinary YAML scalars and block-list topics', async () => {
+    const initial = await makeProposal();
+    const url = 'https://www.sulemanji.com/notes/a-careful-release-evidence-update';
+    const markdown = initial.files[0].content
+      .replace('publication_family: "technical-guide"', 'publication_family: technical-guide')
+      .replace('commercial_intent: "none"', 'commercial_intent: none')
+      .replace('time_horizon: "durable"', 'time_horizon: durable')
+      .replace('topics: ["infrastructure"]', 'topics:\n  - infrastructure')
+      .replace('reader: "technical-practitioner"', 'reader: technical-practitioner');
+    const file = { ...initial.files[0], operation: 'update' as const, content: markdown, content_sha256: await sha256(markdown) };
+    const proposal = { ...initial, files: [file], content_digest: await sha256(`${file.path}\n${file.content_sha256}`),
+      public_urls: [url], expected_content: [{ ...initial.expected_content[0], url }] };
+    const refreshCandidate = { ...candidate, target_id: 'existing-article', action: 'REFRESH' as const };
+    const refreshContext = { ...context, catalog: [...context.catalog, { id: 'existing-article', title: output.title, url, topics: output.topics }],
+      existing_paths: [file.path] };
+    const models = new FakeModels(); models.outputs = [{ ...output, body: `${articleBody}\n\nAn added, source-supported point helps readers apply the release record.` }];
+
+    const revised = await reviseContent(proposal, refreshCandidate, refreshContext, [{ code: 'CLARITY', detail: 'Make the application explicit.' }], models, 'author:revision-refresh');
+
+    expect(revised.public_urls).toEqual([url]);
+    expect(revised.files[0].content).toContain('published_on: "2026-11-26"');
+    expect(revised.files[0].content).toContain('topics:\n  - infrastructure');
+    expect(revised.files[0].content).toContain('reader: technical-practitioner');
+    const wrongTargetModels = new FakeModels(); wrongTargetModels.outputs = [{ ...output, body: articleBody }];
+    await expect(reviseContent(proposal, { ...refreshCandidate, target_id: 'another-article' }, refreshContext,
+      [{ code: 'CLARITY', detail: 'Make the application explicit.' }], wrongTargetModels, 'author:revision-wrong-target'))
+      .rejects.toThrow('REVISION_FRONTMATTER_INVALID');
+    expect(wrongTargetModels.calls).toHaveLength(0);
   });
 });

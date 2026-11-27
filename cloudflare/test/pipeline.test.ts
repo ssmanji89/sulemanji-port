@@ -52,6 +52,27 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it('holds a portfolio refresh before preparing content and allows work on a separate target', async () => {
+    const models = new Models();
+    const target = { id: 'market-systems', title: 'Market systems', url: '/work/market-systems/', topics: ['markets'] };
+    const checkpoints: string[] = [];
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, renderSocialCard,
+      preparationContext: async () => { throw new Error('Portfolio refresh entered the article-only pipeline'); },
+      persist: async (_id, _epoch, state) => { checkpoints.push(state); return true; },
+      publish: async () => { throw new Error('Unexpected publication'); },
+      verify: async () => { throw new Error('Unexpected verification'); },
+    });
+    const result = await pipeline.processCandidate({
+      candidate: { ...candidate, action: 'REFRESH', target_id: target.id },
+      signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: [target], knowledge: [], policy, owner_epoch: 1, step: new Steps(),
+    });
+    expect(result).toMatchObject({ status: 'held', continue_after_hold: true });
+    expect(checkpoints).toEqual(['NEEDS_OWNER']);
+    expect(models.calls).toEqual([]);
+  });
+
   it('records the review limit before a Workflow retry can misclassify it as an uncertain call', async () => {
     const db = new OperationsD1();
     db.control = { paused: 0, owner_epoch: 1 };
@@ -86,7 +107,7 @@ describe('durable candidate publication pipeline', () => {
     const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
       catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step };
 
-    const held = { status: 'held', reason: 'The candidate reached its model-call or independent review limit.' };
+    const held = { status: 'held', reason: 'The candidate reached its model-call or independent review limit.', continue_after_hold: true };
     await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
     await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
     expect(retries).toBe(0);
@@ -262,7 +283,7 @@ describe('durable candidate publication pipeline', () => {
     const result = await pipeline.processCandidate({ candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
       catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps() });
 
-    expect(result).toMatchObject({ status: 'held', reason: 'Review rounds were exhausted before clearance.' });
+    expect(result).toMatchObject({ status: 'held', reason: 'Review rounds were exhausted before clearance.', continue_after_hold: true });
     expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review', 'revise', 'review', 'revise', 'review']);
     expect(models.calls.filter((call) => call.purpose === 'review').map((call) => call.run_id)).toEqual([
       `review:${candidate.id}:round-1`, `review:${candidate.id}:round-2`, `review:${candidate.id}:round-3`,

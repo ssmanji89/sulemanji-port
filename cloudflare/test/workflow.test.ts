@@ -52,13 +52,15 @@ describe('resumable editorial workflow admission', () => {
     expect(db.receipts.size).toBe(0);
   });
 
-  it('returns the durable admitted result when a verified slot is resumed', async () => {
+  it.each([false, true])('returns the durable receipt when a slot is resumed (cached missing receipt: %s)', async (cachedMissing) => {
     const db = new PipelineD1();
     const params = { slot_claim_id: 'verified-slot' };
     db.receipts.set('slot-result:verified-slot', { id: 'slot-result:verified-slot', action: 'VERIFIED',
       result_json: JSON.stringify({ reason: 'All candidates were verified.', owner_epoch: 1 }), created_at: new Date().toISOString() });
 
-    const result = await runEditorialAdmission(params, { DB: db as unknown as D1Database } as never, new DurableStep());
+    const step = new DurableStep();
+    if (cachedMissing) step.values.set('read-existing-slot-result', null);
+    const result = await runEditorialAdmission(params, { DB: db as unknown as D1Database } as never, step);
 
     expect(result).toMatchObject({ status: 'admitted', reason: 'All candidates were verified.', slot_claim_id: params.slot_claim_id });
   });
@@ -172,6 +174,57 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
 }
 
 describe('deterministic signal workflow', () => {
+  it.each([
+    { canContinue: true, laterSharedHold: false },
+    { canContinue: true, laterSharedHold: true },
+    { canContinue: false, laterSharedHold: false },
+  ])('only continues independently after an explicitly safe candidate hold ($canContinue, $laterSharedHold)', async ({ canContinue, laterSharedHold }) => {
+    const now = new Date('2026-11-27T14:00:00.000Z');
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+    const db = new PipelineD1();
+    const catalog = [
+      { id: 'workers', canonical_url: '/notes/cloudflare-workers', title: 'Cloudflare Workers', topics: ['infrastructure'] },
+      { id: 'markets', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] },
+    ];
+    function entry(title: string, url: string) {
+      return `<item><title>${title}</title><description>New documented details.</description><link>${url}</link><pubDate>${now.toUTCString()}</pubDate></item>`;
+    }
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/content-index.json') return Response.json({ schema_version: 1, items: catalog });
+      const items = url.hostname === 'blog.cloudflare.com'
+        ? [entry('Workers release update', 'https://blog.cloudflare.com/workers/release-one/'),
+          entry('Workers API version update', 'https://blog.cloudflare.com/workers/release-two/')]
+        : url.hostname === 'www.federalreserve.gov'
+          ? [entry('Market policy update', 'https://www.federalreserve.gov/newsevents/pressreleases/monetary20261127a.htm')]
+          : [];
+      return new Response(`<rss><channel>${items.join('')}</channel></rss>`);
+    });
+    const processed: Array<string | null> = [];
+    const processor: NonNullable<Parameters<typeof runWorkerAdmission>[4]> = { processCandidate: ({ candidate, step }) => step.do(`test-process-${candidate.id}`, () => {
+      processed.push(candidate.target_id);
+      if (processed.length === 1) return { status: 'held' as const, reason: 'Original candidate needs review.',
+        ...(canContinue ? { continue_after_hold: true as const } : {}) };
+      if (laterSharedHold) return { status: 'held' as const, reason: 'The provider requires reconciliation.' };
+      return { status: 'verified' as const, reason: 'Exact publication was verified.' };
+    }) };
+    const params = { slot_claim_id: 'independent-candidate-hold' };
+    const env = { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never;
+    const step = new DurableStep();
+    const result = await runEditorialAdmission(params, env, step, processor);
+
+    expect(db.candidates.size).toBe(3);
+    expect(result).toMatchObject({ status: 'held', reason: laterSharedHold ? 'The provider requires reconciliation.' : 'Original candidate needs review.' });
+    expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
+    const receipt = db.receipts.get(`slot-result:${params.slot_claim_id}`)!;
+    expect(receipt.action).toBe('HELD_PUBLICATION_PIPELINE');
+    expect(JSON.parse(String(receipt.result_json)).outcomes.map((outcome: { status: string }) => outcome.status))
+      .toEqual(canContinue ? ['held', 'held', laterSharedHold ? 'held' : 'verified'] : ['held']);
+    expect(await runEditorialAdmission(params, env, step, processor)).toEqual(result);
+    expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
+  });
+
   it('holds when the catalog redirects away from its exact URL', async () => {
     const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(null, { status: 301, headers: { location: '/writing' } }));
     vi.stubGlobal('fetch', fetcher);

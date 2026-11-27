@@ -12,7 +12,8 @@ export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
   sleep(name: string, milliseconds: number): Promise<void>;
 };
-export type CandidateProcessOutcome = { status: 'verified' | 'held'; reason: string };
+export type CandidateProcessOutcome = { status: 'verified'; reason: string }
+  | { status: 'held'; reason: string; continue_after_hold?: true };
 export type EditorialCandidateProcessor = {
   processCandidate(input: {
     candidate: Candidate;
@@ -291,8 +292,9 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     return held(params, 'No current schedule claim matches this Workflow instance.');
   }
 
-  const existing = await step.do('read-existing-slot-result', () => env.DB.prepare(`SELECT id, action, result_json, created_at
-    FROM editorial_receipts WHERE id = ?`).bind(`slot-result:${params.slot_claim_id}`).first<ReceiptRow>());
+  // A replay can carry a cached miss from before this slot wrote its final receipt.
+  const existing = await env.DB.prepare(`SELECT id, action, result_json, created_at
+    FROM editorial_receipts WHERE id = ?`).bind(`slot-result:${params.slot_claim_id}`).first<ReceiptRow>();
   if (existing) return resultFromReceipt(params, existing, control.owner_epoch);
 
   const policy = await step.do('read-approved-editorial-policy', () => parseEditorialPolicy(env.EDITORIAL_POLICY_JSON));
@@ -380,15 +382,29 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   }
   if (processor) {
     const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [];
+    const heldTargets = new Set<string>();
+    let stopReason: string | undefined;
     for (const { signal, decision } of actionable) {
-      const outcome = await processor.processCandidate({ candidate: { ...decision.candidate, knowledge_revision: knowledgeRevision }, signal, catalog, knowledge, policy,
+      if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the next candidate.');
+      const candidate = { ...decision.candidate, knowledge_revision: knowledgeRevision };
+      if (candidate.target_id && heldTargets.has(candidate.target_id)) {
+        outcomes.push({ candidate_id: candidate.id, status: 'held', reason: 'Another candidate for this item requires review.' });
+        continue;
+      }
+      const outcome = await processor.processCandidate({ candidate, signal, catalog, knowledge, policy,
         owner_epoch: control.owner_epoch, step });
-      outcomes.push({ candidate_id: decision.candidate.id, status: outcome.status, reason: outcome.reason });
-      if (outcome.status !== 'verified') break;
+      outcomes.push({ candidate_id: candidate.id, status: outcome.status, reason: outcome.reason });
+      if (outcome.status === 'held') {
+        if (!outcome.continue_after_hold) {
+          stopReason = outcome.reason;
+          break;
+        }
+        if (candidate.target_id) heldTargets.add(candidate.target_id);
+      }
     }
     const verified = outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');
     const reason = verified ? 'All admitted candidates passed publication and public readback.' :
-      outcomes.find((outcome) => outcome.status === 'held')?.reason ?? 'Candidate processing did not complete.';
+      stopReason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ?? 'Candidate processing did not complete.';
     const action = verified ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
       actionable[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes }, control.owner_epoch));

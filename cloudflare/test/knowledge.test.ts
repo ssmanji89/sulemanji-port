@@ -131,7 +131,8 @@ describe('signed public knowledge import', () => {
 
   it.each(['https://localhost/private', 'https://localhost./private', 'https://printer/private',
     'https://api.local/private', 'https://127.0.0.1/private',
-    'https://0177.0.0.1/private', 'https://10.0.0.4/private', 'https://100.64.0.1/private',
+    'https://0177.0.0.1/private', 'https://１２７.０.０.１/private', 'https://0x7f.０.０.１/private',
+    'https://10.0.0.4/private', 'https://100.64.0.1/private',
     'https://192.0.2.1/private', 'https://192.168.1.2/private', 'https://@example.org/private', 'https://[::1]/private',
     'https://[fd12::1]/private', 'https://[fe80::1]/private', 'https://[ff02::1]/private',
     'https://[2001:db8::1]/private', 'https://[2001:2::1]/private', 'https://[2001:4::1]/private',

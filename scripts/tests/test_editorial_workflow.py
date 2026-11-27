@@ -94,18 +94,36 @@ class EditorialWorkflowTests(unittest.TestCase):
     def test_deployment_readback_requires_exact_sha_and_full_traffic(self):
         verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-deployment.mjs"
         sha = "a" * 40
-        payload = [{"id": "deployment-id", "annotations": {"workers/message": f"service staging {sha}"}, "versions": [{"version_id": "version-id", "percentage": 100}]}]
+        payload = [
+            {"id": "old-deployment", "created_on": "2026-11-26T23:00:00Z", "annotations": {"workers/message": "service staging stale"}, "versions": [{"version_id": "old-version", "percentage": 100}]},
+            {"id": "deployment-id", "created_on": "2026-11-27T00:00:00Z", "annotations": {"workers/message": f"service staging {sha}"}, "versions": [{"version_id": "version-id", "percentage": 100}]},
+        ]
         with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as fixture:
             json.dump(payload, fixture)
             fixture.flush()
             subprocess.run(["node", str(verifier), fixture.name, "staging", sha], check=True, capture_output=True, text=True)
-            payload[0]["annotations"]["workers/message"] = "service staging stale"
+            payload[1]["annotations"]["workers/message"] = "service staging stale"
             fixture.seek(0)
             fixture.truncate()
             json.dump(payload, fixture)
             fixture.flush()
             rejected = subprocess.run(["node", str(verifier), fixture.name, "staging", sha], capture_output=True, text=True)
             self.assertNotEqual(rejected.returncode, 0)
+
+    def test_deployment_readback_rejects_invalid_or_timezone_free_timestamps(self):
+        verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-deployment.mjs"
+        sha = "a" * 40
+        for created_on in ("2026-11-27T00:00:00", "2026-02-31T00:00:00Z"):
+            payload = [{
+                "id": "deployment-id", "created_on": created_on,
+                "annotations": {"workers/message": f"service staging {sha}"},
+                "versions": [{"version_id": "version-id", "percentage": 100}],
+            }]
+            with self.subTest(created_on=created_on), tempfile.NamedTemporaryFile(mode="w", encoding="utf-8") as fixture:
+                json.dump(payload, fixture)
+                fixture.flush()
+                rejected = subprocess.run(["node", str(verifier), fixture.name, "staging", sha], capture_output=True, text=True)
+                self.assertNotEqual(rejected.returncode, 0)
 
     def test_migration_readback_rejects_pending_migrations(self):
         verifier = ROOT / "cloudflare" / "scripts" / "verify-editorial-migrations.mjs"

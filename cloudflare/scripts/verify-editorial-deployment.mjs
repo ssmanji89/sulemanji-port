@@ -6,7 +6,38 @@ if (!deploymentPath || !['staging', 'production'].includes(environment) || !/^[0
 }
 
 const deployments = JSON.parse(readFileSync(deploymentPath, 'utf8'));
-const latest = Array.isArray(deployments) ? deployments[0] : undefined;
+if (!Array.isArray(deployments) || deployments.length === 0) {
+  throw new Error('EDITORIAL_DEPLOYMENT_READBACK_EMPTY');
+}
+function parseIsoTimestamp(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
+  if (!match) return Number.NaN;
+  const [, yearText, monthText, dayText, hourText, minuteText, secondText, , , offsetHourText, offsetMinuteText] = match;
+  const year = Number(yearText);
+  const month = Number(monthText);
+  const day = Number(dayText);
+  const hour = Number(hourText);
+  const minute = Number(minuteText);
+  const second = Number(secondText);
+  const offsetHour = offsetHourText === undefined ? 0 : Number(offsetHourText);
+  const offsetMinute = offsetMinuteText === undefined ? 0 : Number(offsetMinuteText);
+  const calendarDate = new Date(Date.UTC(year, month - 1, day));
+  if (year < 1000 || calendarDate.getUTCFullYear() !== year || calendarDate.getUTCMonth() + 1 !== month ||
+      calendarDate.getUTCDate() !== day || hour > 23 || minute > 59 || second > 59 ||
+      offsetHour > 14 || offsetMinute > 59 || (offsetHour === 14 && offsetMinute !== 0)) {
+    return Number.NaN;
+  }
+  return Date.parse(value);
+}
+const dated = deployments.map((deployment) => {
+  const createdOn = parseIsoTimestamp(deployment?.created_on ?? '');
+  if (!Number.isFinite(createdOn)) throw new Error('EDITORIAL_DEPLOYMENT_TIMESTAMP_INVALID');
+  return { deployment, createdOn };
+});
+const newestTime = Math.max(...dated.map(({ createdOn }) => createdOn));
+const newest = dated.filter(({ createdOn }) => createdOn === newestTime);
+if (newest.length !== 1) throw new Error('EDITORIAL_DEPLOYMENT_TIMESTAMP_AMBIGUOUS');
+const latest = newest[0].deployment;
 const expectedMessage = `service ${environment} ${sourceSha}`;
 const versions = latest?.versions;
 if (latest?.annotations?.['workers/message'] !== expectedMessage ||

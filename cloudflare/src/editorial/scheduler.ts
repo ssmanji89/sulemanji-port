@@ -11,26 +11,36 @@ function chicagoParts(now: Date): { date: string; slot: string; month: string } 
   return { date: `${value.year}-${value.month}-${value.day}`, slot: `${value.hour}:${value.minute}`, month: `${value.year}-${value.month}` };
 }
 
-export async function claimScheduleSlot(db: D1Database, now: Date, policy: EditorialPolicy): Promise<SlotClaim | null> {
+export function scheduleWorkflowId(claim: Pick<SlotClaim, 'local_date' | 'slot'>): string {
+  return `slot-${claim.local_date}-${claim.slot.replace(':', '')}`;
+}
+
+export async function claimScheduleSlot(db: D1Database, now: Date, policy: EditorialPolicy, ownerEpoch: number): Promise<SlotClaim | null> {
   const local = chicagoParts(now);
   if (policy.timezone !== 'America/Chicago' || !policy.slots.includes(local.slot)) return null;
-  const id = `${local.date}:${local.slot}`;
-  const inserted = await db.prepare('INSERT OR IGNORE INTO schedule_claims(id, local_date, slot, claimed_at) VALUES (?, ?, ?, ?)')
-    .bind(id, local.date, local.slot, now.toISOString()).run();
-  if ((inserted.meta.changes ?? 0) !== 1) return null;
-  const claim = await db.prepare(`SELECT id, local_date, slot, claimed_at FROM schedule_claims
-    WHERE id = ? AND dispatch_state = 'PENDING'`).bind(id).first<SlotClaim>();
-  return claim ?? null;
+  const claim = { id: `${local.date}:${local.slot}`, local_date: local.date, slot: local.slot, claimed_at: now.toISOString() };
+  const inserted = await db.prepare(`INSERT OR IGNORE INTO schedule_claims(id, local_date, slot, claimed_at, owner_epoch)
+    SELECT ?, ?, ?, ?, owner_epoch FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?`)
+    .bind(claim.id, claim.local_date, claim.slot, claim.claimed_at, ownerEpoch).run();
+  return inserted.meta.changes === 1 ? claim : null;
 }
 
-export async function markScheduleDispatched(db: D1Database, claimId: string, workflowId: string, now = new Date()): Promise<void> {
+export async function readScheduleClaim(db: D1Database, claimId: string, ownerEpoch: number): Promise<SlotClaim | null> {
+  return db.prepare(`SELECT claim.id, claim.local_date, claim.slot, claim.claimed_at FROM schedule_claims AS claim
+    JOIN editorial_control AS control ON control.singleton = 1 AND control.paused = 0 AND control.owner_epoch = claim.owner_epoch
+    WHERE claim.id = ? AND claim.owner_epoch = ?`).bind(claimId, ownerEpoch).first<SlotClaim>();
+}
+
+export async function markScheduleDispatched(db: D1Database, claimId: string, workflowId: string, ownerEpoch: number, now: Date): Promise<void> {
   await db.prepare(`UPDATE schedule_claims SET dispatch_state = 'DISPATCHED', workflow_instance_id = ?, dispatched_at = ?
-    WHERE id = ? AND dispatch_state = 'PENDING'`).bind(workflowId, now.toISOString(), claimId).run();
+    WHERE id = ? AND dispatch_state = 'PENDING' AND owner_epoch = ?`).bind(workflowId, now.toISOString(), claimId, ownerEpoch).run();
 }
 
-export async function pendingScheduleClaims(db: D1Database, limit = 10): Promise<SlotClaim[]> {
-  const result = await db.prepare(`SELECT id, local_date, slot, claimed_at FROM schedule_claims
-    WHERE dispatch_state = 'PENDING' ORDER BY claimed_at LIMIT ?`).bind(Math.min(10, Math.max(1, limit))).all<SlotClaim>();
+export async function pendingScheduleClaims(db: D1Database, ownerEpoch: number, limit = 10): Promise<SlotClaim[]> {
+  const result = await db.prepare(`SELECT claim.id, claim.local_date, claim.slot, claim.claimed_at FROM schedule_claims AS claim
+    JOIN editorial_control AS control ON control.singleton = 1 AND control.paused = 0 AND control.owner_epoch = claim.owner_epoch
+    WHERE claim.dispatch_state = 'PENDING' AND claim.owner_epoch = ? ORDER BY claim.claimed_at LIMIT ?`)
+    .bind(ownerEpoch, Math.min(10, Math.max(1, limit))).all<SlotClaim>();
   return result.results ?? [];
 }
 

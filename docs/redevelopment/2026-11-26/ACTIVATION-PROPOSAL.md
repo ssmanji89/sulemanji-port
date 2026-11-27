@@ -1,17 +1,17 @@
 # Maintenance activation proposal
 
-Status: prepared for a later owner decision. No account resources, model credentials, spend, schedules, DNS, or publication authority have been activated.
+Status: site preview approved. The public site Worker and paused maintenance resources are deployed. Editorial publication remains paused; no model credentials, model spend, DNS record, or publisher cutover has been activated.
 
 ## Cloudflare resources
 
 | Environment | Worker | D1 | Workflow | Schedule | Exposure |
 |---|---|---|---|---|---|
-| Staging | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | Hourly UTC trigger, Chicago local slot filter | Workers Dev; no production bindings |
-| Production | `sulemanji-editorial` | `sulemanji-editorial-production` | `sulemanji-editorial-production` | Hourly UTC trigger, Chicago local slot filter | `editorial.sulemanji.com/*` Worker Route |
+| Staging | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | Disabled; manual staging only | Workers Dev; isolated staging D1 |
+| Production | `sulemanji-editorial` | `sulemanji-editorial-production` | `sulemanji-editorial-production` | Hourly UTC trigger, Chicago local slot filter; D1 control remains paused | `editorial.sulemanji.com/*` Worker Route |
 
-Both D1 IDs are deliberately unset. Each migration creates the owner control in paused state. The maintenance Worker has no visitor inference path. The website is a separate static-assets Worker; its production route remains `www.sulemanji.com/*`.
+Both environments have separate D1 and Workflow resources. Migrations 0001–0003 are applied remotely, and both control rows read back `paused=1, owner_epoch=1`. Production has its hourly Cron. Staging Cron was removed after Cloudflare enforced the Free-plan limit of five Cron triggers per account; no existing trigger was changed. Current Cloudflare docs list five triggers on Free and 250 on Paid, with Paid starting at $5/month. No plan upgrade was made. The maintenance Worker has no visitor inference path. The site is the separate `sulemanji-site` static-assets Worker, active at 100% on `www.sulemanji.com/*`.
 
-Read-only Wrangler access works for the Cloudflare account, while the connected app returns `UNAUTHORIZED`. The target `sulemanji-site` Worker does not exist in that account and no Pages projects are listed. The only listed D1 database is `sulemanji-work-with-me`, which is unrelated to this site and will not be reused. Account plan, zone ID, new D1 IDs, Workflow instance state, exact API permissions, production route ID, staging hostname, and current deployed versions still require more targeted authorized reads. No resource has been created or modified.
+Wrangler OAuth is authorized for the Cloudflare account; the connected Cloudflare app still returns `UNAUTHORIZED`. The unrelated `sulemanji-work-with-me` D1 was not reused. Public DNS for `editorial.sulemanji.com` currently fails to resolve; the Worker Route is configured, but no DNS record was created. The production knowledge endpoint is therefore not reachable by the private producer yet. Resource identifiers are intentionally omitted from public documentation.
 
 ## Model and cost estimate
 
@@ -26,7 +26,7 @@ Proposed API route: OpenAI Chat Completions with JSON Schema structured output, 
 
 The API platform does not train on API data by default. Standard abuse-monitoring retention can include prompts and responses for up to 30 days; use only public-source material and the exact Viyu derivative explicitly authorized for public-use claims. Do not send raw memories, private lineage, credentials, client content, or new private disclosures. Check the provider data controls and the account's retention configuration before sending any non-public author context.
 
-Cloudflare's published Workers Paid price is $5/month with included requests, CPU, Workflow steps/state, and D1 quotas. Overages depend on the account plan and measured traffic. At the proposed schedule and low-volume D1 workload the modeled increment is expected to remain within the proposed $10/month envelope; the actual marginal cost is unverified until account plan and usage are read. Static asset requests and storage do not add a charge under the current documented Workers Static Assets terms. Check the actual bill and analytics after staging and before production.
+Cloudflare's published Workers Paid starting price is $5/month; the current account is on Free and already uses all five Cron triggers. A plan upgrade would be needed to enable both staging and production Cron schedules. No upgrade has been made. Other overages depend on the account plan and measured usage. At the proposed schedule and low-volume D1 workload the modeled increment is expected to remain within the proposed $10/month envelope; actual marginal cost is unverified. Static asset requests and storage do not add a charge under the current documented Workers Static Assets terms. Check the actual bill and analytics before production writer activation.
 
 ## One-writer cutover
 
@@ -46,4 +46,4 @@ Cloudflare's published Workers Paid price is $5/month with included requests, CP
 
 ## Current decision boundary
 
-The product preview was approved as presented. The public homepage currently returns 200 through Cloudflare's edge with GitHub origin headers; the proposed site Worker is absent. Model provider/model, spend envelopes, schedule activation, account resource creation, and production cutover remain unresolved. No model or Cloudflare spending authorization is inferred from this proposal.
+The product preview was approved as presented. The public homepage is served through the active Cloudflare site Worker. The editorial Worker, D1 databases, Workflows, and production Cron now exist; both D1 controls remain paused. The editorial hostname does not resolve publicly because its DNS record is absent. Model provider/model, model spend envelopes, DNS record, authorized knowledge delivery/renewal, one-writer cutover, and two natural eligible schedule runs remain unresolved. No model-spending or Workers Paid upgrade authorization is inferred from this proposal.

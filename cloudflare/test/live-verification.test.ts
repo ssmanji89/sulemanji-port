@@ -52,7 +52,7 @@ describe('deployed page readback', () => {
     const paths: string[] = [];
     const binding = { async fetch(input: RequestInfo | URL) {
       if (!(input instanceof Request)) throw new Error('Expected a bound request');
-      expect(input.redirect).toBe('error');
+      expect(input.redirect).toBe('manual');
       const url = new URL(input.url);
       paths.push(url.pathname);
       const html = url.pathname.startsWith('/notes/')
@@ -67,6 +67,18 @@ describe('deployed page readback', () => {
     expect((await verifyPublicationDetailed(candidate, boundFetch)).receipt.outcome).toBe('UNCERTAIN');
     await expect(fixtureSiteFetcher(undefined)(articleUrl)).rejects.toThrow('EDITORIAL_FIXTURE_SITE_NOT_BOUND');
     await expect(boundFetch('https://elsewhere.example.test/notes/reviewed-article')).rejects.toThrow('EDITORIAL_FIXTURE_SITE_REQUEST_REJECTED');
+  });
+
+  it('holds publisher verification on an unfollowed redirect', async () => {
+    let requests = 0;
+    const fetcher: typeof fetch = async (input, init) => {
+      requests += 1;
+      expect(init?.redirect).toBe('manual');
+      return response(String(input), '', { location: '/writing' }, 302);
+    };
+    const result = await verifyPublicationDetailed(attempt('b'.repeat(64)), fetcher);
+    expect(result.failure).toBe('page unavailable or redirected off canonical host');
+    expect(requests).toBe(1);
   });
 
   it('parses nested HTML, verifies exact content and release revision, then confirms writing/feed/sitemap', async () => {

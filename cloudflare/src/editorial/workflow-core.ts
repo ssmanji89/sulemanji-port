@@ -41,7 +41,7 @@ function parseJson<T>(value: string): T | null {
 }
 
 async function readCatalog(fetcher: typeof fetch): Promise<CatalogItem[]> {
-  const response = await fetcher(CONTENT_INDEX_URL, { redirect: 'error', headers: { accept: 'application/json' } });
+  const response = await fetcher(CONTENT_INDEX_URL, { redirect: 'manual', headers: { accept: 'application/json' } });
   if (!response.ok) throw new Error('CONTENT_INDEX_UNAVAILABLE');
   const text = await response.text();
   if (new TextEncoder().encode(text).byteLength > MAX_INDEX_BYTES) throw new Error('CONTENT_INDEX_TOO_LARGE');

@@ -172,6 +172,16 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
 }
 
 describe('deterministic signal workflow', () => {
+  it('holds when the catalog redirects away from its exact URL', async () => {
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(null, { status: 301, headers: { location: '/writing' } }));
+    vi.stubGlobal('fetch', fetcher);
+    const db = new PipelineD1();
+    const result = await runEditorialAdmission({ slot_claim_id: 'catalog-redirect' }, { DB: db, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
+    expect(result).toMatchObject({ status: 'held', reason: 'The public content index is unavailable or invalid.' });
+    expect(fetcher).toHaveBeenCalledExactlyOnceWith('https://www.sulemanji.com/content-index.json', { redirect: 'manual', headers: { accept: 'application/json' } });
+    expect(db.candidates.size).toBe(0);
+  });
+
   it('holds instead of declaring NO_CHANGE when the fetch cap leaves enabled sources uncovered', async () => {
     sourceFetchCalls = 0;
     vi.stubGlobal('fetch', sourceFetcher({ candidate: false }));

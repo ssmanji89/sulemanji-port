@@ -146,6 +146,19 @@ describe('editorial runtime config policy wiring', () => {
     }
   });
 
+  it('blocks automated releases when both runtime settings are missing', () => {
+    const { outputDirectory, result } = render(JSON.stringify(validPolicy), 'production', {
+      EDITORIAL_REQUIRE_RUNTIME_SETTINGS: 'true',
+    });
+    try {
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('EDITORIAL_RUNTIME_SETTINGS_MISSING_OR_INVALID');
+      expect(() => readFileSync(resolve(outputDirectory, 'wrangler.editorial.runtime.jsonc'))).toThrow();
+    } finally {
+      rmSync(outputDirectory, { recursive: true, force: true });
+    }
+  });
+
   it('routes production fetches through the canonical Worker route while staging stays on its private binding', () => {
     const production = render(JSON.stringify(validPolicy), 'production');
     const staging = render(JSON.stringify(validPolicy));

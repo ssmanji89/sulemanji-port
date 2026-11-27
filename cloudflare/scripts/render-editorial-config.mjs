@@ -38,7 +38,7 @@ config.vars.KNOWLEDGE_POLICY_REVISION = process.env.EDITORIAL_POLICY_REVISION;
 config.vars.EDITORIAL_POLICY_JSON = JSON.stringify(editorialPolicy);
 const model = process.env.EDITORIAL_MODEL_CONFIG_JSON?.trim();
 const publisher = process.env.EDITORIAL_GITHUB_CONFIG_JSON?.trim();
-if (model || publisher) {
+if (model || publisher || process.env.EDITORIAL_REQUIRE_RUNTIME_SETTINGS === 'true') {
   const settings = parseEditorialRuntimeSettings(model, publisher, environment, editorialPolicy.model_pricing_revision);
   if (!settings) throw new Error('EDITORIAL_RUNTIME_SETTINGS_MISSING_OR_INVALID');
   config.vars.EDITORIAL_MODEL_CONFIG_JSON = JSON.stringify(settings.model);

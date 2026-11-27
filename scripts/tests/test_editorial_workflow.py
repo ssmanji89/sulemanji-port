@@ -61,6 +61,7 @@ class EditorialWorkflowTests(unittest.TestCase):
         for target in ("staging", "production"):
             step = self.workflow.split(f"      - name: Render {target} config with private D1 binding\n", 1)[1]
             step = step.split("      - name:", 1)[0]
+            self.assertIn('EDITORIAL_REQUIRE_RUNTIME_SETTINGS: "true"', step)
             for name in ("EDITORIAL_MODEL_CONFIG_JSON", "EDITORIAL_GITHUB_CONFIG_JSON"):
                 self.assertIn(f"{name}: ${{{{ secrets.{name} }}}}", step)
             self.assertNotIn("EDITORIAL_MODEL_API_KEY", step)

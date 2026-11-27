@@ -106,6 +106,7 @@ jobs:
         run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
       - name: Render staging config with private D1 binding
         env:
+          EDITORIAL_REQUIRE_RUNTIME_SETTINGS: "true"
           EDITORIAL_MODEL_CONFIG_JSON: ${{ secrets.EDITORIAL_MODEL_CONFIG_JSON }}
           EDITORIAL_GITHUB_CONFIG_JSON: ${{ secrets.EDITORIAL_GITHUB_CONFIG_JSON }}
         run: node scripts/render-editorial-config.mjs staging
@@ -192,6 +193,7 @@ jobs:
         run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
       - name: Render production config with private D1 binding
         env:
+          EDITORIAL_REQUIRE_RUNTIME_SETTINGS: "true"
           EDITORIAL_MODEL_CONFIG_JSON: ${{ secrets.EDITORIAL_MODEL_CONFIG_JSON }}
           EDITORIAL_GITHUB_CONFIG_JSON: ${{ secrets.EDITORIAL_GITHUB_CONFIG_JSON }}
         run: node scripts/render-editorial-config.mjs production

@@ -4,7 +4,7 @@
   "main": "src/editorial/index.ts",
   "compatibility_date": "2026-11-26",
   "workers_dev": false,
-  "routes": [{ "pattern": "editorial.sulemanji.com/*", "zone_name": "sulemanji.com" }],
+  "routes": [{ "pattern": "editorial.sulemanji.com", "custom_domain": true }],
   "triggers": { "crons": ["0 * * * *"] },
   "vars": { "DEPLOYMENT_ENV": "production", "KNOWLEDGE_POLICY_REVISION": "pending-activation-record" },
   "d1_databases": [{ "binding": "DB", "database_name": "sulemanji-editorial-production", "database_id": "SET_AFTER_AUTHORIZED_PROVISIONING", "migrations_dir": "migrations" }],

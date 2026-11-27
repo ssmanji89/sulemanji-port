@@ -1,17 +1,17 @@
 # Maintenance activation proposal
 
-Status: site preview approved. The public site Worker and paused maintenance resources are deployed. Editorial publication remains paused; no model credentials, model spend, DNS record, or publisher cutover has been activated.
+Status: site preview approved. The public site Worker and paused maintenance resources are deployed; the production Custom Domain correction is prepared for deployment. Editorial publication remains paused; no model credentials, model spend, DNS record, or publisher cutover has been activated.
 
 ## Cloudflare resources
 
 | Environment | Worker | D1 | Workflow | Schedule | Exposure |
 |---|---|---|---|---|---|
 | Staging | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | `sulemanji-editorial-staging` | Disabled; manual staging only | Workers Dev; isolated staging D1 |
-| Production | `sulemanji-editorial` | `sulemanji-editorial-production` | `sulemanji-editorial-production` | Hourly UTC trigger, Chicago local slot filter; D1 control remains paused | `editorial.sulemanji.com/*` Worker Route |
+| Production | `sulemanji-editorial` | `sulemanji-editorial-production` | `sulemanji-editorial-production` | Hourly UTC trigger, Chicago local slot filter; D1 control remains paused | Pending redeploy to `editorial.sulemanji.com` Custom Domain |
 
 Both environments have separate D1 and Workflow resources. Migrations 0001–0003 are applied remotely, and both control rows read back `paused=1, owner_epoch=1`. Production has its hourly Cron. Staging Cron was removed after Cloudflare enforced the Free-plan limit of five Cron triggers per account; no existing trigger was changed. Current Cloudflare docs list five triggers on Free and 250 on Paid, with Paid starting at $5/month. No plan upgrade was made. The maintenance Worker has no visitor inference path. The site is the separate `sulemanji-site` static-assets Worker, active at 100% on `www.sulemanji.com/*`.
 
-Wrangler OAuth is authorized for the Cloudflare account; the connected Cloudflare app still returns `UNAUTHORIZED`. The unrelated `sulemanji-work-with-me` D1 was not reused. Public DNS for `editorial.sulemanji.com` currently fails to resolve; the Worker Route is configured, but no DNS record was created. The production knowledge endpoint is therefore not reachable by the private producer yet. Resource identifiers are intentionally omitted from public documentation.
+Wrangler OAuth is authorized for the Cloudflare account; the connected Cloudflare app still returns `UNAUTHORIZED`. The unrelated `sulemanji-work-with-me` D1 was not reused. The first deployment created a Worker Route without a proxied DNS record, leaving `editorial.sulemanji.com` unresolved. The Worker is the origin for this hostname, so the production config now uses a Custom Domain; redeployment and DNS/certificate readback are still required before the private producer can reach it. Resource identifiers are intentionally omitted from public documentation.
 
 ## Model and cost estimate
 

@@ -7,10 +7,17 @@ from unittest.mock import patch
 
 from PIL import Image
 
-from scripts.generate_article_images import generate, render_card, validate_custom_image
+from scripts.generate_article_images import font_path, generate, render_card, validate_custom_image
 
 
 class SocialCardTests(unittest.TestCase):
+    def test_default_font_path_uses_repository_pinned_dejavu(self):
+        with patch.dict("os.environ", {"DEJAVU_FONT_DIR": ""}):
+            self.assertEqual(
+                Path(__file__).resolve().parents[1] / "fonts" / "DejaVuSans.ttf",
+                font_path("DejaVuSans.ttf"),
+            )
+
     def test_write_missing_creates_absent_and_refreshes_stale_cards(self):
         article = {"permalink": "/notes/example", "title": "Example", "social_image": None}
         with tempfile.TemporaryDirectory() as temp:

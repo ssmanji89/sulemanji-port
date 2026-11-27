@@ -61,6 +61,7 @@ jobs:
       run:
         working-directory: cloudflare
     env:
+      EDITORIAL_TOKEN_SECRET_NAME: ${{ vars.EDITORIAL_TOKEN_SECRET_NAME }}
       CLOUDFLARE_API_TOKEN: ${{ secrets[vars.EDITORIAL_TOKEN_SECRET_NAME] }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       EDITORIAL_DATABASE_ID: ${{ vars.EDITORIAL_DATABASE_ID }}
@@ -86,7 +87,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Require staging deployment credentials
-        run: test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$EDITORIAL_DATABASE_ID"
+        run: |
+          if [[ ! "$EDITORIAL_TOKEN_SECRET_NAME" =~ ^[A-Z_][A-Z0-9_]*$ ]]; then
+            echo '::error::Set EDITORIAL_TOKEN_SECRET_NAME in cloudflare-staging to the name of its deployment secret.'
+            exit 1
+          fi
+          if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            printf '::error::The cloudflare-staging environment needs the %s secret.\n' "$EDITORIAL_TOKEN_SECRET_NAME"
+            exit 1
+          fi
+          for setting in CLOUDFLARE_ACCOUNT_ID EDITORIAL_DATABASE_ID EDITORIAL_POLICY_JSON; do
+            if [[ -z "${!setting}" ]]; then
+              printf '::error::Missing %s for cloudflare-staging.\n' "$setting"
+              exit 1
+            fi
+          done
       - name: Refuse a stale staging revision
         run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
       - name: Render staging config with private D1 binding
@@ -113,7 +128,10 @@ jobs:
       - name: Read back and verify exact staging deployment
         run: |
           npx wrangler deployments list --json --config wrangler.editorial-staging.runtime.jsonc > "$RUNNER_TEMP/deployments.json" 2>/dev/null
-          node scripts/verify-editorial-deployment.mjs "$RUNNER_TEMP/deployments.json" staging "$GITHUB_SHA"
+          active_version=$(node scripts/verify-editorial-deployment.mjs "$RUNNER_TEMP/deployments.json" --active-version)
+          npx wrangler versions view "$active_version" --json --config wrangler.editorial-staging.runtime.jsonc > "$RUNNER_TEMP/version.json" 2>/dev/null
+          npx wrangler deployments list --json --config wrangler.editorial-staging.runtime.jsonc > "$RUNNER_TEMP/deployments.json" 2>/dev/null
+          node scripts/verify-editorial-deployment.mjs "$RUNNER_TEMP/deployments.json" staging "$GITHUB_SHA" "$RUNNER_TEMP/version.json"
           test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
 
   deploy-production:
@@ -126,6 +144,7 @@ jobs:
       run:
         working-directory: cloudflare
     env:
+      EDITORIAL_TOKEN_SECRET_NAME: ${{ vars.EDITORIAL_TOKEN_SECRET_NAME }}
       CLOUDFLARE_API_TOKEN: ${{ secrets[vars.EDITORIAL_TOKEN_SECRET_NAME] }}
       CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
       EDITORIAL_DATABASE_ID: ${{ vars.EDITORIAL_DATABASE_ID }}
@@ -151,7 +170,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Require production deployment credentials
-        run: test -n "$CLOUDFLARE_API_TOKEN" && test -n "$CLOUDFLARE_ACCOUNT_ID" && test -n "$EDITORIAL_DATABASE_ID"
+        run: |
+          if [[ ! "$EDITORIAL_TOKEN_SECRET_NAME" =~ ^[A-Z_][A-Z0-9_]*$ ]]; then
+            echo '::error::Set EDITORIAL_TOKEN_SECRET_NAME in cloudflare-production to the name of its deployment secret.'
+            exit 1
+          fi
+          if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            printf '::error::The cloudflare-production environment needs the %s secret.\n' "$EDITORIAL_TOKEN_SECRET_NAME"
+            exit 1
+          fi
+          for setting in CLOUDFLARE_ACCOUNT_ID EDITORIAL_DATABASE_ID EDITORIAL_POLICY_JSON; do
+            if [[ -z "${!setting}" ]]; then
+              printf '::error::Missing %s for cloudflare-production.\n' "$setting"
+              exit 1
+            fi
+          done
       - name: Refuse a stale production revision
         run: test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"
       - name: Render production config with private D1 binding
@@ -178,5 +211,8 @@ jobs:
       - name: Read back and verify exact production deployment
         run: |
           npx wrangler deployments list --json --config wrangler.editorial.runtime.jsonc > "$RUNNER_TEMP/deployments.json" 2>/dev/null
-          node scripts/verify-editorial-deployment.mjs "$RUNNER_TEMP/deployments.json" production "$GITHUB_SHA"
+          active_version=$(node scripts/verify-editorial-deployment.mjs "$RUNNER_TEMP/deployments.json" --active-version)
+          npx wrangler versions view "$active_version" --json --config wrangler.editorial.runtime.jsonc > "$RUNNER_TEMP/version.json" 2>/dev/null
+          npx wrangler deployments list --json --config wrangler.editorial.runtime.jsonc > "$RUNNER_TEMP/deployments.json" 2>/dev/null
+          node scripts/verify-editorial-deployment.mjs "$RUNNER_TEMP/deployments.json" production "$GITHUB_SHA" "$RUNNER_TEMP/version.json"
           test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$GITHUB_SHA"

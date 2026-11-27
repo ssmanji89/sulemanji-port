@@ -3,7 +3,7 @@ import { ModelAdmissionHoldError, type ModelGateway } from './models.js';
 import type { EditorialPolicy } from './scheduler.js';
 import { SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
 import { attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
-import type { DurableStep } from './workflow-core.js';
+import type { CandidateProcessOutcome, DurableStep } from './workflow-core.js';
 
 const PUBLICATION_WAIT_MS = [30_000, 60_000, 90_000, 120_000, 180_000];
 type CandidatePipelineInput = {
@@ -16,7 +16,7 @@ type CandidatePipelineInput = {
   step: DurableStep;
 };
 type PublicationResult = { attempt: PublishAttempt; merged: boolean };
-type PipelineOutcome = { status: 'verified' | 'held'; reason: string };
+type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true };
 export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt };
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
@@ -31,22 +31,32 @@ function stepPart(candidateId: string): string {
   return candidateId.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 64);
 }
 
-async function runModelStep<T>(step: DurableStep, name: string, generate: () => Promise<T>): Promise<T | { modelHoldReason: string }> {
+async function runModelStep<T>(step: DurableStep, name: string, generate: () => Promise<T>): Promise<T | ModelStepHold> {
   return step.do(name, async () => {
     try {
       return await generate();
     } catch (error) {
-      if (error instanceof ModelAdmissionHoldError) return { modelHoldReason: error.reason };
+      if (error instanceof ModelAdmissionHoldError) {
+        // Only limits specific to this candidate leave unrelated model work qualified.
+        const candidateLimit = error.message === 'MODEL_CALL_LIMIT_HOLD' || error.message === 'MODEL_REVIEW_ROUND_LIMIT_HOLD';
+        return { modelHoldReason: error.reason, ...(candidateLimit ? { continue_after_hold: true as const } : {}) };
+      }
       throw error;
     }
   });
 }
 
+function modelHoldOutcome(hold: ModelStepHold): CandidateProcessOutcome {
+  return { status: 'held', reason: hold.modelHoldReason, ...(hold.continue_after_hold ? { continue_after_hold: true } : {}) };
+}
+
 export function createEditorialCandidatePipeline(deps: CandidatePipelineDependencies) {
   return {
-    async processCandidate(input: CandidatePipelineInput): Promise<PipelineOutcome> {
+    async processCandidate(input: CandidatePipelineInput): Promise<CandidateProcessOutcome> {
       const { candidate, policy, owner_epoch: ownerEpoch, step } = input;
-      if (candidate.action === 'REPAIR' || candidate.action === 'PROPOSE') return { status: 'held', reason: 'This candidate action requires an owner decision.' };
+      if (candidate.action === 'REPAIR' || candidate.action === 'PROPOSE') {
+        return { status: 'held', reason: 'This candidate action requires an owner decision.', continue_after_hold: true };
+      }
       if (!Number.isSafeInteger(ownerEpoch) || ownerEpoch < 1 || !Number.isSafeInteger(policy.max_review_rounds_per_candidate) ||
           policy.max_review_rounds_per_candidate < 1 || policy.max_review_rounds_per_candidate > 3) {
         return { status: 'held', reason: 'Candidate publication context is not qualified.' };
@@ -56,7 +66,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       const models = deps.modelsFor(candidate, ownerEpoch, policy);
       const draftProposal = await runModelStep(step, `prepare-content-${key}`,
         () => prepareContent(candidate, context, models, `author:${candidate.id}`));
-      if ('modelHoldReason' in draftProposal) return { status: 'held', reason: draftProposal.modelHoldReason };
+      if ('modelHoldReason' in draftProposal) return modelHoldOutcome(draftProposal);
       let proposal = draftProposal;
       if (proposal.files[0]?.operation === 'create') {
         const draft = proposal;
@@ -71,8 +81,8 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         if (!card.proposal) {
           const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-card`, () =>
             deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', { proposal: draft }));
-          return { status: 'held', reason: recorded ? `Social card requires owner review (${card.failure}).` :
-            'Workflow authority changed before the social card hold could be checkpointed.' };
+          if (!recorded) return { status: 'held', reason: 'Workflow authority changed before the social card hold could be checkpointed.' };
+          return { status: 'held', reason: `Social card requires owner review (${card.failure}).`, continue_after_hold: true };
         }
         proposal = card.proposal;
       }
@@ -87,7 +97,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         const reviewerRunId = `review:${candidate.id}:round-${round}`;
         const reviewContext = { ...context, reviewer_run_id: reviewerRunId };
         const receipt = await runModelStep(step, `review-content-${key}-round-${round}`, () => reviewContent(proposal, reviewContext, models));
-        if ('modelHoldReason' in receipt) return { status: 'held', reason: receipt.modelHoldReason };
+        if ('modelHoldReason' in receipt) return modelHoldOutcome(receipt);
         checkpoint = { proposal, review: receipt };
         if (receipt.decision === 'CLEAR') {
           if (receipt.findings.length !== 0 || receipt.reviewer_run_id === proposal.author_run_id || receipt.content_digest !== proposal.content_digest ||
@@ -101,12 +111,13 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
           break;
         }
         if (receipt.decision === 'HOLD' || round === maximumRounds) {
-          await step.do(`persist-candidate-${key}-NEEDS_OWNER-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', checkpoint));
-          return { status: 'held', reason: receipt.decision === 'HOLD' ? 'Independent review requires an owner decision.' : 'Review rounds were exhausted before clearance.' };
+          const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', checkpoint));
+          if (!recorded) return { status: 'held', reason: 'Workflow authority changed before the review hold could be checkpointed.' };
+          return { status: 'held', reason: receipt.decision === 'HOLD' ? 'Independent review requires an owner decision.' : 'Review rounds were exhausted before clearance.', continue_after_hold: true };
         }
         const revision = await runModelStep(step, `revise-content-${key}-round-${round}`, () => reviseContent(proposal, candidate, context, receipt.findings,
           models, `author:${candidate.id}:revision-${round}`));
-        if ('modelHoldReason' in revision) return { status: 'held', reason: revision.modelHoldReason };
+        if ('modelHoldReason' in revision) return modelHoldOutcome(revision);
         proposal = revision;
         checkpoint = { proposal, review: receipt };
         if (!(await step.do(`persist-candidate-${key}-DRAFTED-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'DRAFTED', checkpoint)))) {

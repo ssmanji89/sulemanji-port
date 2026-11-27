@@ -86,7 +86,7 @@ describe('durable candidate publication pipeline', () => {
     const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
       catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step };
 
-    const held = { status: 'held', reason: 'The candidate reached its model-call or independent review limit.' };
+    const held = { status: 'held', reason: 'The candidate reached its model-call or independent review limit.', continue_after_hold: true };
     await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
     await expect(pipeline.processCandidate(input)).resolves.toEqual(held);
     expect(retries).toBe(0);
@@ -262,7 +262,7 @@ describe('durable candidate publication pipeline', () => {
     const result = await pipeline.processCandidate({ candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
       catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps() });
 
-    expect(result).toMatchObject({ status: 'held', reason: 'Review rounds were exhausted before clearance.' });
+    expect(result).toMatchObject({ status: 'held', reason: 'Review rounds were exhausted before clearance.', continue_after_hold: true });
     expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review', 'revise', 'review', 'revise', 'review']);
     expect(models.calls.filter((call) => call.purpose === 'review').map((call) => call.run_id)).toEqual([
       `review:${candidate.id}:round-1`, `review:${candidate.id}:round-2`, `review:${candidate.id}:round-3`,

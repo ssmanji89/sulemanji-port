@@ -172,6 +172,52 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
 }
 
 describe('deterministic signal workflow', () => {
+  it.each([true, false])('only continues independently after an explicitly safe candidate hold (%s)', async (canContinue) => {
+    const now = new Date('2026-11-27T14:00:00.000Z');
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+    const db = new PipelineD1();
+    const catalog = [
+      { id: 'workers', canonical_url: '/work/cloudflare/', title: 'Cloudflare Workers', topics: ['infrastructure'] },
+      { id: 'markets', canonical_url: '/work/market-systems/', title: 'Market systems', topics: ['markets'] },
+    ];
+    function entry(title: string, url: string) {
+      return `<item><title>${title}</title><description>New documented details.</description><link>${url}</link><pubDate>${now.toUTCString()}</pubDate></item>`;
+    }
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/content-index.json') return Response.json({ schema_version: 1, items: catalog });
+      const items = url.hostname === 'blog.cloudflare.com'
+        ? [entry('Workers release update', 'https://blog.cloudflare.com/workers/release-one/'),
+          entry('Workers API version update', 'https://blog.cloudflare.com/workers/release-two/')]
+        : url.hostname === 'www.federalreserve.gov'
+          ? [entry('Market policy update', 'https://www.federalreserve.gov/newsevents/pressreleases/monetary20261127a.htm')]
+          : [];
+      return new Response(`<rss><channel>${items.join('')}</channel></rss>`);
+    });
+    const processed: Array<string | null> = [];
+    const processor: NonNullable<Parameters<typeof runWorkerAdmission>[4]> = { processCandidate: ({ candidate, step }) => step.do(`test-process-${candidate.id}`, () => {
+      processed.push(candidate.target_id);
+      if (processed.length === 1) return { status: 'held' as const, reason: 'Original candidate needs review.',
+        ...(canContinue ? { continue_after_hold: true as const } : {}) };
+      return { status: 'verified' as const, reason: 'Exact publication was verified.' };
+    }) };
+    const params = { slot_claim_id: 'independent-candidate-hold' };
+    const env = { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never;
+    const step = new DurableStep();
+    const result = await runEditorialAdmission(params, env, step, processor);
+
+    expect(db.candidates.size).toBe(3);
+    expect(result).toMatchObject({ status: 'held', reason: 'Original candidate needs review.' });
+    expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
+    const receipt = db.receipts.get(`slot-result:${params.slot_claim_id}`)!;
+    expect(receipt.action).toBe('HELD_PUBLICATION_PIPELINE');
+    expect(JSON.parse(String(receipt.result_json)).outcomes.map((outcome: { status: string }) => outcome.status))
+      .toEqual(canContinue ? ['held', 'held', 'verified'] : ['held']);
+    expect(await runEditorialAdmission(params, env, step, processor)).toEqual(result);
+    expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
+  });
+
   it('holds when the catalog redirects away from its exact URL', async () => {
     const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(null, { status: 301, headers: { location: '/writing' } }));
     vi.stubGlobal('fetch', fetcher);

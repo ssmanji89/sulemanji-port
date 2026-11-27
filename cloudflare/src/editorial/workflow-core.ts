@@ -12,7 +12,8 @@ export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
   sleep(name: string, milliseconds: number): Promise<void>;
 };
-export type CandidateProcessOutcome = { status: 'verified' | 'held'; reason: string };
+export type CandidateProcessOutcome = { status: 'verified'; reason: string }
+  | { status: 'held'; reason: string; continue_after_hold?: true };
 export type EditorialCandidateProcessor = {
   processCandidate(input: {
     candidate: Candidate;
@@ -380,11 +381,21 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   }
   if (processor) {
     const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [];
+    const heldTargets = new Set<string>();
     for (const { signal, decision } of actionable) {
-      const outcome = await processor.processCandidate({ candidate: { ...decision.candidate, knowledge_revision: knowledgeRevision }, signal, catalog, knowledge, policy,
+      if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the next candidate.');
+      const candidate = { ...decision.candidate, knowledge_revision: knowledgeRevision };
+      if (candidate.target_id && heldTargets.has(candidate.target_id)) {
+        outcomes.push({ candidate_id: candidate.id, status: 'held', reason: 'Another candidate for this item requires review.' });
+        continue;
+      }
+      const outcome = await processor.processCandidate({ candidate, signal, catalog, knowledge, policy,
         owner_epoch: control.owner_epoch, step });
-      outcomes.push({ candidate_id: decision.candidate.id, status: outcome.status, reason: outcome.reason });
-      if (outcome.status !== 'verified') break;
+      outcomes.push({ candidate_id: candidate.id, status: outcome.status, reason: outcome.reason });
+      if (outcome.status === 'held') {
+        if (!outcome.continue_after_hold) break;
+        if (candidate.target_id) heldTargets.add(candidate.target_id);
+      }
     }
     const verified = outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');
     const reason = verified ? 'All admitted candidates passed publication and public readback.' :

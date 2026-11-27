@@ -1,0 +1,14 @@
+{% assign relations = site.data.content_catalog.relations | where: 'from_id', include.item.id %}
+{% if relations.size > 0 %}
+<details class="content-relations">
+  <summary>Related paths <span aria-hidden="true">({{ relations.size }})</span></summary>
+  <ul>
+    {% for relation in relations %}
+      {% assign related_item = site.data.content_catalog.items | where: 'id', relation.to_id | first %}
+      {% if related_item %}
+      <li><a href="{{ related_item.canonical_url | relative_url }}">{{ related_item.title | escape }}</a><span>{{ relation.reason | escape }}</span></li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+</details>
+{% endif %}

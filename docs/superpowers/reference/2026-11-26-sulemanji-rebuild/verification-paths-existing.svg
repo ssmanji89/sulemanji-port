@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="portfolio-diagram" viewBox="0 0 800 808" role="img" aria-labelledby="verification-paths-title verification-paths-desc" style="max-width:100%;height:auto">
+<title id="verification-paths-title">Check the same claim through independent methods</title>
+<desc id="verification-paths-desc">A polynomial claim receives rational and SymPy checks; their identities and collision results are compared and retained with reproducible artifacts.</desc>
+<defs>
+<marker id="verification-paths-arrow" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#6d756e"/></marker>
+<marker id="verification-paths-arrow-accent" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#b85d3e"/></marker>
+<marker id="verification-paths-arrow-link" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#244c3d"/></marker>
+<marker id="verification-paths-arrow-soft" markerWidth="7" markerHeight="6" refX="6.7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0 0L7 3L0 6Z" fill="#c9d0c5"/></marker>
+</defs>
+<rect width="800" height="808" fill="#f4f2ec"/>
+<path data-connector="true" d="M344 152V192Q344 200 336 200H226Q218 200 218 208V248" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#verification-paths-arrow)"/>
+<path data-connector="true" d="M456 152V192Q456 200 464 200H574Q582 200 582 208V248" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#verification-paths-arrow)"/>
+<path data-connector="true" d="M218 356V400Q218 408 226 408H320Q328 408 328 416V440" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#verification-paths-arrow)"/>
+<path data-connector="true" d="M582 356V400Q582 408 574 408H480Q472 408 472 416V440" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#verification-paths-arrow)"/>
+<path data-connector="true" d="M400 548V632" fill="none" stroke="#6d756e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#verification-paths-arrow)"/>
+<g data-node-id="verification-paths-node-1"><rect x="236" y="48" width="328" height="104" rx="6" fill="#244c3d" stroke="#244c3d" stroke-width="1.5"/></g>
+<text id="verification-paths-text-1" x="400.0" y="95.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Polynomial claim</text>
+<text id="verification-paths-text-2" x="400.0" y="123.0" fill="#f4f2ec" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">same map and identities</text>
+<g data-node-id="verification-paths-node-2"><rect x="92" y="248" width="252" height="108" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="verification-paths-text-3" x="218.0" y="297.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Rational checker</text>
+<text id="verification-paths-text-4" x="218.0" y="325.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">custom exact arithmetic</text>
+<g data-node-id="verification-paths-node-3"><rect x="456" y="248" width="252" height="108" rx="6" fill="#f4f2ec" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="verification-paths-text-5" x="582.0" y="297.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">SymPy checker</text>
+<text id="verification-paths-text-6" x="582.0" y="325.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">independent implementation</text>
+<g data-node-id="verification-paths-node-4"><rect x="236" y="440" width="328" height="108" rx="6" fill="#f2e6dc" stroke="#b85d3e" stroke-width="1.5"/></g>
+<text id="verification-paths-text-7" x="400.0" y="489.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Compare results</text>
+<text id="verification-paths-text-8" x="400.0" y="517.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">identities + collision checks</text>
+<g data-node-id="verification-paths-node-5"><rect x="236" y="632" width="328" height="104" rx="6" fill="#e1e7dc" stroke="#c9d0c5" stroke-width="1.5"/></g>
+<text id="verification-paths-text-9" x="400.0" y="679.0" fill="#172c25" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="25" font-weight="600" text-anchor="middle" style="">Verification bundle</text>
+<text id="verification-paths-text-10" x="400.0" y="707.0" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="middle" style="">code, output, versions, hashes</text>
+<line x1="40" y1="764" x2="760" y2="764" stroke="#c9d0c5"/>
+<text id="verification-paths-text-11" x="40" y="790" fill="#6d756e" font-family="Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="400" text-anchor="start" style="">Independent reproduction. Discovery and external formalization retain separate credit.</text>
+</svg>

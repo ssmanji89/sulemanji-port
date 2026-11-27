@@ -43,9 +43,12 @@ def validate_custom_image(source, article):
 
 def font_path(name):
     roots = [
+        Path(__file__).resolve().parent / "fonts",
         Path(os.environ.get("DEJAVU_FONT_DIR", "")),
         Path("/usr/share/fonts/truetype/dejavu"),
         Path("/usr/local/share/fonts"),
+        Path.home() / "Library" / "Fonts",
+        Path.home() / ".local" / "share" / "fonts",
     ]
     for root in roots:
         candidate = root / name
@@ -76,9 +79,12 @@ def render_card(title, author, output):
     output.parent.mkdir(parents=True, exist_ok=True)
     image = Image.new("RGB", (WIDTH, HEIGHT), "#17232a")
     draw = ImageDraw.Draw(image)
-    title_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 58)
-    author_font = ImageFont.truetype(str(font_path("DejaVuSans.ttf")), 30)
-    kicker_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 24)
+    # BASIC avoids host-specific libraqm shaping, keeping PNG pixels stable
+    # across Pillow builds with different optional text-layout libraries.
+    layout_engine = ImageFont.Layout.BASIC
+    title_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 58, layout_engine=layout_engine)
+    author_font = ImageFont.truetype(str(font_path("DejaVuSans.ttf")), 30, layout_engine=layout_engine)
+    kicker_font = ImageFont.truetype(str(font_path("DejaVuSans-Bold.ttf")), 24, layout_engine=layout_engine)
     draw.rounded_rectangle((56, 54, 1144, 576), radius=24, fill="#f7f6f2")
     draw.text((104, 102), "WRITING", font=kicker_font, fill="#a64b2a")
     lines = wrapped_lines(draw, title, title_font, 982)
@@ -91,6 +97,14 @@ def render_card(title, author, output):
     draw.line((104, 500, 1096, 500), fill="#c7c2b8", width=2)
     draw.text((104, 522), f"By {author}", font=author_font, fill="#4a555b")
     image.save(output, format="PNG", optimize=False, compress_level=9)
+
+
+def cards_match(first, second):
+    try:
+        with Image.open(first) as expected, Image.open(second) as actual:
+            return expected.size == actual.size and expected.convert("RGBA").tobytes() == actual.convert("RGBA").tobytes()
+    except (OSError, ValueError):
+        return False
 
 
 def generate(source, *, as_of, check=False, write_missing=False):
@@ -115,10 +129,10 @@ def generate(source, *, as_of, check=False, write_missing=False):
             target = output_dir / name
             generated = Path(temporary) / name if check or write_missing else target
             render_card(article["title"], "Suleman Manji", generated)
-            if write_missing and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
+            if write_missing and (not target.is_file() or not cards_match(generated, target)):
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(generated, target)
-            elif check and (not target.is_file() or target.read_bytes() != generated.read_bytes()):
+            elif check and (not target.is_file() or not cards_match(generated, target)):
                 failures.append(f"{route}: generated social card is stale or missing")
     return failures
 

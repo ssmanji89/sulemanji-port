@@ -9,7 +9,7 @@
   function apply(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     var meta = document.getElementById('theme-color-meta');
-    if (meta) meta.setAttribute('content', theme === 'dark' ? '#17232a' : '#f7f6f2');
+    if (meta) meta.setAttribute('content', theme === 'dark' ? '#111B29' : '#F7F5EF');
     var button = document.querySelector('.theme-toggle');
     if (button) button.setAttribute('aria-label', theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
   }

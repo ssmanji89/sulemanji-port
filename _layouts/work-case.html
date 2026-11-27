@@ -1,32 +1,6 @@
 ---
 layout: default
 ---
-{% assign case = site.data.work-cases | where: "slug", page.case_slug | first %}
-{% if case %}
-<div class="case-page">
-  <p class="case-status"><span>{{ case.status }}</span></p>
-  {% for paragraph in case.intro %}<p class="case-intro">{{ paragraph | escape }}</p>{% endfor %}
-
-  {% if case.diagram %}
-  <figure class="case-diagram">
-    <img src="{{ '/assets/diagrams/portfolio/' | append: case.diagram | append: '.svg' | relative_url }}" alt="{{ case.diagram_alt | default: case.title | escape }}" loading="lazy">
-    <figcaption>{{ case.diagram_caption | default: "Conceptual illustration; see the accompanying case description for scope." | escape }}</figcaption>
-  </figure>
-  {% endif %}
-
-  {% for section in case.sections %}
-  <section class="case-section"><h2>{{ section.title | escape }}</h2>
-    {% for paragraph in section.paragraphs %}<p>{{ paragraph | escape }}</p>{% endfor %}
-    {% if section.bullets and section.bullets.size > 0 %}<ul>{% for bullet in section.bullets %}<li>{{ bullet | escape }}</li>{% endfor %}</ul>{% endif %}
-  </section>
-  {% endfor %}
-
-  {% if case.projects and case.projects.size > 0 %}<section class="case-section"><h2>Projects and current state</h2><ul class="case-projects">{% for project in case.projects %}<li><strong>{{ project.name | escape }}</strong> <span class="project-state">({{ project.state | escape }})</span> — {{ project.description | escape }}{% if project.href %} <a href="{{ project.href | escape }}"{% if project.href contains 'http' %} rel="noopener"{% endif %}>Project details</a>{% endif %}</li>{% endfor %}</ul></section>{% endif %}
-
-  {% if page.case_slug == 'ff-cli' %}
-  <section class="case-section"><h2>A public auction demonstration</h2><p>The recording uses synthetic owner names. It shows an offline auction interface; the actual league uses a snake draft.</p><video controls preload="metadata" width="960" height="540" aria-describedby="ffcli-video-description"><source src="{{ '/assets/ffcli/demo.mp4' | relative_url }}" type="video/mp4">Your browser does not support this video.</video><p id="ffcli-video-description">Silent screen recording of the ff-cli auction board, including player values, roster needs, budgets, and draft actions. The interface is a demonstration; actual league play uses a snake draft.</p><p><a href="{{ '/assets/ffcli/warroom-full-board.png' | relative_url }}">View an auction board screenshot</a></p></section>
-  {% endif %}
-
-  {% if case.sources and case.sources.size > 0 %}<section class="case-section"><h2>Sources</h2><ul>{% for source in case.sources %}<li><a href="{{ source.href | escape }}" rel="noopener">{{ source.label | escape }}</a></li>{% endfor %}</ul></section>{% endif %}
+<div class="work-layout work-layout--case" data-work-format="case">
+  {% include work-case-content.html %}
 </div>
-{% endif %}

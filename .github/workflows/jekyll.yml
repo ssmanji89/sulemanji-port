@@ -1,28 +1,36 @@
-name: Deploy Jekyll site to GitHub Pages
+name: Build and deploy Sulemanji.com
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [main]
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: Validate only, or deploy to Cloudflare staging or production
+        required: true
+        type: choice
+        options: [validate, staging, production]
+        default: validate
 
 permissions:
   contents: read
 
-# Production runs share one lock. Pull requests validate independently.
 concurrency:
-  group: ${{ github.event_name == 'pull_request' && format('pages-pr-{0}', github.event.pull_request.number) || 'pages-production' }}
+  group: ${{ github.event_name == 'pull_request' && format('site-pr-{0}', github.event.pull_request.number) || 'site-production' }}
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SITE_DEPLOY_TARGET: ${{ vars.SITE_DEPLOY_TARGET || 'pages' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -35,75 +43,39 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-          cache-dependency-path: worker/package-lock.json
+          cache-dependency-path: |
+            worker/package-lock.json
+            cloudflare/package-lock.json
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Install discovery dependencies
+      - name: Install image generation font
         run: |
           sudo apt-get update
           sudo apt-get install --yes fonts-dejavu-core
-          python -m pip install --requirement requirements-seo.txt
 
-      - name: Install Worker dependencies
-        run: npm ci --prefix worker
+      - name: Run complete release gates and build once
+        run: bash scripts/check_site_release.sh
 
-      - name: Check Worker
-        run: npm run check --prefix worker
-
-      - name: Verify Writing source
-        run: bundle exec ruby scripts/verify_writing.rb --source-only
-
-      - name: Generate missing article images
-        run: python scripts/generate_article_images.py --write-missing
-
-      - name: Verify generated article images
-        run: python scripts/generate_article_images.py --check
-
-      - name: Build with Jekyll
-        run: |
-          bundle exec jekyll clean
-          bundle exec jekyll build
-        env:
-          JEKYLL_ENV: production
-
-      - name: Verify Writing output
-        run: bundle exec ruby scripts/verify_writing.rb
-
-      - name: Verify discovery output
-        run: python scripts/verify_discovery.py
-
-      - name: Run Writing tests
-        run: bundle exec ruby -I scripts/tests -e 'Dir["scripts/tests/test_*.rb"].sort.each { |path| require_relative path }'
-
-      - name: Run discovery tests
-        run: python -m unittest discover -s scripts/tests -p 'test_*.py' -v
-
-      - name: Verify Work With Me content
-        run: python3 scripts/verify_work_with_me.py
-
-      - name: Verify Viyu positioning
-        run: python3 scripts/verify_viyu_positioning.py
-
-      - name: Verify public safety
-        run: python3 scripts/verify_public_safety.py
-
-      - name: Verify portfolio review
-        run: python3 scripts/verify_portfolio_review.py
-
-      - name: Verify Priority Discovery plan
-        run: python3 scripts/verify_priority_discovery_plan.py
-
-      - name: Upload artifact
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && vars.SITE_DEPLOY_TARGET != 'cloudflare'
         uses: actions/upload-pages-artifact@v3
 
-  deploy:
+      - name: Upload immutable Cloudflare artifact
+        if: github.repository == 'ssmanji89/sulemanji-port' && vars.SITE_DEPLOY_TARGET == 'cloudflare' && ((github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'staging'))
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+          path: _site
+          if-no-files-found: error
+          retention-days: 14
+
+  deploy-pages:
     needs: build
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    if: github.repository == 'ssmanji89/sulemanji-port' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'production')) && vars.SITE_DEPLOY_TARGET != 'cloudflare'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -115,3 +87,90 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  deploy-cloudflare-staging:
+    needs: build
+    if: github.repository == 'ssmanji89/sulemanji-port' && github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'staging' && vars.SITE_DEPLOY_TARGET == 'cloudflare'
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-staging
+    concurrency:
+      group: cloudflare-site-staging
+      cancel-in-progress: false
+    env:
+      SITE_DEPLOY_TARGET: cloudflare
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_STAGING_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_STAGING_ACCOUNT_ID }}
+      SITE_TARGET_HOST: ${{ vars.CLOUDFLARE_STAGING_HOST }}
+    steps:
+      - name: Checkout exact artifact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Cloudflare CLI
+        run: npm ci --prefix cloudflare
+      - name: Download immutable site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+          path: _site
+      - name: Deploy staging and read back public routes
+        run: bash scripts/deploy_site.sh --environment staging --source-commit "${{ github.sha }}" --artifact _site
+      - name: Preserve private deployment receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-receipt-staging-${{ github.sha }}
+          path: ${{ runner.temp }}/sulemanji-staging-${{ github.sha }}.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  deploy-cloudflare:
+    needs: build
+    if: github.repository == 'ssmanji89/sulemanji-port' && github.ref == 'refs/heads/main' && vars.SITE_DEPLOY_TARGET == 'cloudflare' && ((github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'production'))
+    runs-on: ubuntu-latest
+    environment:
+      name: cloudflare-production
+    concurrency:
+      group: cloudflare-site-production
+      cancel-in-progress: false
+    env:
+      SITE_DEPLOY_TARGET: cloudflare
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout exact artifact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Cloudflare CLI
+        run: npm ci --prefix cloudflare
+      - name: Download immutable site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site-${{ github.sha }}
+          path: _site
+      - name: Deploy production and verify canonical host
+        run: bash scripts/deploy_site.sh --environment production --source-commit "${{ github.sha }}" --artifact _site
+      - name: Preserve private deployment receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-receipt-production-${{ github.sha }}
+          path: ${{ runner.temp }}/sulemanji-production-${{ github.sha }}.json
+          if-no-files-found: ignore
+          retention-days: 30

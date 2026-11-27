@@ -1,0 +1,18 @@
+---
+layout: default
+---
+<section class="content-topic">
+  <p class="eyebrow">Explore by subject</p>
+  <h1>{{ page.topic_label | escape }}</h1>
+  <p>Projects, explanations, and writing connected to this subject.</p>
+  <ul class="content-topic__items">
+    {% for item in page.content_items %}
+      <li>
+        <a href="{{ item.canonical_url | relative_url }}">{{ item.title | escape }}</a>
+        <p>{{ item.summary | escape }}</p>
+        <span>{{ item.availability | join: ", " | escape }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+  <p><a href="{{ '/explore/' | relative_url }}">Browse all work and interests</a></p>
+</section>

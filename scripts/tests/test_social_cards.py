@@ -1,15 +1,25 @@
 import datetime as dt
 import tempfile
 import unittest
+from PIL.PngImagePlugin import PngInfo
 from pathlib import Path
 from unittest.mock import patch
 
-from PIL import Image
+from PIL import Image, ImageFont
 
-from scripts.generate_article_images import generate, render_card, validate_custom_image
+from scripts.generate_article_images import font_path, generate, render_card, validate_custom_image
 
 
 class SocialCardTests(unittest.TestCase):
+    def test_default_font_path_uses_repository_pinned_dejavu(self):
+        with tempfile.TemporaryDirectory() as override:
+            Path(override, "DejaVuSans.ttf").write_bytes(b"environment override")
+            with patch.dict("os.environ", {"DEJAVU_FONT_DIR": override}):
+                self.assertEqual(
+                    Path(__file__).resolve().parents[1] / "fonts" / "DejaVuSans.ttf",
+                    font_path("DejaVuSans.ttf"),
+                )
+
     def test_write_missing_creates_absent_and_refreshes_stale_cards(self):
         article = {"permalink": "/notes/example", "title": "Example", "social_image": None}
         with tempfile.TemporaryDirectory() as temp:
@@ -27,6 +37,21 @@ class SocialCardTests(unittest.TestCase):
                 self.assertEqual(b"generated", target.read_bytes())
                 self.assertEqual(2, render.call_count)
 
+    def test_check_accepts_equivalent_pixels_with_different_png_metadata(self):
+        article = {"permalink": "/notes/example", "title": "Example", "social_image": None}
+        with tempfile.TemporaryDirectory() as temp:
+            source = Path(temp)
+            target = source / "assets" / "images" / "articles" / "example-social.png"
+            target.parent.mkdir(parents=True)
+            render_card("Example", "Suleman Manji", target)
+            with Image.open(target) as image:
+                equivalent = image.copy()
+            metadata = PngInfo()
+            metadata.add_text("generator", "different encoder")
+            equivalent.save(target, pnginfo=metadata)
+            with patch("scripts.generate_article_images.article_inventory", return_value=([article], [])):
+                self.assertEqual([], generate(source, as_of=dt.date(2026, 11, 2), check=True))
+
     def test_card_is_deterministic_1200_by_630(self):
         with tempfile.TemporaryDirectory() as temp:
             first = Path(temp) / "first.png"
@@ -37,6 +62,16 @@ class SocialCardTests(unittest.TestCase):
             self.assertEqual(first.read_bytes(), second.read_bytes())
             with Image.open(first) as image:
                 self.assertEqual((1200, 630), image.size)
+
+    def test_render_uses_platform_independent_basic_text_layout(self):
+        with tempfile.TemporaryDirectory() as temp, patch(
+            "scripts.generate_article_images.ImageFont.truetype", wraps=ImageFont.truetype
+        ) as load_font:
+            render_card("Deterministic title", "Suleman Manji", Path(temp) / "card.png")
+        self.assertEqual(3, load_font.call_count)
+        self.assertTrue(
+            all(call.kwargs["layout_engine"] is ImageFont.Layout.BASIC for call in load_font.call_args_list)
+        )
 
     def test_custom_image_decodes_declared_dimensions(self):
         with tempfile.TemporaryDirectory() as temp:

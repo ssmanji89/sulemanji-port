@@ -51,10 +51,17 @@ exclude:
   - Gemfile.lock
   - blog_automation.log
   - node_modules
+  - cloudflare/
+  - tests/
+  - test-results/
+  - playwright.config.ts
+  - package.json
+  - package-lock.json
   - scripts/
   - vendor/
   - worker/
   - docs/
+  - docs/redevelopment/
   - README.md
   - LICENSE
   - blog_automation/

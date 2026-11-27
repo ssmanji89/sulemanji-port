@@ -1,6 +1,6 @@
 # Sulemanji.com redevelopment execution checkpoint
 
-Status: implementation in progress; production cutover has not started.
+Status: site redesign is live; maintenance infrastructure is deployed but publication remains paused.
 
 ## Verified starting state
 
@@ -56,6 +56,15 @@ Staging, production, merge, publisher cutover, and schedule activation: not star
 - After PR #103 advanced main, run `45916945883` passed the full build and Pages deployment. The exact main artifact was verified and re-deployed; only `release.json` changed, and the active Worker now reads 100% on version `a99c3f2c-7c45-41c4-95ac-bd1be3da0efa` with the same asset digest. Editorial automation remains disabled.
 - This deployment activates public static hosting only. No Cron, Workflows, D1, or editorial maintenance schedule was activated. Production knowledge delivery/renewal receipts and two natural eligible schedule runs remain release gates. The existing publisher is still the sole active writer and was not changed.
 
+## Current live state (2026-11-27)
+
+- Fresh deployment work began from `main` at `c14334b322b77bb877f54e52bf04205c4ac3838c` in a dedicated worktree. The planning package was read from the plan branch; no implementation files were imported from that branch.
+- The static site remains live through `sulemanji-site` on `www.sulemanji.com/*`. Canonical-host, article, Writing, work, retired-route, and release-manifest reads passed after the main artifact deployment.
+- `sulemanji-editorial` is now deployed with its production D1, Workflow, and hourly Cron; the route is configured for `editorial.sulemanji.com/*`. `sulemanji-editorial-staging` has its own D1 and Workflow. Its Cron was disabled to stay within the Cloudflare Free-plan limit of five account triggers. No existing trigger was changed.
+- Remote migrations 0001–0003 are applied in both editorial databases. Both control rows read back paused at owner epoch 1. The Worker code itself returns `HELD_PIPELINE_UNCONFIGURED` until the full discovery-to-public-readback workflow is connected.
+- Public DNS for `editorial.sulemanji.com` does not resolve. No DNS record, API model secret, model spend, publisher cutover, or owner unpause was performed. The Viyu producer has not delivered a real authorized derivative, and no durable receipt or renewal has been observed.
+- The connected Cloudflare app remains unauthorized; local Wrangler OAuth performed the deployment. Current Cloudflare docs show the Free account's five-Cron limit and a $5/month Paid starting plan. A plan upgrade was not made.
+
 ## Release gate
 
-The public site Worker and `www` route are live on the exact merged-main artifact. The connected Cloudflare app still needs reauthentication for its tooling. Production knowledge delivery/renewal, editorial workflow readiness, and two natural eligible schedule runs remain unverified; keep those systems held and do not claim full production qualification until real receipts exist. The existing publisher, public DNS/certificate, and publication state remain intact.
+The redesigned public site is live and owner-approved. The maintenance Worker resources now exist, but end-to-end maintenance activation is not qualified: the knowledge producer cannot reach its current hostname, real authorized knowledge delivery/renewal is absent, the pipeline remains held, the current publisher has not been cut over, and two natural eligible schedule runs have not occurred. Keep the existing publisher and all publication state intact. Do not claim full-goal completion until those live receipts exist.

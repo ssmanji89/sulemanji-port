@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseEditorialPolicy } from '../src/editorial/policy.mjs';
 
 const cloudflareDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const [environment, outputDirectory = cloudflareDir] = process.argv.slice(2);
@@ -17,11 +18,8 @@ const requiredValues = ['EDITORIAL_WORKER_NAME', 'EDITORIAL_WORKFLOW_NAME', 'EDI
 for (const key of requiredValues) {
   if (!process.env[key]?.trim()) throw new Error(`${key}_IS_REQUIRED`);
 }
-let editorialPolicy;
-try { editorialPolicy = JSON.parse(process.env.EDITORIAL_POLICY_JSON); } catch { throw new Error('EDITORIAL_POLICY_JSON_MUST_BE_VALID_JSON'); }
-if (!editorialPolicy || typeof editorialPolicy !== 'object' || Array.isArray(editorialPolicy)) {
-  throw new Error('EDITORIAL_POLICY_JSON_MUST_BE_AN_OBJECT');
-}
+const editorialPolicy = parseEditorialPolicy(process.env.EDITORIAL_POLICY_JSON);
+if (!editorialPolicy) throw new Error('EDITORIAL_POLICY_JSON_MISSING_OR_INVALID');
 
 const configName = environment === 'staging' ? 'wrangler.editorial-staging.jsonc' : 'wrangler.editorial.jsonc';
 const outputName = environment === 'staging' ? 'wrangler.editorial-staging.runtime.jsonc' : 'wrangler.editorial.runtime.jsonc';

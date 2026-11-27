@@ -1,7 +1,8 @@
 import type { ContentProposal, PublicationReceipt, PublicationState, PublishAttempt, ReviewReceipt } from './contracts.js';
 import * as parse5 from 'parse5';
-import { verifyRequiredMedia } from './review.js';
+import { articleSourcePath, verifyRequiredMedia } from './review.js';
 import { CANONICAL_SITE_ORIGIN } from './site-readback.js';
+import { encodeSocialCard, isSocialCardPng, MAX_CARD_BYTES, socialCardPath } from './social-card-format.js';
 import { readDiscoveryLinks } from './discovery-readback.js';
 
 export type PublishDecision = { allowed: true } | { allowed: false; reasons: string[] };
@@ -55,7 +56,9 @@ export async function canPublish(proposal: ContentProposal, receipt: ReviewRecei
   if (!proposal.files.length || proposal.files.some((file) => !safePath(file.path) || !state.allowed_paths.includes(file.path) || !['create', 'update'].includes(file.operation))) reasons.push('Changed path is outside the guarded publication allowlist.');
   if (new Set(proposal.files.map((file) => file.path)).size !== proposal.files.length) reasons.push('Proposal contains duplicate paths.');
   if (!proposal.public_urls.length || proposal.expected_content.length !== proposal.public_urls.length || proposal.expected_content.some((item) => !proposal.public_urls.includes(item.url) || !item.title || !/^[0-9a-f]{64}$/.test(item.text_sha256))) reasons.push('Expected public content is incomplete.');
-  if (!verifyRequiredMedia(proposal, state.allowed_paths)) reasons.push('Required media is missing or unsafe.');
+  if (proposal.files.some((file) => file.operation === 'create' && ARTICLE.test(file.path) &&
+      !proposal.expected_content.some((item) => item.social_image && articleSourcePath(item.url) === file.path)) ||
+      !verifyRequiredMedia(proposal, state.allowed_paths)) reasons.push('Required media is missing or unsafe.');
   for (const file of proposal.files) {
     if (file.content.length > 262_144 || !/^[0-9a-f]{64}$/.test(file.content_sha256)) { reasons.push(`File payload is invalid or too large: ${file.path}.`); continue; }
     if (await sha256(file.content) !== file.content_sha256) reasons.push(`File digest mismatch: ${file.path}.`);
@@ -151,6 +154,27 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   }
 }
 
+async function readCardBytes(response: Response): Promise<Uint8Array> {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error('social card response body is missing');
+  const bytes = new Uint8Array(MAX_CARD_BYTES);
+  let size = 0;
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) return bytes.subarray(0, size);
+      if (size + value.length > MAX_CARD_BYTES) {
+        await reader.cancel();
+        throw new Error('social card response exceeds bound');
+      }
+      bytes.set(value, size);
+      size += value.length;
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
+
 export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher: typeof fetch,
   readback: 'public' | 'private-binding' = 'public'): Promise<{ receipt: PublicationReceipt; failure?: string }> {
   if (!attempt.source_commit) return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: '', deployment_version: '', public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'UNCERTAIN' }, failure: 'merged source commit missing' };
@@ -174,6 +198,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       const titles: string[] = [];
       const articles: string[] = [];
       const canonicalUrls: string[] = [];
+      const socialImages: string[] = [];
       const walk = (node: unknown): void => {
         if (!node || typeof node !== 'object') return;
         const row = node as { tagName?: string; attrs?: Array<{ name: string; value: string }>; childNodes?: unknown[] };
@@ -181,6 +206,9 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
         if (row.tagName === 'div' && row.attrs?.some((attr) => attr.name === 'data-writing-body')) articles.push(normalizeNodeText(node));
         if (row.tagName === 'link' && row.attrs?.some((attr) => attr.name === 'rel' && attr.value === 'canonical')) {
           const href = row.attrs.find((attr) => attr.name === 'href')?.value; if (href) canonicalUrls.push(new URL(href, expectedUrl).toString());
+        }
+        if (row.tagName === 'meta' && row.attrs?.some((attr) => attr.name === 'property' && attr.value === 'og:image')) {
+          socialImages.push(row.attrs.find((attr) => attr.name === 'content')?.value ?? '');
         }
         for (const child of row.childNodes ?? []) walk(child);
       };
@@ -200,6 +228,23 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       if (releaseAssetDigest !== null && (releaseAssetDigest !== assetDigest || releaseBuiltAt !== builtAt)) throw new Error('public pages came from different deployed releases');
       releaseAssetDigest = assetDigest;
       releaseBuiltAt = builtAt;
+      if (item.social_image) {
+        const { path, content_sha256: cardDigest } = item.social_image;
+        const articlePath = articleSourcePath(item.url);
+        if (!articlePath || path !== socialCardPath(articlePath)) {
+          throw new Error('social card path does not match the article');
+        }
+        const target = new URL(path, CANONICAL_SITE_ORIGIN);
+        if (socialImages.length !== 1 || socialImages[0] !== target.href) throw new Error('social card metadata mismatch');
+        const card = await fetcher(target, { redirect: 'error' });
+        if (!card.ok || (card.url ? card.url !== target.href : readback !== 'private-binding') ||
+            card.headers.get('content-type') !== 'image/png' || card.headers.get('x-site-source-commit') !== sourceCommit ||
+            card.headers.get('x-site-asset-digest') !== assetDigest || card.headers.get('x-site-built-at') !== builtAt) {
+          throw new Error('social card does not match the deployed release');
+        }
+        const bytes = await readCardBytes(card);
+        if (!isSocialCardPng(bytes) || await sha256(encodeSocialCard(bytes)) !== cardDigest) throw new Error('social card bytes mismatch');
+      }
     }
     if (!articleUrls.length || !releaseAssetDigest || !releaseBuiltAt) throw new Error('deployed asset release identity missing');
     for (const [kind, path] of [['writing', '/writing'], ['feed', '/feed.xml'], ['sitemap', '/sitemap.xml']] as const) {

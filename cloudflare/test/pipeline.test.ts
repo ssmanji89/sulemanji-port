@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFile } from 'node:fs/promises';
 import { createEditorialCandidatePipeline } from '../src/editorial/pipeline.js';
 import type { Candidate, ContentProposal, PreparationContext, PublicationReceipt, PublishAttempt, Signal } from '../src/editorial/contracts.js';
 import type { EditorialPolicy } from '../src/editorial/scheduler.js';
@@ -11,6 +12,8 @@ const article = {
   body: `A useful explanation of the release evidence begins with the exact source and the behavior it describes. Engineers should compare the documented change with their own environment before adjusting production. The source makes a narrow claim, so this article keeps its conclusion narrow too. It identifies what changed, explains who should care, and gives readers a concrete way to verify the change before they rely on it. A reader can compare the documented behavior with the package they run, check whether the affected setting is enabled, and record the result before changing a workflow. This avoids treating a release headline as proof that every deployment is affected. [Official release](https://vendor.example.test/releases/42).`,
   publication_family: 'technical-guide', commercial_intent: 'none', time_horizon: 'durable', topics: ['infrastructure'], reader: 'technical-practitioner',
 };
+const renderSocialCard = async () => new Uint8Array(await readFile(
+  new URL('../../assets/images/articles/agent-safety-social.png', import.meta.url)));
 const candidate: Candidate = { id: 'create:signal-1:workers', signal_ids: ['signal-1'], target_id: null, action: 'CREATE', reader: 'Technical practitioner',
   question: 'What changed?', benefit: 'Keeps a useful guide current.', source_digest: 'b'.repeat(64), policy_revision: 'policy-v1', knowledge_revision: 'knowledge-v1', state: 'DISCOVERED' };
 const source = { url: 'https://vendor.example.test/releases/42', title: 'Release 42', retrieved_at: '2026-11-27T14:00:00.000Z', source_date: '2026-11-27T14:00:00.000Z', content_sha256: 'a'.repeat(64) };
@@ -54,7 +57,7 @@ describe('durable candidate publication pipeline', () => {
     let publishes = 0;
     let reads = 0;
     const pipeline = createEditorialCandidatePipeline({
-      modelsFor: () => models, preparationContext: async () => context, persist: async () => true,
+      modelsFor: () => models, renderSocialCard, preparationContext: async () => context, persist: async () => true,
       publish: async (proposal) => ({ attempt: attempt(proposal), merged: ++publishes === 2 }),
       verify: async (value) => {
         const ready = ++reads === 2;
@@ -80,8 +83,13 @@ describe('durable candidate publication pipeline', () => {
     const verified: PublicationReceipt[] = [];
     const pipeline = createEditorialCandidatePipeline({
       modelsFor: () => models,
+      renderSocialCard,
       preparationContext: async () => context,
-      publish: async (proposal) => { published.push(proposal); return { attempt: attempt(proposal), merged: true }; },
+      publish: async (proposal, review) => {
+        expect(review.content_digest).toBe(proposal.content_digest);
+        published.push(proposal);
+        return { attempt: attempt(proposal), merged: true };
+      },
       verify: async (value) => {
         const receipt: PublicationReceipt = { candidate_id: value.candidate_id, owner_epoch: value.owner_epoch, source_commit: value.source_commit!,
           deployment_version: 'e'.repeat(64), public_urls: value.public_urls, verified_at: '2026-11-27T14:01:00.000Z', outcome: 'VERIFIED' };
@@ -98,11 +106,18 @@ describe('durable candidate publication pipeline', () => {
     expect(result).toMatchObject({ status: 'verified' });
     expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review']);
     expect(published).toHaveLength(1);
+    const card = published[0].files.find((file) => file.encoding === 'base64');
+    expect(card?.path).toBe('assets/images/articles/a-careful-release-evidence-update-social.png');
+    expect(published[0].required_media_paths).toEqual([card?.path]);
+    expect(published[0].files[0].content).toContain(`/${card?.path}`);
+    expect(models.calls[1].input).toContain(card!.content_sha256);
+    expect(models.calls[1].input).not.toContain(card!.content);
     expect(verified[0]).toMatchObject({ outcome: 'VERIFIED', candidate_id: candidate.id, owner_epoch: 1 });
     expect(checkpoints).toEqual(['DRAFTED', 'REVIEWED', 'SOURCE_PUBLISHED', 'VERIFIED']);
     expect(step.names).toEqual([
       'prepare-context-create-signal-1-workers',
       'prepare-content-create-signal-1-workers',
+      'attach-social-card-create-signal-1-workers',
       'persist-candidate-create-signal-1-workers-DRAFTED',
       'review-content-create-signal-1-workers-round-1',
       'persist-candidate-create-signal-1-workers-REVIEWED',
@@ -118,7 +133,7 @@ describe('durable candidate publication pipeline', () => {
     models.outputs[1] = { decision: 'HOLD', findings: [{ code: 'CLAIM', detail: 'Evidence does not support this.' }] };
     let publishCalls = 0;
     let verifyCalls = 0;
-    const pipeline = createEditorialCandidatePipeline({ modelsFor: () => models, preparationContext: async () => context,
+    const pipeline = createEditorialCandidatePipeline({ modelsFor: () => models, renderSocialCard, preparationContext: async () => context,
       publish: async (proposal) => { publishCalls += 1; return { attempt: attempt(proposal), merged: true }; },
       verify: async (value) => { verifyCalls += 1; return { receipt: { candidate_id: value.candidate_id, owner_epoch: value.owner_epoch,
         source_commit: value.source_commit ?? '', deployment_version: '', public_urls: value.public_urls, verified_at: new Date().toISOString(), outcome: 'UNCERTAIN' } }; },
@@ -143,12 +158,19 @@ describe('durable candidate publication pipeline', () => {
     ];
     let publishCalls = 0;
     const checkpoints: string[] = [];
+    const cardDigests: string[] = [];
+    let renders = 0;
     const pipeline = createEditorialCandidatePipeline({ modelsFor: () => models, preparationContext: async () => context,
+      renderSocialCard: () => { renders += 1; return renderSocialCard(); },
       publish: async (proposal) => { publishCalls += 1; return { attempt: attempt(proposal), merged: true }; },
       verify: async (value) => ({ receipt: { candidate_id: value.candidate_id, owner_epoch: value.owner_epoch,
         source_commit: value.source_commit ?? '', deployment_version: 'e'.repeat(64), public_urls: value.public_urls,
         verified_at: new Date().toISOString(), outcome: 'VERIFIED' } }),
-      persist: async (_id, _epoch, state) => { checkpoints.push(state); return true; },
+      persist: async (_id, _epoch, state, checkpoint) => {
+        checkpoints.push(state);
+        cardDigests.push(checkpoint.proposal!.expected_content[0].social_image!.content_sha256);
+        return true;
+      },
     });
 
     const result = await pipeline.processCandidate({ candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
@@ -161,5 +183,7 @@ describe('durable candidate publication pipeline', () => {
     ]);
     expect(publishCalls).toBe(0);
     expect(checkpoints.at(-1)).toBe('NEEDS_OWNER');
+    expect(renders).toBe(1);
+    expect(new Set(cardDigests).size).toBe(1);
   });
 });

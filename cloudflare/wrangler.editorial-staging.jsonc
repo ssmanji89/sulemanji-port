@@ -5,6 +5,7 @@
   "compatibility_date": "2026-11-26",
   "workers_dev": false,
   "routes": [],
+  "rules": [{ "type": "Data", "globs": ["**/*.ttf"], "fallthrough": true }],
   "triggers": { "crons": [] },
   "vars": { "DEPLOYMENT_ENV": "runtime", "KNOWLEDGE_POLICY_REVISION": "unbound" },
   "services": [{ "binding": "EDITORIAL_FIXTURE_SITE", "service": "sulemanji-editorial-fixture-site" }],

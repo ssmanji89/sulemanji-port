@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { canPublish, publishContent, verifyPublicationDetailed, type GitHubPublisher, type PullRequestState, type PublishEffect, type PublishEffectStore } from '../src/editorial/publisher.js';
 import type { ContentProposal, PublicationState, PublishAttempt, ReviewReceipt } from '../src/editorial/contracts.js';
@@ -10,7 +11,7 @@ async function sha(value: string): Promise<string> {
 async function fixture() {
   const path = 'notes/reviewed-article.md';
   const content = '---\nwriting_schema: 2\n---\nA source-backed reader explanation.';
-  const file = { path, operation: 'create' as const, encoding: 'utf-8' as const, content, content_sha256: await sha(content) };
+  const file = { path, operation: 'update' as const, encoding: 'utf-8' as const, content, content_sha256: await sha(content) };
   const content_digest = await sha(`${path}\n${file.content_sha256}`);
   const source_digest = 'a'.repeat(64);
   const proposal: ContentProposal = { candidate_id: 'candidate-42', author_run_id: 'author-run', content_digest, source_digest, policy_revision: 'policy-v1', knowledge_revision: 'knowledge-v1',
@@ -137,10 +138,14 @@ describe('public publication identity verification', () => {
       source_commit: 'd'.repeat(40), deployment_version: null, public_urls: ['/notes/reviewed-article'],
       expected_content: [{ url: '/notes/reviewed-article', title: 'Reviewed title', text_sha256: await sha(body) }], status: 'SOURCE_PUBLISHED',
     };
+    const card = await readFile(new URL('../../assets/images/articles/agent-safety-social.png', import.meta.url));
+    const cardPath = '/assets/images/articles/reviewed-article-social.png';
+    Object.assign(attempt.expected_content[0], { social_image: { path: cardPath, content_sha256: await sha(card.toString('base64')) } });
+    let damage: 'none' | 'metadata' | 'card' | 'release' = 'none';
     const digest = `sha256:${'a'.repeat(64)}`;
     const builtAt = '2026-11-27T14:00:00Z';
-    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body>${body}</div></body></html>`;
-    const response = (content: string, responseUrl: string, headers?: HeadersInit) => {
+    const article = () => `<html><head><link rel="canonical" href="${url}"><meta property="og:image" content="https://www.sulemanji.com${damage === 'metadata' ? '/wrong.png' : cardPath}"></head><body><h1>Reviewed title</h1><div data-writing-body>${body}</div></body></html>`;
+    const response = (content: BodyInit, responseUrl: string, headers?: HeadersInit) => {
       const result = new Response(content, { headers });
       Object.defineProperty(result, 'url', { value: responseUrl });
       return result;
@@ -150,7 +155,9 @@ describe('public publication identity verification', () => {
       const headers = {
         'x-site-source-commit': attempt.source_commit!, 'x-site-asset-digest': digest, 'x-site-built-at': builtAt,
       };
-      if (requestUrl.pathname === '/notes/reviewed-article') return response(article, url, headers);
+      if (requestUrl.pathname === '/notes/reviewed-article') return response(article(), url, headers);
+      if (requestUrl.pathname === cardPath) return response(damage === 'card' ? Uint8Array.of(0) : Uint8Array.from(card), requestUrl.href,
+        { ...headers, 'content-type': 'image/png', 'x-site-asset-digest': damage === 'release' ? `sha256:${'b'.repeat(64)}` : digest });
       if (requestUrl.pathname === '/writing') return response(`<a href="${url}">Article</a>`, requestUrl.href, headers);
       if (requestUrl.pathname === '/feed.xml') return response(`<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="${url}"/></entry></feed>`, requestUrl.href, headers);
       if (requestUrl.pathname === '/sitemap.xml') return response(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${url}</loc></url></urlset>`, requestUrl.href, headers);
@@ -161,5 +168,9 @@ describe('public publication identity verification', () => {
 
     expect(result.failure).toBeUndefined();
     expect(result.receipt.outcome).toBe('VERIFIED');
+    for (const change of ['metadata', 'card', 'release'] as const) {
+      damage = change;
+      expect((await verifyPublicationDetailed(attempt, fetcher)).receipt.outcome).toBe('UNCERTAIN');
+    }
   });
 });

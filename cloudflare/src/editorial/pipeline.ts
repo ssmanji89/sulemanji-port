@@ -1,7 +1,8 @@
 import type { Candidate, CatalogItem, ContentProposal, PreparationContext, PublicationReceipt, PublicKnowledge, PublishAttempt, ReviewReceipt, Signal } from './contracts.js';
 import type { ModelGateway } from './models.js';
 import type { EditorialPolicy } from './scheduler.js';
-import { prepareContent, reviewContent, reviseContent } from './review.js';
+import type { SocialCardRenderer } from './social-card-format.js';
+import { attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
 import type { DurableStep } from './workflow-core.js';
 
 const PUBLICATION_WAIT_MS = [30_000, 60_000, 90_000, 120_000, 180_000];
@@ -19,6 +20,7 @@ type PipelineOutcome = { status: 'verified' | 'held'; reason: string };
 export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt };
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
+  renderSocialCard: SocialCardRenderer;
   preparationContext(input: CandidatePipelineInput): Promise<PreparationContext>;
   publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal): Promise<PublicationResult>;
   verify(attempt: PublishAttempt): Promise<{ receipt: PublicationReceipt; failure?: string }>;
@@ -42,6 +44,9 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       const context = await step.do(`prepare-context-${key}`, () => deps.preparationContext(input));
       const models = deps.modelsFor(candidate, ownerEpoch, policy);
       let proposal = await step.do(`prepare-content-${key}`, () => prepareContent(candidate, context, models, `author:${candidate.id}`));
+      if (proposal.files[0]?.operation === 'create') {
+        proposal = await step.do(`attach-social-card-${key}`, () => attachSocialCard(proposal, deps.renderSocialCard));
+      }
       let checkpoint: CandidateCheckpoint = { proposal };
       if (!(await step.do(`persist-candidate-${key}-DRAFTED`, () => deps.persist(candidate.id, ownerEpoch, 'DRAFTED', checkpoint)))) {
         return { status: 'held', reason: 'Workflow authority changed before the draft could be checkpointed.' };

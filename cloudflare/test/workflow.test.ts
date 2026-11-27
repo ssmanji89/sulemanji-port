@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { runEditorialAdmission } from '../src/editorial/workflow-core.js';
+import { runEditorialAdmission as runWorkerAdmission } from '../src/editorial/workflow-core.js';
 import { parseEditorialPolicy } from '../src/editorial/scheduler.js';
 import { fingerprintPublicKnowledge } from '../src/editorial/knowledge.js';
 import sourceRegistry from '../config/public-sources.json' with { type: 'json' };
@@ -14,7 +14,44 @@ class DurableStep {
   }
 }
 
+function addScheduleClaim(db: PipelineD1, id: string, ownerEpoch: number | null = db.control.owner_epoch) {
+  db.slots.set(id, { id, local_date: '2026-11-27', slot: '08:00', owner_epoch: ownerEpoch });
+}
+
+function runEditorialAdmission(params: Parameters<typeof runWorkerAdmission>[0], env: Parameters<typeof runWorkerAdmission>[1], step: DurableStep,
+  processor?: Parameters<typeof runWorkerAdmission>[4]) {
+  const db = env.DB as unknown as PipelineD1;
+  if (db instanceof PipelineD1) addScheduleClaim(db, params.slot_claim_id);
+  return runWorkerAdmission(params, env, step, 'slot-2026-11-27-0800', processor);
+}
+
 describe('resumable editorial workflow admission', () => {
+  it('holds unclaimed slots without recording a result', async () => {
+    const db = new PipelineD1();
+    const params = { slot_claim_id: '2026-11-27:08:00' };
+
+    const result = await runWorkerAdmission(params, { DB: db } as never, new DurableStep(), 'slot-2026-11-27-0800');
+
+    expect(result).toMatchObject({ status: 'held', reason: 'No current schedule claim matches this Workflow instance.' });
+    expect(db.receipts.size).toBe(0);
+    expect(db.candidates.size).toBe(0);
+  });
+
+  it.each([
+    { claimEpoch: 1, instanceId: 'slot-2026-11-27-1300' },
+    { claimEpoch: 0, instanceId: 'slot-2026-11-27-0800' },
+    { claimEpoch: null, instanceId: 'slot-2026-11-27-0800' },
+  ])('holds claims assigned to another Workflow instance or publisher epoch ($claimEpoch, $instanceId)', async ({ claimEpoch, instanceId }) => {
+    const db = new PipelineD1();
+    const params = { slot_claim_id: '2026-11-27:08:00' };
+    addScheduleClaim(db, params.slot_claim_id, claimEpoch);
+
+    const result = await runWorkerAdmission(params, { DB: db } as never, new DurableStep(), instanceId);
+
+    expect(result).toMatchObject({ status: 'held', reason: 'No current schedule claim matches this Workflow instance.' });
+    expect(db.receipts.size).toBe(0);
+  });
+
   it('returns the durable admitted result when a verified slot is resumed', async () => {
     const db = new PipelineD1();
     const params = { slot_claim_id: 'verified-slot' };
@@ -54,6 +91,7 @@ const policy = JSON.stringify({
 
 class PipelineD1 {
   control = { paused: 0, owner_epoch: 1 };
+  slots = new Map<string, Record<string, unknown>>();
   receipts = new Map<string, Record<string, unknown>>();
   candidates = new Map<string, Record<string, unknown>>();
   sourceStates = new Map<string, Record<string, unknown>>();
@@ -64,6 +102,10 @@ class PipelineD1 {
       bind: (...values: unknown[]) => { args = values; return statement; },
       first: async <T>() => {
         if (sql.includes('FROM editorial_control')) return this.control as T;
+        if (sql.includes('FROM schedule_claims')) {
+          const row = this.slots.get(String(args[0]));
+          return (row?.owner_epoch === args[1] && this.control.paused === 0 && this.control.owner_epoch === args[1] ? row : null) as T | null;
+        }
         if (sql.includes('FROM editorial_receipts WHERE id = ?')) return (this.receipts.get(String(args[0])) ?? null) as T | null;
         if (sql.includes('FROM editorial_candidates WHERE id = ?')) return (this.candidates.get(String(args[0])) ?? null) as T | null;
         if (sql.includes('FROM editorial_source_state WHERE source_id = ?')) return (this.sourceStates.get(String(args[0])) ?? null) as T | null;
@@ -130,6 +172,16 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
 }
 
 describe('deterministic signal workflow', () => {
+  it('holds when the catalog redirects away from its exact URL', async () => {
+    const fetcher = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response(null, { status: 301, headers: { location: '/writing' } }));
+    vi.stubGlobal('fetch', fetcher);
+    const db = new PipelineD1();
+    const result = await runEditorialAdmission({ slot_claim_id: 'catalog-redirect' }, { DB: db, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
+    expect(result).toMatchObject({ status: 'held', reason: 'The public content index is unavailable or invalid.' });
+    expect(fetcher).toHaveBeenCalledExactlyOnceWith('https://www.sulemanji.com/content-index.json', { redirect: 'manual', headers: { accept: 'application/json' } });
+    expect(db.candidates.size).toBe(0);
+  });
+
   it('holds instead of declaring NO_CHANGE when the fetch cap leaves enabled sources uncovered', async () => {
     sourceFetchCalls = 0;
     vi.stubGlobal('fetch', sourceFetcher({ candidate: false }));

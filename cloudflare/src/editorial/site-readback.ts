@@ -5,7 +5,7 @@ export type EditorialFixtureSite = Pick<Fetcher, 'fetch'>;
 export function fixtureSiteFetcher(binding: EditorialFixtureSite | undefined): typeof fetch {
   return async (input, init) => {
     if (!binding) throw new Error('EDITORIAL_FIXTURE_SITE_NOT_BOUND');
-    const request = new Request(input, { ...init, redirect: 'error' });
+    const request = new Request(input, { ...init, redirect: 'manual' });
     const url = new URL(request.url);
     if (request.method !== 'GET' || url.origin !== CANONICAL_SITE_ORIGIN ||
         url.username || url.password || url.search || url.hash) {

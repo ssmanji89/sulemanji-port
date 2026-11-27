@@ -186,7 +186,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       const expectedUrl = new URL(url, CANONICAL_SITE_ORIGIN);
       if (expectedUrl.origin !== CANONICAL_SITE_ORIGIN || expectedUrl.username || expectedUrl.password ||
           expectedUrl.search || expectedUrl.hash) throw new Error('publication readback URL is outside the canonical origin');
-      const response = await fetcher(expectedUrl, { redirect: 'error' });
+      const response = await fetcher(expectedUrl, { redirect: 'manual' });
       const originMatches = response.url ? new URL(response.url).origin === expectedUrl.origin : readback === 'private-binding';
       if (!response.ok || !originMatches) throw new Error('page unavailable or redirected off canonical host');
       const html = await response.text();
@@ -236,7 +236,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
         }
         const target = new URL(path, CANONICAL_SITE_ORIGIN);
         if (socialImages.length !== 1 || socialImages[0] !== target.href) throw new Error('social card metadata mismatch');
-        const card = await fetcher(target, { redirect: 'error' });
+        const card = await fetcher(target, { redirect: 'manual' });
         if (!card.ok || (card.url ? card.url !== target.href : readback !== 'private-binding') ||
             card.headers.get('content-type') !== 'image/png' || card.headers.get('x-site-source-commit') !== sourceCommit ||
             card.headers.get('x-site-asset-digest') !== assetDigest || card.headers.get('x-site-built-at') !== builtAt) {
@@ -249,7 +249,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
     if (!articleUrls.length || !releaseAssetDigest || !releaseBuiltAt) throw new Error('deployed asset release identity missing');
     for (const [kind, path] of [['writing', '/writing'], ['feed', '/feed.xml'], ['sitemap', '/sitemap.xml']] as const) {
       const target = new URL(path, CANONICAL_SITE_ORIGIN);
-      const response = await fetcher(target, { redirect: 'error' });
+      const response = await fetcher(target, { redirect: 'manual' });
       const originMatches = response.url ? new URL(response.url).origin === target.origin : readback === 'private-binding';
       if (!response.ok || !originMatches || response.headers.get('x-site-source-commit') !== attempt.source_commit ||
           response.headers.get('x-site-asset-digest') !== releaseAssetDigest || response.headers.get('x-site-built-at') !== releaseBuiltAt) {

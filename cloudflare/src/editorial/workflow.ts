@@ -14,6 +14,6 @@ const renderSocialCard = createSocialCardRenderer(cardModule, new Uint8Array(car
 export class EditorialWorkflow extends WorkflowEntrypoint<WorkflowEnv, WorkflowParams> {
   async run(event: WorkflowEvent<WorkflowParams>, step: WorkflowStep): Promise<WorkflowResult> {
     const processor = createEditorialCandidateProcessor(this.env, renderSocialCard);
-    return runEditorialAdmission(event.payload, this.env, step, processor ?? undefined);
+    return runEditorialAdmission(event.payload, this.env, step, event.instanceId, processor ?? undefined);
   }
 }

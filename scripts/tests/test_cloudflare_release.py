@@ -133,7 +133,8 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_public_manifest_readback_uses_curl_transport(self):
         deploy = (ROOT / 'scripts' / 'deploy_site.sh').read_text(encoding='utf-8')
         live_verifier = (ROOT / 'scripts' / 'verify_cloudflare_live.py').read_text(encoding='utf-8')
-        self.assertIn('verify_cloudflare_live.py', deploy)
+        self.assertIn('-m scripts.site_release', deploy)
+        self.assertIn('-m scripts.verify_cloudflare_live', deploy)
         self.assertIn('--manifest "$ARTIFACT/release.json"', deploy)
         self.assertIn("['curl', '--silent', '--show-error'", live_verifier)
         self.assertNotIn('urllib.request.urlopen', live_verifier)

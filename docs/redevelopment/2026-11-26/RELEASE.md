@@ -5,7 +5,7 @@ This public note documents the public-site verification interface. Current relea
 The verifier first validates the exact local artifact manifest and files, then requires the public manifest to match it. It checks public canonical routes, source/digest/build-time response headers, expected page metadata and headings, manifest-bound visible text on key pages and articles, content types, preserved article URLs and dates, discovery, retired routes, and redirect behavior. It checks public site behavior only; it does not qualify background operation.
 
 ```sh
-python3 scripts/verify_cloudflare_live.py \
+python3 -m scripts.verify_cloudflare_live \
   --base-url https://www.sulemanji.com \
   --expected-commit RELEASE_SHA \
   --manifest _site/release.json

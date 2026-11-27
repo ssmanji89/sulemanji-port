@@ -28,7 +28,8 @@ if [[ "$ENVIRONMENT" == production ]]; then
     CURRENT_MAIN_SHA="$(git rev-parse refs/remotes/origin/main)"
   fi
 else CURRENT_MAIN_SHA="$SOURCE_COMMIT"; fi
-python3 "$ROOT/scripts/site_release.py" verify --artifact "$ARTIFACT" --source-commit "$SOURCE_COMMIT" --current-main "$CURRENT_MAIN_SHA"
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.site_release \
+  verify --artifact "$ARTIFACT" --source-commit "$SOURCE_COMMIT" --current-main "$CURRENT_MAIN_SHA"
 
 if [[ "$ENVIRONMENT" == production ]]; then
   CONFIG_SOURCE="$CF/wrangler.site.jsonc"
@@ -90,7 +91,7 @@ check_status /work/market-systems/ 200
 check_status /notes/late-october-skywatching-binoculars-telescope 200
 check_status /workshop-intake/ 410
 check_status /notes/does-not-exist 404
-PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 "$ROOT/scripts/verify_cloudflare_live.py" \
+PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.verify_cloudflare_live \
   --base-url "$TARGET_HOST" \
   --expected-commit "$SOURCE_COMMIT" \
   --manifest "$ARTIFACT/release.json"

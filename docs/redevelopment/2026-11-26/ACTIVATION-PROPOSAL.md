@@ -47,3 +47,31 @@ Cloudflare's published Workers Paid starting price is $5/month; the current acco
 ## Current decision boundary
 
 The product preview was approved as presented. The public homepage is served through the active Cloudflare site Worker. The editorial Worker, D1 databases, Workflows, and production Cron now exist; both D1 controls remain paused. The editorial hostname is a Cloudflare Custom Domain with public DNS and TLS; an unsigned synthetic POST to `/internal/knowledge` returned HTTP 401 AUTH on 2026-11-27. That proves endpoint reachability only. The Viyu producer's network path, authenticated knowledge delivery, model provider/model, model spend envelope, one-writer cutover, and two natural eligible schedule runs remain unresolved. No model-spending or Workers Paid upgrade authorization is inferred from this proposal.
+
+## Post-merge release state (2026-11-27)
+
+At the previous live readback, main was `f37bb7c07ed8dcbbdde86f391d085ba36fe2443a`. The static site and editorial Workers were serving at 100%, canonical routes passed, both editorial D1s had migrations 0001–0005, and production control was paused at owner epoch 1. The newer exact-main deployment is recorded below.
+
+The main branch build passed, but its Cloudflare deploy job stopped at preflight because GitHub Actions had no `CLOUDFLARE_API_TOKEN`; the static site was manually deployed from that successful immutable main artifact using the existing Wrangler OAuth session. Set the token only in the `cloudflare-production` GitHub environment. Cloudflare's minimum for an existing Worker deploy is Workers Editor on `sulemanji-site`; changing its route also requires Workers Routes Write on zone `sulemanji.com` ([Cloudflare role reference](https://developers.cloudflare.com/workers/authorization/workers/)). The repository still has no such secret.
+
+The previous Writing publisher remains the only publication authority. Its daily LaunchAgent's latest observed Nov 26 run was blocked by a Docker CLI timeout; two later scout runs also timed out on the missing pinned Ruby image and stalled desktop credential helper. The exact pinned image is now cached anonymously and the read-only source gate passes. No publisher run was triggered and no article was published during this repair. Verify the next natural Writing run and in-flight work before any cutover.
+
+Full editorial activation remains paused until signed sanitized Viyu delivery and producer reachability, strict policy binding, approved provider/model and spend envelope, functioning review/publisher/public-readback adapters, and one-writer cutover are qualified. The proposed $0.75 per-candidate cap and model pricing remain proposals. Cloudflare Free accounts allow five Cron triggers and Paid allows 1,000; Paid starts at $5/month ([limits](https://developers.cloudflare.com/workers/platform/limits/), [pricing](https://developers.cloudflare.com/workers/platform/pricing/)). Staging Cron and model spend remain unapproved. No natural eligible editorial run has occurred.
+
+## Credential inventory readback (2026-11-27)
+
+The site Worker is present at 100%; deployment CI is blocked by the missing Actions credential. A name-only scan found no Cloudflare API token variable in `~/.viyu-agents/.env`, the `viyu-agents` repository env file, `.zshrc`, `.zprofile`, `.zshenv`, nearby `.config`/`.local/share`, or the current shell. GitHub `cloudflare-production` also has no `CLOUDFLARE_API_TOKEN` secret. The existing local Wrangler OAuth session is separate and was not copied to GitHub. The owner must add a scoped API token directly to that GitHub environment.
+
+## Importer source follow-up (2026-11-27)
+
+The site importer contract fix merged to public main as `691608a89e307b69f6ece6cba6f4679728eb9992`; the corresponding private producer URL-validation fix merged to `mem0-mcp` main as `0ed4de6cfb7e5583b73c02edcbbc707c776f069c`. Both exact pull-request heads passed CI and independent review. At the time of this note the source changes had not yet been deployed; they did not establish an authenticated producer connection.
+
+## Exact-main deployment readback (2026-11-27)
+
+Main `79b6bcc0077755c360f21f7e73c9b3f60a439092` passed the hosted build and release gates. The Cloudflare deploy job failed before writing because `CLOUDFLARE_API_TOKEN` was empty. The immutable artifact from that run verified against the exact main commit and was deployed with the existing local Wrangler OAuth session. Public `/release.json` reports source `79b6bcc`, digest `sha256:2adeeae2cf7204fe0f4d7cfe24ca00752ae384f3350de7fa7e620fbd38956fda`, 229 assets, and 55 articles; canonical Home, Writing, project, article, retired intake, and unknown-article routes read back as expected.
+
+The importer fix is now deployed to production and staging editorial Workers. Production retains its hourly Cron; staging has no Cron. Both D1 controls remain paused at epoch 1, both secret lists are empty, and both databases have zero schedule claims, candidates, receipts, public knowledge, and usage reservations. Unsigned knowledge POSTs return 401 AUTH. No signed producer delivery, model call, publication, or natural eligible run is claimed. Full activation still requires the authorized producer path, approved provider/model and budget, complete review/publisher/public-readback runtime, and one-writer cutover.
+
+## Latest site Worker release readback (2026-11-27)
+
+After PR #114, exact main `d6a3eda0974fb0113a98cd91c8cbb9f46568d888` passed its hosted release gate in run `45944969769`. The production deploy job still received an empty `CLOUDFLARE_API_TOKEN`; the verified immutable artifact was therefore deployed through the existing local Wrangler OAuth session. Cloudflare readback showed `sulemanji-site` active at 100%. Public `/release.json` matches exact source `d6a3eda` and digest `sha256:2adeeae2cf7204fe0f4d7cfe24ca00752ae384f3350de7fa7e620fbd38956fda` (229 assets; 55 articles). Home, Writing, project, preserved article, retired intake, and missing article route readbacks passed; apex redirects to `www`. The local OAuth session was not copied to GitHub. Editorial D1 remains paused and no natural eligible run is claimed.

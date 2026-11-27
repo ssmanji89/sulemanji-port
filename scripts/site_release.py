@@ -58,6 +58,8 @@ def verify_artifact(artifact: Path, source_commit: str, current_main_sha: str) -
         raise ReleaseError(f'artifact manifest cannot be verified: {error}') from error
     if calculated['files'] != manifest['files'] or calculated['asset_digest'] != manifest.get('asset_digest'):
         raise ReleaseError('artifact file digest does not match release manifest')
+    if calculated['pages'] != manifest.get('pages'):
+        raise ReleaseError('artifact page identity or visible content does not match release manifest')
     try:
         rendered_articles = _article_identity(artifact)
     except (ValueError, OSError) as error:

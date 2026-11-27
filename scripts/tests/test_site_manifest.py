@@ -4,13 +4,18 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.build_site_manifest import article_content_sha256, build_manifest, render_release_headers
+from scripts.build_site_manifest import PUBLIC_PAGE_FILES, article_content_sha256, build_manifest, page_content_sha256, render_release_headers
 
 
 class SiteManifestTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
+        for route, relative_path in PUBLIC_PAGE_FILES.items():
+            page = self.root / relative_path
+            page.parent.mkdir(parents=True, exist_ok=True)
+            page.write_text(
+                f'<html><main><h1>{route}</h1><p>Page content for {route}.</p></main></html>', encoding='utf-8')
         (self.root / 'writing').mkdir()
         (self.root / 'assets').mkdir()
         (self.root / 'writing' / 'notes.html').write_text(
@@ -54,13 +59,19 @@ class SiteManifestTests(unittest.TestCase):
 
     def test_article_text_digest_matches_normalized_publisher_text(self):
         rendered = ('<main><div data-writing-body>One <strong>two</strong>'
-                    '<script>hidden words</script> three&nbsp;four</div></main>')
+                    '<script>hidden words</script><template>also hidden</template> three&nbsp;four</div></main>')
         expected = hashlib.sha256(b'One two three four').hexdigest()
         self.assertEqual(article_content_sha256(rendered), expected)
 
     def test_article_text_digest_requires_one_nonempty_body(self):
-        with self.assertRaisesRegex(ValueError, 'one nonempty visible writing body'):
+        with self.assertRaisesRegex(ValueError, 'one nonempty visible content region'):
             article_content_sha256('<main><p>Not inside the writing body</p></main>')
+
+    def test_key_page_content_is_manifest_bound(self):
+        first = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')
+        self.assertEqual({page['url'] for page in first['pages']}, set(PUBLIC_PAGE_FILES))
+        expected = page_content_sha256((self.root / PUBLIC_PAGE_FILES['/']).read_text(encoding='utf-8'))
+        self.assertEqual(next(page['content_sha256'] for page in first['pages'] if page['url'] == '/'), expected)
 
     def test_asset_digest_binds_article_content_identity(self):
         first = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')

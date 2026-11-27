@@ -2,7 +2,7 @@
 
 This public note documents the public-site verification interface. Current release state, account/resource identifiers, deployment receipts, and private operating evidence belong in access-controlled records.
 
-The verifier checks public canonical routes, source/digest/build-time response headers, page metadata and expected headings, content types, preserved article URLs and dates, normalized visible article-body digests, discovery, retired routes, and redirect behavior. It checks public site behavior only; it does not qualify background operation.
+The verifier checks public canonical routes, source/digest/build-time response headers, page metadata and expected headings, manifest-bound visible text on key pages and articles, content types, preserved article URLs and dates, discovery, retired routes, and redirect behavior. It checks public site behavior only; it does not qualify background operation.
 
 ```sh
 python3 scripts/verify_cloudflare_live.py \

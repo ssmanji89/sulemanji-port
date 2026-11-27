@@ -6,12 +6,20 @@ import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
-from scripts.build_site_manifest import article_content_sha256, build_manifest, render_release_headers
+from scripts.build_site_manifest import PUBLIC_PAGE_FILES, article_content_sha256, build_manifest, render_release_headers
 from scripts.verify_cloudflare_deployment import verify_deployment
 from scripts.site_release import ReleaseError, fetch_public_manifest, verify_artifact
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / '.github' / 'workflows' / 'jekyll.yml'
+
+
+def add_public_pages(root):
+    for route, relative_path in PUBLIC_PAGE_FILES.items():
+        page = root / relative_path
+        page.parent.mkdir(parents=True, exist_ok=True)
+        page.write_text(
+            f'<html><main><h1>{route}</h1><p>Page content for {route}.</p></main></html>', encoding='utf-8')
 
 
 def add_article(root):
@@ -56,7 +64,7 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_stale_artifact_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
+            add_public_pages(root)
             manifest = build_manifest(root, '1111111', [], '2026-11-26T00:00:00Z')
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ReleaseError, 'current main'):
@@ -65,7 +73,7 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_wrong_artifact_digest_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
+            add_public_pages(root)
             manifest = build_manifest(root, '1111111', [], '2026-11-26T00:00:00Z')
             manifest['asset_digest'] = 'sha256:' + ('0' * 64)
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
@@ -75,7 +83,7 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_artifact_requires_manifest_bound_static_identity_headers(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            (root / 'writing.html').write_text('<h1>site</h1>', encoding='utf-8')
+            add_public_pages(root)
             articles = add_article(root)
             manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
@@ -85,12 +93,25 @@ class CloudflareReleaseTests(unittest.TestCase):
     def test_article_body_change_is_rejected_even_if_release_header_remains(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+            add_public_pages(root)
             articles = add_article(root)
             articles[0]['content_sha256'] = article_content_sha256('<div data-writing-body>Changed content.</div>')
             manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
             (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
             (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
             with self.assertRaisesRegex(ReleaseError, 'article identity or visible content'):
+                verify_artifact(root, '1111111', '1111111')
+
+    def test_key_page_body_identity_is_required_by_the_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            add_public_pages(root)
+            articles = add_article(root)
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            manifest['pages'][0]['content_sha256'] = '0' * 64
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'page identity or visible content'):
                 verify_artifact(root, '1111111', '1111111')
 
     def test_operational_docs_and_test_code_stay_out_of_public_build(self):

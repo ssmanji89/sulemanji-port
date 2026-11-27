@@ -14,6 +14,7 @@ from scripts.verify_cloudflare_live import (
     _safe_article_path,
     _safe_feed_path,
     article_content_sha256,
+    page_content_sha256,
     verify_live_release,
 )
 
@@ -35,13 +36,24 @@ class Response:
 
 
 def site_manifest(source_commit=COMMIT, articles=None):
+    articles = articles if articles is not None else [ARTICLE]
+    pages = []
+    for path, (_, heading) in REQUIRED_ROUTE_CONTRACTS.items():
+        if heading is None:
+            continue
+        body = ''.join(f'<a href="{article["url"]}">Article</a>' for article in articles) if path == '/writing' else f'<p>Public section for {path}.</p>'
+        pages.append({
+            'url': path,
+            'content_sha256': page_content_sha256(f'<main><h1>{heading}</h1>{body}</main>'),
+        })
     return {
         'schema_version': 1,
         'source_commit': source_commit,
         'asset_digest': DIGEST,
         'built_at': BUILT_AT,
         'files': {'index.html': 'f' * 64},
-        'articles': articles if articles is not None else [ARTICLE],
+        'articles': articles,
+        'pages': pages,
     }
 
 
@@ -100,6 +112,8 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
         heading = REQUIRED_ROUTE_CONTRACTS[path][1] or 'page'
         if self.overrides.get('wrong_page_heading') == path:
             heading = 'wrong content'
+        if path != '/writing':
+            body_content = '' if self.overrides.get('alter_page_content') == path else f'<p>Public section for {path}.</p>'
         return (f'<html><head><title>{heading} | Suleman Manji</title>'
                 f'<link rel="canonical" href="{CANONICAL_ORIGIN}{path}">'
                 f'<meta name="description" content="{description}">'
@@ -155,6 +169,8 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
 
     def test_missing_writing_entry_fails(self):
         self.overrides['missing_writing_entry'] = True
+        writing_page = next(page for page in self.public_manifest['pages'] if page['url'] == '/writing')
+        writing_page['content_sha256'] = page_content_sha256(self.page_html('/writing'))
         with self.assertRaisesRegex(LiveReleaseError, 'Writing index'):
             self.verify()
 
@@ -186,6 +202,11 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
     def test_required_route_checks_expected_page_content(self):
         self.overrides['wrong_page_heading'] = '/about/'
         with self.assertRaisesRegex(LiveReleaseError, 'expected page content is missing on /about/'):
+            self.verify()
+
+    def test_required_route_checks_manifest_bound_page_body_content(self):
+        self.overrides['alter_page_content'] = '/about/'
+        with self.assertRaisesRegex(LiveReleaseError, 'page visible body changed on /about/'):
             self.verify()
 
     def test_required_route_checks_page_metadata(self):
@@ -242,6 +263,7 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             candidates = [site / (stem + '.html'), site / stem / 'index.html', site / 'index.html' if not stem else site / stem]
             return next((candidate for candidate in candidates if candidate.is_file()), None)
 
+        manifest = json.loads((site / 'release.json').read_text(encoding='utf-8'))
         for path, (_, expected_heading) in REQUIRED_ROUTE_CONTRACTS.items():
             if expected_heading is None:
                 continue
@@ -254,8 +276,9 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             self.assertTrue(facts.meta.get('description'), path)
             self.assertTrue(facts.meta.get('og:title'), path)
             self.assertIn(expected_heading, facts.headings, path)
+            page = next(page for page in manifest['pages'] if page['url'] == path)
+            self.assertEqual(page_content_sha256(output.read_text(encoding='utf-8')), page['content_sha256'], path)
 
-        manifest = json.loads((site / 'release.json').read_text(encoding='utf-8'))
         writing = PageIdentity()
         writing.feed(page_file('/writing').read_text(encoding='utf-8'))
         writing_paths = {parsed[1] for href in writing.links if (parsed := _safe_article_path(href))}

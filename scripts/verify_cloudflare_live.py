@@ -13,7 +13,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlparse
 
-from scripts.build_site_manifest import article_content_sha256
+from scripts.build_site_manifest import article_content_sha256, page_content_sha256
 
 
 CANONICAL_ORIGIN = 'https://www.sulemanji.com'
@@ -233,6 +233,21 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
         raise LiveReleaseError('live release manifest has no asset inventory')
     if not isinstance(articles, list) or not articles:
         raise LiveReleaseError('live release manifest has no preserved articles')
+    expected_page_paths = {path for path, (_, heading) in REQUIRED_ROUTE_CONTRACTS.items() if heading is not None}
+    page_rows = public_manifest.get('pages')
+    if not isinstance(page_rows, list) or len(page_rows) != len(expected_page_paths):
+        raise LiveReleaseError('live release manifest has an invalid key-page inventory')
+    pages_by_path = {}
+    for page in page_rows:
+        if (not isinstance(page, dict) or set(page) != {'url', 'content_sha256'}
+                or not isinstance(page.get('url'), str)
+                or not isinstance(page.get('content_sha256'), str)
+                or not re.fullmatch(r'[0-9a-f]{64}', page['content_sha256'])
+                or page['url'] in pages_by_path):
+            raise LiveReleaseError('live release manifest has an invalid key-page identity')
+        pages_by_path[page['url']] = page['content_sha256']
+    if set(pages_by_path) != expected_page_paths:
+        raise LiveReleaseError('live release manifest key-page routes do not match the required routes')
 
     writing_response = None
     sitemap_response = None
@@ -253,6 +268,12 @@ def verify_live_release(base_url: str, expected_commit: str, expected_digest: st
                 raise LiveReleaseError(f'page metadata is incomplete for {path}')
             if expected_heading not in facts.headings:
                 raise LiveReleaseError(f'expected page content is missing on {path}')
+            try:
+                actual_page_sha256 = page_content_sha256(response.body)
+            except ValueError as error:
+                raise LiveReleaseError(f'page visible content is missing on {path}') from error
+            if actual_page_sha256 != pages_by_path[path]:
+                raise LiveReleaseError(f'page visible body changed on {path}')
         route_count += 1
         if path == '/writing':
             writing_response = response

@@ -114,6 +114,7 @@ VERIFY_ARGS=(
   --base-url "$TARGET_HOST"
   --expected-commit "$SOURCE_COMMIT"
   --manifest "$ARTIFACT/release.json"
+  --wait-seconds 75
 )
 if [[ "$ENVIRONMENT" == staging ]]; then VERIFY_ARGS+=(--staging); fi
 PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.verify_cloudflare_live "${VERIFY_ARGS[@]}"

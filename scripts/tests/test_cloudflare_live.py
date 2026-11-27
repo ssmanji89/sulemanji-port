@@ -2,6 +2,7 @@ import hashlib
 import json
 import re
 import unittest
+from unittest.mock import patch
 from dataclasses import dataclass
 from pathlib import Path
 from urllib.parse import urlparse
@@ -205,6 +206,50 @@ class LiveCloudflareVerificationTests(unittest.TestCase):
             fetcher=self.fetch,
             staging=staging,
         )
+
+    def test_waits_for_mixed_release_headers_before_exact_readback(self):
+        seen_market = 0
+
+        def mixed_edge(url):
+            nonlocal seen_market
+            response = self.fetch(url)
+            if urlparse(url).path == '/work/market-systems/':
+                seen_market += 1
+                if seen_market == 1:
+                    response.headers['x-site-source-commit'] = 'c' * 40
+            return response
+
+        with patch('time.sleep'):
+            receipt = verify_live_release(CANONICAL_ORIGIN, COMMIT, self.expected_manifest,
+                                          fetcher=mixed_edge, wait_seconds=60)
+        self.assertEqual(receipt['source_commit'], COMMIT)
+        self.assertEqual(seen_market, 2)
+        self.assertEqual(sum(urlparse(url).path == '/release.json' for url in self.calls), 1)
+
+    def test_release_header_wait_never_accepts_unsettled_identity(self):
+        def stale_edge(url):
+            response = self.fetch(url)
+            if urlparse(url).path == '/work/market-systems/':
+                response.headers['x-site-source-commit'] = 'c' * 40
+            return response
+
+        with patch('time.monotonic', side_effect=[0, 0, 70]), \
+                patch('time.sleep') as sleep:
+            with self.assertRaisesRegex(LiveReleaseError, 'source commit header does not match on /work/market-systems/'):
+                verify_live_release(CANONICAL_ORIGIN, COMMIT, self.expected_manifest, fetcher=stale_edge, wait_seconds=60)
+        sleep.assert_called_once()
+
+    def test_wait_does_not_retry_missing_release_headers(self):
+        def other_origin(url):
+            response = self.fetch(url)
+            if urlparse(url).path == '/work/market-systems/':
+                response.headers.pop('x-site-source-commit')
+            return response
+
+        with patch('time.sleep') as sleep:
+            with self.assertRaisesRegex(LiveReleaseError, 'source commit header does not match on /work/market-systems/'):
+                verify_live_release(CANONICAL_ORIGIN, COMMIT, self.expected_manifest, fetcher=other_origin, wait_seconds=60)
+        sleep.assert_not_called()
 
     def test_wrong_origin_fails(self):
         with self.assertRaisesRegex(LiveReleaseError, 'canonical origin'):

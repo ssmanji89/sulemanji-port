@@ -6,6 +6,7 @@ import json
 import re
 import subprocess
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -148,6 +149,38 @@ def _check_identity_headers(response: LiveResponse, expected_commit: str, expect
         raise LiveReleaseError(f'build timestamp header does not match on {path}')
 
 
+def _wait_for_release_headers(fetcher, base_origin: str, identity: tuple[str, str, str],
+                              wait_seconds: int):
+    deadline = None
+
+    def fetch(url: str) -> LiveResponse:
+        nonlocal deadline
+        response = fetcher(url)
+        if not url.startswith(base_origin + '/'):
+            return response
+        while response.status in (200, 301, 302, 307, 308, 404, 410):
+            headers = {key.lower(): value for key, value in (response.headers or {}).items()}
+            observed = (
+                headers.get('x-site-source-commit', ''),
+                headers.get('x-site-asset-digest', ''),
+                headers.get('x-site-built-at', ''),
+            )
+            if observed == identity or not all(pattern.fullmatch(value) for pattern, value in
+                                               zip((COMMIT_RE, DIGEST_RE, BUILT_AT_RE), observed)):
+                break
+            # Spend one wait budget across all routes. The caller still validates every response.
+            if deadline is None:
+                deadline = time.monotonic() + wait_seconds
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                break
+            time.sleep(min(5, remaining))
+            response = fetcher(url)
+        return response
+
+    return fetch
+
+
 def _check_content_type(response: LiveResponse, expected: str, path: str) -> None:
     headers = {key.lower(): value for key, value in (response.headers or {}).items()}
     actual = headers.get('content-type', '').split(';', 1)[0].strip().lower()
@@ -257,7 +290,7 @@ def _article_discovery_paths(articles: list[dict], key_pages: set[str], feed_bod
 
 
 def verify_live_release(base_url: str, expected_commit: str, expected_manifest: dict,
-                        fetcher=fetch_live, staging: bool = False) -> dict:
+                        fetcher=fetch_live, staging: bool = False, *, wait_seconds: int = 0) -> dict:
     """Verify the public site against a locally validated build artifact manifest."""
     parsed_base = urlparse(base_url)
     if (parsed_base.scheme != 'https' or not parsed_base.hostname or parsed_base.username or parsed_base.password
@@ -287,6 +320,11 @@ def verify_live_release(base_url: str, expected_commit: str, expected_manifest: 
         raise LiveReleaseError('qualified artifact build timestamp is invalid') from error
     if parsed_built_at.isoformat(timespec='seconds').replace('+00:00', 'Z') != built_at:
         raise LiveReleaseError('qualified artifact build timestamp is not canonical UTC')
+
+    if not 0 <= wait_seconds <= 120:
+        raise LiveReleaseError('release propagation wait must be between 0 and 120 seconds')
+    if wait_seconds:
+        fetcher = _wait_for_release_headers(fetcher, base_origin, (expected_commit, digest, built_at), wait_seconds)
 
     manifest_response = _fetch(fetcher, base_url.rstrip('/') + '/release.json', 200, 'release manifest')
     _check_content_type(manifest_response, 'application/json', '/release.json')
@@ -519,11 +557,13 @@ def main() -> int:
     parser.add_argument('--expected-commit', required=True)
     parser.add_argument('--manifest', type=Path, required=True, help='release.json from the exact built artifact')
     parser.add_argument('--staging', action='store_true', help='verify an isolated non-production HTTPS staging origin')
+    parser.add_argument('--wait-seconds', type=int, default=0, help='wait for a reported previous release to converge')
     args = parser.parse_args()
     try:
         manifest_path = args.manifest.resolve()
         expected_manifest = verify_artifact(manifest_path.parent, args.expected_commit, args.expected_commit)
-        receipt = verify_live_release(args.base_url, args.expected_commit, expected_manifest, staging=args.staging)
+        receipt = verify_live_release(args.base_url, args.expected_commit, expected_manifest, staging=args.staging,
+                                      wait_seconds=args.wait_seconds)
     except (LiveReleaseError, ReleaseError, OSError, ValueError, json.JSONDecodeError) as error:
         parser.error(str(error))
     print('PASS live public-site checks: ' + json.dumps(receipt, sort_keys=True))

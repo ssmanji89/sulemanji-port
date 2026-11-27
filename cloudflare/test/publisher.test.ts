@@ -145,11 +145,13 @@ describe('public publication identity verification', () => {
     };
     const fetcher: typeof fetch = async (input) => {
       const requestUrl = new URL(input instanceof Request ? input.url : input.toString());
-      if (requestUrl.pathname === '/notes/reviewed-article') return response(article, url, {
+      const headers = {
         'x-site-source-commit': attempt.source_commit!, 'x-site-asset-digest': digest, 'x-site-built-at': builtAt,
-      });
-      if (requestUrl.pathname === '/writing') return response('/notes/reviewed-article', requestUrl.toString());
-      if (requestUrl.pathname === '/feed.xml' || requestUrl.pathname === '/sitemap.xml') return response('/notes/reviewed-article', requestUrl.toString());
+      };
+      if (requestUrl.pathname === '/notes/reviewed-article') return response(article, url, headers);
+      if (requestUrl.pathname === '/writing') return response(`<a href="${url}">Article</a>`, requestUrl.href, headers);
+      if (requestUrl.pathname === '/feed.xml') return response(`<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="${url}"/></entry></feed>`, requestUrl.href, headers);
+      if (requestUrl.pathname === '/sitemap.xml') return response(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${url}</loc></url></urlset>`, requestUrl.href, headers);
       return response('missing', requestUrl.toString());
     };
 

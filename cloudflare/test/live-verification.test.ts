@@ -14,6 +14,12 @@ const title = 'A nested article that is verified';
 const body = '<p>Nested public text remains visible to the reader, <strong>including the exact bold words</strong> inside this article body.</p><ul><li>A separate list item with useful evidence.</li></ul>';
 const assetDigest = `sha256:${'b'.repeat(64)}`;
 const builtAt = '2026-11-27T14:00:00Z';
+const releaseHeaders = { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': assetDigest, 'x-site-built-at': builtAt };
+function discovery(path: string, url = articleUrl): string {
+  if (path === '/writing') return `<a href="${url}">${title}</a>`;
+  if (path === '/feed.xml') return `<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="${url}"/></entry></feed>`;
+  return `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${url}</loc></url></urlset>`;
+}
 function response(url: string, body: string, headers: Record<string, string> = {}, status = 200): Response {
   const result = new Response(body, { status, headers });
   Object.defineProperty(result, 'url', { value: url });
@@ -25,6 +31,23 @@ function attempt(textHash: string): PublishAttempt {
 }
 
 describe('deployed page readback', () => {
+  it('rejects a longer sibling route and discovery from a stale release', async () => {
+    const html = `<link rel="canonical" href="${articleUrl}"><h1>${title}</h1><div data-writing-body>${body}</div>`;
+    const candidate = attempt(await sha(normalizeVisibleText(body)));
+    for (const mode of ['sibling', 'stale', 'malformed']) {
+      const href = mode === 'sibling' ? `${articleUrl}-longer` : articleUrl;
+      const fetcher: typeof fetch = async (input) => {
+        const url = new URL(String(input));
+        const source = mode === 'stale' && url.pathname === '/sitemap.xml' ? 'b'.repeat(40) : releaseHeaders['x-site-source-commit'];
+        const content = url.pathname === '/notes/reviewed-article' ? html
+          : mode === 'malformed' && url.pathname === '/feed.xml' ? `<entry><link href="${href}"/></entry>`
+          : discovery(url.pathname, href);
+        return response(url.toString(), content, { ...releaseHeaders, 'x-site-source-commit': source });
+      };
+      expect((await verifyPublicationDetailed(candidate, fetcher)).receipt.outcome).toBe('UNCERTAIN');
+    }
+  });
+
   it('verifies the fixture artifact through the private binding without a public response URL', async () => {
     const paths: string[] = [];
     const binding = { async fetch(input: RequestInfo | URL) {
@@ -34,8 +57,8 @@ describe('deployed page readback', () => {
       paths.push(url.pathname);
       const html = url.pathname.startsWith('/notes/')
         ? `<link rel="canonical" href="${articleUrl}"><h1>${title}</h1><div data-writing-body>${body}</div>`
-        : `<a href="${articleUrl}">${title}</a>`;
-      return new Response(html, { headers: { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': assetDigest, 'x-site-built-at': builtAt } });
+        : discovery(url.pathname);
+      return new Response(html, { headers: releaseHeaders });
     } };
     const candidate = attempt(await sha(normalizeVisibleText(body)));
     const boundFetch = fixtureSiteFetcher(binding);
@@ -51,9 +74,7 @@ describe('deployed page readback', () => {
     const fetcher: typeof fetch = async (input) => {
       const url = new URL(String(input));
       if (url.pathname === '/notes/reviewed-article') return response(articleUrl, html, { 'x-site-source-commit': 'a'.repeat(40), 'x-site-asset-digest': assetDigest, 'x-site-built-at': builtAt });
-      if (url.pathname === '/writing') return response(url.toString(), `<a href="/notes/reviewed-article">${title}</a>`);
-      if (url.pathname === '/feed.xml') return response(url.toString(), `<feed><link>${articleUrl}</link></feed>`);
-      if (url.pathname === '/sitemap.xml') return response(url.toString(), `<url><loc>${articleUrl}</loc></url>`);
+      if (['/writing', '/feed.xml', '/sitemap.xml'].includes(url.pathname)) return response(url.toString(), discovery(url.pathname), releaseHeaders);
       return response(url.toString(), '', {}, 404);
     };
     const detailed = await verifyPublicationDetailed(attempt(await sha(normalizeVisibleText(body))), fetcher);

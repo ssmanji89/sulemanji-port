@@ -2,6 +2,7 @@ import type { ContentProposal, PublicationReceipt, PublicationState, PublishAtte
 import * as parse5 from 'parse5';
 import { verifyRequiredMedia } from './review.js';
 import { CANONICAL_SITE_ORIGIN } from './site-readback.js';
+import { readDiscoveryLinks } from './discovery-readback.js';
 
 export type PublishDecision = { allowed: true } | { allowed: false; reasons: string[] };
 export type PullRequestState = { number: number; head_sha: string; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; checks: 'pending' | 'success' | 'failure' };
@@ -142,7 +143,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
   readback: 'public' | 'private-binding' = 'public'): Promise<{ receipt: PublicationReceipt; failure?: string }> {
   if (!attempt.source_commit) return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: '', deployment_version: '', public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'UNCERTAIN' }, failure: 'merged source commit missing' };
   try {
-    const pages: Array<{ url: string; html: string }> = [];
+    const articleUrls: string[] = [];
     let releaseAssetDigest: string | null = null;
     let releaseBuiltAt: string | null = null;
     for (const url of attempt.public_urls) {
@@ -154,7 +155,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       if (!response.ok || !originMatches) throw new Error('page unavailable or redirected off canonical host');
       const html = await response.text();
       if (html.length > 2_000_000) throw new Error('article response exceeds bound');
-      pages.push({ url, html });
+      articleUrls.push(expectedUrl.href);
       const item = attempt.expected_content.find((expected) => expected.url === url);
       if (!item) throw new Error('expected article absent');
       const page = parse5.parse(html) as unknown as { childNodes?: Array<{ tagName?: string; childNodes?: unknown[] }> };
@@ -188,18 +189,18 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       releaseAssetDigest = assetDigest;
       releaseBuiltAt = builtAt;
     }
-    const first = pages[0];
-    const siteOrigin = new URL(first.url, CANONICAL_SITE_ORIGIN).origin;
-    const writing = await fetcher(new URL('/writing', siteOrigin), { redirect: 'error' });
-    const feed = await fetcher(new URL('/feed.xml', siteOrigin), { redirect: 'error' });
-    const sitemap = await fetcher(new URL('/sitemap.xml', siteOrigin), { redirect: 'error' });
-    if (!writing.ok || !feed.ok || !sitemap.ok) throw new Error('writing, feed, or sitemap unavailable');
-    const writingHtml = await writing.text(); const feedXml = await feed.text(); const sitemapXml = await sitemap.text();
-    for (const page of pages) {
-      const route = new URL(page.url, siteOrigin).pathname.replace(/\/$/, '');
-      if (!writingHtml.includes(route) || !feedXml.includes(route) || !sitemapXml.includes(route)) throw new Error('article discovery, feed, or sitemap readback mismatch');
+    if (!articleUrls.length || !releaseAssetDigest || !releaseBuiltAt) throw new Error('deployed asset release identity missing');
+    for (const [kind, path] of [['writing', '/writing'], ['feed', '/feed.xml'], ['sitemap', '/sitemap.xml']] as const) {
+      const target = new URL(path, CANONICAL_SITE_ORIGIN);
+      const response = await fetcher(target, { redirect: 'error' });
+      const originMatches = response.url ? new URL(response.url).origin === target.origin : readback === 'private-binding';
+      if (!response.ok || !originMatches || response.headers.get('x-site-source-commit') !== attempt.source_commit ||
+          response.headers.get('x-site-asset-digest') !== releaseAssetDigest || response.headers.get('x-site-built-at') !== releaseBuiltAt) {
+        throw new Error(`${kind} discovery does not match the deployed release`);
+      }
+      const links = readDiscoveryLinks(kind, await response.text());
+      if (articleUrls.some((url) => !links.has(url))) throw new Error(`${kind} discovery does not include the exact article URL`);
     }
-    if (!releaseAssetDigest || !releaseBuiltAt) throw new Error('deployed asset release identity missing');
     const deploymentVersion = await sha256(`${attempt.source_commit}\n${releaseAssetDigest}\n${releaseBuiltAt}`);
     return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: attempt.source_commit, deployment_version: deploymentVersion,
       public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'VERIFIED' } };

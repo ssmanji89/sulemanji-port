@@ -1,5 +1,9 @@
-import type { PublicationCounts, PublishEffect, PublishEffectStore } from './publisher.js';
+import type { PublicationCounts, PublishEffect, PublishEffectStore, PullRequestState } from './publisher.js';
 import { localBudgetPeriod } from './scheduler.js';
+
+type UnsettledMerge = {
+  candidate_id: string; branch: string; owner_epoch: number; pull_request: number; source_commit: string;
+};
 
 export class D1PublishEffectStore implements PublishEffectStore {
   constructor(private readonly db: D1Database, private readonly ownerEpoch: number,
@@ -22,7 +26,7 @@ export class D1PublishEffectStore implements PublishEffectStore {
   }
 
   async read(candidateId: string) {
-    return this.db.prepare(`SELECT effect_id, branch, owner_epoch, content_digest, pull_request, source_commit, merge_commit, state
+    return this.db.prepare(`SELECT effect_id, branch, owner_epoch, content_digest, pull_request, source_commit, merge_commit, merge_settled_date, state
       FROM publication_effects WHERE candidate_id = ?`).bind(candidateId).first<PublishEffect>();
   }
 
@@ -33,7 +37,7 @@ export class D1PublishEffectStore implements PublishEffectStore {
     // Unresolved attempts carry forward. A merge settled after midnight counts on both days.
     await this.db.prepare(`UPDATE publication_effects SET merge_admission_date = ?, new_articles = ?, refreshes = ?
       WHERE candidate_id = ? AND owner_epoch = ? AND state = 'SOURCE_PUBLISHED' AND merge_commit IS NULL
-        AND merge_admission_date IS NULL AND EXISTS (
+        AND merge_admission_date IS NULL AND merge_settled_date IS NULL AND EXISTS (
           SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
         ) AND EXISTS (
           SELECT 1 FROM (
@@ -47,12 +51,35 @@ export class D1PublishEffectStore implements PublishEffectStore {
     const row = await this.db.prepare(`SELECT effect.merge_admission_date, effect.new_articles, effect.refreshes
       FROM publication_effects AS effect JOIN editorial_control AS control
         ON control.singleton = 1 AND control.paused = 0 AND control.owner_epoch = effect.owner_epoch
-      WHERE effect.candidate_id = ? AND effect.owner_epoch = ? AND effect.state = 'SOURCE_PUBLISHED' AND effect.merge_commit IS NULL`)
+      WHERE effect.candidate_id = ? AND effect.owner_epoch = ? AND effect.state = 'SOURCE_PUBLISHED' AND effect.merge_commit IS NULL AND effect.merge_settled_date IS NULL`)
       .bind(candidateId, this.ownerEpoch).first<{ merge_admission_date: string | null; new_articles: number; refreshes: number }>();
     if (!row) throw new Error('WORKFLOW_AUTHORITY_CHANGED');
     if (!row.merge_admission_date) return false;
     if (row.new_articles !== counts.new_articles || row.refreshes !== counts.refreshes) throw new Error('PUBLICATION_CAPACITY_CONFLICT');
     return true;
+  }
+
+  async reconcileMergeCapacity(readPull: (branch: string) => Promise<PullRequestState | null>): Promise<void> {
+    const unsettled = await this.db.prepare(`SELECT candidate_id, branch, owner_epoch, pull_request, source_commit
+      FROM publication_effects WHERE merge_admission_date IS NOT NULL AND merge_settled_date IS NULL
+        AND pull_request IS NOT NULL AND source_commit IS NOT NULL
+        AND EXISTS (SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?)
+      ORDER BY merge_admission_date, candidate_id LIMIT 20`).bind(this.ownerEpoch).all<UnsettledMerge>();
+    for (const effect of unsettled.results) {
+      let pull: PullRequestState | null;
+      try { pull = await readPull(effect.branch); } catch { continue; }
+      if (!pull || pull.state !== 'closed' || pull.number !== effect.pull_request || pull.head_sha !== effect.source_commit ||
+          (pull.merged && !pull.merge_commit_sha)) continue;
+      const now = this.clock();
+      // A current owner may reconcile a prior charge, but this cannot dispatch any GitHub write.
+      await this.db.prepare(`UPDATE publication_effects SET state = ?, merge_commit = ?, merge_settled_date = ?, updated_at = ?
+        WHERE candidate_id = ? AND branch = ? AND owner_epoch = ? AND pull_request = ? AND source_commit = ?
+          AND merge_admission_date IS NOT NULL AND merge_settled_date IS NULL AND merge_commit IS NULL
+          AND EXISTS (SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?)`)
+        .bind(pull.merged ? 'MERGED' : 'FAILED', pull.merged ? pull.merge_commit_sha : null,
+          localBudgetPeriod(now).local_date, now.toISOString(), effect.candidate_id, effect.branch, effect.owner_epoch,
+          effect.pull_request, effect.source_commit, this.ownerEpoch).run();
+    }
   }
 
   async record(candidateId: string, patch: { pull_request?: number; source_commit?: string; merge_commit?: string; state: string }): Promise<void> {
@@ -63,7 +90,8 @@ export class D1PublishEffectStore implements PublishEffectStore {
     const result = await this.db.prepare(`UPDATE publication_effects SET pull_request = COALESCE(?, pull_request), source_commit = COALESCE(?, source_commit),
       merge_commit = COALESCE(?, merge_commit), state = ?, updated_at = ?,
       merge_settled_date = CASE WHEN merge_admission_date IS NOT NULL THEN COALESCE(merge_settled_date, ?) END
-      WHERE candidate_id = ? AND owner_epoch = ? AND (state <> 'MERGED' OR (? = 'MERGED' AND merge_commit = ?))
+      WHERE candidate_id = ? AND owner_epoch = ? AND ((state <> 'MERGED' AND merge_settled_date IS NULL)
+        OR (state = 'MERGED' AND ? = 'MERGED' AND merge_commit = ?))
         AND EXISTS (SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?)`)
       .bind(patch.pull_request ?? null, patch.source_commit ?? null, patch.merge_commit ?? null, patch.state,
         now.toISOString(), settledDate, candidateId, this.ownerEpoch, patch.state, patch.merge_commit ?? null, this.ownerEpoch).run();

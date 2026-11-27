@@ -14,18 +14,19 @@ type CandidatePipelineInput = {
   policy: EditorialPolicy;
   owner_epoch: number;
   step: DurableStep;
-  resumeCapacity?: true;
+  resumeCapacity?: ReviewedPublication;
 };
+export type ReviewedPublication = { proposal: ContentProposal; review: ReviewReceipt; attempt: PublishAttempt };
 type PublicationResult = { attempt: PublishAttempt; merged: boolean };
 type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true };
-export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt };
+export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt; retry_after?: string; signal?: Signal };
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
   renderSocialCard: SocialCardRenderer;
   preparationContext(input: CandidatePipelineInput): Promise<PreparationContext>;
   publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal): Promise<PublicationResult>;
   verify(attempt: PublishAttempt): Promise<{ receipt: PublicationReceipt; failure?: string }>;
-  persist(candidateId: string, ownerEpoch: number, state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'VERIFIED', checkpoint: CandidateCheckpoint): Promise<boolean>;
+  persist(candidateId: string, ownerEpoch: number, state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'CAPACITY_HELD' | 'VERIFIED', checkpoint: CandidateCheckpoint): Promise<boolean>;
 };
 
 function stepPart(candidateId: string): string {
@@ -61,6 +62,9 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       if (!Number.isSafeInteger(ownerEpoch) || ownerEpoch < 1 || !Number.isSafeInteger(policy.max_review_rounds_per_candidate) ||
           policy.max_review_rounds_per_candidate < 1 || policy.max_review_rounds_per_candidate > 3) {
         return { status: 'held', reason: 'Candidate publication context is not qualified.' };
+      }
+      if (input.resumeCapacity) {
+        return publishReviewed(input, input.resumeCapacity.proposal, input.resumeCapacity.review, deps);
       }
       const key = stepPart(candidate.id);
       if (candidate.action === 'REFRESH') {
@@ -136,61 +140,74 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       }
       if (!cleared) return { status: 'held', reason: 'Independent review did not clear the candidate.' };
 
-      const review = cleared;
-      const retrySuffix = input.resumeCapacity ? '-capacity-retry' : '';
-      let mergedAttempt: PublishAttempt | undefined;
-      for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
-        const suffix = retrySuffix + (probe ? `-poll-${probe}` : '');
-        if (probe) await step.sleep(`await-checks-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
-        const publication = await step.do(`publish-content-${key}${suffix}`, () => deps.publish(proposal, review, input.signal));
-        const attempt = publication.attempt;
-        if (attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.source_commit || !attempt.pull_request) {
-          return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };
-        }
-        if (attempt.status === 'CAPACITY_HELD') {
-          const recorded = await step.do(`persist-candidate-${key}-CAPACITY_HELD${suffix}`, () =>
-            deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', { proposal, review, attempt }));
-          if (!recorded) return { status: 'held', reason: 'Could not checkpoint the publication capacity hold.' };
-          const retryCapacityAfter = input.resumeCapacity ? undefined :
-            await step.do(`next-publication-day-${key}`, () => nextChicagoBudgetDay(new Date()));
-          return { status: 'held', reason: 'The daily publication allowance would be exceeded.', continue_after_hold: true,
-            retry_capacity_after: retryCapacityAfter };
-        }
-        if (attempt.status === 'UNCERTAIN') continue;
-        if (attempt.status !== 'SOURCE_PUBLISHED') {
-          return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };
-        }
-        const publishedCheckpoint = { proposal, review, attempt };
-        if (!(await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED${suffix}`, () =>
-          deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', publishedCheckpoint)))) {
-          return { status: 'held', reason: 'Workflow authority changed before the publication effect could be checkpointed.' };
-        }
-        if (publication.merged) { mergedAttempt = attempt; break; }
-      }
-      if (!mergedAttempt) return { status: 'held', reason: 'Pull request checks or merge reconciliation did not complete within the publication wait.' };
-
-      const attempt = mergedAttempt;
-      for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
-        const suffix = retrySuffix + (probe ? `-poll-${probe}` : '');
-        if (probe) await step.sleep(`await-deployment-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
-        const verification = await step.do(`verify-publication-${key}${suffix}`, () => deps.verify(attempt));
-        const receipt = verification.receipt;
-        const verifiedCheckpoint = { proposal, review, attempt, publication: receipt };
-        if (receipt.outcome !== 'VERIFIED' || verification.failure) {
-          if (probe === PUBLICATION_WAIT_MS.length) await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED-readback${retrySuffix}`, () =>
-            deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', verifiedCheckpoint));
-          continue;
-        }
-        if (receipt.candidate_id !== candidate.id || receipt.owner_epoch !== ownerEpoch || receipt.source_commit !== attempt.source_commit ||
-            !receipt.deployment_version || JSON.stringify(receipt.public_urls) !== JSON.stringify(attempt.public_urls)) {
-          return { status: 'held', reason: 'Deployment readback did not bind to the exact reviewed publication.' };
-        }
-        if (!(await step.do(`persist-candidate-${key}-VERIFIED${retrySuffix}`, () => deps.persist(candidate.id, ownerEpoch, 'VERIFIED', verifiedCheckpoint)))) {
-          return { status: 'held', reason: 'Workflow authority changed before verified publication could be checkpointed.' };
-        }
-        return { status: 'verified', reason: 'Publication and exact readback are verified.' };
-      }
-      return { status: 'held', reason: 'Deployment readback did not verify the exact reviewed publication within the wait.' };
+      return publishReviewed(input, proposal, cleared, deps);
     },
   };
+}
+
+async function publishReviewed(input: CandidatePipelineInput, proposal: ContentProposal, review: ReviewReceipt,
+  deps: CandidatePipelineDependencies): Promise<CandidateProcessOutcome> {
+  const { candidate, owner_epoch: ownerEpoch, step } = input;
+  const key = stepPart(candidate.id);
+  const retrySuffix = input.resumeCapacity ? '-capacity-retry' : '';
+  let mergedAttempt: PublishAttempt | undefined;
+  for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
+    const suffix = retrySuffix + (probe ? `-poll-${probe}` : '');
+    if (probe) await step.sleep(`await-checks-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
+    const publication = await step.do(`publish-content-${key}${suffix}`, () => deps.publish(proposal, review, input.signal));
+    const attempt = publication.attempt;
+    if (attempt.status === 'BRANCH_UNQUALIFIED') {
+      return { status: 'held', reason: 'GitHub has no active rule requiring this pull request to be current with the base and pass its checks.' };
+    }
+    if (input.resumeCapacity && attempt.status === 'FAILED') {
+      const stopped = await step.do(`persist-candidate-${key}-NEEDS_OWNER${suffix}`, () =>
+        deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', { proposal, review, attempt: input.resumeCapacity?.attempt }));
+      if (!stopped) return { status: 'held', reason: 'Could not checkpoint the deferred publication hold.' };
+      return { status: 'held', reason: 'The deferred publication requires fresh owner review.', continue_after_hold: true };
+    }
+    if (attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.source_commit || !attempt.pull_request) {
+      return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };
+    }
+    if (attempt.status === 'CAPACITY_HELD') {
+      const retryAfter = await step.do(`next-publication-day-${key}`, () => new Date(nextChicagoBudgetDay(new Date())).toISOString());
+      const recorded = await step.do(`persist-candidate-${key}-CAPACITY_HELD${suffix}`, () =>
+        deps.persist(candidate.id, ownerEpoch, 'CAPACITY_HELD', { proposal, review, attempt, retry_after: retryAfter, signal: input.signal }));
+      if (!recorded) return { status: 'held', reason: 'Could not checkpoint the publication capacity hold.' };
+      return { status: 'held', reason: 'The daily publication allowance would be exceeded.', continue_after_hold: true };
+    }
+    if (attempt.status === 'UNCERTAIN') continue;
+    if (attempt.status !== 'SOURCE_PUBLISHED') {
+      return { status: 'held', reason: 'Reviewed source publication requires reconciliation.' };
+    }
+    const publishedCheckpoint = { proposal, review, attempt };
+    if (!input.resumeCapacity && !(await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED${suffix}`, () =>
+      deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', publishedCheckpoint)))) {
+      return { status: 'held', reason: 'Workflow authority changed before the publication effect could be checkpointed.' };
+    }
+    if (publication.merged) { mergedAttempt = attempt; break; }
+  }
+  if (!mergedAttempt) return { status: 'held', reason: 'Pull request checks or merge reconciliation did not complete within the publication wait.' };
+
+  const attempt = mergedAttempt;
+  for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
+    const suffix = retrySuffix + (probe ? `-poll-${probe}` : '');
+    if (probe) await step.sleep(`await-deployment-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
+    const verification = await step.do(`verify-publication-${key}${suffix}`, () => deps.verify(attempt));
+    const receipt = verification.receipt;
+    const verifiedCheckpoint = { proposal, review, attempt, publication: receipt };
+    if (receipt.outcome !== 'VERIFIED' || verification.failure) {
+      if (!input.resumeCapacity && probe === PUBLICATION_WAIT_MS.length) await step.do(`persist-candidate-${key}-SOURCE_PUBLISHED-readback${retrySuffix}`, () =>
+        deps.persist(candidate.id, ownerEpoch, 'SOURCE_PUBLISHED', verifiedCheckpoint));
+      continue;
+    }
+    if (receipt.candidate_id !== candidate.id || receipt.owner_epoch !== ownerEpoch || receipt.source_commit !== attempt.source_commit ||
+        !receipt.deployment_version || JSON.stringify(receipt.public_urls) !== JSON.stringify(attempt.public_urls)) {
+      return { status: 'held', reason: 'Deployment readback did not bind to the exact reviewed publication.' };
+    }
+    if (!(await step.do(`persist-candidate-${key}-VERIFIED${retrySuffix}`, () => deps.persist(candidate.id, ownerEpoch, 'VERIFIED', verifiedCheckpoint)))) {
+      return { status: 'held', reason: 'Workflow authority changed before verified publication could be checkpointed.' };
+    }
+    return { status: 'verified', reason: 'Publication and exact readback are verified.' };
+  }
+  return { status: 'held', reason: 'Deployment readback did not verify the exact reviewed publication within the wait.' };
 }

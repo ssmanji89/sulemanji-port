@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
-import { createEditorialCandidatePipeline } from '../src/editorial/pipeline.js';
+import { createEditorialCandidatePipeline, type ReviewedPublication } from '../src/editorial/pipeline.js';
 import type { Candidate, ContentProposal, PreparationContext, PublicationReceipt, PublishAttempt, Signal } from '../src/editorial/contracts.js';
 import type { EditorialPolicy } from '../src/editorial/scheduler.js';
 import { BudgetedModelGateway, ModelAdmissionHoldError, type ModelGateway, type ModelRequest, type ModelResult } from '../src/editorial/models.js';
@@ -38,7 +38,6 @@ class Steps implements DurableStep {
   waits = new Map<string, number>();
   values = new Map<string, unknown>();
   async sleep(name: string, milliseconds: number) { this.waits.set(name, milliseconds); }
-  async sleepUntil(name: string, timestamp: number) { this.waits.set(name, timestamp); }
   async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
     this.names.push(name);
     if (!this.values.has(name)) this.values.set(name, await callback());
@@ -57,12 +56,21 @@ describe('durable candidate publication pipeline', () => {
     const models = new Models();
     const steps = new Steps();
     const proposals: string[] = [];
+    let pending: ReviewedPublication | undefined;
     const pipeline = createEditorialCandidatePipeline({
-      modelsFor: () => models, renderSocialCard, preparationContext: async () => context, persist: async () => true,
+      modelsFor: () => models, renderSocialCard, preparationContext: async () => context,
+      persist: async (_id, _epoch, state, checkpoint) => {
+        if (state === 'CAPACITY_HELD') {
+          expect(checkpoint.retry_after).toBeTruthy();
+          expect(checkpoint.signal?.id).toBe('signal-1');
+          pending = { proposal: checkpoint.proposal!, review: checkpoint.review!, attempt: checkpoint.attempt! };
+        }
+        return true;
+      },
       publish: async (proposal, review) => {
         proposals.push(proposal.content_digest);
         expect(review.content_digest).toBe(proposal.content_digest);
-        const held = proposals.length === 1;
+        const held = proposals.length <= 2;
         return { attempt: { ...attempt(proposal), status: held ? 'CAPACITY_HELD' : 'SOURCE_PUBLISHED' }, merged: !held };
       },
       verify: async (published) => ({ receipt: { candidate_id: published.candidate_id, owner_epoch: 1,
@@ -72,10 +80,12 @@ describe('durable candidate publication pipeline', () => {
     const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
       catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: steps };
     await expect(pipeline.processCandidate(input)).resolves.toMatchObject({ status: 'held',
-      continue_after_hold: true, retry_capacity_after: expect.any(Number) });
-    await expect(pipeline.processCandidate({ ...input, resumeCapacity: true })).resolves.toMatchObject({ status: 'verified' });
-    expect(proposals).toHaveLength(2);
-    expect(proposals[0]).toBe(proposals[1]);
+      continue_after_hold: true });
+    expect(pending).toBeDefined();
+    await expect(pipeline.processCandidate({ ...input, step: new Steps(), resumeCapacity: pending })).resolves.toMatchObject({ status: 'held' });
+    await expect(pipeline.processCandidate({ ...input, step: new Steps(), resumeCapacity: pending })).resolves.toMatchObject({ status: 'verified' });
+    expect(proposals).toHaveLength(3);
+    expect(new Set(proposals).size).toBe(1);
     expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review']);
   });
 
@@ -109,7 +119,6 @@ describe('durable candidate publication pipeline', () => {
     let retries = 0;
     const step: DurableStep = {
       sleep: steps.sleep.bind(steps),
-      sleepUntil: steps.sleepUntil.bind(steps),
       do: <T>(name: string, callback: () => Promise<T> | T) => steps.do(name, async () => {
         try {
           return await callback();

@@ -97,6 +97,32 @@ describe('GitHub publication read adapters', () => {
     expect(fetcher.mock.calls.some(([input]) => String(input).endsWith('/pulls'))).toBe(false);
   });
 
+  it('requires active strict checks and calls the final authority guard before the merge request', async () => {
+    let active = false;
+    let merges = 0;
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith('/rules/branches/main')) return Response.json(active ? [{
+        type: 'required_status_checks', parameters: { strict_required_status_checks_policy: true,
+          required_status_checks: [{ context: 'site-release' }] },
+      }] : []);
+      if (url.endsWith('/pulls/9/merge') && init?.method === 'PUT') {
+        merges += 1;
+        return Response.json({ merged: true, sha: 'd'.repeat(40) });
+      }
+      throw new Error('Unexpected GitHub request');
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port',
+      required_checks: ['site-release'] }, fetcher as typeof fetch);
+    await expect(github.hasStrictMergeChecks()).resolves.toBe(false);
+    active = true;
+    await expect(github.hasStrictMergeChecks()).resolves.toBe(true);
+    await expect(github.mergePullRequest(9, 'a'.repeat(40), async () => false)).rejects.toThrow('GITHUB_MERGE_AUTHORITY_CHANGED');
+    expect(merges).toBe(0);
+    await expect(github.mergePullRequest(9, 'a'.repeat(40), async () => true)).resolves.toEqual({ merge_commit_sha: 'd'.repeat(40) });
+    expect(merges).toBe(1);
+  });
+
   it('recognizes a merged PR from the list-pulls response without a merged field or check reads', async () => {
     const branch = 'editorial/candidate-42';
     const head = 'a'.repeat(40);

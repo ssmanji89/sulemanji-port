@@ -3,6 +3,7 @@ import type { GitHubPublisher, PullRequestState } from './publisher.js';
 
 type GitHubConfig = { token: string; repository: string; required_checks: string[]; default_branch?: string; api_origin?: string; require_private?: boolean };
 type PullRequestApi = { number: number; state: 'open' | 'closed'; merged_at?: string | null; merge_commit_sha: string | null; head: { ref: string; sha: string }; base: { ref: string } };
+type BranchRule = { type: string; parameters?: { strict_required_status_checks_policy?: boolean; required_status_checks?: Array<{ context?: string }> } };
 type CheckRunsApi = { check_runs?: Array<{ name: string; status: string; conclusion: string | null }> };
 
 function binaryBase64(bytes: Uint8Array): string {
@@ -109,6 +110,7 @@ export class GitHubApiPublisher implements GitHubPublisher {
   private async pullRequestState(pr: PullRequestApi): Promise<PullRequestState> {
     const merged = pr.state === 'closed' && typeof pr.merged_at === 'string' && Number.isFinite(Date.parse(pr.merged_at)) &&
       typeof pr.merge_commit_sha === 'string' && /^[0-9a-f]{40}$/i.test(pr.merge_commit_sha);
+    if (pr.state === 'closed' && !merged && pr.merged_at !== null) throw new Error('GITHUB_PULL_MERGE_STATE_UNQUALIFIED');
     const checks = pr.state === 'open' ? await this.checkState(pr.head.sha) : merged ? 'success' : 'failure';
     return { number: pr.number, head_sha: pr.head.sha, state: pr.state, merged,
       merge_commit_sha: merged ? pr.merge_commit_sha : null, checks };
@@ -175,8 +177,18 @@ export class GitHubApiPublisher implements GitHubPublisher {
     return this.pullRequestState(pr);
   }
 
-  async mergePullRequest(number: number, expectedHead: string): Promise<{ merge_commit_sha: string }> {
+  async hasStrictMergeChecks(): Promise<boolean> {
     await this.assertPrivateFixture();
+    const rules = await this.request<BranchRule[]>(
+      `/repos/${this.owner}/${this.repo}/rules/branches/${encodeURIComponent(this.branch)}`);
+    return Array.isArray(rules) && rules.some((rule) => rule.type === 'required_status_checks' &&
+      rule.parameters?.strict_required_status_checks_policy === true &&
+      this.config.required_checks.every((name) => rule.parameters?.required_status_checks?.some(({ context }) => name === context)));
+  }
+
+  async mergePullRequest(number: number, expectedHead: string, authorize: () => Promise<boolean>): Promise<{ merge_commit_sha: string }> {
+    await this.assertPrivateFixture();
+    if (!(await authorize())) throw new Error('GITHUB_MERGE_AUTHORITY_CHANGED');
     const result = await this.request<{ merged: boolean; sha: string }>(`/repos/${this.owner}/${this.repo}/pulls/${number}/merge`, {
       method: 'PUT', body: JSON.stringify({ sha: expectedHead, merge_method: 'squash' }),
     });

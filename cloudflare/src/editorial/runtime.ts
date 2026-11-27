@@ -26,7 +26,7 @@ export type EditorialRuntimeEnv = EditorialEnv & {
 type CandidateRow = { state: string; revision: string; payload_json: string };
 
 async function persistCandidateCheckpoint(db: D1Database, candidateId: string, ownerEpoch: number,
-  state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'VERIFIED', checkpoint: CandidateCheckpoint): Promise<boolean> {
+  state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'CAPACITY_HELD' | 'VERIFIED', checkpoint: CandidateCheckpoint): Promise<boolean> {
   const row = await db.prepare('SELECT state, revision, payload_json FROM editorial_candidates WHERE id = ?')
     .bind(candidateId).first<CandidateRow>();
   if (!row) return false;
@@ -36,13 +36,17 @@ async function persistCandidateCheckpoint(db: D1Database, candidateId: string, o
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
     payload = parsed as Record<string, unknown>;
   } catch { return false; }
-  if (payload.owner_epoch !== ownerEpoch || ['DEPLOYED', 'VERIFIED'].includes(row.state)) return false;
+  const current = payload.candidate as Candidate | undefined;
+  if (payload.owner_epoch !== ownerEpoch || current?.source_digest !== row.revision || ['DEPLOYED', 'VERIFIED'].includes(row.state)) return false;
   const next = JSON.stringify({ ...payload, pipeline: checkpoint });
   if (new TextEncoder().encode(next).byteLength > 400_000) return false;
-  const result = await db.prepare(`UPDATE editorial_candidates SET state = ?, payload_json = ?, updated_at = ? WHERE id = ? AND revision = ?
-    AND state NOT IN ('DEPLOYED', 'VERIFIED') AND EXISTS (
+  if (state === 'CAPACITY_HELD' && (!checkpoint.retry_after || !checkpoint.signal)) return false;
+  const result = await db.prepare(`UPDATE editorial_candidates SET state = ?, payload_json = ?, updated_at = ?,
+    publication_retry_after = ?, publication_retry_claim = NULL
+    WHERE id = ? AND revision = ? AND payload_json = ? AND state = ? AND EXISTS (
       SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
-    )`).bind(state, next, new Date().toISOString(), candidateId, row.revision, ownerEpoch).run();
+    )`).bind(state, next, new Date().toISOString(), checkpoint.retry_after ?? null,
+    candidateId, row.revision, row.payload_json, row.state, ownerEpoch).run();
   if ((result.meta.changes ?? 0) !== 1) return false;
   const readback = await db.prepare('SELECT state, revision, payload_json FROM editorial_candidates WHERE id = ?').bind(candidateId).first<CandidateRow>();
   return Boolean(readback && readback.state === state && readback.revision === row.revision && readback.payload_json === next);
@@ -73,7 +77,8 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
   const model: ModelConfig = { ...settings.model, api_key: modelApiKey };
   const github = new GitHubApiPublisher({ ...settings.publisher, token: githubToken, require_private: staging }, fetcher);
   const provider = new JsonSchemaGateway(model, fetcher);
-  return createEditorialCandidatePipeline({
+  const limits = { new_articles: policy.max_new_articles_daily, refreshes: policy.max_refreshes_daily };
+  const pipeline = createEditorialCandidatePipeline({
     renderSocialCard,
     modelsFor(candidate, ownerEpoch, activePolicy) {
       return new BudgetedModelGateway(provider, model, { db: env.DB, candidate_id: candidate.id, owner_epoch: ownerEpoch,
@@ -95,9 +100,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths };
     },
     async publish(proposal, review, signal) {
-      const store = new D1PublishEffectStore(env.DB, review.owner_epoch, {
-        new_articles: policy.max_new_articles_daily, refreshes: policy.max_refreshes_daily,
-      });
+      const store = new D1PublishEffectStore(env.DB, review.owner_epoch, limits);
       const attempt = await publishContent(proposal, review, { store, github, readAuthority: () => readControl(env.DB), async currentState() {
         const guardedSourceFetch: typeof fetch = async (input, init) => {
           const before = await readControl(env.DB);
@@ -107,12 +110,13 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
           if (after.paused || after.owner_epoch !== review.owner_epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');
           return response;
         };
-        const [control, baseCommit, knowledge, sourceDigest] = await Promise.all([
+        const [control, baseCommit, knowledge, sourceDigest, candidate] = await Promise.all([
           readControl(env.DB), github.readDefaultBranchHead(), readKnowledge(env.DB, new Date()),
           revalidateSignalSourceDigest(signal, sourceRegistry as SourceConfig[], new Date(), guardedSourceFetch),
+          env.DB.prepare('SELECT revision FROM editorial_candidates WHERE id = ?').bind(proposal.candidate_id).first<{ revision: string }>(),
         ]);
         const currentPolicy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
-        return { owner_epoch: control.owner_epoch, paused: control.paused || !currentPolicy || currentPolicy.revision !== proposal.policy_revision,
+        return { owner_epoch: control.owner_epoch, paused: control.paused || !currentPolicy || currentPolicy.revision !== proposal.policy_revision || candidate?.revision !== proposal.source_digest,
           base_commit: baseCommit, policy_revision: currentPolicy?.revision ?? 'unqualified', knowledge_revision: await fingerprintPublicKnowledge(knowledge),
           source_digest: sourceDigest ?? '', allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id };
       } });
@@ -123,4 +127,6 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
       staging ? fixtureSiteFetcher(env.EDITORIAL_FIXTURE_SITE) : fetcher, staging ? 'private-binding' : 'public'),
     persist: (candidateId, ownerEpoch, state, checkpoint) => persistCandidateCheckpoint(env.DB, candidateId, ownerEpoch, state, checkpoint),
   });
+  return { ...pipeline, reconcileMergeCapacity: (ownerEpoch: number) =>
+    new D1PublishEffectStore(env.DB, ownerEpoch, limits).reconcileMergeCapacity((branch) => github.findPullRequest(branch)) };
 }

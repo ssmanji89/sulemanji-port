@@ -10,11 +10,12 @@ export type PullRequestState = { number: number; head_sha: string; state: 'open'
 export interface GitHubPublisher {
   findPullRequest(branch: string): Promise<PullRequestState | null>;
   createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState>;
-  mergePullRequest(number: number, expectedHead: string): Promise<{ merge_commit_sha: string }>;
+  hasStrictMergeChecks(): Promise<boolean>;
+  mergePullRequest(number: number, expectedHead: string, authorize: () => Promise<boolean>): Promise<{ merge_commit_sha: string }>;
 }
 export type PublishEffect = {
   effect_id: string; branch: string; owner_epoch: number; content_digest: string;
-  pull_request: number | null; source_commit: string | null; merge_commit: string | null; state: string;
+  pull_request: number | null; source_commit: string | null; merge_commit: string | null; merge_settled_date?: string | null; state: string;
 };
 export type PublicationCounts = { new_articles: number; refreshes: number };
 export interface PublishEffectStore {
@@ -90,6 +91,7 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
       allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id,
     });
     if (!replay || !replay.allowed) return attemptFor(proposal, authority, branch, null, null, 'FAILED');
+    if (recorded.state === 'FAILED' && recorded.merge_settled_date) return attemptFor(proposal, authority, branch, null, null, 'FAILED');
     if (recorded.state === 'MERGED') return recorded.merge_commit
       ? attemptFor(proposal, authority, branch, recorded.pull_request, recorded.merge_commit, 'SOURCE_PUBLISHED')
       : attemptFor(proposal, authority, branch, null, null, 'FAILED');
@@ -134,6 +136,7 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
       await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'FAILED' });
       return attemptFor(proposal, state, branch, pull.number, pull.head_sha, 'FAILED');
     }
+    if (!(await deps.github.hasStrictMergeChecks())) return attemptFor(proposal, state, branch, pull.number, pull.head_sha, 'BRANCH_UNQUALIFIED');
     const beforeMerge = await deps.currentState();
     const finalDecision = await canPublish(proposal, receipt, beforeMerge);
     if (!finalDecision.allowed) { await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'FAILED' }); return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'FAILED'); }
@@ -145,8 +148,14 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
       return attemptFor(proposal, beforeMerge, branch, pull.number, pull.head_sha, 'CAPACITY_HELD');
     }
     let mergeCommit: string;
-    try { mergeCommit = (await deps.github.mergePullRequest(pull.number, pull.head_sha)).merge_commit_sha; }
-    catch {
+    try {
+      mergeCommit = (await deps.github.mergePullRequest(pull.number, pull.head_sha, async () => {
+        const current = await deps.currentState();
+        if (!(await canPublish(proposal, receipt, current)).allowed) return false;
+        const authority = await deps.readAuthority();
+        return !authority.paused && authority.owner_epoch === receipt.owner_epoch;
+      })).merge_commit_sha;
+    } catch {
       const readback = await deps.github.findPullRequest(branch);
       if (!readback?.merged || !readback.merge_commit_sha || readback.number !== pull.number || readback.head_sha !== pull.head_sha) {
         await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'UNCERTAIN' });

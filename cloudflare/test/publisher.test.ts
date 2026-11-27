@@ -43,9 +43,12 @@ class FakeGitHub implements GitHubPublisher {
   creates = 0;
   merges = 0;
   loseMergeResponse = false;
+  strictMergeChecks = true;
   async findPullRequest() { return this.pr; }
   async createReviewedBranchAndPullRequest() { this.creates += 1; this.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'pending' }; return this.pr; }
-  async mergePullRequest() {
+  async hasStrictMergeChecks() { return this.strictMergeChecks; }
+  async mergePullRequest(_number: number, _head: string, authorize: () => Promise<boolean>) {
+    if (!(await authorize())) throw new Error('authority changed');
     this.merges += 1;
     this.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'closed', merged: true, merge_commit_sha: 'e'.repeat(40), checks: 'success' };
     if (this.loseMergeResponse) throw new Error('response lost');
@@ -90,6 +93,24 @@ describe('guarded source publication effects', () => {
     expect(store.capacityRequests).toEqual([{ new_articles: 0, refreshes: 1 }]);
     expect(github.merges).toBe(0);
     expect(store.value).toMatchObject({ state: 'SOURCE_PUBLISHED' });
+  });
+
+  it('requires strict branch checks and rereads the reviewed base after capacity is reserved', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const deps = { store, github, readAuthority: async () => state, currentState: async () =>
+      ({ ...state, base_commit: store.capacityRequests.length ? 'f'.repeat(40) : state.base_commit }) };
+    await publishContent(proposal, receipt, deps);
+    github.pr!.checks = 'success';
+    github.strictMergeChecks = false;
+    await expect(publishContent(proposal, receipt, deps)).resolves.toMatchObject({ status: 'BRANCH_UNQUALIFIED' });
+    expect(store.capacityRequests).toHaveLength(0);
+
+    github.strictMergeChecks = true;
+    await expect(publishContent(proposal, receipt, deps)).resolves.toMatchObject({ status: 'UNCERTAIN' });
+    expect(store.capacityRequests).toHaveLength(1);
+    expect(github.merges).toBe(0);
   });
 
   it('reconciles a successful merge when the merge response is lost', async () => {

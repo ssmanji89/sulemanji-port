@@ -3,19 +3,20 @@ import type { ActionDecision, Candidate, CatalogItem, EditorialEnv, PublicKnowle
 import { collectSignals } from './sources.js';
 import { chooseAction } from './relevance.js';
 import { fingerprintPublicKnowledge, getPublicKnowledge } from './knowledge.js';
-import { parseEditorialPolicy, readScheduleClaim, scheduleWorkflowId, type EditorialPolicy } from './scheduler.js';
+import { nextChicagoBudgetDay, parseEditorialPolicy, readScheduleClaim, scheduleWorkflowId, type EditorialPolicy } from './scheduler.js';
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
+import type { ReviewedPublication } from './pipeline.js';
 
 export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
   sleep(name: string, milliseconds: number): Promise<void>;
-  sleepUntil(name: string, timestamp: number): Promise<void>;
 };
 export type CandidateProcessOutcome = { status: 'verified'; reason: string }
-  | { status: 'held'; reason: string; continue_after_hold?: true; retry_capacity_after?: number };
+  | { status: 'held'; reason: string; continue_after_hold?: true };
 export type EditorialCandidateProcessor = {
+  reconcileMergeCapacity?(ownerEpoch: number): Promise<void>;
   processCandidate(input: {
     candidate: Candidate;
     signal: Signal;
@@ -24,7 +25,7 @@ export type EditorialCandidateProcessor = {
     policy: EditorialPolicy;
     owner_epoch: number;
     step: DurableStep;
-    resumeCapacity?: true;
+    resumeCapacity?: ReviewedPublication;
   }): Promise<CandidateProcessOutcome>;
 };
 type EditorialWorkflowEnv = EditorialEnv & { EDITORIAL_POLICY_JSON?: string };
@@ -127,6 +128,32 @@ async function persistHeldCandidate(db: D1Database, candidate: Candidate, signal
   if (savedPayload?.owner_epoch !== ownerEpoch) return false;
   if (saved.payload_json !== payloadJson || saved.revision !== candidate.source_digest) throw new Error('WORKFLOW_CANDIDATE_CONFLICT');
   return true;
+}
+
+type DeferredPublication = ReviewedPublication & { candidate: Candidate; signal: Signal };
+
+export async function claimDeferredPublication(db: D1Database, slotId: string, now: Date, ownerEpoch: number): Promise<DeferredPublication | null> {
+  // A failed Workflow leaves the candidate available for a later date. Replaying the same claim is idempotent.
+  const retryAfter = new Date(Math.max(nextChicagoBudgetDay(now), now.getTime() + 3_600_000)).toISOString();
+  const claimed = await db.prepare(`UPDATE editorial_candidates SET publication_retry_claim = ?, publication_retry_after = ?
+    WHERE id = (
+      SELECT id FROM editorial_candidates WHERE state = 'CAPACITY_HELD'
+        AND json_extract(payload_json, '$.owner_epoch') = ?
+        AND (publication_retry_claim = ? OR publication_retry_after <= ?)
+      ORDER BY CASE WHEN publication_retry_claim = ? THEN 0 ELSE 1 END, publication_retry_after, id LIMIT 1
+    ) AND EXISTS (SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?)
+    RETURNING id, revision, payload_json`)
+    .bind(slotId, retryAfter, ownerEpoch, slotId, now.toISOString(), slotId, ownerEpoch).first<CandidateRow>();
+  if (!claimed) return null;
+  const data = parseJson<{ candidate?: Candidate; pipeline?: Partial<DeferredPublication> }>(claimed.payload_json);
+  const { candidate, pipeline } = data ?? {};
+  const { proposal, review, attempt, signal } = pipeline ?? {};
+  if (!candidate || candidate.id !== claimed.id || candidate.source_digest !== claimed.revision ||
+      !proposal || proposal.candidate_id !== candidate.id || proposal.owner_epoch !== ownerEpoch ||
+      !review || review.candidate_id !== candidate.id || review.owner_epoch !== ownerEpoch ||
+      !attempt || attempt.candidate_id !== candidate.id || attempt.owner_epoch !== ownerEpoch || !attempt.pull_request ||
+      attempt.status !== 'CAPACITY_HELD' || !signal || !Array.isArray(candidate.signal_ids) || !candidate.signal_ids.includes(signal.id)) throw new Error('DEFERRED_PUBLICATION_CHECKPOINT_INVALID');
+  return { candidate, signal, proposal, review, attempt };
 }
 
 function held(params: WorkflowParams, reason: string): WorkflowResult {
@@ -324,6 +351,23 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   const now = await step.do('capture-editorial-run-time', () => new Date().toISOString());
   const knowledge = await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now)));
   const knowledgeRevision = await step.do('fingerprint-authorized-public-knowledge', () => fingerprintPublicKnowledge(knowledge));
+  if (processor?.reconcileMergeCapacity) await step.do('reconcile-publication-capacity', async () => {
+    await processor.reconcileMergeCapacity?.(control.owner_epoch);
+    return true;
+  });
+  const pending = processor ? await step.do('claim-deferred-publication', () =>
+    claimDeferredPublication(env.DB, params.slot_claim_id, new Date(now), control.owner_epoch)) : null;
+  const retry = pending && processor ? await processor.processCandidate({
+    candidate: pending.candidate, signal: pending.signal, catalog, knowledge, policy,
+    owner_epoch: control.owner_epoch, step, resumeCapacity: pending,
+  }) : null;
+  if (pending && retry && (retry.status === 'verified' || !retry.continue_after_hold)) {
+    const action = retry.status === 'verified' ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
+    const saved = await step.do('record-deferred-publication-result', () => recordReceipt(env.DB,
+      params.slot_claim_id, pending.candidate.id, action, { reason: retry.reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
+    if (!saved) return held(params, 'Workflow authority changed before the deferred publication result could be recorded.');
+    return retry.status === 'verified' ? { status: 'admitted', reason: retry.reason, slot_claim_id: params.slot_claim_id } : held(params, retry.reason);
+  }
   const historyRows = await step.do('read-recent-editorial-history', async () => {
     const [receipts, candidates] = await Promise.all([
       env.DB.prepare('SELECT id, action, result_json, created_at FROM editorial_receipts ORDER BY created_at DESC LIMIT ?').bind(HISTORY_LIMIT).all<ReceiptRow>(),
@@ -367,6 +411,13 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
       if (!saved) return held(params, 'Workflow authority changed before the hold could be recorded.');
       return held(params, reason);
     }
+    if (pending && retry) {
+      const saved = await step.do('record-deferred-publication-hold', () => recordReceipt(env.DB,
+        params.slot_claim_id, pending.candidate.id, 'HELD_PUBLICATION_PIPELINE',
+        { reason: retry.reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
+      if (!saved) return held(params, 'Workflow authority changed before the deferred publication hold could be recorded.');
+      return held(params, retry.reason);
+    }
     const reason = batch.signals.length ? 'No fresh public signal qualifies for a site change.' : 'No fresh public signals were found.';
     const saved = await step.do('record-no-change-result', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'NO_CHANGE', {
       reason, owner_epoch: control.owner_epoch, signals: batch.signals.map(signalHistory),
@@ -385,7 +436,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (processor) {
     const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [];
     const heldTargets = new Set<string>();
-    const deferred: Array<{ candidate: Candidate; signal: Signal; after: number; index: number }> = [];
+    if (pending?.candidate.target_id) heldTargets.add(pending.candidate.target_id);
     let stopReason: string | undefined;
     for (const { signal, decision } of actionable) {
       if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the next candidate.');
@@ -398,9 +449,6 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
         owner_epoch: control.owner_epoch, step });
       outcomes.push({ candidate_id: candidate.id, status: outcome.status, reason: outcome.reason });
       if (outcome.status === 'held') {
-        if (outcome.retry_capacity_after !== undefined) {
-          deferred.push({ candidate, signal, after: outcome.retry_capacity_after, index: outcomes.length - 1 });
-        }
         if (!outcome.continue_after_hold) {
           stopReason = outcome.reason;
           break;
@@ -408,26 +456,13 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
         if (candidate.target_id) heldTargets.add(candidate.target_id);
       }
     }
-    if (!stopReason && deferred.length) {
-      const resumeAfter = Math.max(...deferred.map(({ after }) => after));
-      await step.sleepUntil('await-next-publication-day', resumeAfter);
-      for (const { candidate, signal, index } of deferred) {
-        if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the deferred candidate could resume.');
-        const outcome = await processor.processCandidate({ candidate, signal, catalog, knowledge, policy,
-          owner_epoch: control.owner_epoch, step, resumeCapacity: true });
-        outcomes[index] = { candidate_id: candidate.id, status: outcome.status, reason: outcome.reason };
-        if (outcome.status === 'held' && !outcome.continue_after_hold) {
-          stopReason = outcome.reason;
-          break;
-        }
-      }
-    }
-    const verified = outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');
+    const verified = !retry && outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');
     const reason = verified ? 'All admitted candidates passed publication and public readback.' :
-      stopReason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ?? 'Candidate processing did not complete.';
+      stopReason ?? retry?.reason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ?? 'Candidate processing did not complete.';
     const action = verified ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
-      actionable[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes }, control.owner_epoch));
+      actionable[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes, ...(pending && retry ?
+        { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}) }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the publication result could be recorded.');
     return verified ? { status: 'admitted', reason, slot_claim_id: params.slot_claim_id } : held(params, reason);
   }

@@ -16,7 +16,7 @@ SELECT CASE WHEN EXISTS (
 ) AND NOT EXISTS (
   SELECT 1 FROM publication_effects
   WHERE state IN ('SOURCE_PUBLISHED', 'UNCERTAIN')
-    OR (state = 'MERGED' AND (
+    OR ((state = 'MERGED' OR merge_commit IS NOT NULL) AND (
       julianday(updated_at) IS NULL OR julianday(updated_at) >= julianday('now', '-26 hours')
     ))
 ) THEN 1 ELSE 0 END;
@@ -29,3 +29,8 @@ ALTER TABLE publication_effects ADD COLUMN refreshes INTEGER NOT NULL DEFAULT 0 
 
 CREATE INDEX publication_capacity_by_day ON publication_effects(merge_admission_date, merge_settled_date)
 WHERE merge_admission_date IS NOT NULL;
+
+ALTER TABLE editorial_candidates ADD COLUMN publication_retry_after TEXT;
+ALTER TABLE editorial_candidates ADD COLUMN publication_retry_claim TEXT;
+CREATE INDEX editorial_publication_retry_due ON editorial_candidates(publication_retry_after)
+WHERE state = 'CAPACITY_HELD';

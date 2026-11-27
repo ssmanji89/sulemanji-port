@@ -17,23 +17,23 @@ export async function reserveUsage(db: D1Database, request: UsageReservation, li
   const timestamp = new Date(request.requested_at);
   if (!Number.isFinite(timestamp.getTime())) return { status: 'denied', reason: 'Reservation timestamp is invalid.' };
   const period = localBudgetPeriod(timestamp);
-  const existing = await db.prepare('SELECT id, candidate_id, maximum_micros, pricing_revision FROM usage_reservations WHERE attempt_id = ?')
-    .bind(request.attempt_id).first<{ id: string; candidate_id: string; maximum_micros: number; pricing_revision: string }>();
-  if (existing) return existing.candidate_id === request.candidate_id && existing.maximum_micros === amount && existing.pricing_revision === request.pricing_revision
-    ? { status: 'existing', reservation_id: existing.id }
-    : { status: 'denied', reason: 'Attempt ID is already bound to a different reservation.' };
-
   const result = await db.prepare(`INSERT INTO usage_reservations
       (id, candidate_id, attempt_id, maximum_micros, actual_micros, local_date, local_month, pricing_revision, requested_at, settled_at)
     SELECT ?, ?, ?, ?, NULL, ?, ?, ?, ?, NULL
     WHERE ? <= ?
       AND COALESCE((SELECT SUM(COALESCE(actual_micros, maximum_micros)) FROM usage_reservations WHERE candidate_id = ?), 0) + ? <= ?
       AND COALESCE((SELECT SUM(COALESCE(actual_micros, maximum_micros)) FROM usage_reservations WHERE local_date = ?), 0) + ? <= ?
-      AND COALESCE((SELECT SUM(COALESCE(actual_micros, maximum_micros)) FROM usage_reservations WHERE local_month = ?), 0) + ? <= ?`)
+      AND COALESCE((SELECT SUM(COALESCE(actual_micros, maximum_micros)) FROM usage_reservations WHERE local_month = ?), 0) + ? <= ?
+    ON CONFLICT(attempt_id) DO NOTHING`)
     .bind(request.id, request.candidate_id, request.attempt_id, amount, period.local_date, period.local_month, request.pricing_revision, timestamp.toISOString(),
       amount, candidateLimit, request.candidate_id, amount, candidateLimit, period.local_date, amount, dailyLimit, period.local_month, amount, monthlyLimit).run();
-  if ((result.meta.changes ?? 0) !== 1) return { status: 'denied', reason: 'Candidate, daily, or monthly model budget limit reached.' };
-  return { status: 'reserved', reservation_id: request.id };
+  if ((result.meta.changes ?? 0) === 1) return { status: 'reserved', reservation_id: request.id };
+  const existing = await db.prepare('SELECT id, candidate_id, maximum_micros, pricing_revision FROM usage_reservations WHERE attempt_id = ?')
+    .bind(request.attempt_id).first<{ id: string; candidate_id: string; maximum_micros: number; pricing_revision: string }>();
+  if (!existing) return { status: 'denied', reason: 'Candidate, daily, or monthly model budget limit reached.' };
+  return existing.candidate_id === request.candidate_id && existing.maximum_micros === amount && existing.pricing_revision === request.pricing_revision
+    ? { status: 'existing', reservation_id: existing.id }
+    : { status: 'denied', reason: 'Attempt ID is already bound to a different reservation.' };
 }
 
 export async function settleUsage(db: D1Database, reservationId: string, actualUsd: number | null, now = new Date()): Promise<void> {

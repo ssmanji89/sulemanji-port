@@ -15,4 +15,6 @@ it('renders deterministic cards from the private package and vendored font', asy
   expect(isSocialCardPng(first)).toBe(true);
   expect(repeat).toEqual(first);
   expect(await render('Cloudflare Worker release evidence')).not.toEqual(first);
+  await expect(render('Why Operators Use 自律')).rejects.toThrow('SOCIAL_CARD_TITLE_UNSUPPORTED_GLYPH');
+  expect(isSocialCardPng(await render('How Interdepartmental-Workflow-Orchestration-and-Control Keeps Operators Informed'))).toBe(true);
 });

@@ -2,6 +2,7 @@ export const CARD_WIDTH = 1200;
 export const CARD_HEIGHT = 630;
 export const MAX_CARD_BYTES = 150_000;
 export type SocialCardRenderer = (title: string) => Promise<Uint8Array>;
+export class SocialCardContentError extends Error {}
 
 export function isSocialCardPng(bytes: Uint8Array): boolean {
   if (bytes.byteLength < 45 || bytes.byteLength > MAX_CARD_BYTES) return false;

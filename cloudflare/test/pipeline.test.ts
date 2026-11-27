@@ -128,6 +128,26 @@ describe('durable candidate publication pipeline', () => {
     ]);
   });
 
+  it('records a hold for an invalid card before review and does not rerender on replay', async () => {
+    const models = new Models();
+    const checkpoints: string[] = [];
+    let renders = 0;
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, preparationContext: async () => context,
+      renderSocialCard: async () => { renders += 1; return Uint8Array.of(0); },
+      persist: async (_id, _epoch, state) => { checkpoints.push(state); return true; },
+      publish: async () => { throw new Error('unexpected publication'); },
+      verify: async () => { throw new Error('unexpected verification'); },
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps() };
+    expect(await pipeline.processCandidate(input)).toMatchObject({ status: 'held' });
+    expect(await pipeline.processCandidate(input)).toMatchObject({ status: 'held' });
+    expect(models.calls.map((call) => call.purpose)).toEqual(['author']);
+    expect(checkpoints).toEqual(['NEEDS_OWNER']);
+    expect(renders).toBe(1);
+  });
+
   it('never calls the publisher or readback after an independent reviewer hold', async () => {
     const models = new Models();
     models.outputs[1] = { decision: 'HOLD', findings: [{ code: 'CLAIM', detail: 'Evidence does not support this.' }] };

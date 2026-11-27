@@ -1,7 +1,7 @@
 import type { Candidate, CatalogItem, ContentProposal, PreparationContext, PublicationReceipt, PublicKnowledge, PublishAttempt, ReviewReceipt, Signal } from './contracts.js';
 import type { ModelGateway } from './models.js';
 import type { EditorialPolicy } from './scheduler.js';
-import type { SocialCardRenderer } from './social-card-format.js';
+import { SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
 import { attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
 import type { DurableStep } from './workflow-core.js';
 
@@ -45,7 +45,22 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       const models = deps.modelsFor(candidate, ownerEpoch, policy);
       let proposal = await step.do(`prepare-content-${key}`, () => prepareContent(candidate, context, models, `author:${candidate.id}`));
       if (proposal.files[0]?.operation === 'create') {
-        proposal = await step.do(`attach-social-card-${key}`, () => attachSocialCard(proposal, deps.renderSocialCard));
+        const draft = proposal;
+        const card = await step.do(`attach-social-card-${key}`, async () => {
+          try {
+            return { proposal: await attachSocialCard(draft, deps.renderSocialCard) };
+          } catch (error) {
+            if (error instanceof SocialCardContentError) return { failure: error.message };
+            throw error;
+          }
+        });
+        if (!card.proposal) {
+          const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-card`, () =>
+            deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', { proposal: draft }));
+          return { status: 'held', reason: recorded ? `Social card requires owner review (${card.failure}).` :
+            'Workflow authority changed before the social card hold could be checkpointed.' };
+        }
+        proposal = card.proposal;
       }
       let checkpoint: CandidateCheckpoint = { proposal };
       if (!(await step.do(`persist-candidate-${key}-DRAFTED`, () => deps.persist(candidate.id, ownerEpoch, 'DRAFTED', checkpoint)))) {

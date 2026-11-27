@@ -3,7 +3,7 @@ import * as parse5 from 'parse5';
 import { isMap, parseDocument } from 'yaml';
 import type { Candidate, ContentProposal, FileChange, PreparationContext, PublicSource, ReviewContext, ReviewReceipt } from './contracts.js';
 import type { ModelGateway, ModelRequest } from './models.js';
-import { CARD_HEIGHT, CARD_WIDTH, encodeSocialCard, isSocialCardPng, socialCardPath, type SocialCardRenderer } from './social-card-format.js';
+import { CARD_HEIGHT, CARD_WIDTH, encodeSocialCard, isSocialCardPng, socialCardPath, SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
 import { sourceSetDigest } from './sources.js';
 
 const FAMILY_FIELDS = new Set(['professional-analysis', 'technical-guide', 'research-note', 'field-note', 'experiment']);
@@ -120,7 +120,7 @@ export async function attachSocialCard(proposal: ContentProposal, render: Social
     throw new Error('ARTICLE_SOCIAL_CARD_CONTEXT_INVALID');
   }
   const bytes = await render(expected.title);
-  if (!isSocialCardPng(bytes)) throw new Error('ARTICLE_SOCIAL_CARD_INVALID');
+  if (!isSocialCardPng(bytes)) throw new SocialCardContentError('ARTICLE_SOCIAL_CARD_INVALID');
   const encoded = encodeSocialCard(bytes);
   const imageUrl = socialCardPath(article.path);
   const path = imageUrl.slice(1);

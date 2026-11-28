@@ -171,3 +171,13 @@
   source_refs: [https://github.com/ssmanji89/ff-cli]
   related_ids: [independent-interests]
   authored_fields: []
+- id: agent-safety
+  canonical_url: /notes/agent-safety
+  kind: field-note
+  title: A write is a claim, not evidence
+  summary: How real incidents turned into safety protocol for agents that touch production systems.
+  topics: [ai-assisted-delivery, service-operations]
+  availability: [historical, public-source]
+  source_refs: []
+  related_ids: []
+  authored_fields: []

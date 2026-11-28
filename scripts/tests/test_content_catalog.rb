@@ -1,6 +1,7 @@
 require 'minitest/autorun'
 require 'yaml'
 require_relative '../../_plugins/content_catalog'
+require_relative '../verify_writing'
 
 class ContentCatalogTest < Minitest::Test
   def market_record(overrides = {})
@@ -56,6 +57,24 @@ class ContentCatalogTest < Minitest::Test
     )
     errors = validation_errors([annotation])
     assert errors.any? { |error| error.match?(/published_on|permalink|authoritative/i) }
+  end
+
+  def test_catalog_carries_public_identity_of_undated_writing
+    source = File.expand_path('../..', __dir__)
+    records = YAML.safe_load(File.read(File.join(source, '_data/content-catalog.yml')))
+    legacy = WritingContract.catalog(source, as_of: Date.today).legacy
+
+    refute_empty legacy
+    legacy.each do |article|
+      matches = records.select { |record| record['canonical_url'] == article.data['permalink'] }
+      assert_equal 1, matches.size, article.data['permalink']
+      record = matches.first
+      assert_equal article.data['title'], record['title']
+      assert_equal article.data['description'], record['summary']
+      assert_includes record['availability'], 'historical'
+      refute record.key?('published_on')
+      assert_nil article.data['published_on']
+    end
   end
 
   def test_topic_pages_require_real_items

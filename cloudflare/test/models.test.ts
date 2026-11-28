@@ -48,6 +48,58 @@ describe('budgeted model gateway', () => {
     });
   });
 
+  it('routes review to its configured model and reserves and settles at review rates', async () => {
+    const reviewer = { model_id: 'separate-reviewer-model', input_usd_per_million: 2, output_usd_per_million: 5 };
+    const separate = { ...openAIConfig, reviewer };
+    const readback: Array<{ model: string; maximum: unknown }> = [];
+    const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
+    db.candidates.set('candidate-a', { model_calls: 0, review_rounds: 0 });
+    const fetcher: typeof fetch = async (_url, init) => {
+      const id = new Headers(init?.headers).get('idempotency-key')!;
+      const raw = String(init?.body);
+      const body = JSON.parse(raw);
+      const price = id.startsWith('review:') ? reviewer : openAIConfig;
+      const expectedMicros = (new TextEncoder().encode(raw).byteLength + 512) * price.input_usd_per_million +
+        request.max_output_tokens * price.output_usd_per_million;
+      const maximum = db.reservations.get(id)?.maximum_micros;
+      expect(maximum).toBe(expectedMicros);
+      readback.push({ model: body.model, maximum });
+      return Response.json({ service_tier: 'default', choices: [{ finish_reason: 'stop', message: { content: '{}' } }],
+        usage: { prompt_tokens: 60, completion_tokens: 40 } });
+    };
+    const options = {
+      db: db as unknown as D1Database, candidate_id: 'candidate-a', owner_epoch: 1, max_model_calls: 6,
+      max_review_rounds: 3, limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 },
+      expected_pricing_revision: config.pricing_revision,
+    };
+    const gateway = new BudgetedModelGateway(new JsonSchemaGateway(separate, fetcher), separate, options);
+    await gateway.generate(request);
+    await gateway.generate({ ...request, purpose: 'review', run_id: 'review:r1', reservation_id: 'review:r1' });
+    await gateway.generate({ ...request, purpose: 'revise', run_id: 'revise:r1', reservation_id: 'revise:r1' });
+    expect(readback.map(({ model }) => model)).toEqual([openAIConfig.model_id, reviewer.model_id, openAIConfig.model_id]);
+    expect([...db.reservations.values()].map((row) => row.actual_micros)).toEqual([100, 320, 100]);
+    expect(db.candidates.get('candidate-a')).toMatchObject({ model_calls: 3, review_rounds: 1 });
+  });
+
+  it('holds a review that fits the author price but exceeds the cap at the reviewer price', async () => {
+    const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
+    db.candidates.set('candidate-a', { model_calls: 0, review_rounds: 0 });
+    const provider = new FakeModels();
+    const separate = { ...config, reviewer: { model_id: 'expensive-review', input_usd_per_million: 10, output_usd_per_million: 10 } };
+    const gateway = new BudgetedModelGateway(provider, separate, {
+      db: db as unknown as D1Database, candidate_id: 'candidate-a', owner_epoch: 1, max_model_calls: 6, max_review_rounds: 3,
+      limits: { candidate_usd: 0.02, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: config.pricing_revision,
+    });
+    await expect(gateway.generate(request)).resolves.toMatchObject({ output: { ok: true } });
+    await expect(gateway.generate({ ...request, purpose: 'review', run_id: 'review:r2', reservation_id: 'review:r2' }))
+      .rejects.toThrow('MODEL_BUDGET_HOLD');
+    expect(provider.calls).toBe(1);
+    expect(db.reservations.size).toBe(1);
+    expect(db.candidates.get('candidate-a')).toMatchObject({ model_calls: 1, review_rounds: 0 });
+  });
+
   it('keeps the existing request format for other endpoints', async () => {
     const fetcher: typeof fetch = async (_target, init) => {
       const body = JSON.parse(String(init?.body));

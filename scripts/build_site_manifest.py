@@ -239,12 +239,15 @@ def render_release_headers(manifest: dict[str, Any]) -> str:
         raise ValueError('release header build timestamp is invalid') from error
     if parsed.isoformat(timespec='seconds').replace('+00:00', 'Z') != built_at:
         raise ValueError('release header build timestamp is not canonical UTC')
-    return (
+    headers = (
         '/*\n'
         f'  X-Site-Source-Commit: {source_commit}\n'
         f'  X-Site-Asset-Digest: {asset_digest}\n'
         f'  X-Site-Built-At: {built_at}\n'
     )
+    if any(path.startswith('_site-assets/') for path in manifest.get('files', {})):
+        headers += '\n/_site-assets/*\n  Cache-Control: public, max-age=31536000, immutable\n'
+    return headers
 
 
 def _article_identity(site_root: Path) -> list[dict[str, str | None]]:

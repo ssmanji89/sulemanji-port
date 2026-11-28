@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
@@ -56,5 +57,26 @@ describe.skipIf(!base)('built site in Wrangler Worker runtime', () => {
     expect(home.headers.get('x-site-source-commit')).toBe(manifest.source_commit);
     expect(home.headers.get('x-site-asset-digest')).toBe(manifest.asset_digest);
     expect(home.headers.get('x-site-built-at')).toBe(manifest.built_at);
+  });
+
+  it('serves immutable asset URLs with the exact manifest bytes in versioned builds', async () => {
+    const release = await fetch(`${base}/release.json`);
+    const manifest = await release.json() as { files: Record<string, string> };
+    const assets = Object.entries(manifest.files).filter(([path]) => path.startsWith('_site-assets/'));
+    if (process.env.SITE_VERSION_ASSETS === '1') expect(assets.length).toBeGreaterThan(0);
+    if (!assets.length) return;
+
+    const home = await fetch(`${base}/`);
+    const html = await home.text();
+    expect(html).toMatch(/href="\/_site-assets\/[a-f0-9]{64}\/assets\/css\/style\.css"/);
+    expect(html).toMatch(/src="\/_site-assets\/[a-f0-9]{64}\/assets\/js\/theme-toggle\.js"/);
+    for (const [path, digest] of assets) {
+      const urlPath = path.split('/').map(encodeURIComponent).join('/');
+      const response = await fetch(`${base}/${urlPath}`, { redirect: 'manual' });
+      expect(response.status, path).toBe(200);
+      expect(response.headers.get('cache-control'), path).toBe('public, max-age=31536000, immutable');
+      const body = Buffer.from(await response.arrayBuffer());
+      expect(createHash('sha256').update(body).digest('hex'), path).toBe(digest);
+    }
   });
 });

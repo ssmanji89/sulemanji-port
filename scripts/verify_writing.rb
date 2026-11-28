@@ -546,7 +546,10 @@ module WritingContract
     check(doc.css('form').empty?, "#{route}: unexpected form")
 
     scripts = doc.css('script').reject { |node| node['type'] == 'application/ld+json' }
-    rendered_scripts = scripts.map { |node| [node['src'], node.text.strip] }
+    rendered_scripts = scripts.map do |node|
+      src = node['src']&.sub(%r{\A/_site-assets/[0-9a-f]{64}(?=/assets/js/)}, '')
+      [src, node.text.strip]
+    end
     check(rendered_scripts == expected_scripts, "#{route}: unexpected executable script")
 
     schemas = jsonld_nodes(doc)

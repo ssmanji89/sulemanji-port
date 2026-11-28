@@ -21,6 +21,13 @@ python -m pip install --disable-pip-version-check --requirement requirements-seo
 python3 scripts/generate_article_images.py --check
 bundle exec jekyll clean
 JEKYLL_ENV=production bundle exec jekyll build
+if [[ "${SITE_VERSION_ASSETS:-}" == 1 ]]; then
+  version_args=()
+  if [[ -n "${SITE_RETAIN_ASSETS_FROM:-}" ]]; then
+    version_args+=(--retain-from "$SITE_RETAIN_ASSETS_FROM")
+  fi
+  python3 scripts/version_site_assets.py _site "${version_args[@]}"
+fi
 python3 scripts/build_site_manifest.py --baseline docs/redevelopment/2026-11-26/article-baseline.json
 npm ci --prefix cloudflare
 SITE_BUILD_PATH="$ROOT/_site" npm run check --prefix cloudflare

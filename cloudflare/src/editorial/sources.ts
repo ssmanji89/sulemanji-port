@@ -43,7 +43,7 @@ async function boundedBody(response: Response): Promise<string> {
 function text(value: string): string {
   return value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/\s+/g, ' ').trim();
+    .replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&#8217;|&rsquo;/gi, '’').replace(/\s+/g, ' ').trim();
 }
 
 function tag(block: string, name: string): string {
@@ -65,6 +65,18 @@ function entries(body: string, format: SourceConfig['format'], base: URL): Entry
       const url = typeof row.url === 'string' ? new URL(row.url, base).toString() : '';
       return { title: text(String(row.title ?? '')), summary: text(String(row.summary ?? row.content_text ?? '')),
         url, date: typeof row.date_published === 'string' ? row.date_published : null, id: String(row.id ?? url ?? index) };
+    });
+  }
+  if (format === 'wordpress') {
+    const parsed = JSON.parse(body) as unknown;
+    if (!Array.isArray(parsed)) throw new Error('INVALID');
+    return parsed.slice(0, MAX_ENTRIES_PER_SOURCE).map((row) => {
+      const date = typeof row?.date_gmt === 'string' ? new Date(row.date_gmt + 'Z') : null;
+      if (!date || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 19) !== row.date_gmt ||
+          typeof row.link !== 'string' || typeof row.title?.rendered !== 'string' ||
+          typeof row.excerpt?.rendered !== 'string') throw new Error('INVALID');
+      return { title: text(row.title.rendered), summary: text(row.excerpt.rendered), url: row.link,
+        date: date.toISOString(), id: row.link };
     });
   }
   if (format === 'rss') {
@@ -131,7 +143,7 @@ async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fe
     const episodeId = await sha(`${evidenceUrl.toString()}\n${entry.title.toLocaleLowerCase()}\n${published}`);
     const revision = await sha(`${episodeId}\n${contentHash}\n${published}`);
     signals.push({ id: await sha(`${source.id}\n${revision}`), episode_id: episodeId, source_id: source.id, source_revision: revision,
-      observed_at: retrievedAt, occurred_at: published, published_at: published, expires_at: new Date(Date.parse(published) + source.max_age_seconds * 1000).toISOString(),
+      observed_at: retrievedAt, occurred_at: source.format === 'wordpress' ? null : published, published_at: published, expires_at: new Date(Date.parse(published) + source.max_age_seconds * 1000).toISOString(),
       topic_ids: [...new Set(source.topic_ids)], title: evidence.title, summary: entry.summary.slice(0, 3000), evidence: [evidence] });
   }
   return signals;

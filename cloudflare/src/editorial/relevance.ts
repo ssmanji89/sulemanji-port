@@ -14,6 +14,26 @@ export function chooseAction(signal: Signal, catalog: CatalogItem[], context: Pu
     .filter(({ overlap }) => overlap > 0).sort((a, b) => b.overlap - a.overlap || a.item.id.localeCompare(b.item.id));
   if (!ranked.length) return { action: 'NO_CHANGE', reason: 'No current site material gives this event a clear reader context.', signal_ids: [signal.id] };
 
+  if (signal.source_id === 'nasa-skywatching') {
+    const edition = signal.title.match(/^What['’]s Up: ([A-Za-z]+) (\d{4}) Skywatching Tips from NASA$/);
+    const issue = edition ? `${edition[1].toLowerCase()}-${edition[2]}` : '';
+    const expectedUrl = `https://science.nasa.gov/solar-system/skywatching/whats-up-${issue}-skywatching-tips-from-nasa/`;
+    const observingAction = /\b(find|look|observe|observing|spot|view|visible|watch)\b/i.test(signal.summary);
+    const observableTarget = /\b(meteor[s]?|moon|supermoon|eclipse|planet[s]?|saturn|jupiter|mars|venus|mercury|constellation[s]?)\b/i.test(signal.summary);
+    if (!edition || signal.evidence.length !== 1 || signal.evidence[0].url !== expectedUrl ||
+        !observingAction || !observableTarget) {
+      return { action: 'NO_CHANGE', reason: 'The NASA release lacks a concrete skywatching observation to explain.', signal_ids: [signal.id] };
+    }
+    return { action: 'CREATE', candidate: {
+      id: `create:${signal.id.slice(0, 24)}:skywatching`, signal_ids: [signal.id], target_id: null,
+      action: 'CREATE', reader: 'Skywatchers',
+      question: 'What does this dated NASA guide explain about deciding what to observe and when?',
+      benefit: 'Helps a skywatcher plan an observation and understand which conditions affect what they can see.',
+      source_digest: signal.source_revision, policy_revision: 'editorial-policy-unbound',
+      knowledge_revision: 'none', state: 'DISCOVERED',
+    } };
+  }
+
   const target = ranked[0].item;
   const words = `${signal.title} ${signal.summary}`.toLowerCase();
   const asksForUpdate = /\b(release|released|version|update|updated|deprecat|security|api|workflow|package|standard|policy)\b/.test(words);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { collectSignals, revalidateSignalSourceDigest, sourceSetDigest } from '../src/editorial/sources.js';
+import publicSources from '../config/public-sources.json' with { type: 'json' };
 import type { SourceConfig } from '../src/editorial/contracts.js';
 
 const now = new Date('2026-11-26T18:00:00.000Z');
@@ -14,6 +15,28 @@ describe('bounded public signal collection', () => {
     expect(batch.signals).toHaveLength(1);
     expect(batch.signals[0]).toMatchObject({ observed_at: now.toISOString(), occurred_at: '2026-11-26T17:00:00.000Z', published_at: '2026-11-26T17:00:00.000Z' });
     expect(batch.signals[0].expires_at).toBe('2026-11-27T17:00:00.000Z');
+  });
+
+  it('collects the registered NASA posts with a UTC publication date and no inferred observation date', async () => {
+    const registry = publicSources.filter(({ id }) => id === 'nasa-skywatching') as SourceConfig[];
+    const url = 'https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/';
+    const posts = [{ link: url, date_gmt: '2026-11-26T17:00:00',
+      title: { rendered: 'What&#8217;s Up: November 2026 Skywatching Tips from NASA' },
+      excerpt: { rendered: '<p>Find the Moon and compare how much light reaches your observing site.</p>' } }];
+    const batch = await collectSignals(registry, now, async () => Response.json(posts));
+    expect(batch.failures).toEqual([]);
+    expect(batch.signals).toHaveLength(1);
+    expect(batch.signals[0]).toMatchObject({
+      source_id: 'nasa-skywatching', title: 'What’s Up: November 2026 Skywatching Tips from NASA',
+      observed_at: now.toISOString(), published_at: '2026-11-26T17:00:00.000Z', occurred_at: null,
+      evidence: [{ url, source_date: '2026-11-26T17:00:00.000Z' }],
+    });
+    await expect(revalidateSignalSourceDigest(batch.signals[0], registry, now, async () => Response.json(posts)))
+      .resolves.toBe(await sourceSetDigest(batch.signals[0].evidence));
+
+    const malformed = [{ ...posts[0], date_gmt: '2026-11-26' }];
+    await expect(collectSignals(registry, now, async () => Response.json(malformed)))
+      .resolves.toMatchObject({ signals: [], failures: [{ code: 'INVALID' }] });
   });
 
   it('deduplicates an episode repeated across registered feeds', async () => {

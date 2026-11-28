@@ -86,7 +86,7 @@ describe('resumable editorial workflow admission', () => {
 
 const policy = JSON.stringify({
   revision: 'test-policy-r1', timezone: 'America/Chicago', slots: ['08:00'], max_new_articles_daily: 1,
-  max_refreshes_daily: 1, max_candidates_per_scan: 3, max_fetches_per_scan: 5,
+  max_refreshes_daily: 1, max_candidates_per_scan: 3, max_fetches_per_scan: sourceRegistry.filter(({ enabled }) => enabled).length,
   max_model_calls_per_candidate: 6, max_review_rounds_per_candidate: 3,
   max_candidate_usd: 0.75, max_daily_usd: 2, max_monthly_usd: 30, model_pricing_revision: 'test-only',
 });
@@ -173,6 +173,7 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
     if (url.pathname === '/content-index.json') return Response.json({ schema_version: 1, items: candidate ? [
       { id: 'cloudflare-workers', canonical_url: '/work/cloudflare/', title: 'Cloudflare Workers', summary: 'A public guide.', topics: ['infrastructure'] },
     ] : [] });
+    if (url.hostname === 'science.nasa.gov') return Response.json([]);
     if (candidate && url.hostname === 'blog.cloudflare.com') {
       const date = new Date().toUTCString();
       return new Response(`<rss><channel><item><title>Cloudflare Workers release update</title><description>A new documented version is available.</description><link>https://blog.cloudflare.com/workers/release/</link><pubDate>${date}</pubDate></item></channel></rss>`);
@@ -207,6 +208,7 @@ describe('deterministic signal workflow', () => {
         : url.hostname === 'www.federalreserve.gov'
           ? [entry('Market policy update', 'https://www.federalreserve.gov/newsevents/pressreleases/monetary20261127a.htm')]
           : [];
+      if (url.hostname === 'science.nasa.gov') return Response.json([]);
       return new Response(`<rss><channel>${items.join('')}</channel></rss>`);
     });
     const processed: Array<string | null> = [];
@@ -231,6 +233,34 @@ describe('deterministic signal workflow', () => {
       .toEqual(canContinue ? ['held', 'held', laterSharedHold ? 'held' : 'verified'] : ['held']);
     expect(await runEditorialAdmission(params, env, step, processor)).toEqual(result);
     expect(processed).toEqual(canContinue ? ['workers', 'markets'] : ['workers']);
+  });
+
+  it('admits a dated independent-interest article from the actual source registry', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-03T14:00:00Z'));
+    const db = new PipelineD1();
+    const feed = sourceRegistry.find(({ id }) => id === 'nasa-skywatching')!;
+    const fallback = sourceFetcher({ candidate: false });
+    const evidenceUrl = 'https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/';
+    vi.stubGlobal('fetch', (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith('/content-index.json')) return Response.json({ schema_version: 1, items: [
+        { id: 'independent-interests', canonical_url: '/about/#interests', title: 'Looking up', topics: ['astronomy', 'skywatching'] },
+      ] });
+      if (url === feed.url) return Response.json([{ link: evidenceUrl, date_gmt: '2026-11-02T18:19:58',
+        title: { rendered: 'What&#8217;s Up: November 2026 Skywatching Tips from NASA' },
+        excerpt: { rendered: '<p>Watch the Moon rise and look for meteors after moonset.</p>' } }]);
+      return fallback(input);
+    });
+    const processCandidate = vi.fn(async () => ({ status: 'held' as const, reason: 'Rehearsal stops before model work.' }));
+    const result = await runEditorialAdmission({ slot_claim_id: 'nasa-observing-guide' },
+      { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep(), { processCandidate });
+    expect(result).toMatchObject({ status: 'held', reason: 'Rehearsal stops before model work.' });
+    expect(processCandidate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      candidate: expect.objectContaining({ action: 'CREATE', target_id: null, reader: 'Skywatchers' }),
+      signal: expect.objectContaining({ published_at: '2026-11-02T18:19:58.000Z', occurred_at: null,
+        summary: 'Watch the Moon rise and look for meteors after moonset.', evidence: [expect.objectContaining({ url: evidenceUrl })] }),
+    }));
   });
 
   it('resumes a previously held exact proposal in a later slot before new source discovery', async () => {

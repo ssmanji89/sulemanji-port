@@ -97,7 +97,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         existingFiles[path] = await github.readTextFile(path, baseCommit);
         existingPaths.push(path);
       }
-      return { catalog: input.catalog, sources: input.signal.evidence, knowledge: input.knowledge,
+      return { catalog: input.catalog, sources: input.signal.evidence, source_excerpt: input.signal.summary.slice(0, 3000), knowledge: input.knowledge,
         policy_revision: input.policy.revision, knowledge_revision: input.candidate.knowledge_revision,
         base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths };
     },

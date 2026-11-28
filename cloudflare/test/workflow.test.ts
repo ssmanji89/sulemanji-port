@@ -17,6 +17,18 @@ class DurableStep {
   }
 }
 
+class SizeLimitedStep extends DurableStep {
+  override async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
+    return super.do(name, async () => {
+      const result = await callback();
+      if (Buffer.byteLength(JSON.stringify(result) ?? '') > 1_048_576) {
+        throw new Error(`Workflow step result exceeds 1 MiB: ${name}`);
+      }
+      return result;
+    });
+  }
+}
+
 function addScheduleClaim(db: PipelineD1, id: string, ownerEpoch: number | null = db.control.owner_epoch) {
   db.slots.set(id, { id, local_date: '2026-11-27', slot: '08:00', owner_epoch: ownerEpoch });
 }
@@ -619,7 +631,7 @@ describe('deterministic signal workflow', () => {
     expect([...db.receipts.values()].map((row) => row.action)).toEqual(['HELD_PROVIDER_UNCONFIGURED']);
   });
 
-  function providerRecoveryDatabase() {
+  function providerRecoveryDatabase(d1ResultLimit = Number.POSITIVE_INFINITY) {
     const sqlite = new DatabaseSync(':memory:');
     onTestFinished(() => sqlite.close());
     const migrations = new URL('../migrations/', import.meta.url);
@@ -639,7 +651,13 @@ describe('deterministic signal workflow', () => {
       return {
         bind(...values: SQLInputValue[]) { bindings = values; return this; },
         async first() { return statement.get(...bindings) ?? null; },
-        async all() { return { results: statement.all(...bindings) }; },
+        async all() {
+          const results = statement.all(...bindings);
+          if (d1ResultLimit !== Number.POSITIVE_INFINITY && Buffer.byteLength(JSON.stringify(results)) > d1ResultLimit) {
+            throw new Error('D1 query result exceeds its size limit');
+          }
+          return { results };
+        },
         async run() { return { meta: { changes: Number(statement.run(...bindings).changes) } }; },
       };
     } } as unknown as D1Database;
@@ -648,6 +666,82 @@ describe('deterministic signal workflow', () => {
       { slot_claim_id: slot.id }, env, step, slot.workflow, processor,
     ), slots };
   }
+
+  it('retains historical deduplication without saving draft media in a Workflow step result', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase();
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    expect(await run(first, { processCandidate })).toMatchObject({ status: 'admitted' });
+
+    const insert = sqlite.prepare(`INSERT INTO editorial_candidates(id, state, revision, payload_json, updated_at)
+      VALUES (?, 'VERIFIED', ?, ?, ?)`);
+    for (let index = 0; index < 8; index++) {
+      const id = `old-published-${index}`;
+      insert.run(id, id, JSON.stringify({ owner_epoch: 1,
+        candidate: { id, signal_ids: [id] }, signal: { id, episode_id: id, source_revision: id, topic_ids: [] },
+        pipeline: { proposal: { files: [{ encoding: 'base64', content: 'A'.repeat(150_000) }] } },
+      }), new Date().toISOString());
+    }
+
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    expect(await run(next, { processCandidate }, new SizeLimitedStep())).toMatchObject({ status: 'no_change' });
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+    expect(sqlite.prepare('SELECT action FROM editorial_receipts WHERE id = ?').get(`slot-result:${next.id}`))
+      .toMatchObject({ action: 'NO_CHANGE' });
+  });
+
+  it('matches current signals across all 1000 receipts within the D1 response limit', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase(50_000_000);
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    expect(await run(first, { processCandidate })).toMatchObject({ status: 'admitted' });
+
+    const previous = sqlite.prepare('SELECT payload_json FROM editorial_candidates').get();
+    const { signal } = JSON.parse(String(previous?.payload_json));
+    sqlite.exec("UPDATE editorial_candidates SET payload_json = '{}'");
+    const insert = sqlite.prepare(`INSERT INTO editorial_receipts(id, candidate_id, action, result_json, created_at)
+      VALUES (?, '', 'NO_CHANGE', ?, ?)`);
+    const signals = Array.from({ length: 200 }, (_, index) => {
+      const value = index.toString(16).padStart(64, '0');
+      return { id: value, episode_id: value, source_revision: value, topic_ids: ['service-operations', 'infrastructure'] };
+    });
+    const duplicate = JSON.stringify({ owner_epoch: 1, signals });
+    sqlite.exec('BEGIN');
+    for (let index = 0; index < 999; index++) insert.run(`history-${index}`, duplicate, '2026-11-27T13:20:00.000Z');
+    insert.run('earliest-matching-history', JSON.stringify({ owner_epoch: 1, signals: [signal, ...signals] }), '2026-11-27T13:10:00.000Z');
+    sqlite.exec('COMMIT');
+    sqlite.prepare("UPDATE editorial_receipts SET created_at = '2026-11-27T13:00:00.000Z' WHERE id = ?").run(`slot-result:${first.id}`);
+
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    expect(await run(next, { processCandidate }, new SizeLimitedStep())).toMatchObject({ status: 'no_change' });
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([false, true])('keeps large held histories durable (claimed other slot: %s)', async (otherSlot) => {
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: false }));
+    const { sqlite, run, slots: [first] } = providerRecoveryDatabase();
+    const insert = sqlite.prepare(`INSERT INTO editorial_candidates(id, state, revision, payload_json, updated_at)
+      VALUES (?, 'HELD', ?, ?, ?)`);
+    const target = 'a'.repeat(500);
+    sqlite.exec('BEGIN');
+    for (let index = 0; index < 1000; index++) {
+      const hash = index.toString(16).padStart(64, '0');
+      const id = `connect:${hash.slice(-24)}:${target}`;
+      insert.run(id, hash, JSON.stringify({ owner_epoch: 1,
+        ...(otherSlot ? { processing_slot: '2026-11-27:06:00' } : { awaiting_processing: true }),
+        candidate: { id, target_id: target, signal_ids: [hash] }, signal: { id: hash, source_revision: hash },
+      }), new Date().toISOString());
+    }
+    sqlite.exec('COMMIT');
+    expect(await run(first, undefined, new SizeLimitedStep())).toMatchObject({ status: otherSlot ? 'held' : 'no_change' });
+    expect(sqlite.prepare("SELECT count(*) AS count FROM editorial_candidates WHERE state = 'HELD'").get()).toMatchObject({ count: 1000 });
+    expect(sqlite.prepare('SELECT action FROM editorial_receipts WHERE id = ?').get(`slot-result:${first.id}`))
+      .toMatchObject({ action: otherSlot ? 'HELD_HISTORY_CAPACITY' : 'NO_CHANGE' });
+  });
 
   it('continues discovery after a recycled deferred candidate is retired without publishing', async () => {
     vi.useFakeTimers();

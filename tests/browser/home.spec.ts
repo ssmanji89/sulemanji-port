@@ -20,14 +20,15 @@ test('mobile navigation remains available when JavaScript is disabled', async ({
   await context.close();
 });
 
-test('primary navigation has four explicit paths and remains keyboard reachable', async ({ page }) => {
+test('primary navigation has four explicit paths and remains keyboard reachable', async ({ page, browserName }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Primary navigation' });
   await expect(nav.getByRole('link')).toHaveText(['Explore', 'Writing', 'About', 'Contact']);
-  await page.keyboard.press('Tab');
+  const nextLink = browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
+  await page.keyboard.press(nextLink);
   await expect(page.locator('.skip-link')).toBeFocused();
-  await page.keyboard.press('Tab');
+  await page.keyboard.press(nextLink);
   await expect(page.getByRole('link', { name: /Suleman Manji home/i })).toBeFocused();
 });
 

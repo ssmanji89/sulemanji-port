@@ -6,7 +6,8 @@ test('market project is presented as a story with honest historical states', asy
   await expect(page.getByText('Private source; historical project family')).toBeVisible();
   await expect(page.getByRole('link', { name: 'botStuff', exact: true })).toHaveCount(0);
   await expect(page.locator('.case-projects strong', { hasText: 'botStuff' })).toBeVisible();
-  await page.getByText('Related paths').click();
+  const relatedPaths = page.getByRole('region', { name: 'Related paths' }).locator('summary');
+  await relatedPaths.press('Enter');
   await expect(page.getByText('robinBots carries forward part of the finBots implementation in a later project structure.')).toBeVisible();
 });
 
@@ -30,7 +31,7 @@ test('mathematical work exposes its question, checkers, attribution, and limits'
   await expect(page.locator('.figure-description p')).toContainText('custom exact rational checker');
 });
 
-test('ff-cli stays an independent tool with its demonstration state visible', async ({ page }) => {
+test('ff-cli stays an independent tool with its demonstration state visible', async ({ page, browserName }) => {
   const videoPath = '/assets/ffcli/demo.mp4';
   let videoRequests = 0;
   page.on('request', (request) => {
@@ -46,9 +47,16 @@ test('ff-cli stays an independent tool with its demonstration state visible', as
   await expect(video).toHaveAttribute('poster', '/assets/ffcli/warroom-full-board.png');
   await expect(video).toHaveAttribute('width', '1280');
   await expect(video).toHaveAttribute('height', '800');
-  await expect(page.getByRole('link', { name: 'View an auction board screenshot' })).toBeVisible();
+  const screenshot = page.getByRole('link', { name: 'View an auction board screenshot' });
+  await expect(screenshot).toBeVisible();
   await video.scrollIntoViewIfNeeded();
-  await video.focus();
+  if (browserName === 'webkit' && process.platform === 'darwin') {
+    // Safari's full keyboard navigation reaches its native playback control from the next link.
+    await screenshot.focus();
+    await page.keyboard.press('Alt+Shift+Tab');
+  } else {
+    await video.focus();
+  }
   expect(videoRequests).toBe(0);
   const [videoResponse] = await Promise.all([
     page.waitForResponse((response) => new URL(response.url()).pathname === videoPath),

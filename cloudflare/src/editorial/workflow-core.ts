@@ -44,6 +44,7 @@ type GuardedFetcher = { fetcher: typeof fetch; isStale: () => boolean; isCurrent
 const CONTENT_INDEX_URL = 'https://www.sulemanji.com/content-index.json';
 const MAX_INDEX_BYTES = 1_048_576;
 const HISTORY_LIMIT = 1_000;
+const MAX_STEP_RESULT_BYTES = 1_048_576;
 
 function parseJson<T>(value: string): T | null {
   try { return JSON.parse(value) as T; } catch { return null; }
@@ -106,20 +107,15 @@ function pendingCandidates(receipts: ReceiptRow[], candidates: CandidateRow[], o
   return pending;
 }
 
-function historyFromRows(receipts: ReceiptRow[], candidates: CandidateRow[], pending: Map<string, PendingCandidate>): RecentHistory {
-  const sourceRevisions = new Set<string>();
-  const episodeIds = new Set<string>();
+type ReceiptSignalMatch = { kind: 'revision' | 'episode'; value: string };
+
+function historyFromRows(receipts: ReceiptRow[], candidates: CandidateRow[], pending: Map<string, PendingCandidate>,
+  matches: ReceiptSignalMatch[]): RecentHistory {
+  const sourceRevisions = new Set(matches.filter(({ kind }) => kind === 'revision').map(({ value }) => value));
+  const episodeIds = new Set(matches.filter(({ kind }) => kind === 'episode').map(({ value }) => value));
   const recentTopics = new Set<string>();
-  const heldSignals = new Set([...pending.values()].map(({ signal }) => signal.id));
-  const rememberSignal = (signal: SignalHistory, skipProviderHolds = false) => {
-    if (skipProviderHolds && heldSignals.has(signal.id)) return;
-    if (signal.source_revision) sourceRevisions.add(signal.source_revision);
-    if (signal.episode_id) episodeIds.add(signal.episode_id);
-    for (const topic of signal.topic_ids ?? []) recentTopics.add(topic);
-  };
   for (const row of receipts) {
-    const result = parseJson<{ signals?: SignalHistory[]; topic_ids?: string[] }>(row.result_json);
-    for (const signal of result?.signals ?? []) rememberSignal(signal, true);
+    const result = parseJson<{ topic_ids?: string[] }>(row.result_json);
     for (const topic of result?.topic_ids ?? []) recentTopics.add(topic);
   }
   const priorCandidates: Candidate[] = [];
@@ -127,17 +123,42 @@ function historyFromRows(receipts: ReceiptRow[], candidates: CandidateRow[], pen
     if (pending.has(row.id)) continue;
     const payload = parseJson<CandidatePayload>(row.payload_json);
     if (payload?.candidate && typeof payload.candidate.id === 'string') priorCandidates.push(payload.candidate);
-    if (payload?.signal) rememberSignal(payload.signal);
+    const signal = payload?.signal;
+    if (signal?.source_revision) sourceRevisions.add(signal.source_revision);
+    if (signal?.episode_id) episodeIds.add(signal.episode_id);
+    for (const topic of signal?.topic_ids ?? []) recentTopics.add(topic);
   }
   return { source_revisions: [...sourceRevisions], episode_ids: [...episodeIds], candidates: priorCandidates, recent_topic_ids: [...recentTopics] };
 }
 
-async function readSelectionHistory(db: D1Database, ownerEpoch: number, slotId: string) {
+async function receiptSignalMatches(db: D1Database, receipts: ReceiptRow[], signals: Signal[],
+  pending: Map<string, PendingCandidate>): Promise<ReceiptSignalMatch[]> {
+  if (!receipts.length || !signals.length) return [];
+  const pendingSignalIds = [...pending.values()].map(({ signal }) => signal.id);
+  // Receipts are immutable. Read only the receipt IDs sampled for this selection.
+  const result = await db.prepare(`WITH receipt_signals AS (
+    SELECT json_extract(entry.value, '$.source_revision') AS revision, json_extract(entry.value, '$.episode_id') AS episode
+    FROM json_each(?) AS selected
+    JOIN editorial_receipts AS receipt ON receipt.id = selected.value
+    CROSS JOIN json_each(CASE WHEN json_valid(receipt.result_json) THEN receipt.result_json ELSE '{}' END, '$.signals') AS entry
+    WHERE CASE WHEN entry.type = 'object'
+      THEN COALESCE(json_extract(entry.value, '$.id'), '') NOT IN (SELECT value FROM json_each(?))
+      ELSE 0 END
+  )
+  SELECT 'revision' AS kind, revision AS value FROM receipt_signals WHERE revision IN (SELECT value FROM json_each(?))
+  UNION
+  SELECT 'episode' AS kind, episode AS value FROM receipt_signals WHERE episode IN (SELECT value FROM json_each(?))`)
+    .bind(JSON.stringify(receipts.map(({ id }) => id)), JSON.stringify(pendingSignalIds),
+      JSON.stringify(signals.map(({ source_revision }) => source_revision)),
+      JSON.stringify(signals.map(({ episode_id }) => episode_id))).all<ReceiptSignalMatch>();
+  return result.results ?? [];
+}
+
+async function readSelectionHistory(db: D1Database, ownerEpoch: number, slotId: string, signals: Signal[]) {
   const [receipts, candidates] = await Promise.all([
     db.prepare(`SELECT id, action, created_at, CASE WHEN json_valid(result_json) THEN json_object(
       'owner_epoch', json_extract(result_json, '$.owner_epoch'),
       'candidates', json_extract(result_json, '$.candidates'),
-      'signals', json_extract(result_json, '$.signals'),
       'topic_ids', json_extract(result_json, '$.topic_ids')
     ) ELSE '{}' END AS result_json FROM editorial_receipts ORDER BY created_at DESC LIMIT ?`).bind(HISTORY_LIMIT).all<ReceiptRow>(),
     db.prepare(`SELECT id, state, revision, CASE WHEN json_valid(payload_json) THEN json_object(
@@ -154,8 +175,9 @@ async function readSelectionHistory(db: D1Database, ownerEpoch: number, slotId: 
   const receiptRows = receipts.results ?? [];
   const candidateRows = candidates.results ?? [];
   const pending = pendingCandidates(receiptRows, candidateRows, ownerEpoch, slotId);
+  const matches = await receiptSignalMatches(db, receiptRows, signals, pending);
   return {
-    history: historyFromRows(receiptRows, candidateRows, pending),
+    history: historyFromRows(receiptRows, candidateRows, pending, matches),
     pending: [...pending.values()].map(({ row, candidate, slot }) => ({
       id: candidate.id, target_id: candidate.target_id, state: row.state, slot: slot ?? undefined,
     })),
@@ -490,11 +512,20 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   const signals = releaseComparison.unavailable ? batch.signals.filter((signal) => !isDotnetSupport(signal)) : batch.signals;
   const selection = await step.do('select-actions-from-dated-signals-v4', async () => {
     // Persist the decisions. The history and publication checkpoints stay in D1.
-    const { history, pending } = await readSelectionHistory(env.DB, control.owner_epoch, params.slot_claim_id);
+    const { history, pending } = await readSelectionHistory(env.DB, control.owner_epoch, params.slot_claim_id, signals);
     const decisions = signals.map((signal) => chooseAction(signal, catalog, knowledge, history, new Date(now),
       isDotnetSupport(signal) ? releaseComparison.result ?? undefined : undefined));
-    return { decisions, pending };
+    const selectedIds = new Set(decisions.flatMap((decision) => 'candidate' in decision ? [decision.candidate.id] : [])
+      .slice(0, policy.max_candidates_per_scan));
+    const result = { decisions, pending: pending.filter(({ id, slot }) => slot || selectedIds.has(id)) };
+    return new TextEncoder().encode(JSON.stringify(result)).byteLength < MAX_STEP_RESULT_BYTES ? result : null;
   });
+  if (!selection) {
+    const reason = 'The candidate history requires reconciliation before another site change can be selected.';
+    const saved = await step.do('record-history-capacity-hold', () => recordReceipt(env.DB, params.slot_claim_id,
+      params.slot_claim_id, 'HELD_HISTORY_CAPACITY', { reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
+    return held(params, saved ? reason : 'Workflow authority changed before the history hold could be recorded.');
+  }
   const decisions = signals.map((signal, index) => ({ signal, decision: selection.decisions[index] }));
   const pendingIds = new Set(selection.pending.map(({ id }) => id));
   const qualifying = decisions.filter((row): row is { signal: Signal; decision: Extract<ActionDecision, { candidate: Candidate }> } => 'candidate' in row.decision);

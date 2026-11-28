@@ -27,7 +27,7 @@ A useful cutoff is therefore earlier than the last possible carrier handoff. It 
 
 USPS calls its national dates **recommended send-by dates for expected delivery before December 25**. For the contiguous United States, the dates are December 17 for USPS Ground Advantage and First-Class Mail, December 18 for Priority Mail, and December 19 for Priority Mail Express.
 
-Those dates are not one universal transit promise. The same [USPS announcement](https://about.usps.com/newsroom/national-releases/2026/0922-usps-recommends-2026-holiday-mailing-shipping-dates.htm) says Ground Advantage packages traveling between the contiguous United States and Alaska, Hawaii, Puerto Rico, U.S. territories, or the Freely Associated States can have a service expectation of ten days or more. USPS directs customers to its Service Commitments tool for a result based on the origin ZIP Code, destination ZIP Code, and mailing date.
+Those dates are not one universal transit promise. The same [USPS holiday shipping guidance](https://www.usps.com/holiday/holiday-shipping-dates.htm) says Ground Advantage packages traveling between the contiguous United States and Alaska, Hawaii, Puerto Rico, U.S. territories, or the Freely Associated States can have a service expectation of ten days or more. USPS directs customers to its Service Commitments tool for a result based on the origin ZIP Code, destination ZIP Code, and mailing date.
 
 UPS makes the route dependency even more visible in its [2026 year-end schedule](https://assets.ups.com/adobe/assets/urn%3Aaaid%3Aaem%3Ae8548535-8096-4fa9-9cef-2b81aef7c26c/original/as/year-end-holiday-schedule-us-en.pdf). It gives national last days for several air services aimed at December 24 delivery, but tells shippers to calculate time and cost for UPS Ground and warns that some destinations require an earlier date.
 
@@ -120,9 +120,9 @@ The useful holiday cutoff is not the latest date a carrier prints. It is the lat
 
 ## Sources and last reviewed
 
-- U.S. Postal Service, [Postal Service Recommends 2026 Holiday Mailing and Shipping Dates](https://about.usps.com/newsroom/national-releases/2026/0922-usps-recommends-2026-holiday-mailing-shipping-dates.htm), September 22, 2026.
+- U.S. Postal Service, [2026 Holiday Shipping Dates](https://www.usps.com/holiday/holiday-shipping-dates.htm).
 - U.S. Postal Service, [Priority Mail Express Service](https://faq.usps.com/articles/Knowledge/Priority-Mail-Express-Service).
-- U.S. Postal Service, [Changes in Service Standards - FAQs](https://about.usps.com/what/strategic-plans/delivering-for-america/assets/service-standard-changes-faqs-2026.pdf), 2026.
+- U.S. Postal Service, [Service Standards](https://postalpro.usps.com/operations/service-standards).
 - UPS, [2026 Year-End Holiday Schedule](https://assets.ups.com/adobe/assets/urn%3Aaaid%3Aaem%3Ae8548535-8096-4fa9-9cef-2b81aef7c26c/original/as/year-end-holiday-schedule-us-en.pdf).
 - Federal Trade Commission, [Mail, Internet, or Telephone Order Merchandise Rule](https://www.ftc.gov/legal-library/browse/rules/mail-internet-or-telephone-order-merchandise-rule) and [Business Guide](https://www.ftc.gov/business-guidance/resources/business-guide-ftcs-mail-internet-or-telephone-order-merchandise-rule).
 

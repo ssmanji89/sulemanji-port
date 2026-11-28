@@ -1,4 +1,4 @@
-import { bytesDigest, CANONICAL_SITE_ORIGIN } from './site-readback.js';
+import { bytesDigest, CANONICAL_SITE_ORIGIN, MAX_SITE_DOCUMENT_BYTES, readBoundedSiteBytes } from './site-readback.js';
 
 type ReleaseManifest = { asset_digest: string; built_at: string; files: Record<string, string> };
 export type ReleaseDigests = (sourceCommit: string) => Promise<readonly string[]>;
@@ -11,8 +11,8 @@ export async function readVerifiedReleaseManifest(sourceCommit: string, fetcher:
   const response = await fetcher(url, { redirect: 'manual' });
   if (!response.ok || (response.url ? response.url !== url.href : readback !== 'private-binding') ||
       response.headers.get('x-site-source-commit') !== sourceCommit) throw new Error('release manifest is unavailable for the reviewed source');
-  const bytes = await response.arrayBuffer();
-  if (bytes.byteLength > 2_000_000 || !deployedDigests.includes(await bytesDigest(bytes))) {
+  const bytes = await readBoundedSiteBytes(response, MAX_SITE_DOCUMENT_BYTES, 'release manifest');
+  if (!deployedDigests.includes(await bytesDigest(bytes))) {
     throw new Error('release manifest does not match the verified deployment digest');
   }
   const manifest = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) as Partial<ReleaseManifest> & {

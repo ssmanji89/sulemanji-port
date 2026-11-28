@@ -2,6 +2,7 @@ import * as parse5 from 'parse5';
 import type { ContextualLink } from './contracts.js';
 
 export const CANONICAL_SITE_ORIGIN = 'https://www.sulemanji.com';
+export const MAX_SITE_DOCUMENT_BYTES = 2_000_000;
 
 export type EditorialFixtureSite = Pick<Fetcher, 'fetch'>;
 
@@ -62,6 +63,34 @@ export async function textDigest(text: string): Promise<string> {
 export async function bytesDigest(bytes: ArrayBuffer): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function readBoundedSiteBytes(response: Response, maximum: number, label: string): Promise<ArrayBuffer> {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error(`${label} response body is missing`);
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      if (size + value.length > maximum) {
+        await reader.cancel();
+        throw new Error(`${label} response exceeds bound`);
+      }
+      chunks.push(value);
+      size += value.length;
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return bytes.buffer;
 }
 
 export async function matchesConnectionParagraph(paragraph: HtmlNode, expected: ContextualLink): Promise<boolean> {

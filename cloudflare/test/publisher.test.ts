@@ -254,11 +254,24 @@ describe('public publication identity verification', () => {
     const attempt: PublishAttempt = { id: 'attempt-42', candidate_id: 'candidate-42', owner_epoch: 7, branch: 'editorial/candidate-42',
       pull_request: 12, source_commit: commit, deployment_version: null, public_urls: [path], status: 'SOURCE_PUBLISHED',
       expected_content: [{ url: path, title: 'Reviewed title', text_sha256: await sha("NIST's source-backed guidance.") }] };
-    let damaged: 'none' | 'html' | 'manifest' | 'headers' = 'none';
+    let damaged: 'none' | 'html' | 'manifest' | 'headers' | 'oversized-manifest' | 'oversized-article' = 'none';
+    let cancelled = 0;
+    function oversizedBody() {
+      let chunks = 0;
+      return new ReadableStream<Uint8Array>({
+        pull(controller) {
+          if (++chunks < 4) controller.enqueue(new Uint8Array(1_100_000));
+          else controller.close();
+        },
+        cancel() { cancelled += 1; },
+      });
+    }
     const fetcher: typeof fetch = async (input) => {
       const uri = new URL(String(input));
-      const response = new Response(uri.pathname === '/release.json' ? manifest + (damaged === 'manifest' ? ' ' : '') :
-        uri.pathname === path ? article.replace('guidance', damaged === 'html' ? 'fiction' : 'guidance') : listing[uri.pathname as keyof typeof listing],
+      const oversize = (uri.pathname === '/release.json' && damaged === 'oversized-manifest') || (uri.pathname === path && damaged === 'oversized-article');
+      const content = uri.pathname === '/release.json' ? manifest + (damaged === 'manifest' ? ' ' : '') :
+        uri.pathname === path ? article.replace('guidance', damaged === 'html' ? 'fiction' : 'guidance') : listing[uri.pathname as keyof typeof listing];
+      const response = new Response(oversize ? oversizedBody() : content,
       { headers: { 'x-site-source-commit': commit, 'x-site-asset-digest': assetDigest,
         'x-site-built-at': uri.pathname === path && damaged === 'headers' ? '2026-11-28T09:00:00Z' : builtAt } });
       Object.defineProperty(response, 'url', { value: uri.href });
@@ -271,6 +284,13 @@ describe('public publication identity verification', () => {
       damaged = kind;
       await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({ receipt: { outcome: 'UNCERTAIN' } });
     }
+    for (const kind of ['oversized-manifest', 'oversized-article'] as const) {
+      damaged = kind;
+      await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({
+        receipt: { outcome: 'UNCERTAIN' }, failure: expect.stringContaining('response exceeds bound'),
+      });
+    }
+    expect(cancelled).toBe(2);
   });
   it('accepts the digest and timestamp formats emitted by the Jekyll release manifest', async () => {
     const body = 'A source-backed reader explanation.';

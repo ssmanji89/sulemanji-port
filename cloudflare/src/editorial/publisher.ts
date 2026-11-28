@@ -1,7 +1,8 @@
 import type { ContentProposal, PublicationReceipt, PublicationState, PublishAttempt, ReviewReceipt } from './contracts.js';
 import * as parse5 from 'parse5';
 import { articleSourcePath, refreshCitations, verifiesContextualLink, verifyRequiredMedia } from './review.js';
-import { articleCitations, bytesDigest, CANONICAL_SITE_ORIGIN, connectionParagraph, matchesConnectionParagraph, normalizeNodeText, textDigest as sha256, type HtmlNode } from './site-readback.js';
+import { articleCitations, bytesDigest, CANONICAL_SITE_ORIGIN, connectionParagraph, matchesConnectionParagraph, MAX_SITE_DOCUMENT_BYTES,
+  normalizeNodeText, readBoundedSiteBytes, textDigest as sha256, type HtmlNode } from './site-readback.js';
 import { encodeSocialCard, isSocialCardPng, MAX_CARD_BYTES, socialCardPath } from './social-card-format.js';
 import { readDiscoveryLinks } from './discovery-readback.js';
 import { readVerifiedReleaseManifest, type ReleaseDigests } from './release-proof.js';
@@ -224,27 +225,6 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   }
 }
 
-async function readCardBytes(response: Response): Promise<Uint8Array> {
-  const reader = response.body?.getReader();
-  if (!reader) throw new Error('social card response body is missing');
-  const bytes = new Uint8Array(MAX_CARD_BYTES);
-  let size = 0;
-  try {
-    for (;;) {
-      const { value, done } = await reader.read();
-      if (done) return bytes.subarray(0, size);
-      if (size + value.length > MAX_CARD_BYTES) {
-        await reader.cancel();
-        throw new Error('social card response exceeds bound');
-      }
-      bytes.set(value, size);
-      size += value.length;
-    }
-  } finally {
-    reader.releaseLock();
-  }
-}
-
 export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher: typeof fetch,
   readback: 'public' | 'private-binding' = 'public', readReleaseDigests?: ReleaseDigests): Promise<{ receipt: PublicationReceipt; failure?: string }> {
   if (!attempt.source_commit) return { receipt: { candidate_id: attempt.candidate_id, owner_epoch: attempt.owner_epoch, source_commit: '', deployment_version: '', public_urls: attempt.public_urls, verified_at: new Date().toISOString(), outcome: 'UNCERTAIN' }, failure: 'merged source commit missing' };
@@ -262,8 +242,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       const response = await fetcher(expectedUrl, { redirect: 'manual' });
       const originMatches = response.url ? new URL(response.url).origin === expectedUrl.origin : readback === 'private-binding';
       if (!response.ok || !originMatches) throw new Error('page unavailable or redirected off canonical host');
-      const bytes = await response.arrayBuffer();
-      if (bytes.byteLength > 2_000_000) throw new Error('article response exceeds bound');
+      const bytes = await readBoundedSiteBytes(response, MAX_SITE_DOCUMENT_BYTES, 'article');
       if (manifest) {
         const sourcePath = articleSourcePath(url);
         const htmlPath = sourcePath && `${sourcePath.slice(0, -3)}.html`;
@@ -344,7 +323,7 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
             card.headers.get('x-site-asset-digest') !== assetDigest || card.headers.get('x-site-built-at') !== builtAt) {
           throw new Error('social card does not match the deployed release');
         }
-        const bytes = await readCardBytes(card);
+        const bytes = new Uint8Array(await readBoundedSiteBytes(card, MAX_CARD_BYTES, 'social card'));
         if (!isSocialCardPng(bytes) || await sha256(encodeSocialCard(bytes)) !== cardDigest) throw new Error('social card bytes mismatch');
       }
     }

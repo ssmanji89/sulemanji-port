@@ -15,7 +15,7 @@ hero_lede: "I’m Suleman Manji. Most people call me sully. I’m based in Houst
 <section id="background" class="prose-block" aria-labelledby="background-title">
   <h2 id="background-title">Background</h2>
   <p>My background spans about 15 years in managed IT, infrastructure, Microsoft 365, identity, security, migrations, and service operations. I like work that connects a technical detail to something a person needs to do: restoring access, planning a migration, building an integration, or making a repeated task easier to complete.</p>
-  <p>My first job at a brake-shop counter gave me an early connection to practical repair work. I later did mobile mechanic work as well. Diagnosis, clear explanations, and checking the result still matter to me.</p>
+  <p>My first real job was at a brake-shop counter. Years later, between IT consulting roles, I did mobile mechanic work.</p>
   <p>I studied Management Information Systems at the University of Houston’s Bauer College. My IT background includes support, network operations, automation, infrastructure, and technical architecture.</p>
   <p>I use AI agents heavily for implementation and research. I set direction, define the work, review changes, and decide what the results establish. My professional delivery work belongs with Viyu.</p>
 </section>

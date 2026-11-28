@@ -67,15 +67,21 @@ function entries(body: string, format: SourceConfig['format'], base: URL): Entry
         url, date: typeof row.date_published === 'string' ? row.date_published : null, id: String(row.id ?? url ?? index) };
     });
   }
-  if (format === 'wordpress') {
+  if (format === 'nasa-skywatching') {
     const parsed = JSON.parse(body) as unknown;
     if (!Array.isArray(parsed)) throw new Error('INVALID');
     return parsed.slice(0, MAX_ENTRIES_PER_SOURCE).map((row) => {
       const date = typeof row?.date_gmt === 'string' ? new Date(row.date_gmt + 'Z') : null;
+      const bodyHtml: unknown = row?.content?.rendered;
       if (!date || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 19) !== row.date_gmt ||
           typeof row.link !== 'string' || typeof row.title?.rendered !== 'string' ||
-          typeof row.excerpt?.rendered !== 'string') throw new Error('INVALID');
-      return { title: text(row.title.rendered), summary: text(row.excerpt.rendered), url: row.link,
+          typeof bodyHtml !== 'string') throw new Error('INVALID');
+      const list = bodyHtml.match(/<h2\b[^>]*>\s*Skywatching Highlights\s*<\/h2>\s*<ul\b[^>]*>([\s\S]*?)<\/ul>/i)?.[1];
+      if (!list) throw new Error('INVALID');
+      const highlights = Array.from(list.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi), (match) => text(match[1]))
+        .filter(Boolean).slice(0, 8);
+      if (!highlights.length) throw new Error('INVALID');
+      return { title: text(row.title.rendered), summary: highlights.join('\n'), url: row.link,
         date: date.toISOString(), id: row.link };
     });
   }
@@ -140,10 +146,13 @@ async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fe
     if (!published || now.getTime() - Date.parse(published) > source.max_age_seconds * 1000 || Date.parse(published) > now.getTime() + 60_000) continue;
     const contentHash = await sha(`${entry.title}\n${entry.summary}\n${evidenceUrl.toString()}`);
     const evidence: PublicSource = { url: evidenceUrl.toString(), title: entry.title.slice(0, 300), retrieved_at: retrievedAt, source_date: published, content_sha256: contentHash };
-    const episodeId = await sha(`${evidenceUrl.toString()}\n${entry.title.toLocaleLowerCase()}\n${published}`);
+    // A WordPress post keeps its canonical URL when its title or publication timestamp is corrected.
+    const episodeKey = source.format === 'nasa-skywatching'
+      ? evidenceUrl.toString() : `${evidenceUrl.toString()}\n${entry.title.toLocaleLowerCase()}\n${published}`;
+    const episodeId = await sha(episodeKey);
     const revision = await sha(`${episodeId}\n${contentHash}\n${published}`);
     signals.push({ id: await sha(`${source.id}\n${revision}`), episode_id: episodeId, source_id: source.id, source_revision: revision,
-      observed_at: retrievedAt, occurred_at: source.format === 'wordpress' ? null : published, published_at: published, expires_at: new Date(Date.parse(published) + source.max_age_seconds * 1000).toISOString(),
+      observed_at: retrievedAt, occurred_at: source.format === 'nasa-skywatching' ? null : published, published_at: published, expires_at: new Date(Date.parse(published) + source.max_age_seconds * 1000).toISOString(),
       topic_ids: [...new Set(source.topic_ids)], title: evidence.title, summary: entry.summary.slice(0, 3000), evidence: [evidence] });
   }
   return signals;

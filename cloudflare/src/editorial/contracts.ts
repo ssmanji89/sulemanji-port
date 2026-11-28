@@ -44,7 +44,7 @@ export interface EditorialEnv {
 export type SourceConfig = {
   id: string;
   url: string;
-  format: 'rss' | 'atom' | 'json' | 'html' | 'wordpress';
+  format: 'rss' | 'atom' | 'json' | 'html' | 'nasa-skywatching';
   topic_ids: string[];
   allowed_hostnames: string[];
   min_interval_seconds: number;

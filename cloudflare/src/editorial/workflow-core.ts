@@ -80,19 +80,21 @@ function historyFromRows(receipts: ReceiptRow[], candidates: CandidateRow[]): Re
   const sourceRevisions = new Set<string>();
   const episodeIds = new Set<string>();
   const recentTopics = new Set<string>();
+  const rememberSignal = (signal: SignalHistory) => {
+    if (signal.source_revision) sourceRevisions.add(signal.source_revision);
+    if (signal.episode_id) episodeIds.add(signal.episode_id);
+    for (const topic of signal.topic_ids ?? []) recentTopics.add(topic);
+  };
   for (const row of receipts) {
     const result = parseJson<{ signals?: SignalHistory[]; topic_ids?: string[] }>(row.result_json);
-    for (const signal of result?.signals ?? []) {
-      if (signal.source_revision) sourceRevisions.add(signal.source_revision);
-      if (signal.episode_id) episodeIds.add(signal.episode_id);
-      for (const topic of signal.topic_ids ?? []) recentTopics.add(topic);
-    }
+    for (const signal of result?.signals ?? []) rememberSignal(signal);
     for (const topic of result?.topic_ids ?? []) recentTopics.add(topic);
   }
   const priorCandidates: Candidate[] = [];
   for (const row of candidates) {
-    const payload = parseJson<{ candidate?: Candidate }>(row.payload_json);
+    const payload = parseJson<{ candidate?: Candidate; signal?: SignalHistory }>(row.payload_json);
     if (payload?.candidate && typeof payload.candidate.id === 'string') priorCandidates.push(payload.candidate);
+    if (payload?.signal) rememberSignal(payload.signal);
   }
   return { source_revisions: [...sourceRevisions], episode_ids: [...episodeIds], candidates: priorCandidates, recent_topic_ids: [...recentTopics] };
 }

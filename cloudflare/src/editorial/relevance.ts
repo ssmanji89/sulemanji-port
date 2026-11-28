@@ -18,10 +18,10 @@ export function chooseAction(signal: Signal, catalog: CatalogItem[], context: Pu
     const edition = signal.title.match(/^What['’]s Up: ([A-Za-z]+) (\d{4}) Skywatching Tips from NASA$/);
     const issue = edition ? `${edition[1].toLowerCase()}-${edition[2]}` : '';
     const expectedUrl = `https://science.nasa.gov/solar-system/skywatching/whats-up-${issue}-skywatching-tips-from-nasa/`;
-    const observingAction = /\b(find|look|observe|observing|spot|view|visible|watch)\b/i.test(signal.summary);
-    const observableTarget = /\b(meteor[s]?|moon|supermoon|eclipse|planet[s]?|saturn|jupiter|mars|venus|mercury|constellation[s]?)\b/i.test(signal.summary);
-    if (!edition || signal.evidence.length !== 1 || signal.evidence[0].url !== expectedUrl ||
-        !observingAction || !observableTarget) {
+    const viewingWindow = /\b(?:before|after|at) (?:dawn|dusk|sunrise|sunset|moonrise|moonset|twilight|midnight)\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\.?\s+\d{1,2}\b/i;
+    const observableTarget = /\b(meteors?|moon|supermoon|eclipse|planets?|saturn|jupiter|mars|venus|mercury|constellations?)\b/i;
+    const qualifiedHighlight = signal.summary.split('\n').some((line) => observableTarget.test(line) && viewingWindow.test(line));
+    if (!edition || signal.evidence.length !== 1 || signal.evidence[0].url !== expectedUrl || !qualifiedHighlight) {
       return { action: 'NO_CHANGE', reason: 'The NASA release lacks a concrete skywatching observation to explain.', signal_ids: [signal.id] };
     }
     return { action: 'CREATE', candidate: {

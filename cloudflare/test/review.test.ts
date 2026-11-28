@@ -51,6 +51,22 @@ describe('independent content preparation and review', () => {
     expect(models.calls.map(({ input }) => JSON.parse(input).source_excerpt)).toEqual([excerpt, excerpt]);
   });
 
+  it('labels an AI-assisted NASA-source article and rejects direct NASA attribution of generated text', async () => {
+    const url = 'https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/';
+    const nasa = { ...context, sources: [{ ...source, url }], source_excerpt: 'Moonrise after sunset is an example of a timing clue.' };
+    const adapted = { ...output, body: output.body.replace(source.url, url) };
+    const models = new FakeModels();
+    const disclosure = `AI-assisted article by Sulemanji.com. [NASA source material](${url}) informed this article. Sulemanji.com is responsible for its accuracy.`;
+    models.outputs = [adapted, { ...adapted, body: `${adapted.body}\n\n${disclosure}` },
+      { ...adapted, body: `According to NASA, ${adapted.body}` }];
+
+    const proposal = await prepareContent(candidate, nasa, models);
+    expect(proposal.files[0].content).toContain(disclosure);
+    const revised = await reviseContent(proposal, candidate, nasa, [{ code: 'TIMING', detail: 'Clarify the time.' }], models, 'revision-nasa');
+    expect(revised.files[0].content.split(disclosure)).toHaveLength(2);
+    await expect(prepareContent(candidate, nasa, models)).rejects.toThrow('NASA_OUTPUT_ATTRIBUTION_REJECTED');
+  });
+
   it('refreshes the exact tracked article when the catalog uses an absolute canonical URL', async () => {
     const initial = await prepareContent(candidate, context, new FakeModels());
     const file = initial.files[0];

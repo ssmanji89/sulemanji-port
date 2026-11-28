@@ -22,17 +22,24 @@ describe('bounded public signal collection', () => {
     const url = 'https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/';
     const posts = [{ link: url, date_gmt: '2026-11-26T17:00:00',
       title: { rendered: 'What&#8217;s Up: November 2026 Skywatching Tips from NASA' },
-      excerpt: { rendered: '<p>Find the Moon and compare how much light reaches your observing site.</p>' } }];
+      content: { rendered: '<p>A teaser about the Moon.</p><h2>Skywatching Highlights</h2>\n<ul><li><strong>Nov. 27:</strong> Watch the Moon after sunset.</li></ul><div>An unrelated transcript uses other phrases.</div>' } }];
     const batch = await collectSignals(registry, now, async () => Response.json(posts));
     expect(batch.failures).toEqual([]);
     expect(batch.signals).toHaveLength(1);
     expect(batch.signals[0]).toMatchObject({
       source_id: 'nasa-skywatching', title: 'What’s Up: November 2026 Skywatching Tips from NASA',
       observed_at: now.toISOString(), published_at: '2026-11-26T17:00:00.000Z', occurred_at: null,
+      summary: 'Nov. 27: Watch the Moon after sunset.',
       evidence: [{ url, source_date: '2026-11-26T17:00:00.000Z' }],
     });
     await expect(revalidateSignalSourceDigest(batch.signals[0], registry, now, async () => Response.json(posts)))
       .resolves.toBe(await sourceSetDigest(batch.signals[0].evidence));
+
+    const corrected = [{ ...posts[0], date_gmt: '2026-11-26T16:00:00',
+      title: { rendered: "What's Up: November 2026 Skywatching Tips from NASA" } }];
+    const [correction] = (await collectSignals(registry, now, async () => Response.json(corrected))).signals;
+    expect(correction.episode_id).toBe(batch.signals[0].episode_id);
+    expect(correction.source_revision).not.toBe(batch.signals[0].source_revision);
 
     const malformed = [{ ...posts[0], date_gmt: '2026-11-26' }];
     await expect(collectSignals(registry, now, async () => Response.json(malformed)))

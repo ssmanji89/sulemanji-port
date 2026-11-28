@@ -240,6 +240,7 @@ describe('deterministic signal workflow', () => {
     vi.setSystemTime(new Date('2026-11-03T14:00:00Z'));
     const db = new PipelineD1();
     const feed = sourceRegistry.find(({ id }) => id === 'nasa-skywatching')!;
+    let excerpt = '<p>Watch the Moon rise and look for meteors after moonset.</p>';
     const fallback = sourceFetcher({ candidate: false });
     const evidenceUrl = 'https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/';
     vi.stubGlobal('fetch', (input: RequestInfo | URL) => {
@@ -249,7 +250,7 @@ describe('deterministic signal workflow', () => {
       ] });
       if (url === feed.url) return Response.json([{ link: evidenceUrl, date_gmt: '2026-11-02T18:19:58',
         title: { rendered: 'What&#8217;s Up: November 2026 Skywatching Tips from NASA' },
-        excerpt: { rendered: '<p>Watch the Moon rise and look for meteors after moonset.</p>' } }]);
+        content: { rendered: `<h2>Skywatching Highlights</h2><ul><li>${excerpt}</li></ul>` } }]);
       return fallback(input);
     });
     const processCandidate = vi.fn(async () => ({ status: 'held' as const, reason: 'Rehearsal stops before model work.' }));
@@ -261,6 +262,14 @@ describe('deterministic signal workflow', () => {
       signal: expect.objectContaining({ published_at: '2026-11-02T18:19:58.000Z', occurred_at: null,
         summary: 'Watch the Moon rise and look for meteors after moonset.', evidence: [expect.objectContaining({ url: evidenceUrl })] }),
     }));
+
+    vi.setSystemTime(new Date('2026-11-03T21:00:00Z'));
+    excerpt = '<p>Watch the Moon rise, then look for meteors after moonset from a dark site.</p>';
+    await expect(runEditorialAdmission({ slot_claim_id: 'nasa-observing-guide-clarification' },
+      { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep(), { processCandidate }))
+      .resolves.toMatchObject({ status: 'no_change' });
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+    expect(db.candidates.size).toBe(1);
   });
 
   it('resumes a previously held exact proposal in a later slot before new source discovery', async () => {

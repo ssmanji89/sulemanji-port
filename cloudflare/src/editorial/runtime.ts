@@ -11,7 +11,7 @@ import { readControl } from './state.js';
 import { readKnowledge } from './workflow-core.js';
 import { revalidateSignalSourceDigest } from './sources.js';
 import type { SocialCardRenderer } from './social-card-format.js';
-import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
+import { createEditorialCandidatePipeline, type CandidateCheckpoint, type CandidateCheckpointState } from './pipeline.js';
 import { fixtureSiteFetcher, readConnectionBaseline } from './site-readback.js';
 import { articleSourcePath, connectionArticles } from './review.js';
 import { parseEditorialRuntimeSettings } from './runtime-settings.mjs';
@@ -26,7 +26,7 @@ export type EditorialRuntimeEnv = EditorialEnv & {
 type CandidateRow = { state: string; revision: string; payload_json: string; publication_retry_claim: string | null };
 
 async function persistCandidateCheckpoint(db: D1Database, candidateId: string, ownerEpoch: number,
-  state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'CAPACITY_HELD' | 'VERIFIED',
+  state: CandidateCheckpointState,
   checkpoint: CandidateCheckpoint, claim?: string): Promise<boolean> {
   const row = await db.prepare('SELECT state, revision, payload_json, publication_retry_claim FROM editorial_candidates WHERE id = ?')
     .bind(candidateId).first<CandidateRow>();
@@ -38,9 +38,12 @@ async function persistCandidateCheckpoint(db: D1Database, candidateId: string, o
     payload = parsed as Record<string, unknown>;
   } catch { return false; }
   const current = payload.candidate as Candidate | undefined;
-  if (payload.owner_epoch !== ownerEpoch || current?.source_digest !== row.revision ||
-      row.publication_retry_claim !== (claim ?? null) || ['DEPLOYED', 'VERIFIED'].includes(row.state)) return false;
+  if (payload.owner_epoch !== ownerEpoch || current?.source_digest !== row.revision) return false;
   const next = JSON.stringify({ ...payload, pipeline: checkpoint });
+  if (state === 'NO_CHANGE' && row.state === 'NO_CHANGE') {
+    return row.publication_retry_claim === null && row.payload_json === next;
+  }
+  if (row.publication_retry_claim !== (claim ?? null) || ['DEPLOYED', 'VERIFIED', 'NO_CHANGE'].includes(row.state)) return false;
   if (new TextEncoder().encode(next).byteLength > 400_000) return false;
   if (state === 'CAPACITY_HELD' && (!checkpoint.retry_after || !checkpoint.signal)) return false;
   const result = await db.prepare(`UPDATE editorial_candidates SET state = ?, payload_json = ?, updated_at = ?,
@@ -103,11 +106,12 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         policy_revision: input.policy.revision, knowledge_revision: input.candidate.knowledge_revision,
         base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths, ...(baseline ? { connection_baseline: baseline } : {}) };
     },
-    async publish(proposal, review, signal, claim) {
+    async publish(proposal, review, signal, catalog, claim) {
       const store = new D1PublishEffectStore(env.DB, review.owner_epoch, limits);
       const readAuthority = async () => {
         const row = await env.DB.prepare(`SELECT control.paused, control.owner_epoch FROM editorial_control AS control
           JOIN editorial_candidates AS candidate ON candidate.id = ? AND candidate.revision = ? AND candidate.publication_retry_claim IS ?
+            AND candidate.state <> 'NO_CHANGE'
           WHERE control.singleton = 1`).bind(proposal.candidate_id, signal.source_revision, claim ?? null)
           .first<{ paused: number; owner_epoch: number }>();
         return row ? { paused: row.paused === 1, owner_epoch: row.owner_epoch } : { paused: true, owner_epoch: 0 };
@@ -122,12 +126,13 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
           return response;
         };
         const [control, baseCommit, knowledge, sourceDigest] = await Promise.all([
-          readAuthority(), github.readDefaultBranchHead(), readKnowledge(env.DB, new Date()),
+          readAuthority(), github.readDefaultBranchHead(), readKnowledge(env.DB, new Date(), catalog),
           revalidateSignalSourceDigest(signal, sourceRegistry as SourceConfig[], new Date(), guardedSourceFetch),
         ]);
         const currentPolicy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
         return { owner_epoch: control.owner_epoch, paused: control.paused || !currentPolicy || currentPolicy.revision !== proposal.policy_revision,
-          base_commit: baseCommit, policy_revision: currentPolicy?.revision ?? 'unqualified', knowledge_revision: await fingerprintPublicKnowledge(knowledge),
+          base_commit: baseCommit, policy_revision: currentPolicy?.revision ?? 'unqualified',
+          knowledge_revision: await fingerprintPublicKnowledge(knowledge),
           source_digest: sourceDigest ?? '', allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id };
       } });
       const effect = await store.read(proposal.candidate_id);

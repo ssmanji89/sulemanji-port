@@ -1,4 +1,5 @@
 import type { PublicSource, Signal, SignalBatch, SourceConfig, SourceFailure } from './contracts.js';
+import { isSiteOutput } from './evidence-origin.js';
 
 const MAX_SOURCE_BYTES = 1_048_576;
 const MAX_ENTRIES_PER_SOURCE = 100;
@@ -53,18 +54,43 @@ function tag(block: string, name: string): string {
   return text(cdata ? cdata[1] : match[1]);
 }
 
-type Entry = { title: string; summary: string; url: string; date: string | null; id: string };
+type Entry = { title: string; summary: string; url: string; date: string | null; id: string; origin?: unknown[] };
+
+function attribute(tagText: string, name: string): string {
+  const match = tagText.match(new RegExp(`\\s${name}\\s*=\\s*(["'])(.*?)\\1`, 'i'));
+  return match ? text(match[2]) : '';
+}
+
+function originLinks(block: string, rels = ['canonical', 'via']): string[] {
+  return [...block.matchAll(/<(?:[\w-]+:)?link\b[^>]*>/gi)].flatMap(([link]) =>
+    attribute(link, 'rel').toLowerCase().split(/\s+/).some((rel) => rels.includes(rel))
+      ? [attribute(link, 'href')] : []);
+}
+
+function isSiteReference(value: unknown, base: URL): boolean {
+  if (typeof value !== 'string' || !value.trim()) return false;
+  try { return isSiteOutput(new URL(value, base).toString()); } catch { return false; }
+}
+
+function feedOrigins(block: string): string[] {
+  const metadata = block.replace(/<(description|summary|content(?::encoded)?)\b[^>]*>[\s\S]*?<\/\1>/gi, '');
+  const source = metadata.match(/(<source\b[^>]*>)([\s\S]*?)<\/source>/i);
+  return [...originLinks(metadata), ...(source ? [attribute(source[1], 'url'), tag(source[2], 'id'),
+    ...originLinks(source[2], ['self', 'alternate'])] : [])];
+}
 
 function entries(body: string, format: SourceConfig['format'], base: URL): Entry[] {
   if (format === 'json') {
     const parsed = JSON.parse(body) as { items?: unknown[]; feed_url?: unknown };
     if (!Array.isArray(parsed.items)) throw new Error('INVALID');
+    if (isSiteReference(parsed.feed_url, base)) return [];
     return parsed.items.slice(0, MAX_ENTRIES_PER_SOURCE).map((item, index) => {
       if (!item || typeof item !== 'object') throw new Error('INVALID');
       const row = item as Record<string, unknown>;
       const url = typeof row.url === 'string' ? new URL(row.url, base).toString() : '';
       return { title: text(String(row.title ?? '')), summary: text(String(row.summary ?? row.content_text ?? '')),
-        url, date: typeof row.date_published === 'string' ? row.date_published : null, id: String(row.id ?? url ?? index) };
+        url, date: typeof row.date_published === 'string' ? row.date_published : null, id: String(row.id ?? url ?? index),
+        origin: [row.external_url] };
     });
   }
   if (format === 'nasa-skywatching') {
@@ -85,12 +111,17 @@ function entries(body: string, format: SourceConfig['format'], base: URL): Entry
         date: date.toISOString(), id: row.link };
     });
   }
+  if (format === 'rss' || format === 'atom') {
+    const feedMetadata = body.replace(/<(item|entry)\b[^>]*>[\s\S]*?<\/\1>/gi, '');
+    if (originLinks(feedMetadata, ['canonical', 'via', 'self']).some((value) => isSiteReference(value, base))) return [];
+  }
   if (format === 'rss') {
     const blocks = body.match(/<item\b[^>]*>[\s\S]*?<\/item>/gi) ?? [];
     return blocks.slice(0, MAX_ENTRIES_PER_SOURCE).map((block, index) => {
       const link = tag(block, 'link') || block.match(/<link\b[^>]*href=["']([^"']+)["']/i)?.[1] || '';
       return { title: tag(block, 'title'), summary: tag(block, 'description') || tag(block, 'content:encoded'),
-        url: new URL(link, base).toString(), date: tag(block, 'pubDate') || tag(block, 'dc:date') || null, id: tag(block, 'guid') || link || String(index) };
+        url: new URL(link, base).toString(), date: tag(block, 'pubDate') || tag(block, 'dc:date') || null, id: tag(block, 'guid') || link || String(index),
+        origin: feedOrigins(block) };
     });
   }
   if (format === 'atom') {
@@ -98,13 +129,15 @@ function entries(body: string, format: SourceConfig['format'], base: URL): Entry
     return blocks.slice(0, MAX_ENTRIES_PER_SOURCE).map((block, index) => {
       const link = block.match(/<link\b[^>]*href=["']([^"']+)["'][^>]*>/i)?.[1] ?? '';
       return { title: tag(block, 'title'), summary: tag(block, 'summary') || tag(block, 'content'),
-        url: new URL(link, base).toString(), date: tag(block, 'updated') || tag(block, 'published') || null, id: tag(block, 'id') || link || String(index) };
+        url: new URL(link, base).toString(), date: tag(block, 'updated') || tag(block, 'published') || null, id: tag(block, 'id') || link || String(index),
+        origin: feedOrigins(block) };
     });
   }
   const title = body.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? '';
   const description = body.match(/<meta\b[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1] ?? '';
   const published = body.match(/<meta\b[^>]*(?:property|name)=["'](?:article:published_time|date)["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1] ?? '';
-  return [{ title: text(title), summary: text(description), url: base.toString(), date: published || null, id: base.toString() }];
+  const head = body.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? '';
+  return [{ title: text(title), summary: text(description), url: base.toString(), date: published || null, id: base.toString(), origin: originLinks(head) }];
 }
 
 async function sha(value: string): Promise<string> {
@@ -117,7 +150,7 @@ export function sourceSetDigest(sources: PublicSource[]): Promise<string> {
 }
 
 async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fetch): Promise<Signal[]> {
-  if (!source.enabled) return [];
+  if (!source.enabled || isSiteOutput(source.url)) return [];
   if (!source.id || !Array.isArray(source.topic_ids) || source.topic_ids.length === 0 ||
       !Number.isSafeInteger(source.max_age_seconds) || source.max_age_seconds <= 0 || !Number.isSafeInteger(source.min_interval_seconds) || source.min_interval_seconds < 0) throw new Error('INVALID');
   const url = allowedUrl(source.url, source.allowed_hostnames);
@@ -128,7 +161,9 @@ async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fe
     response = await fetcher(current, { redirect: 'manual', headers: { accept: 'application/rss+xml, application/atom+xml, application/feed+json, application/json, text/html;q=0.8' } });
     if (![301, 302, 303, 307, 308].includes(response.status)) break;
     const location = response.headers.get('location');
-    const next = location ? allowedUrl(new URL(location, current).toString(), source.allowed_hostnames) : null;
+    const destination = location ? new URL(location, current).toString() : '';
+    if (isSiteOutput(destination)) return [];
+    const next = allowedUrl(destination, source.allowed_hostnames);
     if (!next || i === REDIRECT_LIMIT) throw new Error('FORBIDDEN');
     current = next;
   }
@@ -140,6 +175,7 @@ async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fe
   const signals: Signal[] = [];
   for (const entry of parsed) {
     if (!entry.title || !entry.url || !entry.summary) continue;
+    if ([entry.url, entry.id, ...(entry.origin ?? [])].some((value) => isSiteReference(value, current))) continue;
     const evidenceUrl = allowedUrl(entry.url, source.allowed_hostnames);
     if (!evidenceUrl) continue;
     const published = entry.date && Number.isFinite(Date.parse(entry.date)) ? new Date(entry.date).toISOString() : null;

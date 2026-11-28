@@ -246,10 +246,14 @@ export async function ingestKnowledge(raw: Uint8Array, signature: string, keyId:
 export async function getPublicKnowledge(subjectId: string, db: D1Database, now = new Date()): Promise<PublicKnowledge | null> {
   const row = await db.prepare(`SELECT payload_json FROM public_knowledge
     WHERE subject_id = ? AND action = 'UPSERT' AND expires_at > ?
-    ORDER BY sequence DESC LIMIT 1`).bind(subjectId, now.toISOString()).first<{ payload_json: string }>();
+    ORDER BY sequence DESC, derivative_id LIMIT 1`).bind(subjectId, now.toISOString()).first<{ payload_json: string }>();
   if (!row) return null;
+  return parsePublicKnowledge(row.payload_json);
+}
+
+export function parsePublicKnowledge(text: string): PublicKnowledge | null {
   try {
-    const payload = JSON.parse(row.payload_json) as unknown;
+    const payload = JSON.parse(text) as unknown;
     return validPayload(payload) ? payload : null;
   } catch { return null; }
 }

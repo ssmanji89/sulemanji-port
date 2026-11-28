@@ -1,6 +1,7 @@
 import type { ActionDecision, Candidate, CatalogItem, PublicKnowledge, RecentHistory, Signal } from './contracts.js';
 
 import { articleSourcePath } from './review.js';
+import { isRecycledSignal } from './evidence-origin.js';
 
 function normalizeTitle(title: string): string {
   return title.normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -39,6 +40,9 @@ export function chooseAction(signal: Signal, catalog: CatalogItem[], context: Pu
   }
   if (!signal.evidence.length || signal.evidence.some((item) => item.url.startsWith('http://'))) {
     return { action: 'NO_CHANGE', reason: 'The signal has no qualified public evidence.', signal_ids: [signal.id] };
+  }
+  if (isRecycledSignal(signal, catalog)) {
+    return { action: 'NO_CHANGE', reason: 'A published site article cannot serve as independent evidence.', signal_ids: [signal.id] };
   }
   const topics = new Set(signal.topic_ids);
   const ranked = catalog.map((item) => ({ item, overlap: item.topics.filter((topic) => topics.has(topic)).length }))

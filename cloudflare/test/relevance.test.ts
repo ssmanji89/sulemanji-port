@@ -20,6 +20,15 @@ describe('reader relevance and action selection', () => {
     if (result.action !== 'NO_CHANGE') expect(result.candidate.benefit).toContain('useful');
   });
 
+  it('does not use a mirrored article as independent evidence under a new URL and episode', () => {
+    const article = { id: 'writing.example', url: '/notes/workflow-release', topics: ['integrations'],
+      title: 'New package version released', summary: 'A package version updates a workflow API.' };
+    expect(chooseAction(signal({ id: 'new-id', episode_id: 'new-episode' }), [article], [], history, now)).toMatchObject({
+      action: 'NO_CHANGE', reason: expect.stringContaining('independent'),
+    });
+    expect(chooseAction(signal({ summary: 'The vendor documents a newly deprecated API.' }), [article], [], history, now).action).toBe('REFRESH');
+  });
+
   it('connects two existing articles only when the source states their relationship', () => {
     const articles = [
       { id: 'asset-deploy', title: 'Workers asset deployment', url: '/notes/asset-deploy', topics: ['infrastructure'] },

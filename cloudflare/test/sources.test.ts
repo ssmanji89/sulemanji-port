@@ -51,6 +51,43 @@ describe('bounded public signal collection', () => {
     expect(batch.signals).toHaveLength(1);
   });
 
+  it('drops republished entries with fresh IDs but a Sulemanji origin', async () => {
+    const base = { title: 'An updated release note', date_published: '2026-11-26T17:00:00.000Z', summary: 'Updated workflow API guidance.' };
+    const batch = await collectSignals([config({ format: 'json' })], now, async () => Response.json({ items: [
+      { ...base, id: 'unrelated-new-id', url: 'https://blog.example.test/reposts/91',
+        external_url: 'https://SULEMANJI.COM./notes/updated-workflow-guide?utm_source=feed' },
+      { ...base, id: 'vendor-edition', url: 'https://blog.example.test/releases/42' },
+    ] }));
+    expect(batch.failures).toEqual([]);
+    expect(batch.signals.map((signal) => signal.evidence[0].url)).toEqual(['https://blog.example.test/releases/42']);
+  });
+
+  it('drops syndication with quoted RSS source and Atom origin metadata', async () => {
+    const syndicated = xml.replace('<guid>release-42</guid>', '<guid>new-id</guid><source url="https://www.sulemanji.com/feed.xml">Sulemanji</source>');
+    const atom = '<feed><entry><id>new-id</id><title>Fresh title</title><link href="https://blog.example.test/repost"/><source><id>https://www.sulemanji.com/feed.xml</id></source><updated>2026-11-26T17:00:00Z</updated><summary>Copied summary</summary></entry></feed>';
+    expect((await collectSignals([config()], now, async () => new Response(syndicated))).signals).toEqual([]);
+    expect((await collectSignals([config({ format: 'atom' })], now, async () => new Response(atom))).signals).toEqual([]);
+  });
+
+  it('recognizes namespaced links, Atom source self URLs and JSON Feed identity', async () => {
+    const rss = xml.replace('</item>', '<atom:link rel="canonical" href="https://sulemanji.com/notes/release"/></item>');
+    const atom = '<feed><entry><title>Adapted title</title><link href="https://blog.example.test/repost"/><summary>New excerpt</summary><updated>2026-11-26T17:00:00Z</updated><source><id>urn:opaque:feed</id><link rel="self" href="//www.sulemanji.com/feed.xml"/></source></entry></feed>';
+    const json = { feed_url: 'https://www.sulemanji.com/feed.json', items: [{
+      id: 'new', title: 'Adapted title', summary: 'New excerpt', url: 'https://blog.example.test/repost', date_published: '2026-11-26T17:00:00Z',
+    }] };
+    for (const [format, value] of [['rss', rss], ['atom', atom], ['json', JSON.stringify(json)]] as const) {
+      const batch = await collectSignals([config({ format })], now, async () => new Response(value));
+      expect(batch).toEqual({ signals: [], failures: [] });
+    }
+  });
+
+  it('keeps independent Atom reporting even when it links to a translation', async () => {
+    const atom = '<feed><entry><title>Primary report</title><link href="https://blog.example.test/original"/><link rel="alternate" hreflang="fr" href="https://sulemanji.com/notes/translation"/><summary>The publisher reports a new fact.</summary><updated>2026-11-26T17:00:00Z</updated></entry></feed>';
+    const { signals, failures } = await collectSignals([config({ format: 'atom' })], now, async () => new Response(atom));
+    expect(failures).toEqual([]);
+    expect(signals.map(({ evidence }) => evidence[0].url)).toEqual(['https://blog.example.test/original']);
+  });
+
   it('rejects redirects outside the registered host allowlist', async () => {
     const batch = await collectSignals([config()], now, async () => new Response(null, { status: 302, headers: { location: 'https://127.0.0.1/secret' } }));
     expect(batch.signals).toHaveLength(0);

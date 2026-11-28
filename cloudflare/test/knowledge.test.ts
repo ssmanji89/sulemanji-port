@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { getPublicKnowledge, ingestKnowledge } from '../src/editorial/knowledge.js';
+import { fingerprintPublicKnowledge, getPublicKnowledge, ingestKnowledge } from '../src/editorial/knowledge.js';
+import { independentKnowledge } from '../src/editorial/evidence-origin.js';
+import { readKnowledge } from '../src/editorial/workflow-core.js';
 import type { EditorialEnv, KnowledgeEnvelope, PublicKnowledge } from '../src/editorial/contracts.js';
 
 const NOW = new Date('2026-11-26T18:00:00.000Z');
@@ -42,6 +44,7 @@ class KnowledgeD1Fixture {
     return {
       bind: (...args: SQLInputValue[]) => ({
         first: async <T>() => (statement.get(...args) ?? null) as T | null,
+        all: async <T>() => ({ results: statement.all(...args) as T[] }),
         run: async () => {
           const beforeWrite = this.beforeWrite;
           this.beforeWrite = undefined;
@@ -97,6 +100,46 @@ describe('signed public knowledge import', () => {
     const result = await importEnvelope(await makeEnvelope());
     expect(result).toEqual({ status: 'accepted', derivative_id: 'derivative.project.viyu', sequence: 1 });
     expect(JSON.stringify(result)).not.toContain(payload.subject_id);
+  });
+
+  it('keeps the import receipt for a fresh derivative but excludes recycled evidence from model knowledge', async () => {
+    const article = { id: 'article', url: '/notes/workflow-guide', title: 'Workflow release guide',
+      summary: 'How the current workflow release changes a deployment decision.', topics: ['infrastructure'] };
+    const recovered: PublicKnowledge[] = [payload];
+    for (const [index, url] of [
+      'https://www.sulemanji.com/notes/workflow-guide?utm_source=recall',
+      'https://github.com/ssmanji89/sulemanji-port/blob/main/notes/workflow-guide.md',
+      'https://api.github.com/repos/ssmanji89/sulemanji-port/contents/notes/workflow-guide.md',
+      'https://mirror.example.org/posts/new-id',
+    ].entries()) {
+      const copied: PublicKnowledge = { ...payload, subject_id: `publication.copy-${index}`,
+        summary: article.summary, allowed_uses: ['factual-update'],
+        public_sources: [{ ...payload.public_sources[0], url, title: article.title }, payload.public_sources[0]] };
+      const envelope = await makeEnvelope({ derivative_id: `new-memory-${index}`, payload: copied, payload_sha256: await digest(copied) });
+      await expect(importEnvelope(envelope)).resolves.toMatchObject({ status: 'accepted' });
+      const stored = await getPublicKnowledge(copied.subject_id, env.DB, NOW);
+      expect(stored).toEqual(copied);
+      recovered.push(stored!);
+    }
+    expect(independentKnowledge(recovered, [article])).toEqual([payload]);
+  });
+
+  it('retains the full independent knowledge limit and fingerprint when earlier subjects are recycled', async () => {
+    async function store(derivativeId: string, item: PublicKnowledge) {
+      const envelope = await makeEnvelope({ derivative_id: derivativeId, payload: item, payload_sha256: await digest(item) });
+      await expect(importEnvelope(envelope)).resolves.toMatchObject({ status: 'accepted' });
+    }
+    for (let index = 0; index < 101; index += 1) {
+      const id = `subject-${String(index).padStart(3, '0')}`;
+      await store(id, { ...payload, subject_id: id });
+    }
+    const before = await readKnowledge(env.DB, NOW, []);
+    expect(before).toHaveLength(100);
+    await store('early-recycled-derivative', { ...payload, subject_id: 'earlier-subject',
+      public_sources: [{ ...payload.public_sources[0], url: 'https://sulemanji.com/notes/own-work' }] });
+    const after = await readKnowledge(env.DB, NOW, []);
+    expect(after).toEqual(before);
+    expect(await fingerprintPublicKnowledge(after)).toBe(await fingerprintPublicKnowledge(before));
   });
 
   it('rejects invalid signatures before parsing and rejects unknown keys', async () => {

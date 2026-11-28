@@ -38,7 +38,7 @@ An incident plan needs a place, a threshold, a lead time, an owner, and a decisi
 
 The planning error is to move directly from a regional tendency to a single operational conclusion. “Warmer than average” does not remove extreme cold. “Wetter than average” does not identify the day, form, or amount of precipitation. “Equal chances” does not remove risk. The categories describe a season relative to a climate baseline, not the worst event inside that season.
 
-The better use is to ask which dependencies become expensive when winter conditions cross a threshold. FEMA's [Continuity Guidance Circular](https://www.fema.gov/sites/default/files/documents/fema_continuity-guidance-circular_082024.pdf) recommends identifying essential functions, the activities and resources that support them, interdependencies, and the consequences of disruption. A seasonal outlook can help choose which of those dependency paths to test first. It cannot prove that the path will fail.
+The better use is to ask which dependencies become expensive when winter conditions cross a threshold. FEMA's [Continuity Guidance Circular](https://www.fema.gov/emergency-managers/national-preparedness/continuity/circular) recommends identifying essential functions, the activities and resources that support them, interdependencies, and the consequences of disruption. A seasonal outlook can help choose which of those dependency paths to test first. It cannot prove that the path will fail.
 
 ## How do the two clocks work?
 
@@ -91,7 +91,7 @@ Use one plausible scenario, but do not claim that the seasonal outlook predicts 
 
 Record where the exercise stops. A missing contact, an untested alternate connection, an inaccessible procedure, or an unclear recovery owner is a useful finding. Convert each finding into one owner, one correction, one evidence requirement, and one due date.
 
-FEMA provides [continuity exercise starter kits](https://preptoolkit.fema.gov/web/em-toolkits/continuity-of-essential-functions) that organizations can adapt for tabletop exercises. The useful measure is not whether the discussion finished. It is whether the exercise produced evidence for the essential function and exposed decisions that still lack an owner or test.
+FEMA provides [exercise starter kits](https://preptoolkit.fema.gov/web/em-toolkits) that organizations can adapt for continuity tabletop exercises. The useful measure is not whether the discussion finished. It is whether the exercise produced evidence for the essential function and exposed decisions that still lack an owner or test.
 
 ## When does this model not apply?
 

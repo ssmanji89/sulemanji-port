@@ -1,11 +1,11 @@
-import type { EditorialEnv } from './contracts.js';
+import type { EditorialRuntimeEnv } from './runtime-config.js';
 import { ingestKnowledge } from './knowledge.js';
 import { operatorRequest } from './operator.js';
 import { dispatchDueSlot } from './schedule-dispatch.js';
 import { EditorialWorkflow } from './workflow.js';
 
 export { EditorialWorkflow };
-type Env = EditorialEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string; EDITORIAL_POLICY_JSON?: string };
+type Env = EditorialRuntimeEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string };
 
 async function readBody(request: Request, limit: number): Promise<Uint8Array | null> {
   const declared = Number(request.headers.get('content-length'));

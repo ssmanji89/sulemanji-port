@@ -82,7 +82,26 @@ const freshResume = {
   verified_at: '2026-11-28T10:00:00.000Z',
 };
 
-async function signForOperator(db: D1Database, mode: string) {
+const runtimeConfig = {
+  EDITORIAL_POLICY_JSON: JSON.stringify({
+    revision: 'approved-r1', timezone: 'America/Chicago', slots: ['08:00'],
+    max_new_articles_daily: 1, max_refreshes_daily: 1, max_candidates_per_scan: 1, max_fetches_per_scan: 1,
+    max_model_calls_per_candidate: 6, max_review_rounds_per_candidate: 3, max_candidate_usd: 0.75,
+    max_daily_usd: 2, max_monthly_usd: 30, model_pricing_revision: 'prices-r1',
+  }),
+  EDITORIAL_MODEL_CONFIG_JSON: JSON.stringify({
+    endpoint: 'https://models.example.test/v1/chat/completions', model_id: 'approved-model', pricing_revision: 'prices-r1',
+    input_usd_per_million: 1, output_usd_per_million: 2, max_input_chars: 48_000, max_output_tokens: 4_000,
+  }),
+  EDITORIAL_GITHUB_CONFIG_JSON: JSON.stringify({
+    repository: 'ssmanji89/sulemanji-port', required_checks: ['build'], default_branch: 'main',
+  }),
+  EDITORIAL_MODEL_API_KEY: 'fixture-model-key',
+  EDITORIAL_GITHUB_TOKEN: 'fixture-github-key',
+};
+
+async function signForOperator(db: D1Database, mode: string,
+  overrides: Partial<Record<keyof typeof runtimeConfig, string | undefined>> = {}) {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   const key = await crypto.subtle.importKey('raw', bytes, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   return async (body: Record<string, unknown>) => {
@@ -90,11 +109,31 @@ async function signForOperator(db: D1Database, mode: string) {
     const signature = new Uint8Array(await crypto.subtle.sign('HMAC', key, raw));
     return operatorRequest(raw, 'owner', b64(signature), {
       DB: db, DEPLOYMENT_ENV: mode, EDITORIAL_OPERATOR_KEYS_JSON: JSON.stringify({ owner: b64(bytes) }),
+      ...runtimeConfig, ...overrides,
     } as never, cutoverTime);
   };
 }
 
 describe('production publisher transfer', () => {
+  it.each([
+    ['missing policy', { EDITORIAL_POLICY_JSON: undefined }],
+    ['malformed policy', { EDITORIAL_POLICY_JSON: '{}' }],
+    ['unapproved model prices', { EDITORIAL_MODEL_CONFIG_JSON: runtimeConfig.EDITORIAL_MODEL_CONFIG_JSON.replace('prices-r1', 'prices-r2') }],
+    ['missing model credential', { EDITORIAL_MODEL_API_KEY: undefined }],
+    ['wrong publication repository', { EDITORIAL_GITHUB_CONFIG_JSON: runtimeConfig.EDITORIAL_GITHUB_CONFIG_JSON.replace('sulemanji-port', 'sulemanji-editorial-fixture') }],
+    ['blank GitHub credential', { EDITORIAL_GITHUB_TOKEN: '  ' }],
+  ])('keeps the writer epoch and receipts unchanged with %s', async (_case, overrides) => {
+    const fixture = controlSqlite();
+    try {
+      const command = await signForOperator(fixture.db, 'production', overrides);
+      const response = await command(freshResume);
+      expect(response.status).toBe(409);
+      expect(await response.json()).toMatchObject({ code: 'RUNTIME_NOT_READY' });
+      expect(fixture.control()).toEqual({ paused: 1, owner_epoch: 1 });
+      expect(fixture.receipts()).toHaveLength(0);
+    } finally { fixture.sqlite.close(); }
+  });
+
   it.each([
     ['bare resume', { action: 'resume' }],
     ['expired retirement observation', { ...freshResume, verified_at: '2026-11-28T09:00:00.000Z' }],

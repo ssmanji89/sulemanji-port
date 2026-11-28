@@ -31,6 +31,11 @@ async function freePort() {
 try {
   if (!suppliedSite) {
     run('bundle', ['exec', 'jekyll', 'build', '--destination', site, '--quiet'], { env: { ...process.env, JEKYLL_ENV: 'production' } });
+    if (process.env.SITE_VERSION_ASSETS === '1') {
+      const versionArgs = [site];
+      if (process.env.SITE_RETAIN_ASSETS_FROM) versionArgs.push('--retain-from', process.env.SITE_RETAIN_ASSETS_FROM);
+      run('python3', ['scripts/version_site_assets.py', ...versionArgs]);
+    }
     run('python3', ['scripts/build_site_manifest.py', '--site-root', site, '--baseline', 'docs/redevelopment/2026-11-26/article-baseline.json', '--allow-dirty', '--output', join(site, 'release.json')]);
   }
   try { await stat(join(site, 'release.json')); } catch { throw new Error(`release.json is missing under ${site}`); }

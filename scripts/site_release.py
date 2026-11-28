@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from scripts.build_site_manifest import _article_identity, build_manifest, render_release_headers
+from scripts.version_site_assets import verify_versioned_assets
 
 
 class ReleaseError(ValueError):
@@ -60,6 +61,10 @@ def verify_artifact(artifact: Path, source_commit: str, current_main_sha: str) -
         raise ReleaseError('artifact file digest does not match release manifest')
     if calculated['pages'] != manifest.get('pages'):
         raise ReleaseError('artifact page identity or visible content does not match release manifest')
+    try:
+        verify_versioned_assets(artifact, allow_legacy=True)
+    except (ValueError, OSError) as error:
+        raise ReleaseError(f'artifact immutable asset validation failed: {error}') from error
     try:
         rendered_articles = _article_identity(artifact)
     except (ValueError, OSError) as error:

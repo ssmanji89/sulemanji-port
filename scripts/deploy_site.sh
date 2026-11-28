@@ -72,6 +72,10 @@ if environment == 'editorial-fixture':
 Path(destination).write_text(json.dumps(config,indent=2)+'\n')
 PY
 cd "$CF"
+if [[ "$ENVIRONMENT" == production ]]; then
+  PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.prepare_site_assets check-promotion --manifest "$ARTIFACT/release.json"
+  test "$(git ls-remote origin refs/heads/main | cut -f1)" = "$SOURCE_COMMIT"
+fi
 ./node_modules/.bin/wrangler deploy --config "$TEMP_CONFIG" --message "site $SOURCE_COMMIT" >"$TEMP_LOG" 2>&1
 ./node_modules/.bin/wrangler deployments list --name "$WORKER_NAME" --json --config "$TEMP_CONFIG" >"$TEMP_DEPLOYMENTS" 2>>"$TEMP_LOG"
 VERSION_ID="$(python3 "$ROOT/scripts/verify_cloudflare_deployment.py" "$TEMP_DEPLOYMENTS" "site $SOURCE_COMMIT")"
@@ -118,6 +122,9 @@ VERIFY_ARGS=(
 )
 if [[ "$ENVIRONMENT" == staging ]]; then VERIFY_ARGS+=(--staging); fi
 PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.verify_cloudflare_live "${VERIFY_ARGS[@]}"
+if [[ "$ENVIRONMENT" == production ]]; then
+  PYTHONPATH="$ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -m scripts.prepare_site_assets check-promotion --manifest "$ARTIFACT/release.json"
+fi
 python3 - "$RECEIPT" <<'PY'
 import json,sys
 from pathlib import Path

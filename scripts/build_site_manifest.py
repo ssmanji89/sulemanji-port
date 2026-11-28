@@ -14,6 +14,7 @@ from typing import Any
 
 EXCLUDED = {'release.json', 'release-manifest.json', '_headers', '_redirects', '.assetsignore'}
 PUBLIC_ORIGIN = 'https://www.sulemanji.com'
+IMMUTABLE_ASSET_HEADERS = '\n/_site-assets/*\n  Cache-Control: public, max-age=31536000, immutable\n'
 PUBLIC_PAGE_FILES = {
     '/': 'index.html',
     '/explore/': 'explore/index.html',
@@ -239,12 +240,15 @@ def render_release_headers(manifest: dict[str, Any]) -> str:
         raise ValueError('release header build timestamp is invalid') from error
     if parsed.isoformat(timespec='seconds').replace('+00:00', 'Z') != built_at:
         raise ValueError('release header build timestamp is not canonical UTC')
-    return (
+    headers = (
         '/*\n'
         f'  X-Site-Source-Commit: {source_commit}\n'
         f'  X-Site-Asset-Digest: {asset_digest}\n'
         f'  X-Site-Built-At: {built_at}\n'
     )
+    if any(path.startswith('_site-assets/') for path in manifest.get('files', {})):
+        headers += IMMUTABLE_ASSET_HEADERS
+    return headers
 
 
 def _article_identity(site_root: Path) -> list[dict[str, str | None]]:

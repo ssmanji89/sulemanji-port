@@ -78,7 +78,8 @@ ${fileHash}`),
         href: related, sources: [cited], text_sha256: await hash(normalizeVisibleText(
           `<p>Use the <a href="${related}">related guide</a> (<a href="${cited}">source 1</a>).</p>`)),
       } }] };
-    const review: ReviewReceipt = { ...proposal, reviewer_run_id: 'independent-1', decision: 'CLEAR', findings: [] };
+    const review: ReviewReceipt = { ...proposal, reviewer_run_id: 'independent-1', decision: 'CLEAR', findings: [],
+      knowledge_fence: { generation: 0, derivatives: [] } };
     const attempt = { id: 'publication:guide', candidate_id: candidate.id, owner_epoch: 1, branch: 'editorial/candidate-guide',
       pull_request: 17, source_commit: base, deployment_version: null, public_urls: [url],
       expected_content: proposal.expected_content, status: 'CAPACITY_HELD' as const };
@@ -98,6 +99,7 @@ ${fileHash}`),
             return args[0] === candidate.id && args[1] === candidate.source_digest && args[2] === activeClaim
               ? { paused: 0, owner_epoch: 1 } : null;
           }
+          if (sql.startsWith('SELECT knowledge_generation')) return { knowledge_generation: 0 };
           if (sql.includes('FROM editorial_control')) return { paused: 0, owner_epoch: 1 };
           return null;
         },

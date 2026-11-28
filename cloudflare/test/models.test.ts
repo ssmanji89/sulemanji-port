@@ -144,6 +144,26 @@ describe('budgeted model gateway', () => {
     expect(db.reservations.size).toBe(0);
   });
 
+  it('never dispatches review when the claimed knowledge changes immediately before the admission write', async () => {
+    const db = new OperationsD1();
+    db.control = { paused: 0, owner_epoch: 1 };
+    db.candidates.set('candidate-a', { model_calls: 0, review_rounds: 0 });
+    const provider = new FakeModels();
+    const options = {
+      db: db as unknown as D1Database, candidate_id: 'candidate-a', owner_epoch: 1, max_model_calls: 6, max_review_rounds: 3,
+      limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: config.pricing_revision,
+      async captureKnowledgeAuthority() {
+        db.control = { paused: 1, owner_epoch: 2 };
+        return { generation: 0, derivatives: [] };
+      },
+    };
+    await expect(new BudgetedModelGateway(provider, config, options).generate({ ...request, purpose: 'review' }))
+      .rejects.toThrow('WORKFLOW_AUTHORITY_CHANGED');
+    expect(provider.calls).toBe(0);
+    expect(db.candidates.get('candidate-a')).toMatchObject({ model_calls: 0, review_rounds: 0 });
+    expect([...db.reservations.values()][0]?.actual_micros).toBe(0);
+  });
+
   it('does not call the provider when the candidate budget cannot reserve the worst case', async () => {
     const db = new OperationsD1();
     db.candidates.set('candidate-a', { model_calls: 0, review_rounds: 0 });

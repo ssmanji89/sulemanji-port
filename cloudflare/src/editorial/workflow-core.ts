@@ -2,12 +2,13 @@ import sourceRegistry from '../../config/public-sources.json' with { type: 'json
 import type { ActionDecision, Candidate, CatalogItem, EditorialEnv, PublicKnowledge, RecentHistory, Signal, SignalBatch, SourceConfig, SourceFailure } from './contracts.js';
 import { collectSignals } from './sources.js';
 import { chooseAction } from './relevance.js';
-import { fingerprintPublicKnowledge, parsePublicKnowledge } from './knowledge.js';
+import { fingerprintPublicKnowledge } from './knowledge.js';
+import { readKnowledge } from './knowledge-authority.js';
 import { nextChicagoBudgetDay, parseEditorialPolicy, readScheduleClaim, scheduleWorkflowId, type EditorialPolicy } from './scheduler.js';
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
-import { independentKnowledge, isRecycledKnowledge } from './evidence-origin.js';
+import { independentKnowledge } from './evidence-origin.js';
 import type { DeferredReview } from './pipeline.js';
 import { DOTNET_SOURCE_ID, isDotnetSupport, type DotnetRefresh } from './dotnet-support.js';
 
@@ -42,7 +43,6 @@ type GuardedFetcher = { fetcher: typeof fetch; isStale: () => boolean; isCurrent
 const CONTENT_INDEX_URL = 'https://www.sulemanji.com/content-index.json';
 const MAX_INDEX_BYTES = 1_048_576;
 const HISTORY_LIMIT = 1_000;
-const KNOWLEDGE_LIMIT = 100;
 
 function parseJson<T>(value: string): T | null {
   try { return JSON.parse(value) as T; } catch { return null; }
@@ -67,28 +67,6 @@ async function readCatalog(fetcher: typeof fetch): Promise<CatalogItem[]> {
     catalog.push({ id: item.id, title: item.title, url: url.toString(), topics: item.topics as string[], ...(typeof item.summary === 'string' ? { summary: item.summary } : {}) });
   }
   return catalog;
-}
-
-export async function readKnowledge(db: D1Database, now: Date, catalog: CatalogItem[]): Promise<PublicKnowledge[]> {
-  const items: PublicKnowledge[] = [];
-  let afterSubject = '';
-  while (items.length < KNOWLEDGE_LIMIT) {
-    const batch = await db.prepare(`SELECT subject_id, payload_json FROM (
-        SELECT subject_id, payload_json,
-          ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY sequence DESC, derivative_id) AS position
-        FROM public_knowledge WHERE action = 'UPSERT' AND expires_at > ? AND subject_id > ?
-      ) WHERE position = 1 ORDER BY subject_id LIMIT ?`)
-      .bind(now.toISOString(), afterSubject, KNOWLEDGE_LIMIT).all<{ subject_id: string; payload_json: string }>();
-    const rows = batch.results ?? [];
-    for (const row of rows) {
-      const knowledge = parsePublicKnowledge(row.payload_json);
-      if (knowledge && !isRecycledKnowledge(knowledge, catalog)) items.push(knowledge);
-      if (items.length === KNOWLEDGE_LIMIT) return items;
-    }
-    if (rows.length < KNOWLEDGE_LIMIT) break;
-    afterSubject = rows[rows.length - 1].subject_id;
-  }
-  return items;
 }
 
 type CandidatePayload = {
@@ -428,9 +406,11 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (catalogFetcher.isStale() || !(await catalogFetcher.isCurrent())) return held(params, 'Workflow authority changed during the content-index read.');
 
   const now = await step.do('capture-editorial-run-time', () => new Date().toISOString());
-  const storedKnowledge = await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now), catalog));
+  const storedKnowledge = await step.do('read-authorized-public-knowledge-v2', () =>
+    readKnowledge(env.DB, new Date(now), catalog, env.KNOWLEDGE_POLICY_REVISION));
   const knowledge = independentKnowledge(storedKnowledge, catalog);
-  const knowledgeRevision = await step.do('fingerprint-authorized-public-knowledge', () => fingerprintPublicKnowledge(knowledge));
+  const knowledgeRevision = await step.do('fingerprint-authorized-public-knowledge-v2', () =>
+    fingerprintPublicKnowledge(knowledge, env.KNOWLEDGE_POLICY_REVISION));
   if (processor?.reconcileMergeCapacity) await step.do('reconcile-publication-capacity', async () => {
     await processor.reconcileMergeCapacity?.(control.owner_epoch);
     return true;

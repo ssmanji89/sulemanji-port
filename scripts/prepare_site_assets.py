@@ -13,7 +13,7 @@ from urllib.parse import quote
 
 from scripts.build_site_manifest import IMMUTABLE_ASSET_HEADERS, PUBLIC_ORIGIN, build_manifest, render_release_headers
 from scripts.site_release import ReleaseError, fetch_public_manifest, verify_artifact
-from scripts.version_site_assets import ASSET_DIRECTORY, legacy_asset_paths
+from scripts.version_site_assets import ASSET_DIRECTORY, legacy_asset_paths, verify_versioned_assets
 
 COMMIT = re.compile(r'[0-9a-f]{40}')
 WORKER_VERSION = re.compile(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}')
@@ -40,6 +40,10 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _immutable_files(manifest: dict) -> dict:
+    return {path: digest for path, digest in manifest['files'].items() if path.startswith(ASSET_DIRECTORY + '/')}
+
+
 def prepare_release(previous: Path, candidate: Path, output: Path, live: dict, candidate_sha: str) -> dict:
     previous, candidate, output = (path.resolve() for path in (previous, candidate, output))
     live_sha = live.get('source_commit', '')
@@ -57,8 +61,8 @@ def prepare_release(previous: Path, candidate: Path, output: Path, live: dict, c
     if any(url not in next_articles or next_articles[url] != date for url, date in prior_articles.items()):
         raise ReleaseError('candidate removed or redated a live article')
 
-    old_assets = {path: digest for path, digest in prior['files'].items() if path.startswith(ASSET_DIRECTORY + '/')}
-    next_assets = {path: digest for path, digest in next_release['files'].items() if path.startswith(ASSET_DIRECTORY + '/')}
+    old_assets = _immutable_files(prior)
+    next_assets = _immutable_files(next_release)
     if not next_assets:
         raise ReleaseError('candidate must have versioned assets')
     if any(next_assets[path] != old_assets[path] for path in old_assets.keys() & next_assets.keys()):
@@ -104,7 +108,7 @@ def prepare_release(previous: Path, candidate: Path, output: Path, live: dict, c
     return plan
 
 
-def _read_public_asset(path: str, version: str | None) -> tuple[str, str, str]:
+def _read_public_asset(path: str, version: str | None) -> tuple[bytes, str, str]:
     with tempfile.TemporaryDirectory(prefix='site-prepare-readback-') as directory:
         body, headers = Path(directory) / 'body', Path(directory) / 'headers'
         command = ['curl', '--fail', '--silent', '--show-error', '--max-time', '12', '--write-out', '%{http_code}',
@@ -118,7 +122,21 @@ def _read_public_asset(path: str, version: str | None) -> tuple[str, str, str]:
         if result.returncode or result.stdout != b'200':
             raise ReleaseError(f'canonical prepare asset unavailable: /{path}')
         response = dict(line.split(': ', 1) for line in headers.read_text().lower().splitlines() if ': ' in line)
-        return _sha256(body), response.get('cache-control', ''), response.get('cf-ray', '')
+        return body.read_bytes(), response.get('cache-control', ''), response.get('cf-ray', '')
+
+
+def _validated_path(path: str, digest: str) -> None:
+    if (not ASSET_PATH.fullmatch(path) or '..' in Path(path).parts
+            or not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest)):
+        raise ReleaseError('prepared asset path or digest is invalid')
+
+
+def _verified_read(path: str, digest: str, version: str | None, read_asset) -> tuple[bytes, str]:
+    contents, cache_control, ray = read_asset(path, version)
+    if (hashlib.sha256(contents).hexdigest() != digest
+            or cache_control != 'public, max-age=31536000, immutable' or not ray):
+        raise ReleaseError(f'canonical prepare readback did not match: /{path}')
+    return contents, ray
 
 
 def verify_prepared_assets(assets: dict, *, version: str | None = None, read_asset=_read_public_asset) -> list[dict]:
@@ -126,14 +144,46 @@ def verify_prepared_assets(assets: dict, *, version: str | None = None, read_ass
         raise ReleaseError('prepared asset inventory or Worker version is invalid')
     observations = []
     for path, digest in sorted(assets.items()):
-        if (not ASSET_PATH.fullmatch(path) or '..' in Path(path).parts
-                or not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest)):
-            raise ReleaseError('prepared asset path or digest is invalid')
-        received, cache_control, ray = read_asset(path, version)
-        if received != digest or cache_control != 'public, max-age=31536000, immutable' or not ray:
-            raise ReleaseError(f'canonical prepare readback did not match: /{path}')
+        _validated_path(path, digest)
+        _, ray = _verified_read(path, digest, version, read_asset)
         observations.append({'path': '/' + path, 'sha256': digest, 'cf_ray': ray})
     return observations
+
+
+def retain_live_assets(site: Path, live: dict, *, read_asset=_read_public_asset) -> int:
+    site = site.resolve()
+    retained = 0
+    for path, digest in _immutable_files(live).items():
+        _validated_path(path, digest)
+        target = site / path
+        if target.exists():
+            if _sha256(target) != digest:
+                raise ReleaseError(f'candidate changes a live immutable asset: /{path}')
+            continue
+        contents, _ = _verified_read(path, digest, None, read_asset)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(contents)
+        retained += 1
+    verify_versioned_assets(site)
+    return retained
+
+
+def verify_promotion(candidate: dict, live: dict, *, read_asset=_read_public_asset) -> list[dict]:
+    next_assets, live_assets = _immutable_files(candidate), _immutable_files(live)
+    if any(next_assets.get(path) != digest for path, digest in live_assets.items()):
+        raise ReleaseError('candidate omits a live immutable asset')
+    if not next_assets:
+        return []
+    previous_articles = {item['url']: item['published_on'] for item in live['articles']}
+    next_articles = {item['url']: item['published_on'] for item in candidate['articles']}
+    if any(url not in next_articles or next_articles[url] != date for url, date in previous_articles.items()):
+        raise ReleaseError('candidate removed or redated a live article')
+    if not live_assets and any(
+        path.startswith(('assets/css/', 'assets/js/')) and candidate['files'].get(path) != digest
+        for path, digest in live['files'].items()
+    ):
+        raise ReleaseError('first immutable release must preserve legacy style and script aliases')
+    return verify_prepared_assets(next_assets, read_asset=read_asset)
 
 
 def main() -> int:
@@ -147,6 +197,10 @@ def main() -> int:
     verify = commands.add_parser('verify')
     verify.add_argument('--plan', type=Path, required=True)
     verify.add_argument('--version', help='Select an already deployed prepare version')
+    retain = commands.add_parser('retain-live')
+    retain.add_argument('--site', type=Path, required=True)
+    promote = commands.add_parser('check-promotion')
+    promote.add_argument('--manifest', type=Path, required=True)
     args = parser.parse_args()
     if args.command == 'verify':
         plan = json.loads(args.plan.read_text(encoding='utf-8'))
@@ -154,6 +208,14 @@ def main() -> int:
         print(json.dumps(observations, indent=2))
         return 0
     live = fetch_public_manifest(PUBLIC_ORIGIN + '/release.json')
+    if args.command == 'retain-live':
+        print(f'retained {retain_live_assets(args.site, live)} additional live immutable assets')
+        return 0
+    if args.command == 'check-promotion':
+        manifest = json.loads(args.manifest.read_text(encoding='utf-8'))
+        observations = verify_promotion(manifest, live)
+        print(json.dumps(observations, indent=2))
+        return 0
     plan = prepare_release(args.previous, args.candidate, args.output, live, args.candidate_sha)
     print(f"qualified prepare and promote for {len(plan['required_assets'])} immutable assets")
     return 0

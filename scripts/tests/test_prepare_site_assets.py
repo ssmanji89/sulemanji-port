@@ -1,10 +1,11 @@
+import hashlib
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from scripts.build_site_manifest import build_manifest, render_release_headers
-from scripts.prepare_site_assets import prepare_release, verify_prepared_assets
+from scripts.prepare_site_assets import prepare_release, retain_live_assets, verify_prepared_assets, verify_promotion
 from scripts.site_release import ReleaseError, verify_artifact
 from scripts.tests.test_cloudflare_release import add_article, add_public_pages
 from scripts.version_site_assets import ASSET_DIRECTORY, version_assets
@@ -63,12 +64,31 @@ class PrepareSiteAssetsTest(unittest.TestCase):
 
     def test_readback_requires_exact_bytes_and_immutable_cache_header(self):
         path = f'{ASSET_DIRECTORY}/{"1" * 64}/assets/js/main.js'
-        digest = '2' * 64
+        body = b'console.log("exact");'
+        digest = hashlib.sha256(body).hexdigest()
         cache = 'public, max-age=31536000, immutable'
         self.assertEqual(
-            verify_prepared_assets({path: digest}, read_asset=lambda *_: (digest, cache, 'ray-DFW')),
+            verify_prepared_assets({path: digest}, read_asset=lambda *_: (body, cache, 'ray-DFW')),
             [{'path': '/' + path, 'sha256': digest, 'cf_ray': 'ray-DFW'}],
         )
-        for observed in [('3' * 64, cache, 'ray-DFW'), (digest, 'max-age=0', 'ray-DFW')]:
+        for observed in [(b'incorrect', cache, 'ray-DFW'), (body, 'max-age=0', 'ray-DFW')]:
             with self.assertRaisesRegex(ReleaseError, 'did not match'):
                 verify_prepared_assets({path: digest}, read_asset=lambda *_: observed)
+
+    def test_promotion_requires_retaining_all_live_assets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            prior, candidate = root / 'prior', root / 'candidate'
+            active = self.release(prior, '1' * 40, 'console.log("old");', versioned=True)
+            future = self.release(candidate, '2' * 40, 'console.log("new");', versioned=True)
+            cache = 'public, max-age=31536000, immutable'
+
+            def read_asset(path, _):
+                artifact = prior if (prior / path).exists() else candidate
+                return (artifact / path).read_bytes(), cache, 'ray-DFW'
+
+            with self.assertRaisesRegex(ReleaseError, 'omits a live immutable asset'):
+                verify_promotion(future, active, read_asset=read_asset)
+            self.assertEqual(retain_live_assets(candidate, active, read_asset=read_asset), 1)
+            compatible = build_manifest(candidate, future['source_commit'], future['articles'])
+            self.assertEqual(len(verify_promotion(compatible, active, read_asset=read_asset)), 2)

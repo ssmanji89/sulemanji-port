@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITE_DEPLOY_TARGET: ${{ vars.SITE_DEPLOY_TARGET || 'pages' }}
+      SITE_VERSION_ASSETS: ${{ github.repository == 'ssmanji89/sulemanji-port' && vars.SITE_DEPLOY_TARGET == 'cloudflare' && '1' || '0' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,6 +54,8 @@ jobs:
           python-version: '3.12'
 
       - name: Run complete release gates and build once
+        env:
+          SITE_RETAIN_LIVE_ASSETS: ${{ github.repository == 'ssmanji89/sulemanji-port' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || inputs.deploy_environment == 'production') && '1' || '0' }}
         run: bash scripts/check_site_release.sh
 
       - name: Upload Pages artifact

@@ -218,19 +218,20 @@ describe('deterministic signal workflow', () => {
     ]);
   });
 
-  it.each([true, false])('requires the published claim reader before certifying a lifecycle observation (%s)', async (available) => {
+  it.each([{ available: true, unrelated: false }, { available: false, unrelated: false }, { available: false, unrelated: true }])
+    ('requires the published claim reader without blocking unrelated work ($available, $unrelated)', async ({ available, unrelated }) => {
     sourceRegistry.push({ id: DOTNET_SOURCE_ID, url: DOTNET_POLICY_URL, format: 'dotnet-lifecycle',
       topic_ids: ['infrastructure'], allowed_hostnames: ['dotnet.microsoft.com'], min_interval_seconds: 60, max_age_seconds: 1_000, enabled: true });
     onTestFinished(() => { sourceRegistry.pop(); });
     const rawPolicy = JSON.stringify({ ...JSON.parse(policy), max_fetches_per_scan: sourceRegistry.length });
-    const base = sourceFetcher({ candidate: false });
+    const base = sourceFetcher({ candidate: unrelated });
     vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
       if (String(input) !== DOTNET_POLICY_URL) return base(input);
       return new Response('<table aria-labelledby="supported-versions"><tr><td>.NET 10</td></tr></table>' +
         '<table aria-labelledby="out-of-support-versions"><tr><td>.NET 8</td><td></td><td></td><td></td><td>November 10, 2026</td></tr></table>');
     });
     const db = new PipelineD1();
-    const processCandidate = vi.fn();
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Unrelated work verified.' }));
     const claim = { slot_claim_id: 'lifecycle-source' };
     const checkDotnetRefresh = vi.fn(async () => {
       if (!available) throw new Error('Unqualified release fixture');
@@ -238,11 +239,13 @@ describe('deterministic signal workflow', () => {
     });
     const result = await runEditorialAdmission(claim, { DB: db, EDITORIAL_POLICY_JSON: rawPolicy } as never,
       new DurableStep(), { processCandidate, checkDotnetRefresh });
-    expect(checkDotnetRefresh).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ source_id: DOTNET_SOURCE_ID }), [], expect.any(Date), 1);
-    expect(result.status).toBe(available ? 'no_change' : 'held');
-    expect(db.receipts.get('slot-result:' + claim.slot_claim_id)?.action).toBe(available ? 'NO_CHANGE' : 'HELD_PUBLISHED_CLAIM_UNAVAILABLE');
-    expect(processCandidate).not.toHaveBeenCalled();
-    expect(db.candidates.size).toBe(0);
+    expect(checkDotnetRefresh).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ source_id: DOTNET_SOURCE_ID }), expect.any(Array), expect.any(Date), 1);
+    expect(result.status).toBe(available ? 'no_change' : unrelated ? 'admitted' : 'held');
+    const receipt = db.receipts.get('slot-result:' + claim.slot_claim_id);
+    expect(receipt?.action).toBe(available ? 'NO_CHANGE' : unrelated ? 'VERIFIED' : 'HELD_PUBLISHED_CLAIM_UNAVAILABLE');
+    expect(JSON.parse(String(receipt?.result_json)).source_failures).toEqual(available ? [] : [{ source_id: DOTNET_SOURCE_ID, code: 'CLAIM_UNAVAILABLE' }]);
+    expect(processCandidate).toHaveBeenCalledTimes(unrelated ? 1 : 0);
+    expect(db.candidates.size).toBe(unrelated ? 1 : 0);
   });
 
   it.each([

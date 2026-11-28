@@ -9,7 +9,7 @@ import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
 import { independentKnowledge, isRecycledKnowledge } from './evidence-origin.js';
 import type { DeferredReview } from './pipeline.js';
-import { isDotnetSupport, type DotnetRefresh } from './dotnet-support.js';
+import { DOTNET_SOURCE_ID, isDotnetSupport, type DotnetRefresh } from './dotnet-support.js';
 
 export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
@@ -482,14 +482,11 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     } catch { /* An unavailable release cannot establish the prior claim. */ }
     return { result: null, unavailable: true };
   });
-  if (releaseComparison.unavailable) {
-    const reason = 'The exact published release is unavailable for the .NET claim comparison.';
-    const saved = await step.do('record-published-claim-hold', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'HELD_PUBLISHED_CLAIM_UNAVAILABLE',
-      { reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
-    return held(params, saved ? reason : 'Workflow authority changed before the claim comparison could be recorded.');
-  }
   if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed during the published claim comparison.');
-  const decisions = await step.do('select-actions-from-dated-signals-v2', () => batch.signals.map((signal) => ({
+  const sourceFailures: Array<{ source_id: string; code: string }> = batch.failures.map(({ source_id, code }) => ({ source_id, code }));
+  if (releaseComparison.unavailable) sourceFailures.push({ source_id: DOTNET_SOURCE_ID, code: 'CLAIM_UNAVAILABLE' });
+  const signals = releaseComparison.unavailable ? batch.signals.filter((signal) => !isDotnetSupport(signal)) : batch.signals;
+  const decisions = await step.do('select-actions-from-dated-signals-v2', () => signals.map((signal) => ({
     signal, decision: chooseAction(signal, catalog, knowledge, history, new Date(now),
       isDotnetSupport(signal) ? releaseComparison.result ?? undefined : undefined),
   })));
@@ -511,11 +508,12 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     return held(params, saved ? reconciliationReason : 'Workflow authority changed before the reconciliation hold could be recorded.');
   };
   if (!actionable.length) {
-    if (batch.failures.length) {
-      const reason = 'Some public source reads failed; the run cannot certify NO_CHANGE.';
-      const saved = await step.do('record-partial-source-hold', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'HELD_SOURCE_PARTIAL_FAILURES', {
-        reason, owner_epoch: control.owner_epoch, signals: batch.signals.map(signalHistory),
-        source_failures: batch.failures.map(({ source_id, code }) => ({ source_id, code })),
+    if (sourceFailures.length) {
+      const reason = releaseComparison.unavailable ? 'The exact published release is unavailable for the .NET claim comparison.'
+        : 'Some public source reads failed; the run cannot certify NO_CHANGE.';
+      const action = releaseComparison.unavailable ? 'HELD_PUBLISHED_CLAIM_UNAVAILABLE' : 'HELD_SOURCE_PARTIAL_FAILURES';
+      const saved = await step.do('record-partial-source-hold', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, action, {
+        reason, owner_epoch: control.owner_epoch, signals: signals.map(signalHistory), source_failures: sourceFailures,
       }, control.owner_epoch));
       if (!saved) return held(params, 'Workflow authority changed before the hold could be recorded.');
       return held(params, reason);
@@ -541,7 +539,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
       reason, owner_epoch: control.owner_epoch, signals: batch.signals.map(signalHistory),
       no_change_reasons: noChangeSignals.map(({ signal, decision }) => ({ signal_id: signal.id, reason: decision.action === 'NO_CHANGE' ? decision.reason : '' })),
       ...(pending && retry ? { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}),
-      source_failures: batch.failures.map(({ source_id, code }) => ({ source_id, code })),
+      source_failures: sourceFailures,
       uncovered_source_ids: batch.uncovered,
     }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before NO_CHANGE could be recorded.');
@@ -594,7 +592,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     if (outcomes.length === needsReconciliation.size && needsReconciliation.size) return reconciliationHold();
     const settled = !deferredHold && outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status !== 'held');
     const verified = settled && outcomes.some((outcome) => outcome.status === 'verified');
-    const noChange = settled && qualifying.length === actionable.length && !batch.uncovered.length && !batch.failures.length;
+    const noChange = settled && qualifying.length === actionable.length && !batch.uncovered.length && !sourceFailures.length;
     const verifiedReason = outcomes.every((outcome) => outcome.status === 'verified')
       ? 'All admitted candidates passed publication and public readback.'
       : 'All admitted candidates were resolved and each publication passed public readback.';
@@ -606,7 +604,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
       ready[0].decision.candidate.id, action, {
         reason, owner_epoch: control.owner_epoch, outcomes,
-        source_failures: batch.failures.map(({ source_id, code }) => ({ source_id, code })),
+        source_failures: sourceFailures,
         uncovered_source_ids: batch.uncovered,
         ...(pending && retry ? { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}),
       }, control.owner_epoch));

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { RecentHistory, SourceConfig } from '../src/editorial/contracts.js';
-import { DOTNET_CITATION, DOTNET_POLICY_URL, DOTNET_SOURCE_ID, qualifyDotnetRefresh } from '../src/editorial/dotnet-support.js';
+import { correctDotnetClaim, DOTNET_CITATION, DOTNET_POLICY_URL, DOTNET_SOURCE_ID, qualifyDotnetRefresh } from '../src/editorial/dotnet-support.js';
 import { chooseAction } from '../src/editorial/relevance.js';
 import { prepareContent } from '../src/editorial/review.js';
 import { textDigest } from '../src/editorial/site-readback.js';
@@ -19,8 +19,12 @@ const official = '<table aria-labelledby="supported-versions">' + row('10', 'Nov
   '<table aria-labelledby="out-of-support-versions">' + row('8', 'November 10, 2026') + row('9', 'November 10, 2026') + '</table>';
 const history: RecentHistory = { source_revisions: [], episode_ids: [], recent_topic_ids: [], candidates: [] };
 const noticeParagraph = '<p><a href="' + notice + '">.NET 8 and .NET 9 both reach end of support</a>.</p>';
-const incorrect = '<p>The <a href="' + overview + '">policy</a> lists both releases in maintenance.</p>';
-const corrected = '<p>The policy lists both releases as <a href="' + DOTNET_CITATION + '">out of support</a>.</p>';
+const successor = ' and lists .NET 10 as the supported Long Term Support successor through November 2028.' +
+  ' That policy also requires supported installations to stay current on released patches during their lifecycle.' +
+  ' Reaching a supported major version while retaining an old patch is therefore not the finish line.';
+const policyLabel = 'The current <a href="' + overview + '">.NET support policy</a> ';
+const incorrect = '<p>' + policyLabel + 'lists both releases in maintenance' + successor + '</p>';
+const corrected = '<p>' + policyLabel + 'lists both releases as <a href="' + DOTNET_CITATION + '">out of support</a>' + successor + '</p>';
 const article = (paragraph: string) => '<div data-writing-body>' + noticeParagraph + paragraph + '</div>';
 const readMode = 'public';
 
@@ -63,7 +67,8 @@ describe('exact published support claims', () => {
     const front = '---\nwriting_schema: 2\npublished: true\npublished_on: "2026-10-26"\n' +
       'title: ".NET lifecycle readiness"\npermalink: "' + catalog[0].url + '"\n---\n';
     const original = front + '[.NET 8 and .NET 9 both reach end of support](' + notice + ').\n\n' +
-      'The [policy](' + overview + ') lists both releases in maintenance.\n\nThis next paragraph stays verbatim.\n';
+      'The current [.NET support policy](' + overview + ') lists both releases in maintenance' + successor +
+      '\n\nThis next paragraph stays verbatim.\n';
     const model = { generate: vi.fn() };
     const proposal = await prepareContent(selected.candidate, { catalog, sources: signal.evidence, knowledge: [],
       policy_revision: 'active', knowledge_revision: 'none', base_commit: base, owner_epoch: 1, dotnet_refresh: true,
@@ -93,5 +98,23 @@ describe('exact published support claims', () => {
     const mirror = await publishedSite(article(incorrect), [notice, 'https://mirror.example.test/policy']);
     await expect(qualifyDotnetRefresh(signal, catalog, base, now, mirror.fetcher, readMode, mirror.readDigests))
       .resolves.toMatchObject({ action: 'NO_CHANGE', reason: expect.stringContaining('does not cite') });
+  });
+
+  it('never corrects a quoted or negated support claim', async () => {
+    const [signal] = (await collectSignals([source], now, async () => new Response(official))).signals;
+    for (const paragraph of [
+      '<p>The misconception that the <a href="' + overview + '">current .NET support policy</a> lists both releases in maintenance is wrong.</p>',
+      '<blockquote>' + incorrect + '</blockquote>',
+      incorrect.replace('</p>', ' This is false.</p>'),
+    ]) {
+      const site = await publishedSite(article(paragraph), [notice, overview]);
+      await expect(qualifyDotnetRefresh(signal, catalog, base, now, site.fetcher, readMode, site.readDigests))
+        .resolves.toMatchObject({ action: 'NO_CHANGE', reason: expect.stringContaining('unambiguous') });
+    }
+    const header = '---\nwriting_schema: 2\n---\n\n';
+    expect(correctDotnetClaim(header + 'The misconception that the [current .NET support policy](' + overview +
+      ') lists both releases in maintenance is wrong.')).toBeNull();
+    expect(correctDotnetClaim(header + '> The current [.NET support policy](' + overview +
+      ') lists both releases in maintenance' + successor)).toBeNull();
   });
 });

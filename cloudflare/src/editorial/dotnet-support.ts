@@ -9,8 +9,12 @@ export const DOTNET_POLICY_URL = 'https://dotnet.microsoft.com/en-us/platform/su
 export const DOTNET_CITATION = DOTNET_POLICY_URL + '#out-of-support-versions';
 const POLICY_OVERVIEW = 'https://dotnet.microsoft.com/en-us/platform/support/policy';
 const SUPPORT_NOTICE = 'https://devblogs.microsoft.com/dotnet/dotnet-8-9-end-of-support/';
-export const DOTNET_OLD_CLAIM = 'lists both releases in maintenance';
-export const DOTNET_NEW_CLAIM = `lists both releases as [out of support](${DOTNET_CITATION})`;
+const OLD_CLAIM = 'lists both releases in maintenance';
+const CURRENT_CLAIM = 'lists both releases as out of support';
+const CURRENT_POLICY = 'The current .NET support policy ';
+const SUPPORT_SUCCESSOR = ' and lists .NET 10 as the supported Long Term Support successor through November 2028.';
+const POLICY_EXPLANATION = ' That policy also requires supported installations to stay current on released patches during their lifecycle. Reaching a supported major version while retaining an old patch is therefore not the finish line.';
+const NOTICE_CLAIM = 'Microsoft announced the November 10, 2026 end of support for .NET 8 and .NET 9 and now ';
 const TARGET_PATH = '/notes/dotnet-8-end-of-support-readiness';
 
 export type DotnetSupport = Array<{ version: string; ended_on: string }>;
@@ -62,10 +66,12 @@ export function correctDotnetClaim(markdown: string): string | null {
   const front = /^---\r?\n[\s\S]+?\r?\n---\r?\n/.exec(markdown)?.[0];
   if (!front) return null;
   const body = markdown.slice(front.length);
-  const citation = `](${POLICY_OVERVIEW}) `;
-  const before = citation + DOTNET_OLD_CLAIM;
-  if (body.split(before).length !== 2) return null;
-  return front + body.replace(before, citation + DOTNET_NEW_CLAIM);
+  const intro = `The current [.NET support policy](${POLICY_OVERVIEW}) `;
+  const oldParagraph = intro + OLD_CLAIM + SUPPORT_SUCCESSOR + POLICY_EXPLANATION;
+  const paragraphs = body.split(/(\r?\n\r?\n)/);
+  if (paragraphs.filter((part) => part === oldParagraph).length !== 1) return null;
+  const fixed = oldParagraph.replace(OLD_CLAIM, `lists both releases as [out of support](${DOTNET_CITATION})`);
+  return front + paragraphs.map((part) => part === oldParagraph ? fixed : part).join('');
 }
 
 export async function qualifyDotnetRefresh(signal: Signal, catalog: CatalogItem[], baseCommit: string, now: Date,
@@ -102,13 +108,17 @@ export async function qualifyDotnetRefresh(signal: Signal, catalog: CatalogItem[
   const page = parse5.parse(new TextDecoder('utf-8', { fatal: true }).decode(body)) as unknown as HtmlNode;
   const articles = nodes(page, (row) => row.tagName === 'div' && htmlAttribute(row, 'data-writing-body') !== undefined);
   if (articles.length !== 1) throw new Error('DOTNET_ARTICLE_BODY_UNAVAILABLE');
-  const paragraphs = nodes(articles[0], (row) => row.tagName === 'p');
+  const paragraphs = (articles[0].childNodes ?? []).filter((row) => row.tagName === 'p');
   const notices = paragraphs.filter((row) => articleCitations(row).has(SUPPORT_NOTICE) &&
     /(?:end of support.*\.NET 8 and \.NET 9|\.NET 8 and \.NET 9 both reach end of support)/.test(normalizeNodeText(row)));
   const maintenance = paragraphs.filter((row) => articleCitations(row).has(POLICY_OVERVIEW) &&
-    normalizeNodeText(row).includes(DOTNET_OLD_CLAIM));
-  const unsupported = paragraphs.filter((row) => articleCitations(row).has(DOTNET_CITATION) &&
-    normalizeNodeText(row).includes('lists both releases as out of support'));
+    normalizeNodeText(row) === CURRENT_POLICY + OLD_CLAIM + SUPPORT_SUCCESSOR + POLICY_EXPLANATION);
+  const unsupported = paragraphs.filter((row) => {
+    if (!articleCitations(row).has(DOTNET_CITATION)) return false;
+    const claim = normalizeNodeText(row);
+    return claim === CURRENT_POLICY + CURRENT_CLAIM + SUPPORT_SUCCESSOR + POLICY_EXPLANATION ||
+      claim.startsWith(NOTICE_CLAIM + CURRENT_CLAIM + ' .');
+  });
   if (notices.length !== 1 || maintenance.length + unsupported.length !== 1) {
     return noChange('The article does not state one unambiguous, cited claim about both releases.');
   }

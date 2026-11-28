@@ -541,7 +541,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (!ready.length) return reconciliationHold();
   if (processor) {
     const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [...needsReconciliation.values()];
-    if (pending?.candidate.target_id) heldTargets.add(pending.candidate.target_id);
+    if (deferredHold && pending?.candidate.target_id) heldTargets.add(pending.candidate.target_id);
     let stopReason: string | undefined;
     for (const { signal, decision } of ready) {
       if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the next candidate.');

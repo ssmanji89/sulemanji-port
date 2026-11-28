@@ -560,7 +560,7 @@ describe('deterministic signal workflow', () => {
     vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
     vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
     const { sqlite, run, slots: [first] } = providerRecoveryDatabase();
-    const candidate = { id: 'recycled-candidate', signal_ids: ['old-signal'], source_digest: 'old-source' };
+    const candidate = { id: 'recycled-candidate', target_id: 'cloudflare-workers', signal_ids: ['old-signal'], source_digest: 'old-source' };
     const base = { candidate_id: candidate.id, owner_epoch: 1 };
     sqlite.prepare(`INSERT INTO editorial_candidates(id, state, revision, payload_json, updated_at, publication_retry_after)
       VALUES (?, 'CAPACITY_HELD', ?, ?, ?, ?)`).run(candidate.id, candidate.source_digest, JSON.stringify({

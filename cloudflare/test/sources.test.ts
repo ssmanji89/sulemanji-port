@@ -71,7 +71,7 @@ describe('bounded public signal collection', () => {
 
   it('recognizes namespaced links, Atom source self URLs and JSON Feed identity', async () => {
     const rss = xml.replace('</item>', '<atom:link rel="canonical" href="https://sulemanji.com/notes/release"/></item>');
-    const atom = '<feed><entry><title>Adapted title</title><link href="https://blog.example.test/repost"/><summary>New excerpt</summary><updated>2026-11-26T17:00:00Z</updated><source><id>urn:opaque:feed</id><link rel="self" href="https://www.sulemanji.com/feed.xml"/></source></entry></feed>';
+    const atom = '<feed><entry><title>Adapted title</title><link href="https://blog.example.test/repost"/><summary>New excerpt</summary><updated>2026-11-26T17:00:00Z</updated><source><id>urn:opaque:feed</id><link rel="self" href="//www.sulemanji.com/feed.xml"/></source></entry></feed>';
     const json = { feed_url: 'https://www.sulemanji.com/feed.json', items: [{
       id: 'new', title: 'Adapted title', summary: 'New excerpt', url: 'https://blog.example.test/repost', date_published: '2026-11-26T17:00:00Z',
     }] };
@@ -79,6 +79,13 @@ describe('bounded public signal collection', () => {
       const batch = await collectSignals([config({ format })], now, async () => new Response(value));
       expect(batch).toEqual({ signals: [], failures: [] });
     }
+  });
+
+  it('keeps independent Atom reporting even when it links to a translation', async () => {
+    const atom = '<feed><entry><title>Primary report</title><link href="https://blog.example.test/original"/><link rel="alternate" hreflang="fr" href="https://sulemanji.com/notes/translation"/><summary>The publisher reports a new fact.</summary><updated>2026-11-26T17:00:00Z</updated></entry></feed>';
+    const { signals, failures } = await collectSignals([config({ format: 'atom' })], now, async () => new Response(atom));
+    expect(failures).toEqual([]);
+    expect(signals.map(({ evidence }) => evidence[0].url)).toEqual(['https://blog.example.test/original']);
   });
 
   it('rejects redirects outside the registered host allowlist', async () => {

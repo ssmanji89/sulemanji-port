@@ -132,6 +132,36 @@ function historyFromRows(receipts: ReceiptRow[], candidates: CandidateRow[], pen
   return { source_revisions: [...sourceRevisions], episode_ids: [...episodeIds], candidates: priorCandidates, recent_topic_ids: [...recentTopics] };
 }
 
+async function readSelectionHistory(db: D1Database, ownerEpoch: number, slotId: string) {
+  const [receipts, candidates] = await Promise.all([
+    db.prepare(`SELECT id, action, created_at, CASE WHEN json_valid(result_json) THEN json_object(
+      'owner_epoch', json_extract(result_json, '$.owner_epoch'),
+      'candidates', json_extract(result_json, '$.candidates'),
+      'signals', json_extract(result_json, '$.signals'),
+      'topic_ids', json_extract(result_json, '$.topic_ids')
+    ) ELSE '{}' END AS result_json FROM editorial_receipts ORDER BY created_at DESC LIMIT ?`).bind(HISTORY_LIMIT).all<ReceiptRow>(),
+    db.prepare(`SELECT id, state, revision, CASE WHEN json_valid(payload_json) THEN json_object(
+      'candidate', json_extract(payload_json, '$.candidate'),
+      'signal', json_extract(payload_json, '$.signal'),
+      'owner_epoch', json_extract(payload_json, '$.owner_epoch'),
+      'awaiting_processing', json_extract(payload_json, '$.awaiting_processing'),
+      'processing_slot', json_extract(payload_json, '$.processing_slot')
+    ) ELSE '{}' END AS payload_json FROM editorial_candidates
+      ORDER BY CASE WHEN json_valid(editorial_candidates.payload_json)
+        THEN COALESCE(json_extract(editorial_candidates.payload_json, '$.processing_slot') = ?, 0) ELSE 0 END DESC,
+      updated_at DESC LIMIT ?`).bind(slotId, HISTORY_LIMIT).all<CandidateRow>(),
+  ]);
+  const receiptRows = receipts.results ?? [];
+  const candidateRows = candidates.results ?? [];
+  const pending = pendingCandidates(receiptRows, candidateRows, ownerEpoch, slotId);
+  return {
+    history: historyFromRows(receiptRows, candidateRows, pending),
+    pending: [...pending.values()].map(({ row, candidate, slot }) => ({
+      id: candidate.id, target_id: candidate.target_id, state: row.state, slot: slot ?? undefined,
+    })),
+  };
+}
+
 function signalHistory(signal: Signal): SignalHistory {
   return { id: signal.id, source_revision: signal.source_revision, episode_id: signal.episode_id, topic_ids: signal.topic_ids };
 }
@@ -168,7 +198,7 @@ async function persistHeldCandidate(db: D1Database, candidate: Candidate, signal
 }
 
 async function claimCandidateForProcessing(db: D1Database, candidate: Candidate, signal: Signal, policy: EditorialPolicy,
-  ownerEpoch: number, slotId: string, pending: PendingCandidate | undefined): Promise<boolean> {
+  ownerEpoch: number, slotId: string, pending: boolean): Promise<boolean> {
   const saved = await db.prepare('SELECT id, state, revision, payload_json FROM editorial_candidates WHERE id = ?')
     .bind(candidate.id).first<CandidateRow>();
   const previous = saved && parseJson<CandidatePayload>(saved.payload_json);
@@ -432,17 +462,6 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     if (!saved) return held(params, 'Workflow authority changed before the deferred publication result could be recorded.');
     return retry.status === 'verified' ? { status: 'admitted', reason: retry.reason, slot_claim_id: params.slot_claim_id } : held(params, retry.reason);
   }
-  const historyRows = await step.do('read-recent-editorial-history', async () => {
-    const [receipts, candidates] = await Promise.all([
-      env.DB.prepare('SELECT id, action, result_json, created_at FROM editorial_receipts ORDER BY created_at DESC LIMIT ?').bind(HISTORY_LIMIT).all<ReceiptRow>(),
-      env.DB.prepare(`SELECT id, state, revision, payload_json FROM editorial_candidates
-        ORDER BY CASE WHEN json_valid(payload_json) THEN COALESCE(json_extract(payload_json, '$.processing_slot') = ?, 0) ELSE 0 END DESC,
-          updated_at DESC LIMIT ?`).bind(params.slot_claim_id, HISTORY_LIMIT).all<CandidateRow>(),
-    ]);
-    return { receipts: receipts.results ?? [], candidates: candidates.results ?? [] };
-  });
-  const pendingWork = pendingCandidates(historyRows.receipts, historyRows.candidates, control.owner_epoch, params.slot_claim_id);
-  const history = historyFromRows(historyRows.receipts, historyRows.candidates, pendingWork);
   const reconciliationReason = 'The candidate is already being processed or has a prior attempt to reconcile.';
   const sources = sourceRegistry as SourceConfig[];
   const sourceFetcher = createGuardedFetcher(env.DB, control.owner_epoch, fetch, policy.max_fetches_per_scan);
@@ -469,19 +488,24 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   const sourceFailures: Array<{ source_id: string; code: string }> = batch.failures.map(({ source_id, code }) => ({ source_id, code }));
   if (releaseComparison.unavailable) sourceFailures.push({ source_id: DOTNET_SOURCE_ID, code: 'CLAIM_UNAVAILABLE' });
   const signals = releaseComparison.unavailable ? batch.signals.filter((signal) => !isDotnetSupport(signal)) : batch.signals;
-  const decisions = await step.do('select-actions-from-dated-signals-v3', () => signals.map((signal) => ({
-    signal, decision: chooseAction(signal, catalog, knowledge, history, new Date(now),
-      isDotnetSupport(signal) ? releaseComparison.result ?? undefined : undefined),
-  })));
+  const selection = await step.do('select-actions-from-dated-signals-v4', async () => {
+    // Persist the decisions. The history and publication checkpoints stay in D1.
+    const { history, pending } = await readSelectionHistory(env.DB, control.owner_epoch, params.slot_claim_id);
+    const decisions = signals.map((signal) => chooseAction(signal, catalog, knowledge, history, new Date(now),
+      isDotnetSupport(signal) ? releaseComparison.result ?? undefined : undefined));
+    return { decisions, pending };
+  });
+  const decisions = signals.map((signal, index) => ({ signal, decision: selection.decisions[index] }));
+  const pendingIds = new Set(selection.pending.map(({ id }) => id));
   const qualifying = decisions.filter((row): row is { signal: Signal; decision: Extract<ActionDecision, { candidate: Candidate }> } => 'candidate' in row.decision);
   const actionable = qualifying.slice(0, policy.max_candidates_per_scan);
   const noChangeSignals = decisions.filter((row) => row.decision.action === 'NO_CHANGE');
   const selectedIds = new Set(actionable.map(({ decision }) => decision.candidate.id));
-  const unreconciled = [...pendingWork.values()].filter((work) => work.slot &&
-    (work.slot !== params.slot_claim_id || work.row.state !== 'HELD' || !selectedIds.has(work.candidate.id) || !processor));
-  const heldTargets = new Set(unreconciled.flatMap(({ candidate }) => candidate.target_id ? [candidate.target_id] : []));
-  const needsReconciliation = new Map(unreconciled.map(({ candidate }) => [candidate.id,
-    { candidate_id: candidate.id, status: 'held' as const, reason: reconciliationReason }]));
+  const unreconciled = selection.pending.filter((work) => work.slot &&
+    (work.slot !== params.slot_claim_id || work.state !== 'HELD' || !selectedIds.has(work.id) || !processor));
+  const heldTargets = new Set(unreconciled.flatMap(({ target_id }) => target_id ? [target_id] : []));
+  const needsReconciliation = new Map(unreconciled.map(({ id }) => [id,
+    { candidate_id: id, status: 'held' as const, reason: reconciliationReason }]));
   const reconciliationHold = async () => {
     const outcomes = [...needsReconciliation.values()];
     if (!outcomes.length) throw new Error('WORKFLOW_RECONCILIATION_MISSING');
@@ -552,7 +576,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
         continue;
       }
       const claimed = await step.do(`claim-candidate-${candidate.id.slice(0, 48)}`, () =>
-        claimCandidateForProcessing(env.DB, candidate, signal, policy, control.owner_epoch, params.slot_claim_id, pendingWork.get(candidate.id)));
+        claimCandidateForProcessing(env.DB, candidate, signal, policy, control.owner_epoch, params.slot_claim_id, pendingIds.has(candidate.id)));
       if (!claimed) {
         if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the candidate could be claimed.');
         if (candidate.target_id) heldTargets.add(candidate.target_id);

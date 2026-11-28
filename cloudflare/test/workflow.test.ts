@@ -649,6 +649,43 @@ describe('deterministic signal workflow', () => {
     ), slots };
   }
 
+  it('retains historical deduplication without saving draft media in a Workflow step result', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase();
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    expect(await run(first, { processCandidate })).toMatchObject({ status: 'admitted' });
+
+    const insert = sqlite.prepare(`INSERT INTO editorial_candidates(id, state, revision, payload_json, updated_at)
+      VALUES (?, 'VERIFIED', ?, ?, ?)`);
+    for (let index = 0; index < 8; index++) {
+      const id = `old-published-${index}`;
+      insert.run(id, id, JSON.stringify({ owner_epoch: 1,
+        candidate: { id, signal_ids: [id] }, signal: { id, episode_id: id, source_revision: id, topic_ids: [] },
+        pipeline: { proposal: { files: [{ encoding: 'base64', content: 'A'.repeat(150_000) }] } },
+      }), new Date().toISOString());
+    }
+
+    class SizeLimitedStep extends DurableStep {
+      override async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
+        return super.do(name, async () => {
+          const result = await callback();
+          if (Buffer.byteLength(JSON.stringify(result) ?? '') > 1_048_576) {
+            throw new Error(`Workflow step result exceeds 1 MiB: ${name}`);
+          }
+          return result;
+        });
+      }
+    }
+
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    expect(await run(next, { processCandidate }, new SizeLimitedStep())).toMatchObject({ status: 'no_change' });
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+    expect(sqlite.prepare('SELECT action FROM editorial_receipts WHERE id = ?').get(`slot-result:${next.id}`))
+      .toMatchObject({ action: 'NO_CHANGE' });
+  });
+
   it('continues discovery after a recycled deferred candidate is retired without publishing', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));

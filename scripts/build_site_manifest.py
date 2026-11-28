@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 EXCLUDED = {'release.json', 'release-manifest.json', '_headers', '_redirects', '.assetsignore'}
 PUBLIC_ORIGIN = 'https://www.sulemanji.com'
@@ -115,6 +116,44 @@ class _PageMetadata(HTMLParser):
             'h1': ' '.join(' '.join(self.heading_parts).split()),
             'robots': self.values.get('robots', ''),
         }
+
+
+class _ArticleCitations(_VisibleContainerText):
+    def __init__(self) -> None:
+        super().__init__('div', 'data-writing-body')
+        self.citations: set[str] = set()
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        super().handle_starttag(tag, attrs)
+        if tag != 'a' or not self.depth or self.ignored:
+            return
+        href = dict(attrs).get('href') or ''
+        if not href.lower().startswith('https://') or re.search(r'[\x00-\x20\x7f<>\\]', href):
+            return
+        try:
+            parsed = urlsplit(href)
+            if parsed.hostname and '@' not in parsed.netloc and 0 <= (parsed.port or 0) <= 65535:
+                self.citations.add(href)
+        except ValueError:
+            return
+
+
+def build_article_citation_index(root: Path, articles: list[dict[str, Any]]) -> dict[str, list[str]]:
+    citations = {}
+    for article in articles:
+        if not article['indexable']:
+            continue
+        url = article['url']
+        if not re.fullmatch(r'/notes/[a-z0-9]+(?:-[a-z0-9]+)*', url):
+            raise ValueError(f'invalid public article route in citation index: {url}')
+        html = (root / f'{url[1:]}.html').read_text(encoding='utf-8')
+        parser = _ArticleCitations()
+        parser.feed(html)
+        parser.close()
+        if parser.container_count != 1:
+            raise ValueError(f'citation index requires one published article body: {url}')
+        citations[url] = sorted(parser.citations)
+    return citations
 
 
 def _visible_content_sha256(rendered_html: str, container_tag: str,
@@ -309,6 +348,7 @@ def main() -> int:
         ):
             raise SystemExit('built article URLs or dates differ from the approved baseline')
     manifest = build_manifest(args.site_root, source_commit, articles)
+    manifest['article_citations'] = build_article_citation_index(args.site_root, articles)
     output = args.output or args.site_root / 'release.json'
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')

@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from scripts.build_site_manifest import PUBLIC_PAGE_FILES, article_content_sha256, build_manifest, page_content_sha256, render_release_headers
+from scripts.build_site_manifest import PUBLIC_PAGE_FILES, article_content_sha256, build_article_citation_index, build_manifest, page_content_sha256, render_release_headers
 
 
 class SiteManifestTests(unittest.TestCase):
@@ -102,6 +102,25 @@ class SiteManifestTests(unittest.TestCase):
     def test_article_text_digest_requires_one_nonempty_body(self):
         with self.assertRaisesRegex(ValueError, 'one nonempty visible content region'):
             article_content_sha256('<main><p>Not inside the writing body</p></main>')
+
+    def test_article_citation_index_reads_only_public_writing_body_links(self):
+        notes = self.root / 'notes'
+        notes.mkdir(exist_ok=True)
+        (notes / 'cited.html').write_text(
+            '<a href="https://example.org/navigation">Outside</a>'
+            '<div data-writing-body><p>Evidence <a href="https://docs.example.org/?a=1&amp;b=2#policy">Policy</a>'
+            ' <a href="https://docs.example.org/?a=1&amp;b=2#policy">Same</a>'
+            ' <a href="https://user:pass@example.org/private">Credentials</a>'
+            ' <a href="https://@example.org/empty-userinfo">Empty userinfo</a>'
+            ' <a href="https://example.org:65536/invalid-port">Invalid port</a>'
+            ' <a href="/notes/related">Internal</a>'
+            ' <img src="https://example.org/not-a-citation"></p>'
+            '<template><a href="https://example.org/not-visible">Hidden</a></template></div>',
+            encoding='utf-8',
+        )
+        articles = [{'url': '/notes/cited', 'indexable': True}, {'url': '/notes/hidden', 'indexable': False}]
+        self.assertEqual(build_article_citation_index(self.root, articles),
+                         {'/notes/cited': ['https://docs.example.org/?a=1&b=2#policy']})
 
     def test_key_page_content_is_manifest_bound(self):
         first = build_manifest(self.root, 'abc1234', self.baseline, built_at='2026-11-26T00:00:00Z')

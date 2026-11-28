@@ -137,6 +137,21 @@ class CloudflareReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ReleaseError, 'page identity or visible content'):
                 verify_artifact(root, '1111111', '1111111')
 
+    def test_artifact_citation_index_must_match_rendered_article(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            add_public_pages(root)
+            articles = add_article(root)
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            manifest['article_citations'] = {'/notes/a': []}
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
+            verify_artifact(root, '1111111', '1111111')
+            manifest['article_citations']['/notes/a'].append('https://example.org/absent')
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'citations do not match'):
+                verify_artifact(root, '1111111', '1111111')
+
     def test_operational_docs_and_test_code_stay_out_of_public_build(self):
         for excluded in ('  - cloudflare/', '  - tests/', '  - test-results/', '  - docs/'):
             self.assertIn(excluded, self.config)

@@ -40,7 +40,8 @@ export function articleLinks(node: HtmlNode, tag: 'a' | 'img' = 'a'): string[] {
 }
 
 export function publicCitationUrl(href: string): string | null {
-  if (!/^https:\/\//i.test(href) || /[\x00-\x20\x7f<>\\]/.test(href)) return null;
+  const authority = /^https:\/\/([^/?#]+)/i.exec(href)?.[1];
+  if (!authority || authority.includes('@') || /[\x00-\x20\x7f<>\\]/.test(href)) return null;
   try {
     const url = new URL(href);
     return !url.username && !url.password ? url.href : null;

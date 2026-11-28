@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from scripts.build_site_manifest import _article_identity, build_manifest, render_release_headers
+from scripts.build_site_manifest import _article_identity, build_article_citation_index, build_manifest, render_release_headers
 from scripts.version_site_assets import verify_versioned_assets
 
 
@@ -71,6 +71,13 @@ def verify_artifact(artifact: Path, source_commit: str, current_main_sha: str) -
         raise ReleaseError(f'artifact article identities cannot be verified: {error}') from error
     if rendered_articles != manifest.get('articles'):
         raise ReleaseError('artifact article identity or visible content does not match release manifest')
+    if 'article_citations' in manifest:
+        try:
+            citations = build_article_citation_index(artifact, rendered_articles)
+        except (OSError, ValueError) as error:
+            raise ReleaseError(f'artifact article citations cannot be verified: {error}') from error
+        if citations != manifest['article_citations']:
+            raise ReleaseError('artifact article citations do not match release manifest')
     try:
         expected_headers = render_release_headers(manifest)
         actual_headers = (artifact / '_headers').read_text(encoding='utf-8')

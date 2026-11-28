@@ -241,16 +241,22 @@ describe('public publication identity verification', () => {
     const commit = 'd'.repeat(40);
     const assetDigest = `sha256:${'a'.repeat(64)}`;
     const builtAt = '2026-11-28T08:00:00Z';
-    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body><p>NIST’s source-backed guidance.</p></div></body></html>`;
+    const citation = 'https://vendor.example.test/evidence?x=1&y=2#section';
+    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body>
+      <p>NIST’s <a href="${citation.replace('&', '&amp;')}">source-backed guidance</a>.</p>
+      <a href="https://@vendor.example.test/empty-userinfo">Empty userinfo</a>
+      <a href="https://vendor.example.test:65536/invalid-port">Invalid port</a>
+    </div></body></html>`;
     const listing = {
       '/writing': `<a href="${url}">Article</a>`,
       '/feed.xml': `<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="${url}"/></entry></feed>`,
       '/sitemap.xml': `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${url}</loc></url></urlset>`,
     };
-    const manifest = JSON.stringify({ schema_version: 1, source_commit: commit, asset_digest: assetDigest, built_at: builtAt,
-      files: { 'notes/reviewed-article.html': await sha(article) } });
-    const digest = await sha(manifest);
     const path = '/notes/reviewed-article';
+    const manifestData = { schema_version: 1, source_commit: commit, asset_digest: assetDigest, built_at: builtAt,
+      files: { 'notes/reviewed-article.html': await sha(article) } };
+    let manifest = JSON.stringify({ ...manifestData, article_citations: { [path]: [citation] } });
+    let digest = await sha(manifest);
     const attempt: PublishAttempt = { id: 'attempt-42', candidate_id: 'candidate-42', owner_epoch: 7, branch: 'editorial/candidate-42',
       pull_request: 12, source_commit: commit, deployment_version: null, public_urls: [path], status: 'SOURCE_PUBLISHED',
       expected_content: [{ url: path, title: 'Reviewed title', text_sha256: await sha("NIST's source-backed guidance.") }] };
@@ -291,6 +297,20 @@ describe('public publication identity verification', () => {
       });
     }
     expect(cancelled).toBe(2);
+    damaged = 'none';
+    manifest = JSON.stringify({ ...manifestData, article_citations: { [path]: ['https://vendor.example.test/absent'] } });
+    digest = await sha(manifest);
+    await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({
+      receipt: { outcome: 'UNCERTAIN' }, failure: 'verified release citation index does not match the deployed article',
+    });
+    manifest = JSON.stringify({ ...manifestData, article_citations: {} });
+    digest = await sha(manifest);
+    await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({
+      receipt: { outcome: 'UNCERTAIN' }, failure: 'verified release citation index is missing the article',
+    });
+    manifest = JSON.stringify(manifestData);
+    digest = await sha(manifest);
+    await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({ receipt: { outcome: 'VERIFIED' } });
   });
   it('accepts the digest and timestamp formats emitted by the Jekyll release manifest', async () => {
     const body = 'A source-backed reader explanation.';

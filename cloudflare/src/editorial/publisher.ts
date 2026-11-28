@@ -5,7 +5,7 @@ import { articleCitations, bytesDigest, CANONICAL_SITE_ORIGIN, connectionParagra
   normalizeNodeText, readBoundedSiteBytes, textDigest as sha256, type HtmlNode } from './site-readback.js';
 import { encodeSocialCard, isSocialCardPng, MAX_CARD_BYTES, socialCardPath } from './social-card-format.js';
 import { readDiscoveryLinks } from './discovery-readback.js';
-import { readVerifiedReleaseManifest, type ReleaseDigests } from './release-proof.js';
+import { articleCitationsFromManifest, readVerifiedReleaseManifest, type ReleaseDigests } from './release-proof.js';
 
 export type PublishDecision = { allowed: true } | { allowed: false; reasons: string[] };
 export type PullRequestState = { number: number; head_sha: string; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; checks: 'pending' | 'success' | 'failure' };
@@ -274,9 +274,13 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       walk(page);
       const context = item.contextual_link;
       const required = item.required_citations;
-      if (required) {
+      const indexed = manifest && articleCitationsFromManifest(manifest, expectedUrl.pathname);
+      if (required || indexed) {
         const observed = articles.length === 1 ? articleCitations(articles[0]) : null;
-        if (!observed || observed.size !== required.length || !required.every((url) => observed.has(url))) {
+        if (indexed && (!observed || observed.size !== indexed.size || [...indexed].some((url) => !observed.has(url)))) {
+          throw new Error('verified release citation index does not match the deployed article');
+        }
+        if (required && (!observed || observed.size !== required.length || !required.every((url) => observed.has(url)))) {
           throw new Error('reviewed source citations do not match the deployed article');
         }
       }

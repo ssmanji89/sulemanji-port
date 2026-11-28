@@ -22,6 +22,16 @@ function parseModelSettings(raw) {
   const value = objectFromJson(raw);
   if (!value) return null;
   const keys = ['endpoint', 'model_id', 'pricing_revision', 'input_usd_per_million', 'output_usd_per_million', 'max_input_chars', 'max_output_tokens'];
+  if (Object.hasOwn(value, 'reviewer')) {
+    const reviewer = value.reviewer;
+    if (!reviewer || typeof reviewer !== 'object' ||
+        !hasExactKeys(reviewer, ['model_id', 'input_usd_per_million', 'output_usd_per_million']) ||
+        typeof reviewer.model_id !== 'string' || !reviewer.model_id || reviewer.model_id !== reviewer.model_id.trim() ||
+        (typeof value.model_id === 'string' && reviewer.model_id === value.model_id.trim()) ||
+        !Number.isFinite(reviewer.input_usd_per_million) || reviewer.input_usd_per_million < 0 ||
+        !Number.isFinite(reviewer.output_usd_per_million) || reviewer.output_usd_per_million < 0) return null;
+    keys.push('reviewer');
+  }
   if (Object.hasOwn(value, 'request_profile')) {
     if (value.request_profile !== 'openai') return null;
     keys.push('request_profile');

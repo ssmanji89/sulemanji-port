@@ -148,6 +148,12 @@ describe('editorial runtime config policy wiring', () => {
     ['malformed model settings', '{broken', JSON.stringify(fixturePublisher)],
     ['insufficient review output', JSON.stringify({ ...modelSettings, max_output_tokens: 3999 }), JSON.stringify(fixturePublisher)],
     ['insufficient review input', JSON.stringify({ ...modelSettings, max_input_chars: 1 }), JSON.stringify(fixturePublisher)],
+    ['same configured reviewer and author', JSON.stringify({ ...modelSettings,
+      reviewer: { model_id: modelSettings.model_id, input_usd_per_million: 2, output_usd_per_million: 5 } }), JSON.stringify(fixturePublisher)],
+    ['invalid reviewer rates', JSON.stringify({ ...modelSettings,
+      reviewer: { model_id: 'reviewer', input_usd_per_million: -1, output_usd_per_million: 5 } }), JSON.stringify(fixturePublisher)],
+    ['different reviewer endpoint', JSON.stringify({ ...modelSettings,
+      reviewer: { model_id: 'reviewer', input_usd_per_million: 2, output_usd_per_million: 5, endpoint: 'https://other.example.test/' } }), JSON.stringify(fixturePublisher)],
   ])('rejects %s without writing a runtime config', (_label, model, publisher) => {
     const { outputDirectory, result } = render(JSON.stringify(validPolicy), 'staging', {
       EDITORIAL_MODEL_CONFIG_JSON: model,
@@ -164,7 +170,8 @@ describe('editorial runtime config policy wiring', () => {
 
   it('renders the OpenAI profile for the official chat endpoint', () => {
     const model = { ...modelSettings, endpoint: 'https://api.openai.com/v1/chat/completions',
-      model_id: 'gpt-6.1-terra', request_profile: 'openai' };
+      model_id: 'gpt-6.1-terra', request_profile: 'openai',
+      reviewer: { model_id: 'gpt-6.1-sol', input_usd_per_million: 2, output_usd_per_million: 10 } };
     const { outputDirectory, result } = render(JSON.stringify(validPolicy), 'staging', {
       EDITORIAL_MODEL_CONFIG_JSON: JSON.stringify(model),
       EDITORIAL_GITHUB_CONFIG_JSON: JSON.stringify(fixturePublisher),

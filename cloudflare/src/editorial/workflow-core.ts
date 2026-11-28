@@ -36,6 +36,7 @@ type EditorialWorkflowEnv = EditorialEnv & { EDITORIAL_POLICY_JSON?: string };
 type ReceiptRow = { id: string; action: string; result_json: string; created_at: string };
 type CandidateRow = { id: string; state: string; revision: string; payload_json: string };
 type SourceStateRow = { source_id: string; fetched_at: string; signals_json: string };
+const SOURCE_CACHE_VERSION = 2;
 type SourceAttemptRow = { source_id: string; last_attempt_at: string; retry_after: string | null; consecutive_failures: number; last_failure_code: string | null };
 type SignalHistory = { id: string; source_revision: string; episode_id: string; topic_ids: string[] };
 type GuardedFetcher = { fetcher: typeof fetch; isStale: () => boolean; isCurrent: () => Promise<boolean>; requestsUsed: () => number };
@@ -226,7 +227,9 @@ function resultFromReceipt(params: WorkflowParams, receipt: ReceiptRow, ownerEpo
 
 function parseCachedSignals(sourceId: string, row: SourceStateRow | undefined, now: Date): Signal[] | null {
   if (!row || !Number.isFinite(Date.parse(row.fetched_at))) return null;
-  const signals = parseJson<Signal[]>(row.signals_json);
+  const parsed = parseJson<{ version?: number; signals?: Signal[] }>(row.signals_json);
+  if (parsed?.version !== SOURCE_CACHE_VERSION) return null;
+  const signals = parsed.signals;
   if (!Array.isArray(signals) || signals.some((signal) => signal.source_id !== sourceId || !Number.isFinite(Date.parse(signal.expires_at)))) return null;
   return signals.filter((signal) => Date.parse(signal.expires_at) > now.getTime());
 }
@@ -287,7 +290,7 @@ function successfulAttempt(sourceId: string, now: Date): SourceAttemptRow {
 }
 
 async function persistSourceState(db: D1Database, sourceId: string, fetchedAt: string, signals: Signal[], ownerEpoch: number): Promise<boolean> {
-  const signalsJson = JSON.stringify(signals);
+  const signalsJson = JSON.stringify({ version: SOURCE_CACHE_VERSION, signals });
   const written = await db.prepare(`INSERT OR REPLACE INTO editorial_source_state(source_id, fetched_at, signals_json)
     SELECT ?, ?, ? WHERE EXISTS (
       SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
@@ -443,7 +446,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   const reconciliationReason = 'The candidate is already being processed or has a prior attempt to reconcile.';
   const sources = sourceRegistry as SourceConfig[];
   const sourceFetcher = createGuardedFetcher(env.DB, control.owner_epoch, fetch, policy.max_fetches_per_scan);
-  const batch = await step.do('collect-dated-public-signals-v3', () => collectCoveredSignals(sources, policy.max_fetches_per_scan, new Date(now), env.DB, control.owner_epoch, sourceFetcher));
+  const batch = await step.do('collect-dated-public-signals-v4', () => collectCoveredSignals(sources, policy.max_fetches_per_scan, new Date(now), env.DB, control.owner_epoch, sourceFetcher));
   if (batch.stale || sourceFetcher.isStale() || !(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed during public-source discovery.');
   if (!batch.signals.length && batch.failures.length) {
     const reason = 'Public source reads failed; the run cannot conclude NO_CHANGE.';
@@ -454,7 +457,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     return held(params, reason);
   }
 
-  const releaseComparison = await step.do('read-published-dotnet-claim', async () => {
+  const releaseComparison = await step.do('read-published-dotnet-claim-v2', async () => {
     const signal = batch.signals.find(isDotnetSupport);
     if (!signal) return { result: null };
     try {
@@ -466,7 +469,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   const sourceFailures: Array<{ source_id: string; code: string }> = batch.failures.map(({ source_id, code }) => ({ source_id, code }));
   if (releaseComparison.unavailable) sourceFailures.push({ source_id: DOTNET_SOURCE_ID, code: 'CLAIM_UNAVAILABLE' });
   const signals = releaseComparison.unavailable ? batch.signals.filter((signal) => !isDotnetSupport(signal)) : batch.signals;
-  const decisions = await step.do('select-actions-from-dated-signals-v2', () => signals.map((signal) => ({
+  const decisions = await step.do('select-actions-from-dated-signals-v3', () => signals.map((signal) => ({
     signal, decision: chooseAction(signal, catalog, knowledge, history, new Date(now),
       isDotnetSupport(signal) ? releaseComparison.result ?? undefined : undefined),
   })));

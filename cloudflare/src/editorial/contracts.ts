@@ -44,7 +44,7 @@ export interface EditorialEnv {
 export type SourceConfig = {
   id: string;
   url: string;
-  format: 'rss' | 'atom' | 'json' | 'html' | 'nasa-skywatching';
+  format: 'rss' | 'atom' | 'json' | 'html' | 'nasa-skywatching' | 'dotnet-lifecycle';
   topic_ids: string[];
   allowed_hostnames: string[];
   min_interval_seconds: number;
@@ -65,6 +65,7 @@ export type Signal = {
   title: string;
   summary: string;
   evidence: PublicSource[];
+  dotnet_support?: import('./dotnet-support.js').DotnetSupport;
 };
 
 export type SourceFailure = { source_id: string; code: 'NETWORK' | 'LIMIT' | 'INVALID' | 'STALE' | 'FORBIDDEN'; detail: string };
@@ -72,6 +73,7 @@ export type SignalBatch = { signals: Signal[]; failures: SourceFailure[] };
 export type CatalogItem = { id: string; title: string; url: string; topics: string[]; summary?: string };
 export type Candidate = {
   id: string; signal_ids: string[]; target_id: string | null; related_id?: string; action: 'REPAIR' | 'REFRESH' | 'CONNECT' | 'CREATE' | 'PROPOSE';
+  refresh_base_commit?: string;
   reader: string; question: string; benefit: string; source_digest: string; policy_revision: string; knowledge_revision: string; state: 'DISCOVERED';
 };
 export type RecentHistory = { source_revisions: string[]; episode_ids: string[]; candidates: Candidate[]; recent_topic_ids: string[] };
@@ -84,7 +86,7 @@ export type ContentProposal = {
   candidate_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string;
   base_commit: string; owner_epoch: number; files: FileChange[]; public_sources: PublicSource[]; required_media_paths: string[]; public_urls: string[]; expected_content: ExpectedContent[];
 };
-export type PreparationContext = { catalog: CatalogItem[]; sources: PublicSource[]; source_excerpt?: string; knowledge: PublicKnowledge[]; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; existing_files?: Record<string, string>; existing_paths?: string[]; connection_baseline?: { text_sha256: string; already_linked: boolean } };
+export type PreparationContext = { catalog: CatalogItem[]; sources: PublicSource[]; source_excerpt?: string; knowledge: PublicKnowledge[]; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; existing_files?: Record<string, string>; existing_paths?: string[]; connection_baseline?: { text_sha256: string; already_linked: boolean }; dotnet_refresh?: true };
 export type ReviewContext = PreparationContext & { reviewer_run_id: string };
 export type ReviewReceipt = { candidate_id: string; reviewer_run_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; decision: 'CLEAR' | 'FIX_REQUIRED' | 'HOLD'; findings: Array<{ code: string; detail: string }> };
 export type PublicationState = { owner_epoch: number; paused: boolean; base_commit: string; policy_revision: string; knowledge_revision: string; source_digest: string; allowed_paths: string[]; author_run_id: string };

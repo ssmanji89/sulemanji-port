@@ -6,6 +6,7 @@ import { nextChicagoBudgetDay, parseEditorialPolicy } from '../src/editorial/sch
 import { fingerprintPublicKnowledge } from '../src/editorial/knowledge.js';
 import sourceRegistry from '../config/public-sources.json' with { type: 'json' };
 import { OperationsD1 } from './operations.test-support.js';
+import { DOTNET_POLICY_URL, DOTNET_SOURCE_ID } from '../src/editorial/dotnet-support.js';
 
 class DurableStep {
   values = new Map<string, unknown>();
@@ -182,18 +183,71 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
     sourceFetchCalls += 1;
     const url = new URL(String(input));
     if (url.pathname === '/content-index.json') return Response.json({ schema_version: 1, items: candidate ? [
-      { id: 'cloudflare-workers', canonical_url: '/work/cloudflare/', title: 'Cloudflare Workers', summary: 'A public guide.', topics: ['infrastructure'] },
+      { id: 'cloudflare-workers', canonical_url: '/notes/cloudflare-workers', title: 'Cloudflare Workers', summary: 'A public guide.', topics: ['infrastructure'] },
+      { id: 'worker-routes', canonical_url: '/notes/worker-routes', title: 'Worker deployment routes', topics: ['infrastructure'] },
     ] : [] });
     if (url.hostname === 'science.nasa.gov') return Response.json([]);
     if (candidate && url.hostname === 'blog.cloudflare.com') {
       const date = new Date().toUTCString();
-      return new Response(`<rss><channel><item><title>Cloudflare Workers release update</title><description>A new documented version is available.</description><link>https://blog.cloudflare.com/workers/release/</link><pubDate>${date}</pubDate></item></channel></rss>`);
+      return new Response(`<rss><channel><item><title>Cloudflare Workers depends on Worker deployment routes</title><description>A new documented relationship.</description><link>https://blog.cloudflare.com/workers/release/</link><pubDate>${date}</pubDate></item></channel></rss>`);
     }
     return new Response('<rss><channel></channel></rss>');
   }) as typeof fetch;
 }
 
 describe('deterministic signal workflow', () => {
+  it('records why a topical release falls short without touching the candidate processor', async () => {
+    const base = sourceFetcher({ candidate: true });
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.hostname !== 'blog.cloudflare.com') return base(input);
+      return new Response('<rss><channel><item><title>Cloudflare Workers API security release</title>' +
+        '<description>An update to the runtime.</description><link>https://blog.cloudflare.com/release/</link>' +
+        '<pubDate>' + new Date().toUTCString() + '</pubDate></item></channel></rss>');
+    });
+    const db = new PipelineD1();
+    const processCandidate = vi.fn();
+    const claim = { slot_claim_id: 'topical-release' };
+    const result = await runEditorialAdmission(claim, { DB: db, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep(), { processCandidate });
+    expect(result.status).toBe('no_change');
+    expect(processCandidate).not.toHaveBeenCalled();
+    expect(db.candidates.size).toBe(0);
+    const receipt = db.receipts.get('slot-result:' + claim.slot_claim_id);
+    expect(JSON.parse(String(receipt?.result_json)).no_change_reasons).toEqual([
+      expect.objectContaining({ reason: expect.stringContaining('changed published claim') }),
+    ]);
+  });
+
+  it.each([{ available: true, unrelated: false }, { available: false, unrelated: false }, { available: false, unrelated: true }])
+    ('requires the published claim reader without blocking unrelated work ($available, $unrelated)', async ({ available, unrelated }) => {
+    sourceRegistry.push({ id: DOTNET_SOURCE_ID, url: DOTNET_POLICY_URL, format: 'dotnet-lifecycle',
+      topic_ids: ['infrastructure'], allowed_hostnames: ['dotnet.microsoft.com'], min_interval_seconds: 60, max_age_seconds: 1_000, enabled: true });
+    onTestFinished(() => { sourceRegistry.pop(); });
+    const rawPolicy = JSON.stringify({ ...JSON.parse(policy), max_fetches_per_scan: sourceRegistry.length });
+    const base = sourceFetcher({ candidate: unrelated });
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      if (String(input) !== DOTNET_POLICY_URL) return base(input);
+      return new Response('<table aria-labelledby="supported-versions"><tr><td>.NET 10</td></tr></table>' +
+        '<table aria-labelledby="out-of-support-versions"><tr><td>.NET 8</td><td></td><td></td><td></td><td>November 10, 2026</td></tr></table>');
+    });
+    const db = new PipelineD1();
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Unrelated work verified.' }));
+    const claim = { slot_claim_id: 'lifecycle-source' };
+    const checkDotnetRefresh = vi.fn(async () => {
+      if (!available) throw new Error('Unqualified release fixture');
+      return { action: 'NO_CHANGE' as const, reason: 'The published claim matches the observed lifecycle status.' };
+    });
+    const result = await runEditorialAdmission(claim, { DB: db, EDITORIAL_POLICY_JSON: rawPolicy } as never,
+      new DurableStep(), { processCandidate, checkDotnetRefresh });
+    expect(checkDotnetRefresh).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ source_id: DOTNET_SOURCE_ID }), expect.any(Array), expect.any(Date), 1);
+    expect(result.status).toBe(available ? 'no_change' : unrelated ? 'admitted' : 'held');
+    const receipt = db.receipts.get('slot-result:' + claim.slot_claim_id);
+    expect(receipt?.action).toBe(available ? 'NO_CHANGE' : unrelated ? 'VERIFIED' : 'HELD_PUBLISHED_CLAIM_UNAVAILABLE');
+    expect(JSON.parse(String(receipt?.result_json)).source_failures).toEqual(available ? [] : [{ source_id: DOTNET_SOURCE_ID, code: 'CLAIM_UNAVAILABLE' }]);
+    expect(processCandidate).toHaveBeenCalledTimes(unrelated ? 1 : 0);
+    expect(db.candidates.size).toBe(unrelated ? 1 : 0);
+  });
+
   it.each([
     { canContinue: true, laterSharedHold: false },
     { canContinue: true, laterSharedHold: true },
@@ -206,6 +260,8 @@ describe('deterministic signal workflow', () => {
     const catalog = [
       { id: 'workers', canonical_url: '/notes/cloudflare-workers', title: 'Cloudflare Workers', topics: ['infrastructure'] },
       { id: 'markets', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] },
+      { id: 'worker-routes', canonical_url: '/notes/worker-routes', title: 'Worker deployment routes', topics: ['infrastructure'] },
+      { id: 'market-data', canonical_url: '/notes/market-data', title: 'Market data notes', topics: ['markets'] },
     ];
     function entry(title: string, url: string) {
       return `<item><title>${title}</title><description>New documented details.</description><link>${url}</link><pubDate>${now.toUTCString()}</pubDate></item>`;
@@ -214,10 +270,10 @@ describe('deterministic signal workflow', () => {
       const url = new URL(String(input));
       if (url.pathname === '/content-index.json') return Response.json({ schema_version: 1, items: catalog });
       const items = url.hostname === 'blog.cloudflare.com'
-        ? [entry('Workers release update', 'https://blog.cloudflare.com/workers/release-one/'),
-          entry('Workers API version update', 'https://blog.cloudflare.com/workers/release-two/')]
+        ? [entry('Cloudflare Workers depends on Worker deployment routes', 'https://blog.cloudflare.com/workers/release-one/'),
+          entry('Cloudflare Workers integrates with Worker deployment routes', 'https://blog.cloudflare.com/workers/release-two/')]
         : url.hostname === 'www.federalreserve.gov'
-          ? [entry('Market policy update', 'https://www.federalreserve.gov/newsevents/pressreleases/monetary20261127a.htm')]
+          ? [entry('Market systems depends on Market data notes', 'https://www.federalreserve.gov/newsevents/pressreleases/monetary20261127a.htm')]
           : [];
       if (url.hostname === 'science.nasa.gov') return Response.json([]);
       return new Response(`<rss><channel>${items.join('')}</channel></rss>`);
@@ -579,7 +635,7 @@ describe('deterministic signal workflow', () => {
       },
     });
     expect(result, result.reason).toMatchObject({ status: 'admitted' });
-    expect(processed).toEqual([candidate.id, expect.stringContaining('refresh:')]);
+    expect(processed).toEqual([candidate.id, expect.stringContaining('connect:')]);
     expect(sqlite.prepare('SELECT state, publication_retry_after, publication_retry_claim FROM editorial_candidates WHERE id = ?')
       .get(candidate.id)).toMatchObject({ state: 'NO_CHANGE', publication_retry_after: null, publication_retry_claim: null });
   });
@@ -705,13 +761,14 @@ describe('deterministic signal workflow', () => {
         const url = new URL(String(input));
         if (url.pathname === '/content-index.json') {
           const index = await (await base(input)).json() as { items: unknown[] };
-          index.items.push({ id: 'market-systems', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] });
+          index.items.push({ id: 'market-systems', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] },
+            { id: 'market-data', canonical_url: '/notes/market-data', title: 'Market data notes', topics: ['markets'] });
           return Response.json(index);
         }
-        if (url.hostname === 'github.com') return new Response(`<feed><entry><title>Workers SDK update</title>
+        if (url.hostname === 'github.com') return new Response(`<feed><entry><title>Cloudflare Workers integrates with Worker deployment routes</title>
           <summary>New public details.</summary><link href="https://github.com/cloudflare/workers-sdk/releases/tag/fixture" />
           <updated>${new Date().toISOString()}</updated></entry></feed>`);
-        if (url.hostname === 'www.federalreserve.gov') return new Response(`<rss><channel><item><title>Market policy update</title>
+        if (url.hostname === 'www.federalreserve.gov') return new Response(`<rss><channel><item><title>Market systems depends on Market data notes</title>
           <description>New public details.</description><link>https://www.federalreserve.gov/newsevents/fixture.htm</link>
           <pubDate>${new Date().toUTCString()}</pubDate></item></channel></rss>`);
         return base(input);
@@ -781,10 +838,11 @@ describe('deterministic signal workflow', () => {
       const url = new URL(String(input));
       if (url.pathname === '/content-index.json') {
         const index = await (await base(input)).json() as { items: unknown[] };
-        index.items.push({ id: 'market-systems', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] });
+        index.items.push({ id: 'market-systems', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] },
+          { id: 'market-data', canonical_url: '/notes/market-data', title: 'Market data notes', topics: ['markets'] });
         return Response.json(index);
       }
-      if (url.hostname === 'www.federalreserve.gov') return new Response(`<rss><channel><item><title>Market policy update</title>
+      if (url.hostname === 'www.federalreserve.gov') return new Response(`<rss><channel><item><title>Market systems depends on Market data notes</title>
         <description>Documented details.</description><link>https://www.federalreserve.gov/newsevents/fixture.htm</link>
         <pubDate>${published.toUTCString()}</pubDate></item></channel></rss>`);
       return base(input);

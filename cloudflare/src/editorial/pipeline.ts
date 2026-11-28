@@ -26,7 +26,7 @@ export type CandidateCheckpointState = 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
   renderSocialCard: SocialCardRenderer;
-  preparationContext(input: CandidatePipelineInput): Promise<PreparationContext>;
+  preparationContext(input: CandidatePipelineInput): Promise<PreparationContext | { refresh_hold: string }>;
   publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal, catalog: CatalogItem[], claim?: string): Promise<PublicationResult>;
   verify(attempt: PublishAttempt): Promise<{ receipt: PublicationReceipt; failure?: string }>;
   persist(candidateId: string, ownerEpoch: number, state: CandidateCheckpointState, checkpoint: CandidateCheckpoint, claim?: string): Promise<boolean>;
@@ -111,6 +111,11 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         }
       }
       const prepared = await step.do(`prepare-context-${key}`, () => deps.preparationContext(input));
+      if ('refresh_hold' in prepared) {
+        const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-claim`, () =>
+          deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', { reason: prepared.refresh_hold }));
+        return { status: 'held', reason: recorded ? prepared.refresh_hold : 'Could not checkpoint the factual claim hold.', continue_after_hold: true };
+      }
       const context = { ...prepared, knowledge: independentKnowledge(prepared.knowledge, input.catalog) };
       if (connection && context.connection_baseline?.already_linked) {
         return { status: 'no_change', reason: 'The exact related article is already linked from the deployed article body.' };
@@ -167,10 +172,11 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
           cleared = receipt;
           break;
         }
-        if (receipt.decision === 'HOLD' || round === maximumRounds) {
+        if (receipt.decision === 'HOLD' || context.dotnet_refresh || round === maximumRounds) {
           const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', checkpoint));
           if (!recorded) return { status: 'held', reason: 'Could not checkpoint the independent review hold.' };
-          return { status: 'held', reason: receipt.decision === 'HOLD' ? 'Independent review requires an owner decision.' : 'Review rounds were exhausted before clearance.', continue_after_hold: true };
+          return { status: 'held', reason: receipt.decision === 'HOLD' || context.dotnet_refresh
+            ? 'Independent review requires an owner decision.' : 'Review rounds were exhausted before clearance.', continue_after_hold: true };
         }
         const revision = await runModelStep(step, `revise-content-${key}-round-${round}`, () => reviseContent(proposal, candidate, context, receipt.findings,
           models, `author:${candidate.id}:revision-${round}`));

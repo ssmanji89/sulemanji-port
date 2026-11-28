@@ -154,7 +154,7 @@ describe('budgeted model gateway', () => {
       limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: config.pricing_revision,
       async captureKnowledgeAuthority() {
         db.control = { paused: 1, owner_epoch: 2 };
-        return { generation: 0, valid_before: null };
+        return { generation: 0, derivatives: [] };
       },
     };
     await expect(new BudgetedModelGateway(provider, config, options).generate({ ...request, purpose: 'review' }))

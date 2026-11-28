@@ -2,13 +2,20 @@ import { MAX_MODEL_CALLS_PER_CANDIDATE, MAX_REVIEW_ROUNDS_PER_CANDIDATE } from '
 
 export type CandidateState = 'DISCOVERED' | 'ELIGIBLE' | 'DRAFTED' | 'REVIEWED' | 'SOURCE_PUBLISHED' | 'DEPLOYED' | 'VERIFIED' | 'NO_CHANGE' | 'NEEDS_OWNER' | 'HELD' | 'FAILED';
 
-export type KnowledgeFence = { generation: number; valid_before: string | null };
-export const KNOWLEDGE_FENCE_SQL = "knowledge_generation = COALESCE(?, knowledge_generation) AND " +
-  "COALESCE(?, '9999-12-31T23:59:59.999Z') > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')";
+export type KnowledgeFence = { generation: number; derivatives: string[] };
+export const KNOWLEDGE_FENCE_SQL = `knowledge_generation = COALESCE(?, knowledge_generation) AND NOT EXISTS (
+  SELECT 1 FROM json_each(COALESCE(?, '[]')) AS dependency
+  LEFT JOIN public_knowledge AS knowledge ON knowledge.derivative_id = dependency.value
+  WHERE knowledge.action IS NOT 'UPSERT' OR knowledge.expires_at <= strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+)`;
+
+export function knowledgeFenceBindings(fence?: KnowledgeFence): [number | null, string | null] {
+  return fence ? [fence.generation, JSON.stringify(fence.derivatives)] : [null, null];
+}
 
 export async function readKnowledgeFence(db: D1Database, ownerEpoch: number, fence: KnowledgeFence): Promise<boolean> {
   const row = await db.prepare('SELECT 1 AS authorized FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ? AND ' + KNOWLEDGE_FENCE_SQL)
-    .bind(ownerEpoch, fence.generation, fence.valid_before).first<{ authorized: number }>();
+    .bind(ownerEpoch, ...knowledgeFenceBindings(fence)).first<{ authorized: number }>();
   return row?.authorized === 1;
 }
 
@@ -29,7 +36,7 @@ export async function recordModelCall(db: D1Database, candidateId: string, owner
     AND EXISTS (
       SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ? AND ${KNOWLEDGE_FENCE_SQL}
     )`).bind(reviewIncrement, new Date().toISOString(), candidateId, maximum, reviewIncrement, maximumReviews,
-    ownerEpoch, fence?.generation ?? null, fence?.valid_before ?? null).run();
+    ownerEpoch, ...knowledgeFenceBindings(fence)).run();
   return (result.meta.changes ?? 0) === 1;
 }
 

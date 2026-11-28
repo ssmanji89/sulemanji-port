@@ -7,7 +7,7 @@ import { GitHubApiPublisher } from './github.js';
 import { D1PublishEffectStore } from './effects.js';
 import { fingerprintPublicKnowledge } from './knowledge.js';
 import { publishContent, verifyPublicationDetailed } from './publisher.js';
-import { KNOWLEDGE_FENCE_SQL, readControl, type KnowledgeFence } from './state.js';
+import { knowledgeFenceBindings, KNOWLEDGE_FENCE_SQL, readControl, type KnowledgeFence } from './state.js';
 import { captureKnowledgeAuthority } from './knowledge-authority.js';
 import { revalidateSignalSourceDigest } from './sources.js';
 import type { SocialCardRenderer } from './social-card-format.js';
@@ -54,8 +54,7 @@ async function persistCandidateCheckpoint(db: D1Database, candidateId: string, o
     WHERE id = ? AND revision = ? AND payload_json = ? AND state = ? AND publication_retry_claim IS ? AND EXISTS (
       SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ? AND ${KNOWLEDGE_FENCE_SQL}
     )`).bind(state, next, new Date().toISOString(), checkpoint.retry_after ?? null,
-    candidateId, row.revision, row.payload_json, row.state, claim ?? null, ownerEpoch, reviewFence?.generation ?? null,
-    reviewFence?.valid_before ?? null).run();
+    candidateId, row.revision, row.payload_json, row.state, claim ?? null, ownerEpoch, ...knowledgeFenceBindings(reviewFence)).run();
   if ((result.meta.changes ?? 0) !== 1) return false;
   const readback = await db.prepare('SELECT state, revision, payload_json, publication_retry_claim FROM editorial_candidates WHERE id = ?').bind(candidateId).first<CandidateRow>();
   return Boolean(readback && readback.state === state && readback.revision === row.revision && readback.payload_json === next);
@@ -144,7 +143,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
           JOIN editorial_candidates AS candidate ON candidate.id = ? AND candidate.revision = ? AND candidate.publication_retry_claim IS ?
             AND candidate.state <> 'NO_CHANGE'
           WHERE control.singleton = 1 AND ${KNOWLEDGE_FENCE_SQL}`).bind(proposal.candidate_id, signal.source_revision, claim ?? null,
-          fence?.generation ?? null, fence?.valid_before ?? null)
+          ...knowledgeFenceBindings(fence))
           .first<{ paused: number; owner_epoch: number }>();
         return row ? { paused: row.paused === 1, owner_epoch: row.owner_epoch } : { paused: true, owner_epoch: 0 };
       };

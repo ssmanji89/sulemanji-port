@@ -5,6 +5,7 @@ import { fingerprintPublicKnowledge, getPublicKnowledge, ingestKnowledge } from 
 import { independentKnowledge } from '../src/editorial/evidence-origin.js';
 import { captureKnowledgeAuthority, readKnowledge } from '../src/editorial/knowledge-authority.js';
 import { BudgetedModelGateway, type ModelConfig, type ModelRequest } from '../src/editorial/models.js';
+import { readKnowledgeFence } from '../src/editorial/state.js';
 import type { EditorialEnv, KnowledgeEnvelope, PublicKnowledge } from '../src/editorial/contracts.js';
 
 const NOW = new Date('2026-11-26T18:00:00.000Z');
@@ -115,7 +116,44 @@ describe('signed public knowledge import', () => {
     expect(await fingerprintPublicKnowledge([], POLICY)).not.toBe(await fingerprintPublicKnowledge([], 'replacement-policy'));
   });
 
-  it.each(['withdraw-before-admission', 'pause-before-dispatch', 'expire-before-admission', 'withdraw-during-review', 'valid-review'] as const)
+  it('expires a projection when a skipped row can expose other authorized knowledge', async () => {
+    const at = new Date(Date.now() - 120_000);
+    const issued_at = at.toISOString();
+    const hiddenUntil = new Date(at.getTime() + 60_000).toISOString();
+    expect(await importEnvelope(await makeEnvelope({ issued_at,
+      expires_at: new Date(at.getTime() + 3600_000).toISOString() }), env, at)).toMatchObject({ status: 'accepted' });
+    const recycled = { ...payload, public_sources: [{ ...payload.public_sources[0], url: 'https://www.sulemanji.com/notes/site-copy' }] };
+    expect(await importEnvelope(await makeEnvelope({ issued_at, expires_at: hiddenUntil, derivative_id: 'second-derivative',
+      revision: 'copied-data', sequence: 2, payload: recycled, payload_sha256: await digest(recycled) }), env, at))
+      .toMatchObject({ status: 'accepted' });
+    db.exec('UPDATE editorial_control SET paused = 0');
+    const hidden = await captureKnowledgeAuthority(env.DB, 1, at, [], POLICY);
+    const visible = await captureKnowledgeAuthority(env.DB, 1, new Date(), [], POLICY);
+    expect(hidden?.revision).toBe(await fingerprintPublicKnowledge([], POLICY));
+    expect(visible?.revision).toBe(await fingerprintPublicKnowledge([payload], POLICY));
+    expect(hidden?.fence.generation).toBe(visible?.fence.generation);
+    expect(await readKnowledgeFence(env.DB, 1, hidden!.fence)).toBe(false);
+  });
+
+  it('invalidates clearance when a same-content renewal changes the selected derivative', async () => {
+    const at = new Date();
+    const dates = { issued_at: at.toISOString(), expires_at: new Date(at.getTime() + 60_000).toISOString() };
+    const alternate = { ...payload, summary: 'A distinct authorized account for this subject.' };
+    expect(await importEnvelope(await makeEnvelope(dates), env, at)).toMatchObject({ status: 'accepted' });
+    expect(await importEnvelope(await makeEnvelope({ ...dates, derivative_id: 'alternate-derivative', revision: 'alternate',
+      sequence: 2, payload: alternate, payload_sha256: await digest(alternate) }), env, at)).toMatchObject({ status: 'accepted' });
+    db.exec('UPDATE editorial_control SET paused = 0');
+    const before = await captureKnowledgeAuthority(env.DB, 1, at, [], POLICY);
+    expect(before?.revision).toBe(await fingerprintPublicKnowledge([alternate], POLICY));
+    expect(await importEnvelope(await makeEnvelope({ ...dates, sequence: 3,
+      expires_at: new Date(at.getTime() + 120_000).toISOString() }), env, at)).toMatchObject({ status: 'accepted' });
+    const after = await captureKnowledgeAuthority(env.DB, 1, at, [], POLICY);
+    expect(after?.revision).toBe(await fingerprintPublicKnowledge([payload], POLICY));
+    expect(await readKnowledgeFence(env.DB, 1, before!.fence)).toBe(false);
+  });
+
+  it.each(['withdraw-before-admission', 'pause-before-dispatch', 'expire-before-admission', 'withdraw-during-review',
+    'withdraw-and-regrant', 'renew-during-review', 'valid-review'] as const)
     ('checks the actual signed snapshot and D1 effect boundary for %s', async (scenario) => {
       const at = new Date(Date.now() - (scenario === 'expire-before-admission' ? 120_000 : 0));
       const times = { issued_at: at.toISOString(), expires_at: new Date(at.getTime() + 60_000).toISOString() };
@@ -132,7 +170,11 @@ describe('signed public knowledge import', () => {
       let dispatched = 0;
       const gateway = new BudgetedModelGateway({ async generate(request) {
         dispatched++;
-        if (scenario === 'withdraw-during-review') await withdraw();
+        if (scenario === 'withdraw-during-review' || scenario === 'withdraw-and-regrant') await withdraw();
+        if (scenario === 'renew-during-review' || scenario === 'withdraw-and-regrant') {
+          const renewal = await makeEnvelope({ ...times, sequence: 3, expires_at: new Date(at.getTime() + 120_000).toISOString() });
+          expect(await importEnvelope(renewal, env, at)).toMatchObject({ status: 'accepted' });
+        }
         return { run_id: request.run_id, output: { decision: 'CLEAR', findings: [] }, actual_usd: 0.001, provider_request_id: 'test' };
       } }, cfg, {
         db: env.DB, candidate_id: 'candidate-a', owner_epoch: 1, max_model_calls: 6, max_review_rounds: 3,
@@ -151,12 +193,13 @@ describe('signed public knowledge import', () => {
       });
       const request: ModelRequest = { run_id: 'review-attempt', reservation_id: 'review-attempt', purpose: 'review',
         input: '{}', schema_id: 'review-test', schema: {}, max_output_tokens: 100 };
-      if (scenario === 'valid-review') {
-        await expect(gateway.generate(request)).resolves.toMatchObject({ knowledge_fence: { valid_before: times.expires_at } });
+      const valid = scenario === 'valid-review' || scenario === 'renew-during-review';
+      if (valid) {
+        await expect(gateway.generate(request)).resolves.toMatchObject({ knowledge_fence: { derivatives: ['derivative.project.viyu'] } });
       } else {
         await expect(gateway.generate(request)).rejects.toThrow('MODEL_KNOWLEDGE_AUTHORITY_CHANGED');
       }
-      const sent = scenario === 'withdraw-during-review' || scenario === 'valid-review';
+      const sent = valid || scenario === 'withdraw-during-review' || scenario === 'withdraw-and-regrant';
       expect(dispatched).toBe(sent ? 1 : 0);
       const reservation = await env.DB.prepare('SELECT actual_micros FROM usage_reservations WHERE id = ?').bind(request.reservation_id).first();
       expect(reservation).toMatchObject({ actual_micros: sent ? 1000 : 0 });

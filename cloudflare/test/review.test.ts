@@ -138,8 +138,8 @@ describe('independent content preparation and review', () => {
     // Kramdown makes the footnote a final sibling after the added paragraph.
     const original = current + '\n\nAn existing example.[^example]\n\n[^example]: The original footnote.\n';
     const render = (file: string) => execFileSync('bundle',
-      ['exec', 'ruby', '-rjekyll', '-e', 'c=Jekyll::Converters::Markdown.new(Jekyll.configuration({quiet:true})); print c.convert(STDIN.read)'],
-      { input: file.split(/^---\s*$/m).slice(2).join('---'), cwd: root, encoding: 'utf8', stdio: ['pipe', 'pipe', 'ignore'] });
+      ['exec', 'ruby', '-EUTF-8', '-rjekyll', '-e', 'c=Jekyll::Converters::Markdown.new(Jekyll.configuration({quiet:true})); print c.convert(STDIN.read)'],
+      { input: file.split(/^---\s*$/m).slice(2).join('---'), cwd: root, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
     const canonical = 'https://www.sulemanji.com' + from.url;
     const wrap = (html: string) => `<head><link rel="canonical" href="${canonical}"></head><h1>${from.title}</h1><div data-writing-body>${html}</div>`;
     const headers = { 'x-site-source-commit': context.base_commit, 'x-site-asset-digest': 'sha256:' + 'a'.repeat(64),

@@ -89,7 +89,7 @@ describe('GitHub publication read adapters', () => {
 
     await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch: 'editorial/candidate-42', base_commit: base,
       content_digest: 'c'.repeat(64), files: [{ path: 'notes/reviewed-article.md', operation, encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
-      title: 'Reviewed article', body: 'Reviewed proposal.' })).rejects.toThrow(expected);
+      title: 'Reviewed article', body: 'Reviewed proposal.' }, async () => true)).rejects.toThrow(expected);
     expect(fetcher).toHaveBeenCalledTimes(3);
     expect(fetcher.mock.calls.some(([input]) => String(input).endsWith('/git/blobs'))).toBe(false);
   });
@@ -120,7 +120,7 @@ describe('GitHub publication read adapters', () => {
 
     await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch, base_commit: base, content_digest: 'c'.repeat(64),
       files: [{ path: 'notes/reviewed-article.md', operation: 'create', encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
-      title: 'Reviewed article', body: 'Reviewed proposal.' })).rejects.toThrow('GITHUB_BRANCH_CONTENT_MISMATCH');
+      title: 'Reviewed article', body: 'Reviewed proposal.' }, async () => true)).rejects.toThrow('GITHUB_BRANCH_CONTENT_MISMATCH');
     expect(fetcher.mock.calls.some(([input]) => String(input).endsWith('/pulls'))).toBe(false);
   });
 
@@ -190,7 +190,7 @@ describe('GitHub publication read adapters', () => {
 
     await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch, base_commit: base, content_digest: 'c'.repeat(64),
       files: [{ path: 'notes/reviewed-article.md', operation: 'create', encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
-      title: 'Reviewed article', body: 'Reviewed proposal.' })).rejects.toThrow('GITHUB_PR_CONTENT_MISMATCH');
+      title: 'Reviewed article', body: 'Reviewed proposal.' }, async () => true)).rejects.toThrow('GITHUB_PR_CONTENT_MISMATCH');
   });
 
   it('creates and returns a pull request only after its exact expected tree is confirmed', async () => {
@@ -218,6 +218,31 @@ describe('GitHub publication read adapters', () => {
 
     await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch, base_commit: base, content_digest: 'c'.repeat(64),
       files: [{ path: 'notes/reviewed-article.md', operation: 'create', encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
-      title: 'Reviewed article', body: 'Reviewed proposal.' })).resolves.toMatchObject({ number: 9, head_sha: head, checks: 'success' });
+      title: 'Reviewed article', body: 'Reviewed proposal.' }, async () => true)).resolves.toMatchObject({ number: 9, head_sha: head, checks: 'success' });
+  });
+
+  it('checks authority again before sharing a prepared commit through a branch or pull request', async () => {
+    const base = 'a'.repeat(40);
+    let authorized = true;
+    const writes: string[] = [];
+    const fetcher: typeof fetch = async (input, init) => {
+      const uri = new URL(String(input));
+      if (init?.method === 'POST') writes.push(uri.pathname.split('/').at(-1)!);
+      if (uri.pathname.endsWith('/git/ref/heads/main')) return Response.json({ object: { sha: base } });
+      if (uri.pathname.endsWith('/git/commits/' + base)) return Response.json({ tree: { sha: 'b'.repeat(40) } });
+      if (uri.pathname.includes('/contents/')) return new Response('not found', { status: 404 });
+      if (uri.pathname.endsWith('/git/blobs')) return Response.json({ sha: 'c'.repeat(40) });
+      if (uri.pathname.endsWith('/git/trees')) return Response.json({ sha: 'd'.repeat(40) });
+      if (uri.pathname.endsWith('/git/commits')) {
+        authorized = false;
+        return Response.json({ sha: 'e'.repeat(40) });
+      }
+      throw new Error('Unexpected GitHub effect');
+    };
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository: 'ssmanji89/sulemanji-port', required_checks: ['site-release'] }, fetcher);
+    await expect(github.createReviewedBranchAndPullRequest({ candidate_id: 'candidate-42', branch: 'editorial/candidate-42', base_commit: base,
+      content_digest: 'c'.repeat(64), files: [{ path: 'notes/reviewed-article.md', operation: 'create', encoding: 'utf-8', content: 'reviewed', content_sha256: 'd'.repeat(64) }],
+      title: 'Reviewed article', body: 'Reviewed proposal.' }, async () => authorized)).rejects.toThrow('GITHUB_WRITE_AUTHORITY_CHANGED');
+    expect(writes).toEqual(['blobs', 'trees', 'commits']);
   });
 });

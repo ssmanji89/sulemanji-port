@@ -3,7 +3,8 @@ import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { fingerprintPublicKnowledge, getPublicKnowledge, ingestKnowledge } from '../src/editorial/knowledge.js';
 import { independentKnowledge } from '../src/editorial/evidence-origin.js';
-import { readKnowledge } from '../src/editorial/workflow-core.js';
+import { captureKnowledgeAuthority, readKnowledge } from '../src/editorial/knowledge-authority.js';
+import { BudgetedModelGateway, type ModelConfig, type ModelRequest } from '../src/editorial/models.js';
 import type { EditorialEnv, KnowledgeEnvelope, PublicKnowledge } from '../src/editorial/contracts.js';
 
 const NOW = new Date('2026-11-26T18:00:00.000Z');
@@ -25,25 +26,30 @@ async function digest(value: unknown): Promise<string> {
 class KnowledgeD1Fixture {
   private readonly database = new DatabaseSync(':memory:');
   beforeWrite?: () => Promise<void>;
+  beforeRead?: (sql: string) => void;
 
   constructor() {
     this.database.exec(readFileSync(new URL('../migrations/0001_editorial.sql', import.meta.url), 'utf8'));
+    this.database.exec(readFileSync(new URL('../migrations/0002_editorial_operations.sql', import.meta.url), 'utf8'));
+    this.database.exec(readFileSync(new URL('../migrations/0008_editorial_knowledge_authority.sql', import.meta.url), 'utf8'));
   }
 
   clear() {
     this.beforeWrite = undefined;
-    this.database.exec('DELETE FROM public_knowledge');
+    this.beforeRead = undefined;
+    this.database.exec('DELETE FROM public_knowledge; DELETE FROM usage_reservations; DELETE FROM editorial_candidates; UPDATE editorial_control SET paused = 1, owner_epoch = 1');
   }
 
   count() {
     return this.database.prepare('SELECT count(*) AS total FROM public_knowledge').get()?.total;
   }
 
+  exec(sql: string) { this.database.exec(sql); }
+
   prepare(sql: string) {
     const statement = this.database.prepare(sql);
-    return {
-      bind: (...args: SQLInputValue[]) => ({
-        first: async <T>() => (statement.get(...args) ?? null) as T | null,
+    const bound = (...args: SQLInputValue[]) => ({
+        first: async <T>() => { this.beforeRead?.(sql); return (statement.get(...args) ?? null) as T | null; },
         all: async <T>() => ({ results: statement.all(...args) as T[] }),
         run: async () => {
           const beforeWrite = this.beforeWrite;
@@ -51,8 +57,8 @@ class KnowledgeD1Fixture {
           await beforeWrite?.();
           return { meta: { changes: statement.run(...args).changes } };
         },
-      }),
-    };
+    });
+    return { ...bound(), bind: bound };
   }
 }
 
@@ -89,9 +95,9 @@ async function makeEnvelope(overrides: Partial<KnowledgeEnvelope> = {}): Promise
   return { ...base, ...overrides };
 }
 
-async function importEnvelope(envelope: KnowledgeEnvelope, requestEnv = env) {
+async function importEnvelope(envelope: KnowledgeEnvelope, requestEnv = env, at = NOW) {
   const request = await signed(envelope);
-  return ingestKnowledge(request.raw, request.signature, KEY_ID, requestEnv, NOW);
+  return ingestKnowledge(request.raw, request.signature, KEY_ID, requestEnv, at);
 }
 
 describe('signed public knowledge import', () => {
@@ -101,6 +107,63 @@ describe('signed public knowledge import', () => {
     expect(result).toEqual({ status: 'accepted', derivative_id: 'derivative.project.viyu', sequence: 1 });
     expect(JSON.stringify(result)).not.toContain(payload.subject_id);
   });
+
+  it('projects only records signed for the currently selected policy', async () => {
+    expect(await importEnvelope(await makeEnvelope())).toMatchObject({ status: 'accepted' });
+    expect(await readKnowledge(env.DB, NOW, [], POLICY)).toEqual([payload]);
+    expect(await readKnowledge(env.DB, NOW, [], 'replacement-policy')).toEqual([]);
+    expect(await fingerprintPublicKnowledge([], POLICY)).not.toBe(await fingerprintPublicKnowledge([], 'replacement-policy'));
+  });
+
+  it.each(['withdraw-before-admission', 'pause-before-dispatch', 'expire-before-admission', 'withdraw-during-review', 'valid-review'] as const)
+    ('checks the actual signed snapshot and D1 effect boundary for %s', async (scenario) => {
+      const at = new Date(Date.now() - (scenario === 'expire-before-admission' ? 120_000 : 0));
+      const times = { issued_at: at.toISOString(), expires_at: new Date(at.getTime() + 60_000).toISOString() };
+      expect(await importEnvelope(await makeEnvelope(times), env, at)).toMatchObject({ status: 'accepted' });
+      const withdrawal = await makeEnvelope({ ...times, sequence: 2, revision: 'withdrawal', action: 'WITHDRAW',
+        payload: null, payload_sha256: await digest(null) });
+      const withdraw = async () => {
+        expect(await importEnvelope(withdrawal, env, at)).toMatchObject({ status: 'withdrawn' });
+      };
+      db.exec("UPDATE editorial_control SET paused = 0; INSERT INTO editorial_candidates (id, state, revision, payload_json, updated_at) VALUES ('candidate-a', 'DRAFTED', 'test', '{}', '')");
+      const cfg: ModelConfig = { endpoint: 'https://provider.example.test/chat', api_key: 'test', model_id: 'test',
+        pricing_revision: 'test', input_usd_per_million: 1, output_usd_per_million: 1, max_input_chars: 4000, max_output_tokens: 500 };
+      const expected = await fingerprintPublicKnowledge([payload], POLICY);
+      let dispatched = 0;
+      const gateway = new BudgetedModelGateway({ async generate(request) {
+        dispatched++;
+        if (scenario === 'withdraw-during-review') await withdraw();
+        return { run_id: request.run_id, output: { decision: 'CLEAR', findings: [] }, actual_usd: 0.001, provider_request_id: 'test' };
+      } }, cfg, {
+        db: env.DB, candidate_id: 'candidate-a', owner_epoch: 1, max_model_calls: 6, max_review_rounds: 3,
+        limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: 'test',
+        async captureKnowledgeAuthority() {
+          const scoped = await captureKnowledgeAuthority(env.DB, 1, at, [], POLICY);
+          expect(scoped?.revision).toBe(expected);
+          if (scenario === 'withdraw-before-admission') db.beforeWrite = withdraw;
+          if (scenario === 'pause-before-dispatch') db.beforeRead = (sql) => {
+            if (!sql.startsWith('SELECT 1 AS authorized')) return;
+            db.beforeRead = undefined;
+            db.exec('UPDATE editorial_control SET paused = 1, owner_epoch = 2');
+          };
+          return scoped!.fence;
+        },
+      });
+      const request: ModelRequest = { run_id: 'review-attempt', reservation_id: 'review-attempt', purpose: 'review',
+        input: '{}', schema_id: 'review-test', schema: {}, max_output_tokens: 100 };
+      if (scenario === 'valid-review') {
+        await expect(gateway.generate(request)).resolves.toMatchObject({ knowledge_fence: { valid_before: times.expires_at } });
+      } else {
+        await expect(gateway.generate(request)).rejects.toThrow('MODEL_KNOWLEDGE_AUTHORITY_CHANGED');
+      }
+      const sent = scenario === 'withdraw-during-review' || scenario === 'valid-review';
+      expect(dispatched).toBe(sent ? 1 : 0);
+      const reservation = await env.DB.prepare('SELECT actual_micros FROM usage_reservations WHERE id = ?').bind(request.reservation_id).first();
+      expect(reservation).toMatchObject({ actual_micros: sent ? 1000 : 0 });
+      const counters = await env.DB.prepare('SELECT model_calls, review_rounds FROM editorial_candidates WHERE id = ?').bind('candidate-a').first();
+      const admitted = scenario === 'withdraw-before-admission' || scenario === 'expire-before-admission' ? 0 : 1;
+      expect(counters).toMatchObject({ model_calls: admitted, review_rounds: admitted });
+    });
 
   it('keeps the import receipt for a fresh derivative but excludes recycled evidence from model knowledge', async () => {
     const article = { id: 'article', url: '/notes/workflow-guide', title: 'Workflow release guide',
@@ -133,11 +196,11 @@ describe('signed public knowledge import', () => {
       const id = `subject-${String(index).padStart(3, '0')}`;
       await store(id, { ...payload, subject_id: id });
     }
-    const before = await readKnowledge(env.DB, NOW, []);
+    const before = await readKnowledge(env.DB, NOW, [], POLICY);
     expect(before).toHaveLength(100);
     await store('early-recycled-derivative', { ...payload, subject_id: 'earlier-subject',
       public_sources: [{ ...payload.public_sources[0], url: 'https://sulemanji.com/notes/own-work' }] });
-    const after = await readKnowledge(env.DB, NOW, []);
+    const after = await readKnowledge(env.DB, NOW, [], POLICY);
     expect(after).toEqual(before);
     expect(await fingerprintPublicKnowledge(after)).toBe(await fingerprintPublicKnowledge(before));
   });

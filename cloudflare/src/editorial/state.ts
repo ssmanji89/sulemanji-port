@@ -2,6 +2,16 @@ import { MAX_MODEL_CALLS_PER_CANDIDATE, MAX_REVIEW_ROUNDS_PER_CANDIDATE } from '
 
 export type CandidateState = 'DISCOVERED' | 'ELIGIBLE' | 'DRAFTED' | 'REVIEWED' | 'SOURCE_PUBLISHED' | 'DEPLOYED' | 'VERIFIED' | 'NO_CHANGE' | 'NEEDS_OWNER' | 'HELD' | 'FAILED';
 
+export type KnowledgeFence = { generation: number; valid_before: string | null };
+export const KNOWLEDGE_FENCE_SQL = "knowledge_generation = COALESCE(?, knowledge_generation) AND " +
+  "COALESCE(?, '9999-12-31T23:59:59.999Z') > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')";
+
+export async function readKnowledgeFence(db: D1Database, ownerEpoch: number, fence: KnowledgeFence): Promise<boolean> {
+  const row = await db.prepare('SELECT 1 AS authorized FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ? AND ' + KNOWLEDGE_FENCE_SQL)
+    .bind(ownerEpoch, fence.generation, fence.valid_before).first<{ authorized: number }>();
+  return row?.authorized === 1;
+}
+
 export async function transitionCandidate(db: D1Database, id: string, from: CandidateState, to: CandidateState, revision: string): Promise<boolean> {
   const result = await db.prepare('UPDATE editorial_candidates SET state = ?, revision = ?, updated_at = ? WHERE id = ? AND state = ? AND revision = ?')
     .bind(to, `${revision}:${to}`, new Date().toISOString(), id, from, revision).run();
@@ -9,7 +19,7 @@ export async function transitionCandidate(db: D1Database, id: string, from: Cand
 }
 
 export async function recordModelCall(db: D1Database, candidateId: string, ownerEpoch: number, maximum = MAX_MODEL_CALLS_PER_CANDIDATE,
-  maximumReviews = MAX_REVIEW_ROUNDS_PER_CANDIDATE, isReview = false): Promise<boolean> {
+  maximumReviews = MAX_REVIEW_ROUNDS_PER_CANDIDATE, isReview = false, fence?: KnowledgeFence): Promise<boolean> {
   if (!Number.isSafeInteger(ownerEpoch) || ownerEpoch < 1 || !Number.isSafeInteger(maximum) || maximum < 1 || maximum > MAX_MODEL_CALLS_PER_CANDIDATE) return false;
   if (!Number.isSafeInteger(maximumReviews) || maximumReviews < 1 || maximumReviews > MAX_REVIEW_ROUNDS_PER_CANDIDATE) return false;
   const reviewIncrement = isReview ? 1 : 0;
@@ -17,8 +27,9 @@ export async function recordModelCall(db: D1Database, candidateId: string, owner
     review_rounds = review_rounds + ?, updated_at = ?
     WHERE id = ? AND model_calls < ? AND (? = 0 OR review_rounds < ?)
     AND EXISTS (
-      SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
-    )`).bind(reviewIncrement, new Date().toISOString(), candidateId, maximum, reviewIncrement, maximumReviews, ownerEpoch).run();
+      SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ? AND ${KNOWLEDGE_FENCE_SQL}
+    )`).bind(reviewIncrement, new Date().toISOString(), candidateId, maximum, reviewIncrement, maximumReviews,
+    ownerEpoch, fence?.generation ?? null, fence?.valid_before ?? null).run();
   return (result.meta.changes ?? 0) === 1;
 }
 

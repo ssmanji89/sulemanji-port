@@ -20,11 +20,11 @@ type CandidatePipelineInput = {
 export type ReviewedPublication = { proposal: ContentProposal; review: ReviewReceipt; attempt: PublishAttempt };
 export type DeferredReview = ReviewedPublication & { claim: string };
 type PublicationResult = { attempt: PublishAttempt; merged: boolean };
-type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true; checkpoint_owner?: true };
+type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true; checkpoint_owner?: true; stale_knowledge?: true };
 export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt; retry_after?: string; signal?: Signal; reason?: string };
 export type CandidateCheckpointState = 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'CAPACITY_HELD' | 'VERIFIED' | 'NO_CHANGE';
 export type CandidatePipelineDependencies = {
-  modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
+  modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy, context: PreparationContext): ModelGateway;
   renderSocialCard: SocialCardRenderer;
   preparationContext(input: CandidatePipelineInput): Promise<PreparationContext | { refresh_hold: string }>;
   publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal, catalog: CatalogItem[], claim?: string): Promise<PublicationResult>;
@@ -43,6 +43,7 @@ async function runModelStep<T>(step: DurableStep, name: string, generate: () => 
     } catch (error) {
       if (error instanceof ContextualLinkHold) return { modelHoldReason: error.message, continue_after_hold: true, checkpoint_owner: true };
       if (error instanceof ModelAdmissionHoldError) {
+        if (error.message === 'MODEL_KNOWLEDGE_AUTHORITY_CHANGED') return { modelHoldReason: error.reason, stale_knowledge: true };
         // Only limits specific to this candidate leave unrelated model work qualified.
         const candidateLimit = error.message === 'MODEL_CALL_LIMIT_HOLD' || error.message === 'MODEL_REVIEW_ROUND_LIMIT_HOLD' ||
           error.message === 'MODEL_REQUEST_LIMIT';
@@ -76,6 +77,11 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
           deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', checkpoint, claim));
         if (!recorded) return { status: 'held', reason: 'Could not checkpoint the contextual link hold.' };
         return { status: 'held', reason, continue_after_hold: true };
+      };
+      const holdKnowledgeChange = async (reason: string, label: string, proposal?: ContentProposal): Promise<CandidateProcessOutcome> => {
+        const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-knowledge-${label}`, () =>
+          deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', { ...(proposal ? { proposal } : {}), reason }));
+        return { status: 'held', reason: recorded ? reason : 'Could not checkpoint the change in knowledge authority.' };
       };
       const qualifiedConnection = (proposal: ContentProposal): boolean => {
         if (!connection) return false;
@@ -120,10 +126,11 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       if (connection && context.connection_baseline?.already_linked) {
         return { status: 'no_change', reason: 'The exact related article is already linked from the deployed article body.' };
       }
-      const models = deps.modelsFor(candidate, ownerEpoch, policy);
+      const models = deps.modelsFor(candidate, ownerEpoch, policy, context);
       const draftProposal = await runModelStep(step, `prepare-content-${key}`,
         () => prepareContent(candidate, context, models, `author:${candidate.id}`));
       if ('modelHoldReason' in draftProposal) {
+        if (draftProposal.stale_knowledge) return holdKnowledgeChange(draftProposal.modelHoldReason, 'draft');
         return draftProposal.checkpoint_owner ? holdConnection(draftProposal.modelHoldReason, 'draft', {}) : modelHoldOutcome(draftProposal);
       }
       if (candidate.action === 'CONNECT' && !qualifiedConnection(draftProposal)) {
@@ -159,7 +166,8 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         const reviewerRunId = `review:${candidate.id}:round-${round}`;
         const reviewContext = { ...context, reviewer_run_id: reviewerRunId };
         const receipt = await runModelStep(step, `review-content-${key}-round-${round}`, () => reviewContent(proposal, reviewContext, models));
-        if ('modelHoldReason' in receipt) return modelHoldOutcome(receipt);
+        if ('modelHoldReason' in receipt) return receipt.stale_knowledge
+          ? holdKnowledgeChange(receipt.modelHoldReason, `review-${round}`, proposal) : modelHoldOutcome(receipt);
         checkpoint = { proposal, review: receipt };
         if (receipt.decision === 'CLEAR') {
           if (receipt.findings.length !== 0 || receipt.reviewer_run_id === proposal.author_run_id || receipt.content_digest !== proposal.content_digest ||
@@ -181,6 +189,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         const revision = await runModelStep(step, `revise-content-${key}-round-${round}`, () => reviseContent(proposal, candidate, context, receipt.findings,
           models, `author:${candidate.id}:revision-${round}`));
         if ('modelHoldReason' in revision) {
+          if (revision.stale_knowledge) return holdKnowledgeChange(revision.modelHoldReason, `revision-${round}`, proposal);
           return revision.checkpoint_owner ? holdConnection(revision.modelHoldReason, `revision-${round}`, checkpoint) : modelHoldOutcome(revision);
         }
         if (candidate.action === 'CONNECT' && !qualifiedConnection(revision)) {

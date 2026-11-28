@@ -12,7 +12,8 @@ export type PullRequestState = { number: number; head_sha: string; state: 'open'
 export interface GitHubPublisher {
   readTextFile(path: string, ref: string): Promise<string>;
   findPullRequest(branch: string): Promise<PullRequestState | null>;
-  createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState>;
+  createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string },
+    authorize: () => Promise<boolean>): Promise<PullRequestState>;
   hasStrictMergeChecks(): Promise<boolean>;
   mergePullRequest(number: number, expectedHead: string, authorize: () => Promise<boolean>): Promise<{ merge_commit_sha: string } | { refused: true }>;
 }
@@ -32,7 +33,7 @@ export interface PublishEffectStore {
 type PublicationAuthority = Pick<PublicationState, 'owner_epoch' | 'paused'>;
 export type PublishDependencies = {
   store: PublishEffectStore; github: GitHubPublisher;
-  readAuthority(): Promise<PublicationAuthority>;
+  readAuthority(fence?: PublicationState['knowledge_fence']): Promise<PublicationAuthority>;
   currentState(): Promise<PublicationState>;
 };
 
@@ -102,6 +103,10 @@ async function bindRefreshCitations(proposal: ContentProposal, github: GitHubPub
 export async function publishContent(proposal: ContentProposal, receipt: ReviewReceipt, deps: PublishDependencies): Promise<PublishAttempt> {
   const branch = `editorial/candidate-${proposal.candidate_id.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 80)}`;
   const attemptId = `publication:${proposal.candidate_id}`;
+  const stillAuthorized = async (snapshot: PublicationState) => {
+    const authority = await deps.readAuthority(snapshot.knowledge_fence);
+    return !authority.paused && authority.owner_epoch === snapshot.owner_epoch;
+  };
   const recorded = await deps.store.read(proposal.candidate_id);
   let knownPull: PullRequestState | null = null;
   let boundProposal: ContentProposal | null = null;
@@ -148,7 +153,8 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
       const check = await canPublish(proposal, receipt, fresh);
       if (!check.allowed) { await deps.store.record(proposal.candidate_id, { state: 'FAILED' }); return attemptFor(proposal, fresh, branch, null, null, 'FAILED'); }
       pull = await deps.github.createReviewedBranchAndPullRequest({ candidate_id: proposal.candidate_id, branch, base_commit: proposal.base_commit, content_digest: proposal.content_digest,
-        files: proposal.files, title: `Editorial: ${proposal.expected_content[0].title}`, body: `Candidate ${proposal.candidate_id}\nContent digest ${proposal.content_digest}\nIndependent review ${receipt.reviewer_run_id}` });
+        files: proposal.files, title: `Editorial: ${proposal.expected_content[0].title}`, body: `Candidate ${proposal.candidate_id}\nContent digest ${proposal.content_digest}\nIndependent review ${receipt.reviewer_run_id}` },
+      () => stillAuthorized(fresh));
       await deps.store.record(proposal.candidate_id, { pull_request: pull.number, source_commit: pull.head_sha, state: 'SOURCE_PUBLISHED' });
     } else {
       if (!effect || effect.pull_request !== pull.number || effect.source_commit !== pull.head_sha) {
@@ -189,8 +195,7 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
       const merged = await deps.github.mergePullRequest(pull.number, pull.head_sha, async () => {
         const current = await deps.currentState();
         if (!(await canPublish(proposal, receipt, current)).allowed || !(await deps.store.hasMergeDispatch(proposal.candidate_id, dispatchId))) return false;
-        const authority = await deps.readAuthority();
-        return !authority.paused && authority.owner_epoch === receipt.owner_epoch;
+        return stillAuthorized(current);
       });
       if ('refused' in merged) {
         await deps.store.releaseUndispatchedMerge(proposal.candidate_id, dispatchId);

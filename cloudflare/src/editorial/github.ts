@@ -1,4 +1,3 @@
-import type { ContentProposal } from './contracts.js';
 import type { GitHubPublisher, PullRequestState } from './publisher.js';
 
 type GitHubConfig = { token: string; repository: string; required_checks: string[]; default_branch?: string; api_origin?: string; require_private?: boolean };
@@ -157,7 +156,11 @@ export class GitHubApiPublisher implements GitHubPublisher {
     return this.pullRequestState(pr);
   }
 
-  async createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState> {
+  async createReviewedBranchAndPullRequest(input: Parameters<GitHubPublisher['createReviewedBranchAndPullRequest']>[0],
+    authorize: () => Promise<boolean>): Promise<PullRequestState> {
+    const requireAuthority = async () => {
+      if (!(await authorize())) throw new Error('GITHUB_WRITE_AUTHORITY_CHANGED');
+    };
     await this.assertPrivateFixture();
     const ref = await this.request<{ object: { sha: string } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${this.branch}`);
     if (ref.object.sha !== input.base_commit) throw new Error('GITHUB_BASE_HEAD_CHANGED');
@@ -167,17 +170,22 @@ export class GitHubApiPublisher implements GitHubPublisher {
       if (file.operation === 'create' && exists) throw new Error('GITHUB_CREATE_PATH_EXISTS');
       if (file.operation === 'update' && !exists) throw new Error('GITHUB_UPDATE_PATH_MISSING');
     }
-    const tree = await Promise.all(input.files.map(async (file) => {
+    const tree: Array<{ path: string; mode: '100644'; type: 'blob'; sha: string }> = [];
+    for (const file of input.files) {
       const bytes = file.encoding === 'base64' ? Uint8Array.from(atob(file.content), (char) => char.charCodeAt(0)) : new TextEncoder().encode(file.content);
+      await requireAuthority();
       const blob = await this.request<{ sha: string }>(`/repos/${this.owner}/${this.repo}/git/blobs`, { method: 'POST', body: JSON.stringify({ content: binaryBase64(bytes), encoding: 'base64' }) });
-      return { path: file.path, mode: '100644', type: 'blob', sha: blob.sha };
-    }));
+      tree.push({ path: file.path, mode: '100644', type: 'blob', sha: blob.sha });
+    }
+    await requireAuthority();
     const nextTree = await this.request<{ sha: string }>(`/repos/${this.owner}/${this.repo}/git/trees`, { method: 'POST', body: JSON.stringify({ base_tree: commit.tree.sha, tree }) });
+    await requireAuthority();
     const nextCommit = await this.request<{ sha: string }>(`/repos/${this.owner}/${this.repo}/git/commits`, { method: 'POST', body: JSON.stringify({
       message: `Editorial candidate ${input.candidate_id}\n\nContent-Digest: ${input.content_digest}`, tree: nextTree.sha, parents: [input.base_commit],
     }) });
     const refPath = `/repos/${this.owner}/${this.repo}/git/refs`;
     let branchHead = nextCommit.sha;
+    await requireAuthority();
     try {
       await this.request(refPath, { method: 'POST', body: JSON.stringify({ ref: `refs/heads/${input.branch}`, sha: nextCommit.sha }) });
     } catch (error) {
@@ -190,6 +198,7 @@ export class GitHubApiPublisher implements GitHubPublisher {
       branchHead = existingRef.object.sha;
     }
     let pr: PullRequestApi;
+    await requireAuthority();
     try {
       pr = await this.request<PullRequestApi>(`/repos/${this.owner}/${this.repo}/pulls`, { method: 'POST', body: JSON.stringify({ title: input.title, body: input.body, head: input.branch, base: this.branch, draft: false, maintainer_can_modify: false }) });
     } catch (error) {

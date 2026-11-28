@@ -261,6 +261,35 @@ describe('durable candidate publication pipeline', () => {
     expect(models.calls.filter((call) => call.purpose === purpose)).toHaveLength(1);
   });
 
+  it('invalidates the exact draft when its approved knowledge changes during independent review', async () => {
+    const models = new Models();
+    const generate = models.generate.bind(models);
+    models.generate = async (request) => {
+      if (request.purpose === 'review') throw new ModelAdmissionHoldError('MODEL_KNOWLEDGE_AUTHORITY_CHANGED');
+      return generate(request);
+    };
+    const states: string[] = [];
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, renderSocialCard, preparationContext: async () => context,
+      persist: async (_id, _epoch, state, checkpoint) => {
+        states.push(state);
+        if (state === 'NEEDS_OWNER') {
+          expect(checkpoint.proposal).toBeDefined();
+          expect(checkpoint.review).toBeUndefined();
+          expect(checkpoint.reason).toContain('Approved knowledge changed');
+        }
+        return true;
+      },
+      publish: async () => { throw new Error('A stale review must not publish'); },
+      verify: async () => { throw new Error('A stale review must not run public readback'); },
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps() };
+    const result = await pipeline.processCandidate(input);
+    expect(result).toMatchObject({ status: 'held', reason: expect.stringContaining('Approved knowledge changed') });
+    expect(states).toEqual(['DRAFTED', 'NEEDS_OWNER']);
+  });
+
   it('uses durable waits for pending checks and deployment without repeating authoring on replay', async () => {
     const models = new Models();
     const step = new Steps();

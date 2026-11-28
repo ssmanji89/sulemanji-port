@@ -98,6 +98,7 @@ ${fileHash}`),
             return args[0] === candidate.id && args[1] === candidate.source_digest && args[2] === activeClaim
               ? { paused: 0, owner_epoch: 1 } : null;
           }
+          if (sql.startsWith('SELECT knowledge_generation')) return { knowledge_generation: 0 };
           if (sql.includes('FROM editorial_control')) return { paused: 0, owner_epoch: 1 };
           return null;
         },

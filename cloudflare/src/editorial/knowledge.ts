@@ -258,7 +258,7 @@ export function parsePublicKnowledge(text: string): PublicKnowledge | null {
   } catch { return null; }
 }
 
-export async function fingerprintPublicKnowledge(items: PublicKnowledge[]): Promise<string> {
+export async function fingerprintPublicKnowledge(items: PublicKnowledge[], policyRevision?: string): Promise<string> {
   const canonical = [...items].sort((a, b) => a.subject_id.localeCompare(b.subject_id)).map((item) => ({
     subject_id: item.subject_id,
     summary: item.summary,
@@ -268,7 +268,7 @@ export async function fingerprintPublicKnowledge(items: PublicKnowledge[]): Prom
     })),
     authored_fields: [...item.authored_fields].sort(),
   }));
-  const bytes = new TextEncoder().encode(JSON.stringify({ schema_version: 1, items: canonical }));
+  const bytes = new TextEncoder().encode(JSON.stringify({ schema_version: 1, policy_revision: policyRevision, items: canonical }));
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', source(bytes)));
   return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }

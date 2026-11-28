@@ -14,6 +14,7 @@ from typing import Any
 
 EXCLUDED = {'release.json', 'release-manifest.json', '_headers', '_redirects', '.assetsignore'}
 PUBLIC_ORIGIN = 'https://www.sulemanji.com'
+IMMUTABLE_ASSET_HEADERS = '\n/_site-assets/*\n  Cache-Control: public, max-age=31536000, immutable\n'
 PUBLIC_PAGE_FILES = {
     '/': 'index.html',
     '/explore/': 'explore/index.html',
@@ -246,7 +247,7 @@ def render_release_headers(manifest: dict[str, Any]) -> str:
         f'  X-Site-Built-At: {built_at}\n'
     )
     if any(path.startswith('_site-assets/') for path in manifest.get('files', {})):
-        headers += '\n/_site-assets/*\n  Cache-Control: public, max-age=31536000, immutable\n'
+        headers += IMMUTABLE_ASSET_HEADERS
     return headers
 
 

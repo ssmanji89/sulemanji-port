@@ -137,6 +137,18 @@ def _html_pages(root: Path):
                 yield page
 
 
+def legacy_asset_paths(root: Path) -> set[str]:
+    """List byte-preserved local entrypoints and CSS dependencies of older HTML."""
+    root = root.resolve()
+    entrypoints = set()
+    for page in _html_pages(root):
+        for _, _, value in AssetReferences(page.read_bytes().decode('utf-8')).references:
+            parsed = _site_url(value, page.relative_to(root))
+            if parsed is not None and _source_asset(unquote(parsed.path)):
+                entrypoints.add(unquote(parsed.path)[1:])
+    return set(_build_bundle(root, entrypoints))
+
+
 def verify_versioned_assets(root: Path, *, allow_legacy: bool = False) -> None:
     root = root.resolve()
     directory = root / ASSET_DIRECTORY

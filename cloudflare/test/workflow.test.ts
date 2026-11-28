@@ -572,6 +572,25 @@ describe('deterministic signal workflow', () => {
     expect([...db.receipts.values()].some((row) => row.action === 'HELD_PROVIDER_UNCONFIGURED')).toBe(false);
   });
 
+  it.each(['current', 'prior', 'legacy'] as const)('binds the receipt to the Workflow worker only when its durable start agrees (%s)', async (mode) => {
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: false }));
+    const db = new PipelineD1();
+    const params = { slot_claim_id: '2026-11-27:08:00' };
+    const step = new DurableStep();
+    const workerVersionId = '00000000-0000-0000-0000-000000000001';
+    if (mode !== 'current') {
+      step.values.set('read-editorial-control', {
+        ...db.control,
+        ...(mode === 'prior' ? { worker_version_id: '00000000-0000-0000-0000-000000000002' } : {}),
+      });
+    }
+    const env = { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy,
+      CF_VERSION_METADATA: { id: workerVersionId, tag: '', timestamp: '2026-11-27T10:00:00Z' } };
+    expect(await runEditorialAdmission(params, env as never, step)).toMatchObject({ status: 'no_change' });
+    const saved = db.receipts.get(`slot-result:${params.slot_claim_id}`);
+    expect(JSON.parse(String(saved?.result_json)).workflow_worker_version_id).toBe(mode === 'current' ? workerVersionId : undefined);
+  });
+
   it('persists one successful NO_CHANGE receipt without calling a model when sources have no new items', async () => {
     sourceFetchCalls = 0;
     const fetcher = sourceFetcher({ candidate: false });

@@ -93,6 +93,43 @@ describe('independent content preparation and review', () => {
     expect(noSource.calls).toHaveLength(0);
   });
 
+  it('preserves original references as clickable citations on refresh and revision', async () => {
+    const initial = await makeProposal();
+    const file = initial.files[0];
+    const previousCitation = 'https://vendor.example.test/support?release=41&product=sdk#policy';
+    const table = `\n\n| Context | Evidence |\n| --- | --- |\n| Original policy | [Support policy][policy] |\n\n[policy]: ${previousCitation}\n`;
+    const original = file.content.replace(source.url, previousCitation) + table;
+    const url = new URL(initial.public_urls[0], 'https://www.sulemanji.com').href;
+    const target = { id: 'existing', title: output.title, url, topics: output.topics };
+    const refresh = { ...candidate, action: 'REFRESH' as const, target_id: target.id };
+    const refreshContext = { ...context, catalog: [target], existing_paths: [file.path], existing_files: { [file.path]: original } };
+    const models = new FakeModels();
+    models.outputs = [{ ...output, body: articleBody + table }, output, { ...output, body: articleBody + table }];
+
+    const proposal = await prepareContent(refresh, refreshContext, models);
+    expect(proposal.expected_content[0].required_citations).toEqual([source.url, previousCitation].sort());
+    expect(JSON.parse(models.calls[0].input).original_article).toContain(previousCitation);
+    await expect(reviseContent(proposal, refresh, refreshContext, [], models, 'revision-loses-citation'))
+      .rejects.toThrow('ARTICLE_PATH_OR_CITATION_REJECTED');
+    const revised = await reviseContent(proposal, refresh, refreshContext, [], models, 'revision-keeps-citation');
+    expect(revised.expected_content[0].required_citations).toEqual(proposal.expected_content[0].required_citations);
+  });
+
+  it('rejects a missing prior citation even when the incoming citation is present', async () => {
+    const initial = await makeProposal();
+    const file = initial.files[0];
+    const target = { id: 'existing', title: output.title, url: initial.public_urls[0], topics: output.topics };
+    const refresh = { ...candidate, action: 'REFRESH' as const, target_id: target.id };
+    const priorUrl = 'https://vendor.example.test/support/41';
+    const original = file.content.replace(source.url, priorUrl);
+    const refreshContext = { ...context, catalog: [target], existing_paths: [file.path], existing_files: { [file.path]: original } };
+
+    await expect(prepareContent(refresh, refreshContext, new FakeModels())).rejects.toThrow('ARTICLE_PATH_OR_CITATION_REJECTED');
+    const models = new FakeModels();
+    models.outputs = [{ ...output, body: articleBody + `\n\n![Support policy](${priorUrl})` }];
+    await expect(prepareContent(refresh, refreshContext, models)).rejects.toThrow('ARTICLE_PATH_OR_CITATION_REJECTED');
+  });
+
   it('CONNECT adds a sourced contextual link to an existing article without rewriting it', async () => {
     const initial = await makeProposal();
     const from = { id: 'existing', title: output.title, url: initial.public_urls[0], topics: ['infrastructure'] };
@@ -336,7 +373,7 @@ describe('independent content preparation and review', () => {
       public_urls: [url], expected_content: [{ ...initial.expected_content[0], url }] };
     const refreshCandidate = { ...candidate, target_id: 'existing-article', action: 'REFRESH' as const };
     const refreshContext = { ...context, catalog: [...context.catalog, { id: 'existing-article', title: output.title, url, topics: output.topics }],
-      existing_paths: [file.path] };
+      existing_paths: [file.path], existing_files: { [file.path]: markdown } };
     const models = new FakeModels(); models.outputs = [{ ...output, body: `${articleBody}\n\nAn added, source-supported point helps readers apply the release record.` }];
 
     const revised = await reviseContent(proposal, refreshCandidate, refreshContext, [{ code: 'CLARITY', detail: 'Make the application explicit.' }], models, 'author:revision-refresh');

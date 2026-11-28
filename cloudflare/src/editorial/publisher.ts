@@ -1,13 +1,14 @@
 import type { ContentProposal, PublicationReceipt, PublicationState, PublishAttempt, ReviewReceipt } from './contracts.js';
 import * as parse5 from 'parse5';
-import { articleSourcePath, verifiesContextualLink, verifyRequiredMedia } from './review.js';
-import { CANONICAL_SITE_ORIGIN, connectionParagraph, matchesConnectionParagraph, normalizeNodeText, textDigest as sha256, type HtmlNode } from './site-readback.js';
+import { articleSourcePath, refreshCitations, verifiesContextualLink, verifyRequiredMedia } from './review.js';
+import { articleCitations, CANONICAL_SITE_ORIGIN, connectionParagraph, matchesConnectionParagraph, normalizeNodeText, textDigest as sha256, type HtmlNode } from './site-readback.js';
 import { encodeSocialCard, isSocialCardPng, MAX_CARD_BYTES, socialCardPath } from './social-card-format.js';
 import { readDiscoveryLinks } from './discovery-readback.js';
 
 export type PublishDecision = { allowed: true } | { allowed: false; reasons: string[] };
 export type PullRequestState = { number: number; head_sha: string; state: 'open' | 'closed'; merged: boolean; merge_commit_sha: string | null; checks: 'pending' | 'success' | 'failure' };
 export interface GitHubPublisher {
+  readTextFile(path: string, ref: string): Promise<string>;
   findPullRequest(branch: string): Promise<PullRequestState | null>;
   createReviewedBranchAndPullRequest(input: { candidate_id: string; branch: string; base_commit: string; content_digest: string; files: ContentProposal['files']; title: string; body: string }): Promise<PullRequestState>;
   hasStrictMergeChecks(): Promise<boolean>;
@@ -80,11 +81,28 @@ function attemptFor(proposal: ContentProposal, state: PublicationAuthority, bran
     source_commit: sourceCommit, deployment_version: null, public_urls: proposal.public_urls, expected_content: proposal.expected_content, status };
 }
 
+async function bindRefreshCitations(proposal: ContentProposal, github: GitHubPublisher): Promise<ContentProposal | null> {
+  const expectedContent = [...proposal.expected_content];
+  for (const file of proposal.files) {
+    if (file.operation !== 'update' || !ARTICLE.test(file.path)) continue;
+    const index = expectedContent.findIndex((item) => articleSourcePath(item.url) === file.path);
+    const item = expectedContent[index];
+    if (!item) return null;
+    if (item.contextual_link) continue;
+    const original = await github.readTextFile(file.path, proposal.base_commit);
+    const required = refreshCitations(original, file.content, proposal.public_sources, file.path);
+    if (!required || (item.required_citations && JSON.stringify(item.required_citations) !== JSON.stringify(required))) return null;
+    expectedContent[index] = { ...item, required_citations: required };
+  }
+  return { ...proposal, expected_content: expectedContent };
+}
+
 export async function publishContent(proposal: ContentProposal, receipt: ReviewReceipt, deps: PublishDependencies): Promise<PublishAttempt> {
   const branch = `editorial/candidate-${proposal.candidate_id.replace(/[^a-zA-Z0-9-]/g, '-').slice(0, 80)}`;
   const attemptId = `publication:${proposal.candidate_id}`;
   const recorded = await deps.store.read(proposal.candidate_id);
   let knownPull: PullRequestState | null = null;
+  let boundProposal: ContentProposal | null = null;
   if (recorded && (recorded.state === 'MERGED' || (recorded.pull_request && recorded.source_commit))) {
     const authority = await deps.readAuthority();
     const exact = recorded.pull_request && recorded.effect_id === attemptId && recorded.branch === branch &&
@@ -95,6 +113,9 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
       allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id,
     });
     if (!replay || !replay.allowed) return attemptFor(proposal, authority, branch, null, null, 'FAILED');
+    boundProposal = await bindRefreshCitations(proposal, deps.github);
+    if (!boundProposal) return attemptFor(proposal, authority, branch, null, null, 'FAILED');
+    proposal = boundProposal;
     if (recorded.state === 'FAILED' && recorded.merge_settled_date) return attemptFor(proposal, authority, branch, null, null, 'FAILED');
     if (recorded.state === 'MERGED') return recorded.merge_commit
       ? attemptFor(proposal, authority, branch, recorded.pull_request, recorded.merge_commit, 'SOURCE_PUBLISHED')
@@ -112,6 +133,9 @@ export async function publishContent(proposal: ContentProposal, receipt: ReviewR
   const state = await deps.currentState();
   const decision = await canPublish(proposal, receipt, state);
   if (!decision.allowed) return attemptFor(proposal, state, branch, null, null, 'FAILED');
+  boundProposal ??= await bindRefreshCitations(proposal, deps.github);
+  if (!boundProposal) return attemptFor(proposal, state, branch, null, null, 'FAILED');
+  proposal = boundProposal;
   await deps.store.ensureIntent(proposal.candidate_id, attemptId, branch, state.owner_epoch, proposal.content_digest);
   const effect = await deps.store.read(proposal.candidate_id);
   if (effect?.merge_commit) return attemptFor(proposal, state, branch, effect.pull_request, effect.merge_commit, 'SOURCE_PUBLISHED');
@@ -257,6 +281,13 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       };
       walk(page);
       const context = item.contextual_link;
+      const required = item.required_citations;
+      if (required) {
+        const observed = articles.length === 1 ? articleCitations(articles[0]) : null;
+        if (!observed || observed.size !== required.length || !required.every((url) => observed.has(url))) {
+          throw new Error('reviewed source citations do not match the deployed article');
+        }
+      }
       const matchingText = await Promise.all(articles.map(async (article) => {
         if (!context) return sha256(normalizeNodeText(article));
         const targetPath = articleSourcePath(context.href);

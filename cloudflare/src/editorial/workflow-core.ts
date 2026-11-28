@@ -32,7 +32,10 @@ export type EditorialCandidateProcessor = {
     resumeCapacity?: DeferredReview;
   }): Promise<CandidateProcessOutcome>;
 };
-type EditorialWorkflowEnv = EditorialEnv & { EDITORIAL_POLICY_JSON?: string };
+type EditorialWorkflowEnv = EditorialEnv & {
+  EDITORIAL_POLICY_JSON?: string;
+  CF_VERSION_METADATA?: WorkerVersionMetadata;
+};
 type ReceiptRow = { id: string; action: string; result_json: string; created_at: string };
 type CandidateRow = { id: string; state: string; revision: string; payload_json: string };
 type SourceStateRow = { source_id: string; fetched_at: string; signals_json: string };
@@ -426,7 +429,13 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (!params.slot_claim_id || params.slot_claim_id.length > 128 || !/^[a-zA-Z0-9:_-]+$/.test(params.slot_claim_id)) {
     return held(params, 'Schedule slot identity is invalid.');
   }
-  const control = await step.do('read-editorial-control', () => readControl(env.DB));
+  const workerVersionId = env.CF_VERSION_METADATA?.id;
+  const control = await step.do('read-editorial-control', async () => ({
+    ...await readControl(env.DB),
+    worker_version_id: workerVersionId,
+  }));
+  // An older cached start cannot attest to the Worker version finishing this run.
+  const workflowWorkerVersionId = control.worker_version_id === workerVersionId ? workerVersionId : undefined;
   if (control.paused) return held(params, 'Editorial publishing is paused.');
   const claim = await step.do('read-editorial-slot-claim', () => readScheduleClaim(env.DB, params.slot_claim_id, control.owner_epoch));
   if (!claim || workflowInstanceId !== scheduleWorkflowId(claim)) {
@@ -480,7 +489,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (pending && retry && (retry.status === 'verified' || (deferredHold && !deferredHold.continue_after_hold))) {
     const action = retry.status === 'verified' ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-deferred-publication-result', () => recordReceipt(env.DB,
-      params.slot_claim_id, pending.candidate.id, action, { reason: retry.reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
+      params.slot_claim_id, pending.candidate.id, action, { reason: retry.reason, owner_epoch: control.owner_epoch, workflow_worker_version_id: workflowWorkerVersionId }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the deferred publication result could be recorded.');
     return retry.status === 'verified' ? { status: 'admitted', reason: retry.reason, slot_claim_id: params.slot_claim_id } : held(params, retry.reason);
   }
@@ -574,7 +583,8 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     if (needsReconciliation.size) return reconciliationHold();
     const reason = batch.signals.length ? 'No fresh public signal qualifies for a site change.' : 'No fresh public signals were found.';
     const saved = await step.do('record-no-change-result', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'NO_CHANGE', {
-      reason, owner_epoch: control.owner_epoch, signals: batch.signals.map(signalHistory),
+      reason, owner_epoch: control.owner_epoch, workflow_worker_version_id: workflowWorkerVersionId,
+      signals: batch.signals.map(signalHistory),
       no_change_reasons: noChangeSignals.map(({ signal, decision }) => ({ signal_id: signal.id, reason: decision.action === 'NO_CHANGE' ? decision.reason : '' })),
       ...(pending && retry ? { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}),
       source_failures: sourceFailures,
@@ -641,7 +651,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     const action = verified ? 'VERIFIED' : noChange ? 'NO_CHANGE' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
       ready[0].decision.candidate.id, action, {
-        reason, owner_epoch: control.owner_epoch, outcomes,
+        reason, owner_epoch: control.owner_epoch, workflow_worker_version_id: workflowWorkerVersionId, outcomes,
         source_failures: sourceFailures,
         uncovered_source_ids: batch.uncovered,
         ...(pending && retry ? { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}),

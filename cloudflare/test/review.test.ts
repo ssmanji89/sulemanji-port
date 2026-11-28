@@ -1,5 +1,9 @@
 import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { canPublish, verifyPublicationDetailed } from '../src/editorial/publisher.js';
 import { attachSocialCard, normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, reviseContent, verifyRequiredMedia } from '../src/editorial/review.js';
@@ -137,9 +141,21 @@ describe('independent content preparation and review', () => {
     const [current, peer] = await Promise.all([readFile(new URL(fromPath, root), 'utf-8'), readFile(new URL(toPath, root), 'utf-8')]);
     // Kramdown makes the footnote a final sibling after the added paragraph.
     const original = current + '\n\nAn existing example.[^example]\n\n[^example]: The original footnote.\n';
-    const render = (file: string) => execFileSync('bundle',
-      ['exec', 'ruby', '-EUTF-8', '-rjekyll', '-e', 'c=Jekyll::Converters::Markdown.new(Jekyll.configuration({quiet:true})); print c.convert(STDIN.read)'],
-      { input: file.split(/^---\s*$/m).slice(2).join('---'), cwd: root, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+    const render = (file: string) => {
+      const sourceRoot = mkdtempSync(join(tmpdir(), 'editorial-link-jekyll-'));
+      const destination = join(sourceRoot, '_site');
+      try {
+        const body = file.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+        writeFileSync(join(sourceRoot, 'probe.md'), `---\nlayout: null\npermalink: /probe.html\n---\n${body}`);
+        execFileSync('bundle', ['exec', 'jekyll', 'build', '--quiet', '--source', sourceRoot, '--destination', destination,
+          '--config', fileURLToPath(new URL('_config.yml', root))], {
+          cwd: root, env: { ...process.env, JEKYLL_ENV: 'production' }, stdio: ['ignore', 'pipe', 'pipe'], timeout: 10_000,
+        });
+        return readFileSync(join(destination, 'probe.html'), 'utf-8');
+      } finally {
+        rmSync(sourceRoot, { recursive: true, force: true });
+      }
+    };
     const canonical = 'https://www.sulemanji.com' + from.url;
     const wrap = (html: string) => `<head><link rel="canonical" href="${canonical}"></head><h1>${from.title}</h1><div data-writing-body>${html}</div>`;
     const headers = { 'x-site-source-commit': context.base_commit, 'x-site-asset-digest': 'sha256:' + 'a'.repeat(64),
@@ -173,7 +189,7 @@ describe('independent content preparation and review', () => {
     }, 'private-binding');
     expect(result.failure).toBeUndefined();
     expect(result.receipt.outcome).toBe('VERIFIED');
-  });
+  }, 25_000);
 
   it('holds old or unresolved CONNECT identities before a model call', async () => {
     const models = new FakeModels();

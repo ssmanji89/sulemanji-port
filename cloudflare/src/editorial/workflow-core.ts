@@ -506,6 +506,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
       reason, owner_epoch: control.owner_epoch, signals: batch.signals.map(signalHistory),
       no_change_reasons: noChangeSignals.map(({ signal, decision }) => ({ signal_id: signal.id, reason: decision.action === 'NO_CHANGE' ? decision.reason : '' })),
       source_failures: batch.failures.map(({ source_id, code }) => ({ source_id, code })),
+      uncovered_source_ids: batch.uncovered,
     }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before NO_CHANGE could be recorded.');
     return { status: 'no_change', reason, slot_claim_id: params.slot_claim_id };
@@ -567,8 +568,12 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
         'Source coverage or candidate capacity was incomplete for a NO_CHANGE result.';
     const action = verified ? 'VERIFIED' : noChange ? 'NO_CHANGE' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
-      ready[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes, ...(pending && retry ?
-        { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}) }, control.owner_epoch));
+      ready[0].decision.candidate.id, action, {
+        reason, owner_epoch: control.owner_epoch, outcomes,
+        source_failures: batch.failures.map(({ source_id, code }) => ({ source_id, code })),
+        uncovered_source_ids: batch.uncovered,
+        ...(pending && retry ? { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}),
+      }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the publication result could be recorded.');
     return { status: verified ? 'admitted' : noChange ? 'no_change' : 'held', reason, slot_claim_id: params.slot_claim_id };
   }

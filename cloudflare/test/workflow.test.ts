@@ -807,6 +807,13 @@ describe('deterministic signal workflow', () => {
     }));
     expect([...db.receipts.values()].map((row) => row.action))
       .toEqual([sourceFailure ? 'HELD_PUBLICATION_PIPELINE' : 'NO_CHANGE']);
+    if (!sourceFailure) {
+      const [receipt] = [...db.receipts.values()];
+      expect(JSON.parse(String(receipt.result_json))).toMatchObject({
+        source_failures: [], uncovered_source_ids: [],
+        outcomes: [{ status: 'no_change', candidate_id: expect.any(String), reason: expect.any(String) }],
+      });
+    }
     expect(await runEditorialAdmission(params, env, new DurableStep(), { processCandidate }))
       .toMatchObject({ status: sourceFailure ? 'held' : 'no_change' });
     expect(processCandidate).toHaveBeenCalledTimes(1);

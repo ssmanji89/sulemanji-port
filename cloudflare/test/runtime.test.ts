@@ -42,10 +42,14 @@ describe('editorial runtime configuration', () => {
     const base = 'a'.repeat(40);
     const feed = `<rss><channel><item><title>Workers release</title><description>New release details.</description>
       <link>https://blog.cloudflare.com/documented-release/</link><pubDate>${now.toUTCString()}</pubDate></item></channel></rss>`;
+    const original = '---\nwriting_schema: 2\n---\n[Original guide](https://blog.cloudflare.com/original-guide/).';
     const fetcher = vi.fn(async (request: RequestInfo | URL) => {
       const url = String(request);
       if (url === sources[0].url) return new Response(feed);
       if (url.endsWith('/git/ref/heads/main')) return Response.json({ object: { sha: base } });
+      if (url.endsWith(`/contents/notes/existing-guide.md?ref=${base}`)) {
+        return Response.json({ type: 'file', encoding: 'base64', content: btoa(original) });
+      }
       throw new Error('Unexpected outbound effect');
     }) as typeof fetch;
     const [signal] = (await collectSignals([{ ...sources[0], format: 'rss' }], now, fetcher)).signals;
@@ -58,7 +62,7 @@ describe('editorial runtime configuration', () => {
     const hash = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',
       new TextEncoder().encode(value))), (byte) => byte.toString(16).padStart(2, '0')).join('');
     const path = 'notes/existing-guide.md';
-    const content = 'A verified source update.';
+    const content = `${original}\n\n[Current evidence](${signal.evidence[0].url}).`;
     const fileHash = await hash(content);
     const url = '/notes/existing-guide';
     const proposal: ContentProposal = { candidate_id: candidate.id, owner_epoch: 1, base_commit: base, author_run_id: 'author-1',

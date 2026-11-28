@@ -215,6 +215,29 @@ describe('durable candidate publication pipeline', () => {
     expect(db.reservations.get(`review:${candidate.id}:round-1`)).toMatchObject({ actual_micros: 0 });
   });
 
+  it('holds a model payload outside its approved size without reserving usage or calling the provider', async () => {
+    const db = new OperationsD1();
+    const models = new Models();
+    const gateway = new BudgetedModelGateway(models, {
+      endpoint: 'https://models.example.test/v1/chat/completions', api_key: 'fixture', model_id: 'fixture',
+      pricing_revision: policy.model_pricing_revision, input_usd_per_million: 1, output_usd_per_million: 1,
+      max_input_chars: 64, max_output_tokens: 4_000,
+    }, {
+      db: db as unknown as D1Database, candidate_id: candidate.id, owner_epoch: 1, max_model_calls: 6, max_review_rounds: 3,
+      limits: { candidate_usd: 0.75, daily_usd: 2, monthly_usd: 30 }, expected_pricing_revision: policy.model_pricing_revision,
+    });
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => gateway, renderSocialCard, preparationContext: async () => context, persist: async () => true,
+      publish: async () => { throw new Error('A held candidate must not publish'); },
+      verify: async () => { throw new Error('A held candidate must not run public readback'); },
+    });
+    const input = { candidate, signal: { id: 'signal-1', source_id: 'vendor', evidence: [source] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps() };
+    await expect(pipeline.processCandidate(input)).resolves.toMatchObject({ status: 'held', continue_after_hold: true });
+    expect(db.reservations.size).toBe(0);
+    expect(models.calls).toHaveLength(0);
+  });
+
   it.each(['author', 'review', 'revise'] as const)('records an uncertain %s attempt as a durable hold', async (purpose) => {
     const models = new Models();
     models.outputs[1] = { decision: 'FIX_REQUIRED', findings: [{ code: 'EVIDENCE', detail: 'Clarify the evidence.' }] };

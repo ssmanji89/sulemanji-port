@@ -44,7 +44,8 @@ async function runModelStep<T>(step: DurableStep, name: string, generate: () => 
       if (error instanceof ContextualLinkHold) return { modelHoldReason: error.message, continue_after_hold: true, checkpoint_owner: true };
       if (error instanceof ModelAdmissionHoldError) {
         // Only limits specific to this candidate leave unrelated model work qualified.
-        const candidateLimit = error.message === 'MODEL_CALL_LIMIT_HOLD' || error.message === 'MODEL_REVIEW_ROUND_LIMIT_HOLD';
+        const candidateLimit = error.message === 'MODEL_CALL_LIMIT_HOLD' || error.message === 'MODEL_REVIEW_ROUND_LIMIT_HOLD' ||
+          error.message === 'MODEL_REQUEST_LIMIT';
         return { modelHoldReason: error.reason, ...(candidateLimit ? { continue_after_hold: true as const } : {}) };
       }
       throw error;

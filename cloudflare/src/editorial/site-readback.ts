@@ -32,10 +32,22 @@ export function normalizeNodeText(node: HtmlNode): string {
   return extract(node).replace(/\s+/g, ' ').trim();
 }
 
-export function articleLinks(node: HtmlNode): string[] {
+export function articleLinks(node: HtmlNode, tag: 'a' | 'img' = 'a'): string[] {
   if (['script', 'style', 'noscript', 'template'].includes(node.nodeName ?? '')) return [];
-  const href = node.tagName === 'a' ? htmlAttribute(node, 'href') : undefined;
-  return [...(href === undefined ? [] : [href]), ...(node.childNodes ?? []).flatMap(articleLinks)];
+  const href = node.tagName === tag ? htmlAttribute(node, tag === 'a' ? 'href' : 'src') : undefined;
+  return [...(href === undefined ? [] : [href]), ...(node.childNodes ?? []).flatMap((child) => articleLinks(child, tag))];
+}
+
+export function publicCitationUrl(href: string): string | null {
+  if (!/^https:\/\//i.test(href) || /[\x00-\x20\x7f<>\\]/.test(href)) return null;
+  try {
+    const url = new URL(href);
+    return !url.username && !url.password ? url.href : null;
+  } catch { return null; }
+}
+
+export function articleCitations(node: HtmlNode): Set<string> {
+  return new Set(articleLinks(node).map(publicCitationUrl).filter((url): url is string => url !== null));
 }
 
 export function connectionParagraph(body: HtmlNode, href: string): HtmlNode | undefined {

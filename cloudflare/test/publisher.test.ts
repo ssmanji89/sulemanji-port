@@ -8,14 +8,20 @@ async function sha(value: string): Promise<string> {
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer));
   return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
+const baselineCitation = 'https://vendor.example.test/original-guide';
+const incomingCitation = 'https://vendor.example.test/current-evidence';
+const previousArticle = `---\nwriting_schema: 2\n---\nA source-backed reader explanation. [Original guide](${baselineCitation}).`;
+
 async function fixture() {
   const path = 'notes/reviewed-article.md';
-  const content = '---\nwriting_schema: 2\n---\nA source-backed reader explanation.';
+  const content = `${previousArticle} [Current evidence](${incomingCitation}).`;
   const file = { path, operation: 'update' as const, encoding: 'utf-8' as const, content, content_sha256: await sha(content) };
   const content_digest = await sha(`${path}\n${file.content_sha256}`);
   const source_digest = 'a'.repeat(64);
   const proposal: ContentProposal = { candidate_id: 'candidate-42', author_run_id: 'author-run', content_digest, source_digest, policy_revision: 'policy-v1', knowledge_revision: 'knowledge-v1',
-    base_commit: 'b'.repeat(40), owner_epoch: 7, files: [file], public_sources: [], required_media_paths: [], public_urls: ['/notes/reviewed-article'], expected_content: [{ url: '/notes/reviewed-article', title: 'Reviewed title', text_sha256: 'c'.repeat(64) }] };
+    base_commit: 'b'.repeat(40), owner_epoch: 7, files: [file], public_sources: [{ url: incomingCitation, title: 'Current evidence',
+      retrieved_at: '2026-11-28T00:00:00Z', source_date: '2026-11-28T00:00:00Z', content_sha256: 'a'.repeat(64) }],
+    required_media_paths: [], public_urls: ['/notes/reviewed-article'], expected_content: [{ url: '/notes/reviewed-article', title: 'Reviewed title', text_sha256: 'c'.repeat(64) }] };
   const receipt: ReviewReceipt = { candidate_id: proposal.candidate_id, reviewer_run_id: 'review-run', author_run_id: proposal.author_run_id, content_digest, source_digest,
     policy_revision: proposal.policy_revision, knowledge_revision: proposal.knowledge_revision, base_commit: proposal.base_commit, owner_epoch: 7, decision: 'CLEAR', findings: [] };
   const state: PublicationState = { owner_epoch: 7, paused: false, base_commit: proposal.base_commit, policy_revision: proposal.policy_revision, knowledge_revision: proposal.knowledge_revision,
@@ -49,6 +55,8 @@ class FakeGitHub implements GitHubPublisher {
   merges = 0;
   loseMergeResponse = false;
   strictMergeChecks = true;
+  originals: Array<{ path: string; ref: string }> = [];
+  async readTextFile(path: string, ref: string) { this.originals.push({ path, ref }); return previousArticle; }
   async findPullRequest() { return this.pr; }
   async createReviewedBranchAndPullRequest() { this.creates += 1; this.pr = { number: 12, head_sha: 'd'.repeat(40), state: 'open', merged: false, merge_commit_sha: null, checks: 'pending' }; return this.pr; }
   async hasStrictMergeChecks() { return this.strictMergeChecks; }
@@ -81,6 +89,23 @@ describe('guarded source publication effects', () => {
     expect(github.merges).toBe(0);
     expect(store.capacityRequests).toEqual([]);
     expect(store.value).toMatchObject({ state: 'SOURCE_PUBLISHED', pull_request: 12 });
+    expect(github.originals).toEqual([{ path: 'notes/reviewed-article.md', ref: proposal.base_commit }]);
+    expect(attempt.expected_content[0].required_citations).toEqual([incomingCitation, baselineCitation]);
+  });
+
+  it('rejects legacy reviewed refreshes that dropped citations before any branch or merge effect', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const file = proposal.files[0];
+    file.content = file.content.replace(`[Original guide](${baselineCitation})`, 'Original guide');
+    file.content_sha256 = await sha(file.content);
+    proposal.content_digest = await sha(`${file.path}\n${file.content_sha256}`);
+    receipt.content_digest = proposal.content_digest;
+    const github = new FakeGitHub(); const store = new FakeStore();
+    const result = await publishContent(proposal, receipt, { store, github, readAuthority: async () => state, currentState: async () => state });
+    expect(result.status).toBe('FAILED');
+    expect(store.value).toBeNull();
+    expect(github.creates).toBe(0);
+    expect(github.merges).toBe(0);
   });
 
   it('holds an exact reviewed pull request before merge when its daily allowance is exhausted', async () => {
@@ -259,5 +284,10 @@ describe('public publication identity verification', () => {
       damage = change;
       expect((await verifyPublicationDetailed(attempt, fetcher)).receipt.outcome).toBe('UNCERTAIN');
     }
+    damage = 'none';
+    attempt.expected_content[0].required_citations = [citation];
+    expect((await verifyPublicationDetailed(attempt, fetcher)).receipt.outcome).toBe('VERIFIED');
+    attempt.expected_content[0].required_citations = ['https://vendor.example.test/missing'];
+    expect((await verifyPublicationDetailed(attempt, fetcher)).receipt.outcome).toBe('UNCERTAIN');
   });
 });

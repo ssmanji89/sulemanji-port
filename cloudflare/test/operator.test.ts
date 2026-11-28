@@ -122,6 +122,12 @@ describe('production publisher transfer', () => {
     ['missing model credential', { EDITORIAL_MODEL_API_KEY: undefined }],
     ['wrong publication repository', { EDITORIAL_GITHUB_CONFIG_JSON: runtimeConfig.EDITORIAL_GITHUB_CONFIG_JSON.replace('sulemanji-port', 'sulemanji-editorial-fixture') }],
     ['blank GitHub credential', { EDITORIAL_GITHUB_TOKEN: '  ' }],
+    ['model output capped below a review request', { EDITORIAL_MODEL_CONFIG_JSON: runtimeConfig.EDITORIAL_MODEL_CONFIG_JSON.replace('4000', '3999') }],
+    ['model input capped below the review instructions', { EDITORIAL_MODEL_CONFIG_JSON: runtimeConfig.EDITORIAL_MODEL_CONFIG_JSON.replace('48000', '1') }],
+    ['only one model call for authoring and review', { EDITORIAL_POLICY_JSON: runtimeConfig.EDITORIAL_POLICY_JSON.replace('"max_model_calls_per_candidate":6', '"max_model_calls_per_candidate":1') }],
+    ['an off-hour production slot', { EDITORIAL_POLICY_JSON: runtimeConfig.EDITORIAL_POLICY_JSON.replace('08:00', '08:15') }],
+    ['invalid model bearer header', { EDITORIAL_MODEL_API_KEY: 'fixture-model\nkey' }],
+    ['invalid GitHub bearer header', { EDITORIAL_GITHUB_TOKEN: 'fixture-github\nkey' }],
   ])('keeps the writer epoch and receipts unchanged with %s', async (_case, overrides) => {
     const fixture = controlSqlite();
     try {

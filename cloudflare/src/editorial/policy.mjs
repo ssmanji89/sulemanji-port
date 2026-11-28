@@ -1,5 +1,11 @@
 export const MAX_MODEL_CALLS_PER_CANDIDATE = 6;
 export const MAX_REVIEW_ROUNDS_PER_CANDIDATE = 3;
+export const PRODUCTION_EDITORIAL_CRON = '0 * * * *';
+
+/** @param {{ slots: string[], max_model_calls_per_candidate: number }} policy */
+export function supportsProductionEditorialPolicy(policy) {
+  return policy.slots.every((slot) => slot.endsWith(':00')) && policy.max_model_calls_per_candidate >= 2;
+}
 
 const POLICY_FIELDS = [
   'revision', 'timezone', 'slots', 'max_new_articles_daily', 'max_refreshes_daily', 'max_candidates_per_scan',

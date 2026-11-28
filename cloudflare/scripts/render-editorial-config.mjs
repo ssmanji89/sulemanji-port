@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseEditorialPolicy } from '../src/editorial/policy.mjs';
+import { parseEditorialPolicy, PRODUCTION_EDITORIAL_CRON, supportsProductionEditorialPolicy } from '../src/editorial/policy.mjs';
 import { parseEditorialRuntimeSettings } from '../src/editorial/runtime-settings.mjs';
 
 const cloudflareDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -21,6 +21,10 @@ for (const key of requiredValues) {
 }
 const editorialPolicy = parseEditorialPolicy(process.env.EDITORIAL_POLICY_JSON);
 if (!editorialPolicy) throw new Error('EDITORIAL_POLICY_JSON_MISSING_OR_INVALID');
+const cron = process.env.EDITORIAL_CRON_SCHEDULE?.trim();
+if (environment === 'production' && (cron !== PRODUCTION_EDITORIAL_CRON || !supportsProductionEditorialPolicy(editorialPolicy))) {
+  throw new Error('EDITORIAL_PRODUCTION_POLICY_OR_SCHEDULE_INVALID');
+}
 
 const configName = environment === 'staging' ? 'wrangler.editorial-staging.jsonc' : 'wrangler.editorial.jsonc';
 const outputName = environment === 'staging' ? 'wrangler.editorial-staging.runtime.jsonc' : 'wrangler.editorial.runtime.jsonc';
@@ -30,9 +34,7 @@ config.workers_dev = process.env.EDITORIAL_WORKERS_DEV === 'true';
 config.routes = process.env.EDITORIAL_CUSTOM_DOMAIN?.trim()
   ? [{ pattern: process.env.EDITORIAL_CUSTOM_DOMAIN.trim(), custom_domain: true }]
   : [];
-config.triggers.crons = process.env.EDITORIAL_CRON_SCHEDULE?.trim()
-  ? [process.env.EDITORIAL_CRON_SCHEDULE.trim()]
-  : [];
+config.triggers.crons = cron ? [cron] : [];
 config.vars.DEPLOYMENT_ENV = environment;
 config.vars.KNOWLEDGE_POLICY_REVISION = process.env.EDITORIAL_POLICY_REVISION;
 config.vars.EDITORIAL_POLICY_JSON = JSON.stringify(editorialPolicy);

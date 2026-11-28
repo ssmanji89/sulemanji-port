@@ -4,6 +4,7 @@ import { nextChicagoBudgetDay, type EditorialPolicy } from './scheduler.js';
 import { SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
 import { articleSourcePath, attachSocialCard, connectionArticles, ContextualLinkHold, prepareContent, reviewContent, reviseContent } from './review.js';
 import type { CandidateProcessOutcome, DurableStep } from './workflow-core.js';
+import { independentKnowledge, isRecycledSignal } from './evidence-origin.js';
 
 const PUBLICATION_WAIT_MS = [30_000, 60_000, 90_000, 120_000, 180_000];
 type CandidatePipelineInput = {
@@ -25,7 +26,7 @@ export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
   renderSocialCard: SocialCardRenderer;
   preparationContext(input: CandidatePipelineInput): Promise<PreparationContext>;
-  publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal, claim?: string): Promise<PublicationResult>;
+  publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal, catalog: CatalogItem[], claim?: string): Promise<PublicationResult>;
   verify(attempt: PublishAttempt): Promise<{ receipt: PublicationReceipt; failure?: string }>;
   persist(candidateId: string, ownerEpoch: number, state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'CAPACITY_HELD' | 'VERIFIED', checkpoint: CandidateCheckpoint, claim?: string): Promise<boolean>;
 };
@@ -87,6 +88,9 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         const checkpoint = deferred ? { proposal: deferred.proposal, review: deferred.review, attempt: deferred.attempt } : {};
         return holdConnection('The contextual link requires two qualified article identities and an existing-article update.', deferred ? 'deferred' : 'targets', checkpoint);
       }
+      if (isRecycledSignal(input.signal, input.catalog)) {
+        return { status: 'no_change', reason: 'A published site article cannot serve as independent evidence.' };
+      }
       if (deferred) return publishReviewed(input, deferred.proposal, deferred.review, deps);
       if (candidate.action === 'REFRESH') {
         const target = input.catalog.find((item) => item.id === candidate.target_id);
@@ -97,7 +101,8 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
           return { status: 'held', reason: 'A portfolio refresh requires owner review.', continue_after_hold: true };
         }
       }
-      const context = await step.do(`prepare-context-${key}`, () => deps.preparationContext(input));
+      const prepared = await step.do(`prepare-context-${key}`, () => deps.preparationContext(input));
+      const context = { ...prepared, knowledge: independentKnowledge(prepared.knowledge, input.catalog) };
       if (connection && context.connection_baseline?.already_linked) {
         return { status: 'no_change', reason: 'The exact related article is already linked from the deployed article body.' };
       }
@@ -189,7 +194,7 @@ async function publishReviewed(input: CandidatePipelineInput, proposal: ContentP
   for (let probe = 0; probe <= PUBLICATION_WAIT_MS.length; probe += 1) {
     const suffix = retrySuffix + (probe ? `-poll-${probe}` : '');
     if (probe) await step.sleep(`await-checks-${key}${suffix}`, PUBLICATION_WAIT_MS[probe - 1]);
-    const publication = await step.do(`publish-content-${key}${suffix}`, () => deps.publish(proposal, review, input.signal, claim));
+    const publication = await step.do(`publish-content-${key}${suffix}`, () => deps.publish(proposal, review, input.signal, input.catalog, claim));
     const attempt = publication.attempt;
     if (attempt.status === 'BRANCH_UNQUALIFIED') {
       return { status: 'held', reason: 'GitHub has no active rule requiring this pull request to be current with the base and pass its checks.' };

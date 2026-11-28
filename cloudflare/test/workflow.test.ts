@@ -484,6 +484,35 @@ describe('deterministic signal workflow', () => {
     expect(db.receipts.size).toBe(1);
   });
 
+  it('records a durable NO_CHANGE when new feed IDs only repeat a published article', async () => {
+    const now = new Date('2026-11-27T14:00:00.000Z');
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+    const title = 'Cloudflare Workers release update';
+    const summary = 'A new documented version changes a workflow decision.';
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/content-index.json') return Response.json({ schema_version: 1, items: [{
+        id: 'published', canonical_url: '/notes/published-release', title, summary, topics: ['infrastructure'],
+      }] });
+      if (url.hostname === 'science.nasa.gov') return Response.json([]);
+      const item = (id: string, attribution: string) => `<item><guid>${id}</guid><title>${title}</title><description>${summary}</description><link>https://blog.cloudflare.com/repost/${id}</link><pubDate>${now.toUTCString()}</pubDate>${attribution}</item>`;
+      const entries = url.hostname === 'blog.cloudflare.com'
+        ? item('a', '<source url="https://www.sulemanji.com/feed.xml">Original</source>') + item('b', '')
+        : '';
+      return new Response(`<rss><channel>${entries}</channel></rss>`);
+    });
+    const db = new PipelineD1();
+    const processCandidate = vi.fn(async () => { throw new Error('Recycled evidence reached publication preparation'); });
+    const params = { slot_claim_id: 'recycled-source' };
+    const result = await runEditorialAdmission(params, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never,
+      new DurableStep(), { processCandidate });
+    expect(result).toMatchObject({ status: 'no_change' });
+    expect([...db.receipts.values()].map(({ action }) => action)).toEqual(['NO_CHANGE']);
+    expect(db.candidates.size).toBe(0);
+    expect(processCandidate).not.toHaveBeenCalled();
+  });
+
   it('persists an actionable candidate as HELD when provider adapters are absent', async () => {
     vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
     const db = new PipelineD1();

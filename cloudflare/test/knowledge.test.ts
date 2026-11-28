@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getPublicKnowledge, ingestKnowledge } from '../src/editorial/knowledge.js';
+import { independentKnowledge } from '../src/editorial/evidence-origin.js';
 import type { EditorialEnv, KnowledgeEnvelope, PublicKnowledge } from '../src/editorial/contracts.js';
 
 const NOW = new Date('2026-11-26T18:00:00.000Z');
@@ -97,6 +98,27 @@ describe('signed public knowledge import', () => {
     const result = await importEnvelope(await makeEnvelope());
     expect(result).toEqual({ status: 'accepted', derivative_id: 'derivative.project.viyu', sequence: 1 });
     expect(JSON.stringify(result)).not.toContain(payload.subject_id);
+  });
+
+  it('keeps the import receipt for a fresh derivative but excludes recycled evidence from model knowledge', async () => {
+    const article = { id: 'article', url: '/notes/workflow-guide', title: 'Workflow release guide',
+      summary: 'How the current workflow release changes a deployment decision.', topics: ['infrastructure'] };
+    const recovered: PublicKnowledge[] = [payload];
+    for (const [index, url] of [
+      'https://www.sulemanji.com/notes/workflow-guide?utm_source=recall',
+      'https://github.com/ssmanji89/sulemanji-port/blob/main/notes/workflow-guide.md',
+      'https://mirror.example.org/posts/new-id',
+    ].entries()) {
+      const copied: PublicKnowledge = { ...payload, subject_id: `publication.copy-${index}`,
+        summary: article.summary, allowed_uses: ['factual-update'],
+        public_sources: [{ ...payload.public_sources[0], url, title: article.title }, payload.public_sources[0]] };
+      const envelope = await makeEnvelope({ derivative_id: `new-memory-${index}`, payload: copied, payload_sha256: await digest(copied) });
+      await expect(importEnvelope(envelope)).resolves.toMatchObject({ status: 'accepted' });
+      const stored = await getPublicKnowledge(copied.subject_id, env.DB, NOW);
+      expect(stored).toEqual(copied);
+      recovered.push(stored!);
+    }
+    expect(independentKnowledge(recovered, [article])).toEqual([payload]);
   });
 
   it('rejects invalid signatures before parsing and rejects unknown keys', async () => {

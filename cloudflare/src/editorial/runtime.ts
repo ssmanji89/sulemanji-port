@@ -6,6 +6,7 @@ import { BudgetedModelGateway, JsonSchemaGateway, type ModelConfig } from './mod
 import { GitHubApiPublisher } from './github.js';
 import { D1PublishEffectStore } from './effects.js';
 import { fingerprintPublicKnowledge } from './knowledge.js';
+import { independentKnowledge } from './evidence-origin.js';
 import { publishContent, verifyPublicationDetailed } from './publisher.js';
 import { readControl } from './state.js';
 import { readKnowledge } from './workflow-core.js';
@@ -103,7 +104,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         policy_revision: input.policy.revision, knowledge_revision: input.candidate.knowledge_revision,
         base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths, ...(baseline ? { connection_baseline: baseline } : {}) };
     },
-    async publish(proposal, review, signal, claim) {
+    async publish(proposal, review, signal, catalog, claim) {
       const store = new D1PublishEffectStore(env.DB, review.owner_epoch, limits);
       const readAuthority = async () => {
         const row = await env.DB.prepare(`SELECT control.paused, control.owner_epoch FROM editorial_control AS control
@@ -127,7 +128,8 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         ]);
         const currentPolicy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
         return { owner_epoch: control.owner_epoch, paused: control.paused || !currentPolicy || currentPolicy.revision !== proposal.policy_revision,
-          base_commit: baseCommit, policy_revision: currentPolicy?.revision ?? 'unqualified', knowledge_revision: await fingerprintPublicKnowledge(knowledge),
+          base_commit: baseCommit, policy_revision: currentPolicy?.revision ?? 'unqualified',
+          knowledge_revision: await fingerprintPublicKnowledge(independentKnowledge(knowledge, catalog)),
           source_digest: sourceDigest ?? '', allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id };
       } });
       const effect = await store.read(proposal.candidate_id);

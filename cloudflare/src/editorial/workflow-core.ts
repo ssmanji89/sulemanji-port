@@ -7,6 +7,7 @@ import { nextChicagoBudgetDay, parseEditorialPolicy, readScheduleClaim, schedule
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
+import { independentKnowledge } from './evidence-origin.js';
 import type { DeferredReview } from './pipeline.js';
 
 export type DurableStep = {
@@ -413,7 +414,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (catalogFetcher.isStale() || !(await catalogFetcher.isCurrent())) return held(params, 'Workflow authority changed during the content-index read.');
 
   const now = await step.do('capture-editorial-run-time', () => new Date().toISOString());
-  const knowledge = await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now)));
+  const knowledge = independentKnowledge(await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now))), catalog);
   const knowledgeRevision = await step.do('fingerprint-authorized-public-knowledge', () => fingerprintPublicKnowledge(knowledge));
   if (processor?.reconcileMergeCapacity) await step.do('reconcile-publication-capacity', async () => {
     await processor.reconcileMergeCapacity?.(control.owner_epoch);

@@ -52,6 +52,19 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 }
 
 describe('durable candidate publication pipeline', () => {
+  it('does not prepare, review or publish cached signals sourced from its own output', async () => {
+    const unexpected = () => { throw new Error('Recycled evidence attempted to start work'); };
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: unexpected, renderSocialCard: unexpected, preparationContext: unexpected,
+      persist: unexpected, publish: unexpected, verify: unexpected,
+    });
+    const result = await pipeline.processCandidate({ candidate,
+      signal: { id: 'new-feed-id', evidence: [{ ...source, url: 'https://sulemanji.com/notes/recycled' }] } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps(),
+    });
+    expect(result).toMatchObject({ status: 'no_change', reason: expect.stringContaining('independent') });
+  });
+
   it('keeps the exact reviewed PR through a capacity hold and resumes without model work', async () => {
     const models = new Models();
     const steps = new Steps();

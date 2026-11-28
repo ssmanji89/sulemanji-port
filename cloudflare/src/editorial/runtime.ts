@@ -1,8 +1,8 @@
 import sourceRegistry from '../../config/public-sources.json' with { type: 'json' };
-import type { EditorialEnv, Candidate } from './contracts.js';
+import type { Candidate } from './contracts.js';
 import type { CatalogItem, Signal, SourceConfig } from './contracts.js';
 import { parseEditorialPolicy, type EditorialPolicy } from './scheduler.js';
-import { BudgetedModelGateway, JsonSchemaGateway, ModelAdmissionHoldError, type ModelConfig } from './models.js';
+import { BudgetedModelGateway, JsonSchemaGateway, ModelAdmissionHoldError } from './models.js';
 import { GitHubApiPublisher } from './github.js';
 import { D1PublishEffectStore } from './effects.js';
 import { fingerprintPublicKnowledge } from './knowledge.js';
@@ -14,16 +14,9 @@ import type { SocialCardRenderer } from './social-card-format.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint, type CandidateCheckpointState } from './pipeline.js';
 import { fixtureSiteFetcher, readConnectionBaseline } from './site-readback.js';
 import { articleSourcePath, connectionArticles } from './review.js';
-import { parseEditorialRuntimeSettings } from './runtime-settings.mjs';
+import { readEditorialRuntimeConfig, type EditorialRuntimeEnv } from './runtime-config.js';
 import { correctDotnetClaim, isDotnetSupport, qualifyDotnetRefresh } from './dotnet-support.js';
 
-export type EditorialRuntimeEnv = EditorialEnv & {
-  EDITORIAL_POLICY_JSON?: string;
-  EDITORIAL_MODEL_CONFIG_JSON?: string;
-  EDITORIAL_MODEL_API_KEY?: string;
-  EDITORIAL_GITHUB_CONFIG_JSON?: string;
-  EDITORIAL_GITHUB_TOKEN?: string;
-};
 type CandidateRow = { state: string; revision: string; payload_json: string; publication_retry_claim: string | null };
 
 async function persistCandidateCheckpoint(db: D1Database, candidateId: string, ownerEpoch: number,
@@ -70,20 +63,11 @@ function pathForRefresh(candidate: Candidate, catalog: Array<{ id: string; url: 
 }
 
 export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, renderSocialCard: SocialCardRenderer, fetcher: typeof fetch = fetch) {
-  const environment = env.DEPLOYMENT_ENV;
-  if (environment !== 'production' && environment !== 'staging') return null;
-  const staging = environment === 'staging';
-  if (staging && !env.EDITORIAL_FIXTURE_SITE) return null;
-  const policy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
-  if (!policy) return null;
-  const settings = parseEditorialRuntimeSettings(env.EDITORIAL_MODEL_CONFIG_JSON, env.EDITORIAL_GITHUB_CONFIG_JSON,
-    environment, policy.model_pricing_revision);
-  const modelApiKey = env.EDITORIAL_MODEL_API_KEY;
-  const githubToken = env.EDITORIAL_GITHUB_TOKEN;
-  if (!settings || !modelApiKey?.trim() || !githubToken?.trim()) return null;
-
-  const model: ModelConfig = { ...settings.model, api_key: modelApiKey };
-  const github = new GitHubApiPublisher({ ...settings.publisher, token: githubToken, require_private: staging }, fetcher);
+  const config = readEditorialRuntimeConfig(env);
+  if (!config) return null;
+  const { policy, model, publisher } = config;
+  const staging = env.DEPLOYMENT_ENV === 'staging';
+  const github = new GitHubApiPublisher(publisher, fetcher);
   const provider = new JsonSchemaGateway(model, fetcher);
   const limits = { new_articles: policy.max_new_articles_daily, refreshes: policy.max_refreshes_daily };
   const siteFetch = staging ? fixtureSiteFetcher(env.EDITORIAL_FIXTURE_SITE) : fetcher;

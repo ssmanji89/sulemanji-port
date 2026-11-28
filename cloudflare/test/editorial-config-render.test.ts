@@ -52,6 +52,7 @@ function render(policy: string | undefined, environment: 'staging' | 'production
       EDITORIAL_WORKFLOW_NAME: 'editorial-test-workflow',
       EDITORIAL_DATABASE_NAME: 'editorial-test-database',
       EDITORIAL_POLICY_REVISION: 'synthetic-knowledge-policy-r1',
+      ...(environment === 'production' ? { EDITORIAL_CRON_SCHEDULE: '0 * * * *' } : {}),
       ...(policy === undefined ? {} : { EDITORIAL_POLICY_JSON: policy }),
       ...settings,
     },
@@ -60,6 +61,19 @@ function render(policy: string | undefined, environment: 'staging' | 'production
 }
 
 describe('editorial runtime config policy wiring', () => {
+  it.each([
+    ['missing hourly trigger', validPolicy.slots, ''],
+    ['mismatched trigger', validPolicy.slots, '15 * * * *'],
+    ['unreachable slot', ['08:00', '08:15'], '0 * * * *'],
+  ])('rejects production scheduling with %s', (_label, slots, EDITORIAL_CRON_SCHEDULE) => {
+    const { outputDirectory, result } = render(JSON.stringify({ ...validPolicy, slots }), 'production', { EDITORIAL_CRON_SCHEDULE });
+    try {
+      expect(result.status).not.toBe(0);
+      expect(result.stderr).toContain('EDITORIAL_PRODUCTION_POLICY_OR_SCHEDULE_INVALID');
+    } finally {
+      rmSync(outputDirectory, { recursive: true, force: true });
+    }
+  });
   it('refuses to render when the policy variable is missing', () => {
     const { outputDirectory, result } = render(undefined);
     try {
@@ -132,6 +146,8 @@ describe('editorial runtime config policy wiring', () => {
     ['wrong pricing revision', JSON.stringify({ ...modelSettings, pricing_revision: 'different-price' }), JSON.stringify(fixturePublisher)],
     ['production publisher in staging', JSON.stringify(modelSettings), JSON.stringify({ ...fixturePublisher, repository: 'ssmanji89/sulemanji-port' })],
     ['malformed model settings', '{broken', JSON.stringify(fixturePublisher)],
+    ['insufficient review output', JSON.stringify({ ...modelSettings, max_output_tokens: 3999 }), JSON.stringify(fixturePublisher)],
+    ['insufficient review input', JSON.stringify({ ...modelSettings, max_input_chars: 1 }), JSON.stringify(fixturePublisher)],
   ])('rejects %s without writing a runtime config', (_label, model, publisher) => {
     const { outputDirectory, result } = render(JSON.stringify(validPolicy), 'staging', {
       EDITORIAL_MODEL_CONFIG_JSON: model,

@@ -1,4 +1,4 @@
-import type { EditorialEnv } from './contracts.js';
+import { readEditorialRuntimeConfig, type EditorialRuntimeEnv } from './runtime-config.js';
 import { readControl, setPaused } from './state.js';
 import { D1CorrectionStore, recordCorrection, type ScopedCorrection } from './maintenance.js';
 
@@ -8,7 +8,7 @@ type ProductionResume = {
 type OperatorCommand = { action: 'status' | 'pause' | 'resume' } | ProductionResume
   | { action: 'inspect' | 'retry' | 'revoke'; candidate_id: string }
   | ({ action: 'record_correction' } & Omit<ScopedCorrection, 'scope'> & { scope: string[] });
-type OperatorEnv = EditorialEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string };
+type OperatorEnv = EditorialRuntimeEnv & { EDITORIAL_OPERATOR_KEYS_JSON: string };
 
 const retirementProofLifetimeMs = 10 * 60 * 1000;
 
@@ -55,14 +55,19 @@ function isCommand(value: unknown): value is OperatorCommand {
   return ['inspect', 'retry', 'revoke'].includes(String(row.action)) && Object.keys(row).length === 2 && typeof row.candidate_id === 'string' && /^[a-zA-Z0-9._:-]{1,160}$/.test(row.candidate_id);
 }
 
-async function resumeProduction(command: ProductionResume, db: D1Database, now: Date): Promise<Response> {
+async function resumeProduction(command: ProductionResume, env: OperatorEnv, now: Date): Promise<Response> {
   const headers = { 'cache-control': 'no-store' };
   const verifiedAt = Date.parse(command.verified_at);
   if (!Number.isFinite(verifiedAt) || new Date(verifiedAt).toISOString() !== command.verified_at ||
       verifiedAt > now.getTime() || now.getTime() - verifiedAt > retirementProofLifetimeMs) {
     return Response.json({ error: 'A current retirement observation is required.' }, { status: 400, headers });
   }
+  if (!readEditorialRuntimeConfig(env)) {
+    return Response.json({ code: 'RUNTIME_NOT_READY', error: 'Production editorial configuration is incomplete or invalid.' },
+      { status: 409, headers });
+  }
 
+  const db = env.DB;
   const receiptId = crypto.randomUUID();
   const timestamp = now.toISOString();
   const result = {
@@ -105,7 +110,7 @@ export async function operatorRequest(raw: Uint8Array, keyId: string, signature:
   else if (command.action === 'pause') result = await setPaused(env.DB, true, now);
   else if (command.action === 'resume') {
     if (env.DEPLOYMENT_ENV === 'production' && 'expected_owner_epoch' in command) {
-      return resumeProduction(command, env.DB, now);
+      return resumeProduction(command, env, now);
     }
     if (env.DEPLOYMENT_ENV !== 'staging' || 'expected_owner_epoch' in command) {
       return Response.json({ error: 'A production retirement observation and the paused writer epoch are required.' },

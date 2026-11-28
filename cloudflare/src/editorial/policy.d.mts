@@ -16,4 +16,6 @@ export type EditorialPolicy = {
 
 export declare const MAX_MODEL_CALLS_PER_CANDIDATE: number;
 export declare const MAX_REVIEW_ROUNDS_PER_CANDIDATE: number;
+export declare const PRODUCTION_EDITORIAL_CRON: string;
+export declare function supportsProductionEditorialPolicy(policy: EditorialPolicy): boolean;
 export declare function parseEditorialPolicy(raw: string | undefined): EditorialPolicy | null;

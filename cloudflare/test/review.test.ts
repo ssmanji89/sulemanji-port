@@ -102,9 +102,9 @@ describe('independent content preparation and review', () => {
     const url = new URL(initial.public_urls[0], 'https://www.sulemanji.com').href;
     const target = { id: 'existing', title: output.title, url, topics: output.topics };
     const refresh = { ...candidate, action: 'REFRESH' as const, target_id: target.id };
-    const refreshContext = { ...context, catalog: [target], existing_paths: [file.path], existing_files: { [file.path]: original } };
+    const refreshContext = { ...context, catalog: [...context.catalog, target], existing_paths: [file.path], existing_files: { [file.path]: original } };
     const models = new FakeModels();
-    models.outputs = [{ ...output, body: articleBody + table }, output, { ...output, body: articleBody + table }];
+    models.outputs = [{ ...output, body: articleBody + table }, output, { ...output, body: articleBody + table }, { decision: 'CLEAR', findings: [] }];
 
     const proposal = await prepareContent(refresh, refreshContext, models);
     expect(proposal.expected_content[0].required_citations).toEqual([source.url, previousCitation].sort());
@@ -113,6 +113,11 @@ describe('independent content preparation and review', () => {
       .rejects.toThrow('ARTICLE_PATH_OR_CITATION_REJECTED');
     const revised = await reviseContent(proposal, refresh, refreshContext, [], models, 'revision-keeps-citation');
     expect(revised.expected_content[0].required_citations).toEqual(proposal.expected_content[0].required_citations);
+    await reviewContent(revised, { ...refreshContext, reviewer_run_id: 'verify-citations' }, models);
+    const requests = models.calls.map(({ input }) => JSON.parse(input));
+    expect(requests.map(({ catalog }) => catalog)).toEqual([[target], [target], [target], [target]]);
+    expect(requests[2].original_article).toBeUndefined();
+    expect(requests[3].original_article).toContain(previousCitation);
   });
 
   it('rejects a missing prior citation even when the incoming citation is present', async () => {

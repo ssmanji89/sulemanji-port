@@ -104,6 +104,7 @@ const modelHoldReasons = {
   MODEL_ATTEMPT_ALREADY_RESERVED: 'A prior model attempt needs reconciliation before it can be retried.',
   MODEL_BUDGET_HOLD: 'The candidate, daily, or monthly model budget would be exceeded.',
   MODEL_CALL_LIMIT_HOLD: 'The candidate reached its model-call limit.',
+  MODEL_REQUEST_LIMIT: 'The model request exceeds the approved input or output limit.',
   MODEL_REVIEW_ROUND_LIMIT_HOLD: 'The candidate reached its model-call or independent review limit.',
   MODEL_PROVIDER_INCOMPLETE: 'The model provider did not complete the structured response.',
   MODEL_PROVIDER_PRICING_UNCONFIRMED: 'The model provider did not confirm the configured pricing conditions.',
@@ -135,7 +136,9 @@ export class BudgetedModelGateway implements ModelGateway {
       throw new Error('MODEL_RESERVATION_CONTEXT_INVALID');
     }
     if (this.model.pricing_revision !== this.options.expected_pricing_revision) throw new Error('MODEL_PRICING_REVISION_MISMATCH');
-    if (request.input.length > this.model.max_input_chars || request.max_output_tokens > this.model.max_output_tokens) throw new Error('MODEL_REQUEST_LIMIT');
+    if (request.input.length > this.model.max_input_chars || request.max_output_tokens > this.model.max_output_tokens) {
+      throw new ModelAdmissionHoldError('MODEL_REQUEST_LIMIT');
+    }
     const maximumUsd = reserveMaximumUsd(this.model, estimateModelInputTokenUpperBound(this.model, request), request.max_output_tokens);
     const now = this.options.now ?? (() => new Date());
     const requestedAt = now();

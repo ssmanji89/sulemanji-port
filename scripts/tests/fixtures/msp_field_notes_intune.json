@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "editorial_id": "mfn-intune-acceptance-001",
+  "source_article": {
+    "url": "https://www.sulemanji.com/notes/intune-policy-verification",
+    "published": true
+  },
+  "sources": [
+    {
+      "url": "https://www.sulemanji.com/notes/intune-policy-verification",
+      "visibility": "public",
+      "approved_for_public": true,
+      "asset_rights": "owned",
+      "evidence_digest": null
+    },
+    {
+      "url": "https://learn.microsoft.com/en-us/intune/device-configuration/monitor-device-profile",
+      "visibility": "public",
+      "approved_for_public": true,
+      "asset_rights": "citation_only",
+      "evidence_digest": null
+    }
+  ],
+  "claims": [
+    {
+      "text": "Assignment establishes targeting intent, not proof of a successful device outcome.",
+      "kind": "interpretation",
+      "source_urls": [
+        "https://www.sulemanji.com/notes/intune-policy-verification",
+        "https://learn.microsoft.com/en-us/intune/device-configuration/monitor-device-profile"
+      ]
+    }
+  ],
+  "identity": {
+    "credited_author": "Suleman Manji",
+    "personal_face": false,
+    "personal_voice": false,
+    "voice_clone": false
+  },
+  "formats": [
+    {"id": "explainer", "pipeline_candidate": "animated-explainer", "aspect_ratio": "16:9", "narration": "synthetic", "duration_seconds": 300},
+    {"id": "short", "pipeline_candidate": "animation", "aspect_ratio": "9:16", "narration": "none", "duration_seconds": 45}
+  ],
+  "execution": {
+    "provider_mode": "local_only",
+    "max_generation_cost_usd": 0,
+    "publish_mode": "export_only"
+  }
+}

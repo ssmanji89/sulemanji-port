@@ -6,6 +6,7 @@ description: Prepare .NET 8 and .NET 9 applications for end of support with evid
 permalink: /notes/dotnet-8-end-of-support-readiness
 published: true
 published_on: "2026-10-26"
+updated_on: "2026-11-28"
 publication_family: technical-guide
 commercial_intent: none
 disclosure_required: false
@@ -17,17 +18,17 @@ topics:
   - service-operations
 ---
 
-.NET 8 and .NET 9 reach end of support on November 10, 2026. A list of installed runtimes can find part of the exposure, but it cannot prove that an application has a supported build, a deployable replacement, or acceptable behavior on the next runtime. Treat the deadline as an application-ownership and acceptance problem, not only as a software-inventory problem.
+.NET 8 and .NET 9 reached end of support on November 10, 2026. A list of installed runtimes can find part of the exposure, but it cannot prove that an application has a supported build, a deployable replacement, or acceptable behavior on the next runtime. Treat the deadline as an application-ownership and acceptance problem, not only as a software-inventory problem.
 
 I work as a Sr. Services Engineer at Viyu Network Solutions. I developed this guide with agent-assisted research, then checked it against the public Microsoft and .NET sources cited below. It does not describe Viyu systems, products, customers, controls, or operating practices.
 
-The practical question for an MSP engineer or application owner is: **what must you prove before calling a .NET 8 or .NET 9 workload ready for the November 10 deadline?** My answer is to connect four kinds of evidence: source target, published artifact, execution environment, and tested behavior. A green result at only one layer is an incomplete upgrade.
+The practical question for an MSP engineer or application owner is: **what must you prove before calling an upgrade from .NET 8 or .NET 9 ready for production?** My answer is to connect four kinds of evidence: source target, published artifact, execution environment, and tested behavior. A green result at only one layer is an incomplete upgrade.
 
 ## What changes on November 10?
 
-Microsoft states that [.NET 8 and .NET 9 both reach end of support on November 10, 2026](https://devblogs.microsoft.com/dotnet/dotnet-8-9-end-of-support/). Applications on those versions do not stop running on that date. Microsoft stops providing new security updates, servicing fixes, and technical support for them after the support window closes.
+Microsoft announced the [November 10, 2026 end of support for .NET 8 and .NET 9](https://devblogs.microsoft.com/dotnet/dotnet-8-9-end-of-support/) and now lists both releases as [out of support](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core#out-of-support-versions). Applications on those versions can still run. Microsoft no longer provides new security updates, servicing fixes, or technical support for them.
 
-The current [.NET support policy](https://dotnet.microsoft.com/en-us/platform/support/policy) lists both releases in maintenance and lists .NET 10 as the supported Long Term Support successor through November 2028. That policy also requires supported installations to stay current on released patches during their lifecycle. Reaching a supported major version while retaining an old patch is therefore not the finish line.
+The [.NET support policy](https://dotnet.microsoft.com/en-us/platform/support/policy) lists .NET 10 as a Long Term Support release through November 2028. It also requires supported installations to stay current on released patches during their lifecycle. Reaching a supported major version while retaining an old patch is therefore not the finish line.
 
 This deadline concerns modern .NET 8 and .NET 9. It is not a general end-of-support announcement for the Windows-only .NET Framework product family. Use the target framework, deployment metadata, and running artifact to classify an application instead of searching for any file or registry entry containing “.NET.”
 
@@ -71,7 +72,7 @@ Triage by control and evidence, not by the number of runtime detections. Four pa
 
 Microsoft’s current [upgrade overview](https://learn.microsoft.com/en-us/dotnet/core/porting/) recommends assessment, a low-risk pilot, and validation that the application builds and its tests pass. It also marks .NET Upgrade Assistant as deprecated. Do not build a deadline plan around an old tool name without checking its current status and fit.
 
-Prioritize externally reachable services, privileged components, shared business applications, and workloads without tested recovery. Use a documented exception when a safe upgrade cannot finish before the deadline. The exception should name the owner, affected artifact and environment, compensating limits, target release, next checkpoint, and expiry date. It should not rename an unsupported workload as low risk without evidence.
+Prioritize externally reachable services, privileged components, shared business applications, and workloads without tested recovery. Use a documented exception when a safe upgrade cannot be completed immediately. The exception should name the owner, affected artifact and environment, compensating limits, target release, next checkpoint, and expiry date. It should not rename an unsupported workload as low risk without evidence.
 
 ## What should the acceptance record say?
 
@@ -89,4 +90,4 @@ Separate deployment from acceptance. A successful install proves that the deploy
 
 The November 10 deadline is a forcing function for ownership. Inventory finds candidates. Source review finds change risk. Artifact identity prevents the wrong build from receiving credit. Environment evidence shows which runtime actually executes. Production-like tests support the final behavior claim. Close all four layers before calling the upgrade ready.
 
-*Primary Microsoft and .NET sources reviewed October 26, 2026. Support dates, patch versions, tooling guidance, and compatibility notes can change. Recheck the support policy and linked documentation before approving or executing an upgrade.*
+*Primary Microsoft and .NET sources reviewed October 26, 2026. Lifecycle status rechecked November 28, 2026. Support dates, patch versions, tooling guidance, and compatibility notes can change. Recheck the support policy and linked documentation before approving or executing an upgrade.*

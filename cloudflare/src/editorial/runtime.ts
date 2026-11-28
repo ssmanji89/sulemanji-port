@@ -138,7 +138,8 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
       const effect = await store.read(proposal.candidate_id);
       return { attempt, merged: Boolean(effect?.merge_commit) };
     },
-    verify: (attempt) => verifyPublicationDetailed(attempt, siteFetch, staging ? 'private-binding' : 'public'),
+    verify: (attempt) => verifyPublicationDetailed(attempt, siteFetch, staging ? 'private-binding' : 'public',
+      (commit) => github.readReleaseManifestDigests(commit)),
     persist: (candidateId, ownerEpoch, state, checkpoint, claim) => persistCandidateCheckpoint(env.DB, candidateId, ownerEpoch, state, checkpoint, claim),
   });
   return { ...pipeline, reconcileMergeCapacity: (ownerEpoch: number) =>

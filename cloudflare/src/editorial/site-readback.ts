@@ -56,8 +56,11 @@ export function connectionParagraph(body: HtmlNode, href: string): HtmlNode | un
 }
 
 export async function textDigest(text: string): Promise<string> {
-  const bytes = new TextEncoder().encode(text);
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer));
+  return bytesDigest(new TextEncoder().encode(text).buffer as ArrayBuffer);
+}
+
+export async function bytesDigest(bytes: ArrayBuffer): Promise<string> {
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes));
   return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 

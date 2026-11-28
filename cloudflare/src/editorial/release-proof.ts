@@ -1,7 +1,21 @@
-import { bytesDigest, CANONICAL_SITE_ORIGIN, MAX_SITE_DOCUMENT_BYTES, readBoundedSiteBytes } from './site-readback.js';
+import { bytesDigest, CANONICAL_SITE_ORIGIN, MAX_SITE_DOCUMENT_BYTES, publicCitationUrl, readBoundedSiteBytes } from './site-readback.js';
 
-type ReleaseManifest = { asset_digest: string; built_at: string; files: Record<string, string> };
+type ReleaseManifest = { asset_digest: string; built_at: string; files: Record<string, string>; article_citations?: Record<string, unknown> };
 export type ReleaseDigests = (sourceCommit: string) => Promise<readonly string[]>;
+
+export function articleCitationsFromManifest(manifest: ReleaseManifest, path: string): Set<string> | null {
+  const index = manifest.article_citations;
+  if (index === undefined) return null;
+  const entry = Object.hasOwn(index, path) ? index[path] : undefined;
+  if (!Array.isArray(entry)) throw new Error('verified release citation index is missing the article');
+  const citations = new Set<string>();
+  for (const href of entry) {
+    const url = typeof href === 'string' && publicCitationUrl(href);
+    if (!url) throw new Error('verified release citation index has an invalid citation');
+    citations.add(url);
+  }
+  return citations;
+}
 
 export async function readVerifiedReleaseManifest(sourceCommit: string, fetcher: typeof fetch, readback: 'public' | 'private-binding',
   readDigests: ReleaseDigests): Promise<ReleaseManifest> {
@@ -21,7 +35,9 @@ export async function readVerifiedReleaseManifest(sourceCommit: string, fetcher:
   if (manifest?.schema_version !== 1 || manifest.source_commit !== sourceCommit ||
       !manifest.files || typeof manifest.files !== 'object' || Array.isArray(manifest.files) ||
       typeof manifest.asset_digest !== 'string' || typeof manifest.built_at !== 'string' ||
+      (manifest.article_citations !== undefined && (!manifest.article_citations ||
+        typeof manifest.article_citations !== 'object' || Array.isArray(manifest.article_citations))) ||
       response.headers.get('x-site-asset-digest') !== manifest.asset_digest ||
       response.headers.get('x-site-built-at') !== manifest.built_at) throw new Error('reviewed release manifest identity is invalid');
-  return { asset_digest: manifest.asset_digest, built_at: manifest.built_at, files: manifest.files };
+  return { asset_digest: manifest.asset_digest, built_at: manifest.built_at, files: manifest.files, article_citations: manifest.article_citations };
 }

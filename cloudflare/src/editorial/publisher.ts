@@ -1,7 +1,7 @@
 import type { ContentProposal, PublicationReceipt, PublicationState, PublishAttempt, ReviewReceipt } from './contracts.js';
 import * as parse5 from 'parse5';
-import { articleSourcePath, hasArticleLink, verifiesContextualLink, verifyRequiredMedia } from './review.js';
-import { CANONICAL_SITE_ORIGIN } from './site-readback.js';
+import { articleSourcePath, verifiesContextualLink, verifyRequiredMedia } from './review.js';
+import { CANONICAL_SITE_ORIGIN, connectionParagraph, matchesConnectionParagraph, normalizeNodeText, textDigest as sha256, type HtmlNode } from './site-readback.js';
 import { encodeSocialCard, isSocialCardPng, MAX_CARD_BYTES, socialCardPath } from './social-card-format.js';
 import { readDiscoveryLinks } from './discovery-readback.js';
 
@@ -40,12 +40,6 @@ function safePath(path: string): boolean {
   return !path.startsWith('/') && !path.includes('..') && !path.includes('\\') && !path.includes('\0') && (ARTICLE.test(path) || MEDIA.test(path));
 }
 
-async function sha256(value: string): Promise<string> {
-  const bytes = new TextEncoder().encode(value);
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer));
-  return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-}
-
 export async function canPublish(proposal: ContentProposal, receipt: ReviewReceipt, state: PublicationState): Promise<PublishDecision> {
   const reasons: string[] = [];
   if (receipt.decision !== 'CLEAR' || receipt.findings.length !== 0) reasons.push('Independent review did not clear the exact proposal.');
@@ -61,8 +55,14 @@ export async function canPublish(proposal: ContentProposal, receipt: ReviewRecei
   if (!proposal.files.length || proposal.files.some((file) => !safePath(file.path) || !state.allowed_paths.includes(file.path) || !['create', 'update'].includes(file.operation))) reasons.push('Changed path is outside the guarded publication allowlist.');
   if (new Set(proposal.files.map((file) => file.path)).size !== proposal.files.length) reasons.push('Proposal contains duplicate paths.');
   if (!proposal.public_urls.length || proposal.expected_content.length !== proposal.public_urls.length || proposal.expected_content.some((item) => !proposal.public_urls.includes(item.url) || !item.title || !/^[0-9a-f]{64}$/.test(item.text_sha256))) reasons.push('Expected public content is incomplete.');
-  if (proposal.expected_content.some((item) => item.required_link !== undefined &&
-      !proposal.files.some((file) => verifiesContextualLink(file, item.url, item.required_link!)))) reasons.push('Required contextual link is missing or unsafe.');
+  for (const item of proposal.expected_content) {
+    if (!item.contextual_link) continue;
+    const file = proposal.files.find((change) => change.path === articleSourcePath(item.url));
+    const sources = proposal.public_sources.map(({ url }) => url);
+    if (!file || item.contextual_link.sources.length !== sources.length ||
+        sources.some((url, index) => url !== item.contextual_link?.sources[index]) ||
+        !await verifiesContextualLink(file, item.url, item.contextual_link)) reasons.push('Required contextual link is missing or unsafe.');
+  }
   if (proposal.files.some((file) => file.operation === 'create' && ARTICLE.test(file.path) &&
       !proposal.expected_content.some((item) => item.social_image && articleSourcePath(item.url) === file.path)) ||
       !verifyRequiredMedia(proposal, state.allowed_paths)) reasons.push('Required media is missing or unsafe.');
@@ -239,20 +239,14 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       articleUrls.push(expectedUrl.href);
       const item = attempt.expected_content.find((expected) => expected.url === url);
       if (!item) throw new Error('expected article absent');
-      const page = parse5.parse(html) as unknown as { childNodes?: Array<{ tagName?: string; childNodes?: unknown[] }> };
+      const page = parse5.parse(html) as unknown as HtmlNode;
       const titles: string[] = [];
-      const articles: Array<{ text: string; linked: boolean }> = [];
+      const articles: HtmlNode[] = [];
       const canonicalUrls: string[] = [];
       const socialImages: string[] = [];
-      const requiredLink = item.required_link === undefined ? null : new URL(item.required_link, expectedUrl);
-      if (requiredLink && (requiredLink.origin !== expectedUrl.origin || requiredLink.pathname !== item.required_link ||
-          !articleSourcePath(requiredLink.href) || requiredLink.href === expectedUrl.href)) throw new Error('required contextual link is invalid');
-      type PageNode = Parameters<typeof hasArticleLink>[0];
-      const walk = (row: PageNode): void => {
+      const walk = (row: HtmlNode): void => {
         if (row.tagName === 'h1') titles.push(normalizeNodeText(row));
-        if (row.tagName === 'div' && row.attrs?.some((attr) => attr.name === 'data-writing-body')) articles.push({
-          text: normalizeNodeText(row), linked: !requiredLink || hasArticleLink(row, requiredLink.href),
-        });
+        if (row.tagName === 'div' && row.attrs?.some((attr) => attr.name === 'data-writing-body')) articles.push(row);
         if (row.tagName === 'link' && row.attrs?.some((attr) => attr.name === 'rel' && attr.value === 'canonical')) {
           const href = row.attrs.find((attr) => attr.name === 'href')?.value; if (href) canonicalUrls.push(new URL(href, expectedUrl).toString());
         }
@@ -261,9 +255,20 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
         }
         for (const child of row.childNodes ?? []) walk(child);
       };
-      walk(page as PageNode);
-      const matchingText = await Promise.all(articles.filter(({ linked }) => linked).map(({ text }) => sha256(text)));
-      if (!canonicalUrls.includes(expectedUrl.toString()) || !titles.some((title) => title === item.title) || !matchingText.includes(item.text_sha256)) throw new Error('canonical URL, title, visible article text, or required contextual link mismatch');
+      walk(page);
+      const context = item.contextual_link;
+      const matchingText = await Promise.all(articles.map(async (article) => {
+        if (!context) return sha256(normalizeNodeText(article));
+        const targetPath = articleSourcePath(context.href);
+        if (!targetPath || context.href !== `/${targetPath.slice(0, -3)}` || context.href === expectedUrl.pathname) return null;
+        const paragraph = connectionParagraph(article, context.href);
+        if (!paragraph || !await matchesConnectionParagraph(paragraph, context)) return null;
+        return sha256(normalizeNodeText({ ...article, childNodes: article.childNodes?.filter((child) => child !== paragraph) }));
+      }));
+      if (!canonicalUrls.includes(expectedUrl.toString()) || !titles.some((title) => title === item.title) ||
+          !matchingText.includes(item.text_sha256) || (context && articles.length !== 1)) {
+        throw new Error('canonical URL, title, visible article text, or contextual link mismatch');
+      }
       const sourceCommit = response.headers.get('x-site-source-commit');
       if (sourceCommit !== attempt.source_commit) throw new Error('deployed source revision mismatch');
       const assetDigest = response.headers.get('x-site-asset-digest');
@@ -318,14 +323,4 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
 
 export async function verifyPublication(attempt: PublishAttempt, fetcher: typeof fetch): Promise<PublicationReceipt> {
   return (await verifyPublicationDetailed(attempt, fetcher)).receipt;
-}
-
-function normalizeNodeText(node: unknown): string {
-  const extract = (value: unknown): string => {
-    if (!value || typeof value !== 'object') return '';
-    const row = value as { nodeName?: string; value?: string; childNodes?: unknown[] };
-    if (['script', 'style', 'noscript'].includes(row.nodeName ?? '')) return '';
-    return (row.value ?? '') + (row.childNodes ?? []).map(extract).join(' ');
-  };
-  return extract(node).replace(/\s+/g, ' ').trim();
 }

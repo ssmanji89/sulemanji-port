@@ -31,10 +31,12 @@ describe('reader relevance and action selection', () => {
     });
     for (const title of [
       'Workers asset deployment and Workers Rust examples',
+      'Workers asset deployment integrates with Workers Rust examples?',
       'Workers asset deployment requires no Workers Rust examples',
       'Workers asset deployment requires Workers Rust examples to be removed',
     ]) {
       expect(chooseAction({ ...evidence, title }, articles, [], history, now).action).toBe('PROPOSE');
+      expect(chooseAction({ ...evidence, title: 'Workers discussion', summary: title }, articles, [], history, now).action).toBe('PROPOSE');
     }
   });
 

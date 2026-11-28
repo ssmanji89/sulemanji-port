@@ -15,8 +15,11 @@ function editorialConnection(signal: Signal, relevant: CatalogItem[], catalog: C
   }
   const relevantIds = new Set(relevant.map(({ id }) => id));
   const pairs = new Map<string, { from: CatalogItem; to: CatalogItem }>();
-  for (const clause of [signal.title, ...signal.summary.split(/[.!?;\n]+/)]) {
-    const parts = normalizeTitle(clause).replace(/[.!?]$/, '').split(/ (?:integrates with|depends on|requires) /);
+  const clauses = signal.summary.match(/[^.!?;\n]+[.!?;]?/g) ?? [];
+  for (const clause of [signal.title, ...clauses]) {
+    const statement = normalizeTitle(clause);
+    if (statement.endsWith('?')) continue;
+    const parts = statement.replace(/[.!;]$/, '').split(/ (?:integrates with|depends on|requires) /);
     if (parts.length !== 2) continue;
     const from = normalizedTitles.get(parts[0]);
     const to = normalizedTitles.get(parts[1]);

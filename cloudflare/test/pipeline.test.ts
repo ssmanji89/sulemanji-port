@@ -89,6 +89,23 @@ describe('durable candidate publication pipeline', () => {
     expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review']);
   });
 
+  it('reports an existing contextual link without any model or publishing work', async () => {
+    const from = { id: 'existing', title: 'Existing guide', url: '/notes/existing', topics: ['infrastructure'] };
+    const to = { id: 'related', title: 'Related guide', url: '/notes/related', topics: ['infrastructure'] };
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => { throw new Error('The deployed connection already exists'); }, renderSocialCard,
+      preparationContext: async () => ({ ...context, connection_baseline: { text_sha256: 'a'.repeat(64), already_linked: true } }),
+      publish: async () => { throw new Error('Unexpected publication'); },
+      verify: async () => { throw new Error('Unexpected readback'); },
+      persist: async () => { throw new Error('Unexpected draft or hold'); },
+    });
+    const result = await pipeline.processCandidate({
+      candidate: { ...candidate, action: 'CONNECT', target_id: from.id, related_id: to.id },
+      signal: { id: 'signal-1' } as Signal, catalog: [from, to], knowledge: [], policy, owner_epoch: 1, step: new Steps(),
+    });
+    expect(result).toMatchObject({ status: 'no_change' });
+  });
+
   it('holds a deferred legacy connection without opening or merging its new article', async () => {
     const models = new Models();
     const legacy = { ...candidate, id: 'connect:signal-1:workers', target_id: 'workers', action: 'CONNECT' as const };

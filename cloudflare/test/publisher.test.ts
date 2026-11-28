@@ -214,19 +214,24 @@ describe('public publication identity verification', () => {
   it('accepts the digest and timestamp formats emitted by the Jekyll release manifest', async () => {
     const body = 'A source-backed reader explanation.';
     const related = '/notes/related-article';
+    const citation = 'https://vendor.example.test/evidence';
+    const appendixText = "A reader's next step. Related guide ( source 1 ).";
     const url = 'https://www.sulemanji.com/notes/reviewed-article';
     const attempt: PublishAttempt = {
       id: 'attempt-42', candidate_id: 'candidate-42', owner_epoch: 7, branch: 'editorial/candidate-42', pull_request: 12,
       source_commit: 'd'.repeat(40), deployment_version: null, public_urls: ['/notes/reviewed-article'],
-      expected_content: [{ url: '/notes/reviewed-article', title: 'Reviewed title', text_sha256: await sha(body), required_link: related }], status: 'SOURCE_PUBLISHED',
+      expected_content: [{ url: '/notes/reviewed-article', title: 'Reviewed title', text_sha256: await sha(body), contextual_link: { href: related, text_sha256: await sha(appendixText), sources: [citation] } }], status: 'SOURCE_PUBLISHED',
     };
     const card = await readFile(new URL('../../assets/images/articles/agent-safety-social.png', import.meta.url));
     const cardPath = '/assets/images/articles/reviewed-article-social.png';
     Object.assign(attempt.expected_content[0], { social_image: { path: cardPath, content_sha256: await sha(card.toString('base64')) } });
-    let damage: 'none' | 'metadata' | 'card' | 'release' | 'wrong-link' | 'outside-link' = 'none';
+    let damage: 'none' | 'metadata' | 'card' | 'release' | 'wrong-link' | 'outside-link' | 'wrong-source' | 'changed-body' = 'none';
     const digest = `sha256:${'a'.repeat(64)}`;
     const builtAt = '2026-11-27T14:00:00Z';
-    const article = () => `<html><head><link rel="canonical" href="${url}"><meta property="og:image" content="https://www.sulemanji.com${damage === 'metadata' ? '/wrong.png' : cardPath}"></head><body><h1>Reviewed title</h1><div data-writing-body>${damage === 'outside-link' ? body : `<a href="${damage === 'wrong-link' ? '/notes/unrelated' : related}">${body}</a>`}</div>${damage === 'outside-link' ? `<nav><a href="${related}">Other article</a></nav>` : ''}</body></html>`;
+    const appendix = () => `<p>A reader's next step. <a href="${damage === 'wrong-link' ? '/notes/unrelated' : related}">Related guide</a> (<a href="${damage === 'wrong-source' ? 'https://other.example.test/' : citation}">source 1</a>).</p>`;
+    const article = () => `<html><head><link rel="canonical" href="${url}"><meta property="og:image" content="https://www.sulemanji.com${damage === 'metadata' ? '/wrong.png' : cardPath}"></head>
+      <body><h1>Reviewed title</h1><div data-writing-body><p>${damage === 'changed-body' ? 'The original body changed.' : body}</p>${damage !== 'outside-link' ? appendix() : ''}</div>
+      ${damage === 'outside-link' ? `<nav>${appendix()}</nav>` : ''}</body></html>`;
     const response = (content: BodyInit, responseUrl: string, headers?: HeadersInit) => {
       const result = new Response(content, { headers });
       Object.defineProperty(result, 'url', { value: responseUrl });
@@ -250,7 +255,7 @@ describe('public publication identity verification', () => {
 
     expect(result.failure).toBeUndefined();
     expect(result.receipt.outcome).toBe('VERIFIED');
-    for (const change of ['metadata', 'card', 'release', 'wrong-link', 'outside-link'] as const) {
+    for (const change of ['metadata', 'card', 'release', 'wrong-link', 'outside-link', 'wrong-source', 'changed-body'] as const) {
       damage = change;
       expect((await verifyPublicationDetailed(attempt, fetcher)).receipt.outcome).toBe('UNCERTAIN');
     }

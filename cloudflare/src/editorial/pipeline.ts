@@ -80,7 +80,7 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         const [expected] = proposal.expected_content;
         const relatedUrl = new URL(connection.to.url, 'https://www.sulemanji.com').pathname;
         return proposal.files.length === 1 && file.operation === 'update' && file.path === connection.path &&
-          proposal.expected_content.length === 1 && expected.url === connection.from.url && expected.required_link === relatedUrl;
+          proposal.expected_content.length === 1 && expected.url === connection.from.url && expected.contextual_link?.href === relatedUrl;
       };
       const deferred = input.resumeCapacity;
       if (candidate.action === 'CONNECT' && (!connection || (deferred && !qualifiedConnection(deferred.proposal)))) {
@@ -98,6 +98,9 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         }
       }
       const context = await step.do(`prepare-context-${key}`, () => deps.preparationContext(input));
+      if (connection && context.connection_baseline?.already_linked) {
+        return { status: 'no_change', reason: 'The exact related article is already linked from the deployed article body.' };
+      }
       const models = deps.modelsFor(candidate, ownerEpoch, policy);
       const draftProposal = await runModelStep(step, `prepare-content-${key}`,
         () => prepareContent(candidate, context, models, `author:${candidate.id}`));

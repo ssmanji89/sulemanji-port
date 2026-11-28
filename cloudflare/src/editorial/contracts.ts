@@ -78,12 +78,13 @@ export type RecentHistory = { source_revisions: string[]; episode_ids: string[];
 export type ActionDecision = { action: 'NO_CHANGE'; reason: string; signal_ids: string[] } | { action: Candidate['action']; candidate: Candidate };
 
 export type FileChange = { path: string; operation: 'create' | 'update'; encoding: 'utf-8' | 'base64'; content: string; content_sha256: string };
-export type ExpectedContent = { url: string; title: string; text_sha256: string; required_link?: string; social_image?: { path: string; content_sha256: string } };
+export type ContextualLink = { href: string; text_sha256: string; sources: string[] };
+export type ExpectedContent = { url: string; title: string; text_sha256: string; contextual_link?: ContextualLink; social_image?: { path: string; content_sha256: string } };
 export type ContentProposal = {
   candidate_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string;
   base_commit: string; owner_epoch: number; files: FileChange[]; public_sources: PublicSource[]; required_media_paths: string[]; public_urls: string[]; expected_content: ExpectedContent[];
 };
-export type PreparationContext = { catalog: CatalogItem[]; sources: PublicSource[]; source_excerpt?: string; knowledge: PublicKnowledge[]; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; existing_files?: Record<string, string>; existing_paths?: string[] };
+export type PreparationContext = { catalog: CatalogItem[]; sources: PublicSource[]; source_excerpt?: string; knowledge: PublicKnowledge[]; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; existing_files?: Record<string, string>; existing_paths?: string[]; connection_baseline?: { text_sha256: string; already_linked: boolean } };
 export type ReviewContext = PreparationContext & { reviewer_run_id: string };
 export type ReviewReceipt = { candidate_id: string; reviewer_run_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; decision: 'CLEAR' | 'FIX_REQUIRED' | 'HOLD'; findings: Array<{ code: string; detail: string }> };
 export type PublicationState = { owner_epoch: number; paused: boolean; base_commit: string; policy_revision: string; knowledge_revision: string; source_digest: string; allowed_paths: string[]; author_run_id: string };

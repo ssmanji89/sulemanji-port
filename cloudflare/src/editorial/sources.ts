@@ -62,8 +62,8 @@ function attribute(tagText: string, name: string): string {
 }
 
 function originLinks(block: string): string[] {
-  return [...block.matchAll(/<link\b[^>]*>/gi)].flatMap(([link]) =>
-    attribute(link, 'rel').toLowerCase().split(/\s+/).some((rel) => rel === 'canonical' || rel === 'via')
+  return [...block.matchAll(/<(?:[\w-]+:)?link\b[^>]*>/gi)].flatMap(([link]) =>
+    attribute(link, 'rel').toLowerCase().split(/\s+/).some((rel) => ['canonical', 'via', 'self', 'alternate'].includes(rel))
       ? [attribute(link, 'href')] : []);
 }
 
@@ -77,6 +77,7 @@ function entries(body: string, format: SourceConfig['format'], base: URL): Entry
   if (format === 'json') {
     const parsed = JSON.parse(body) as { items?: unknown[]; feed_url?: unknown };
     if (!Array.isArray(parsed.items)) throw new Error('INVALID');
+    if (isSiteOutput(parsed.feed_url)) return [];
     return parsed.items.slice(0, MAX_ENTRIES_PER_SOURCE).map((item, index) => {
       if (!item || typeof item !== 'object') throw new Error('INVALID');
       const row = item as Record<string, unknown>;
@@ -104,6 +105,8 @@ function entries(body: string, format: SourceConfig['format'], base: URL): Entry
         date: date.toISOString(), id: row.link };
     });
   }
+  if ((format === 'rss' || format === 'atom') &&
+      originLinks(body.replace(/<(item|entry)\b[^>]*>[\s\S]*?<\/\1>/gi, '')).some(isSiteOutput)) return [];
   if (format === 'rss') {
     const blocks = body.match(/<item\b[^>]*>[\s\S]*?<\/item>/gi) ?? [];
     return blocks.slice(0, MAX_ENTRIES_PER_SOURCE).map((block, index) => {

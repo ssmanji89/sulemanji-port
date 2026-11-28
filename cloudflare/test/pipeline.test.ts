@@ -54,15 +54,22 @@ function attempt(proposal: ContentProposal): PublishAttempt {
 describe('durable candidate publication pipeline', () => {
   it('does not prepare, review or publish cached signals sourced from its own output', async () => {
     const unexpected = () => { throw new Error('Recycled evidence attempted to start work'); };
+    const saved: Array<{ state: string; claim?: string }> = [];
     const pipeline = createEditorialCandidatePipeline({
       modelsFor: unexpected, renderSocialCard: unexpected, preparationContext: unexpected,
-      persist: unexpected, publish: unexpected, verify: unexpected,
+      persist: async (_id, _epoch, state, _checkpoint, claim) => { saved.push({ state, claim }); return true; },
+      publish: unexpected, verify: unexpected,
     });
-    const result = await pipeline.processCandidate({ candidate,
+    const input = { candidate,
       signal: { id: 'new-feed-id', evidence: [{ ...source, url: 'https://sulemanji.com/notes/recycled' }] } as Signal,
       catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps(),
-    });
+    };
+    const result = await pipeline.processCandidate(input);
     expect(result).toMatchObject({ status: 'no_change', reason: expect.stringContaining('independent') });
+    await expect(pipeline.processCandidate({ ...input, step: new Steps(),
+      resumeCapacity: { claim: 'deferred-slot' } as DeferredReview,
+    })).resolves.toMatchObject({ status: 'no_change' });
+    expect(saved).toEqual([{ state: 'NO_CHANGE', claim: undefined }, { state: 'NO_CHANGE', claim: 'deferred-slot' }]);
   });
 
   it('keeps the exact reviewed PR through a capacity hold and resumes without model work', async () => {

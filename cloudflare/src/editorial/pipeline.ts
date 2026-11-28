@@ -21,14 +21,15 @@ export type ReviewedPublication = { proposal: ContentProposal; review: ReviewRec
 export type DeferredReview = ReviewedPublication & { claim: string };
 type PublicationResult = { attempt: PublishAttempt; merged: boolean };
 type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true; checkpoint_owner?: true };
-export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt; retry_after?: string; signal?: Signal };
+export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt; retry_after?: string; signal?: Signal; reason?: string };
+export type CandidateCheckpointState = 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'CAPACITY_HELD' | 'VERIFIED' | 'NO_CHANGE';
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
   renderSocialCard: SocialCardRenderer;
   preparationContext(input: CandidatePipelineInput): Promise<PreparationContext>;
   publish(proposal: ContentProposal, review: ReviewReceipt, signal: Signal, catalog: CatalogItem[], claim?: string): Promise<PublicationResult>;
   verify(attempt: PublishAttempt): Promise<{ receipt: PublicationReceipt; failure?: string }>;
-  persist(candidateId: string, ownerEpoch: number, state: 'DRAFTED' | 'REVIEWED' | 'NEEDS_OWNER' | 'SOURCE_PUBLISHED' | 'CAPACITY_HELD' | 'VERIFIED', checkpoint: CandidateCheckpoint, claim?: string): Promise<boolean>;
+  persist(candidateId: string, ownerEpoch: number, state: CandidateCheckpointState, checkpoint: CandidateCheckpoint, claim?: string): Promise<boolean>;
 };
 
 function stepPart(candidateId: string): string {
@@ -84,12 +85,19 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
           proposal.expected_content.length === 1 && expected.url === connection.from.url && expected.contextual_link?.href === relatedUrl;
       };
       const deferred = input.resumeCapacity;
+      if (isRecycledSignal(input.signal, input.catalog)) {
+        const reason = 'A published site article cannot serve as independent evidence.';
+        const checkpoint = deferred
+          ? { proposal: deferred.proposal, review: deferred.review, attempt: deferred.attempt, reason }
+          : { reason };
+        const recorded = await step.do(`persist-candidate-${key}-NO_CHANGE-recycled-source`, () =>
+          deps.persist(candidate.id, ownerEpoch, 'NO_CHANGE', checkpoint, deferred?.claim));
+        if (!recorded) return { status: 'held', reason: 'Could not checkpoint the recycled evidence decision.' };
+        return { status: 'no_change', reason };
+      }
       if (candidate.action === 'CONNECT' && (!connection || (deferred && !qualifiedConnection(deferred.proposal)))) {
         const checkpoint = deferred ? { proposal: deferred.proposal, review: deferred.review, attempt: deferred.attempt } : {};
         return holdConnection('The contextual link requires two qualified article identities and an existing-article update.', deferred ? 'deferred' : 'targets', checkpoint);
-      }
-      if (isRecycledSignal(input.signal, input.catalog)) {
-        return { status: 'no_change', reason: 'A published site article cannot serve as independent evidence.' };
       }
       if (deferred) return publishReviewed(input, deferred.proposal, deferred.review, deps);
       if (candidate.action === 'REFRESH') {

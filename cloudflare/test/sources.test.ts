@@ -69,6 +69,18 @@ describe('bounded public signal collection', () => {
     expect((await collectSignals([config({ format: 'atom' })], now, async () => new Response(atom))).signals).toEqual([]);
   });
 
+  it('recognizes namespaced links, Atom source self URLs and JSON Feed identity', async () => {
+    const rss = xml.replace('</item>', '<atom:link rel="canonical" href="https://sulemanji.com/notes/release"/></item>');
+    const atom = '<feed><entry><title>Adapted title</title><link href="https://blog.example.test/repost"/><summary>New excerpt</summary><updated>2026-11-26T17:00:00Z</updated><source><id>urn:opaque:feed</id><link rel="self" href="https://www.sulemanji.com/feed.xml"/></source></entry></feed>';
+    const json = { feed_url: 'https://www.sulemanji.com/feed.json', items: [{
+      id: 'new', title: 'Adapted title', summary: 'New excerpt', url: 'https://blog.example.test/repost', date_published: '2026-11-26T17:00:00Z',
+    }] };
+    for (const [format, value] of [['rss', rss], ['atom', atom], ['json', JSON.stringify(json)]] as const) {
+      const batch = await collectSignals([config({ format })], now, async () => new Response(value));
+      expect(batch).toEqual({ signals: [], failures: [] });
+    }
+  });
+
   it('rejects redirects outside the registered host allowlist', async () => {
     const batch = await collectSignals([config()], now, async () => new Response(null, { status: 302, headers: { location: 'https://127.0.0.1/secret' } }));
     expect(batch.signals).toHaveLength(0);

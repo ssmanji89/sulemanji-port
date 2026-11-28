@@ -555,6 +555,35 @@ describe('deterministic signal workflow', () => {
     ), slots };
   }
 
+  it('continues discovery after a recycled deferred candidate is retired without publishing', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first] } = providerRecoveryDatabase();
+    const candidate = { id: 'recycled-candidate', signal_ids: ['old-signal'], source_digest: 'old-source' };
+    const base = { candidate_id: candidate.id, owner_epoch: 1 };
+    sqlite.prepare(`INSERT INTO editorial_candidates(id, state, revision, payload_json, updated_at, publication_retry_after)
+      VALUES (?, 'CAPACITY_HELD', ?, ?, ?, ?)`).run(candidate.id, candidate.source_digest, JSON.stringify({
+        owner_epoch: 1, candidate, pipeline: { proposal: base, review: base,
+          signal: { id: 'old-signal' }, attempt: { ...base, status: 'CAPACITY_HELD', pull_request: 7 } },
+      }), new Date().toISOString(), '2026-11-27T13:00:00.000Z');
+    const processed: string[] = [];
+    const result = await run(first, {
+      async processCandidate({ candidate: current, resumeCapacity }) {
+        processed.push(current.id);
+        if (!resumeCapacity) return { status: 'verified', reason: 'Independent publication verified.' };
+        expect(sqlite.prepare(`UPDATE editorial_candidates SET state = 'NO_CHANGE',
+          publication_retry_after = NULL, publication_retry_claim = NULL WHERE id = ? AND publication_retry_claim = ?`)
+          .run(current.id, resumeCapacity.claim).changes).toBe(1);
+        return { status: 'no_change', reason: 'This is recycled evidence.' };
+      },
+    });
+    expect(result, result.reason).toMatchObject({ status: 'admitted' });
+    expect(processed).toEqual([candidate.id, expect.stringContaining('refresh:')]);
+    expect(sqlite.prepare('SELECT state, publication_retry_after, publication_retry_claim FROM editorial_candidates WHERE id = ?')
+      .get(candidate.id)).toMatchObject({ state: 'NO_CHANGE', publication_retry_after: null, publication_retry_claim: null });
+  });
+
   it.each([
     { providerRestored: false, legacyRow: false },
     { providerRestored: true, legacyRow: false },

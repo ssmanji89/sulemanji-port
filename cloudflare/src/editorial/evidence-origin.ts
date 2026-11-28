@@ -11,6 +11,7 @@ export function isSiteOutput(value: unknown): boolean {
     const host = url.hostname.toLowerCase().replace(/\.$/, '');
     return host === SITE_HOST || host.endsWith('.' + SITE_HOST) ||
       ((host === 'github.com' || host === 'raw.githubusercontent.com') && SITE_REPO_PATH.test(decodeURIComponent(url.pathname))) ||
+      (host === 'api.github.com' && /^\/repos\//i.test(url.pathname) && SITE_REPO_PATH.test(decodeURIComponent(url.pathname.slice(6)))) ||
       (host === 'ssmanji89.github.io' && /^\/sulemanji-port(?:\/|$)/i.test(decodeURIComponent(url.pathname))) ||
       (host === 'sulemanji-site-staging.ssmanji89.workers.dev' || host === 'sulemanji-editorial-fixture-site.ssmanji89.workers.dev');
   } catch {

@@ -2,12 +2,12 @@ import sourceRegistry from '../../config/public-sources.json' with { type: 'json
 import type { ActionDecision, Candidate, CatalogItem, EditorialEnv, PublicKnowledge, RecentHistory, Signal, SignalBatch, SourceConfig, SourceFailure } from './contracts.js';
 import { collectSignals } from './sources.js';
 import { chooseAction } from './relevance.js';
-import { fingerprintPublicKnowledge, getPublicKnowledge } from './knowledge.js';
+import { fingerprintPublicKnowledge, parsePublicKnowledge } from './knowledge.js';
 import { nextChicagoBudgetDay, parseEditorialPolicy, readScheduleClaim, scheduleWorkflowId, type EditorialPolicy } from './scheduler.js';
 import { readControl } from './state.js';
 import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
-import { independentKnowledge } from './evidence-origin.js';
+import { independentKnowledge, isRecycledKnowledge } from './evidence-origin.js';
 import type { DeferredReview } from './pipeline.js';
 
 export type DurableStep = {
@@ -40,6 +40,7 @@ type GuardedFetcher = { fetcher: typeof fetch; isStale: () => boolean; isCurrent
 const CONTENT_INDEX_URL = 'https://www.sulemanji.com/content-index.json';
 const MAX_INDEX_BYTES = 1_048_576;
 const HISTORY_LIMIT = 1_000;
+const KNOWLEDGE_LIMIT = 100;
 
 function parseJson<T>(value: string): T | null {
   try { return JSON.parse(value) as T; } catch { return null; }
@@ -66,13 +67,24 @@ async function readCatalog(fetcher: typeof fetch): Promise<CatalogItem[]> {
   return catalog;
 }
 
-export async function readKnowledge(db: D1Database, now: Date): Promise<PublicKnowledge[]> {
-  const rows = await db.prepare(`SELECT DISTINCT subject_id FROM public_knowledge
-    WHERE action = 'UPSERT' AND expires_at > ? ORDER BY subject_id LIMIT 100`).bind(now.toISOString()).all<{ subject_id: string }>();
+export async function readKnowledge(db: D1Database, now: Date, catalog: CatalogItem[]): Promise<PublicKnowledge[]> {
   const items: PublicKnowledge[] = [];
-  for (const row of rows.results ?? []) {
-    const knowledge = await getPublicKnowledge(row.subject_id, db, now);
-    if (knowledge) items.push(knowledge);
+  let afterSubject = '';
+  while (items.length < KNOWLEDGE_LIMIT) {
+    const batch = await db.prepare(`SELECT subject_id, payload_json FROM (
+        SELECT subject_id, payload_json,
+          ROW_NUMBER() OVER (PARTITION BY subject_id ORDER BY sequence DESC, derivative_id) AS position
+        FROM public_knowledge WHERE action = 'UPSERT' AND expires_at > ? AND subject_id > ?
+      ) WHERE position = 1 ORDER BY subject_id LIMIT ?`)
+      .bind(now.toISOString(), afterSubject, KNOWLEDGE_LIMIT).all<{ subject_id: string; payload_json: string }>();
+    const rows = batch.results ?? [];
+    for (const row of rows) {
+      const knowledge = parsePublicKnowledge(row.payload_json);
+      if (knowledge && !isRecycledKnowledge(knowledge, catalog)) items.push(knowledge);
+      if (items.length === KNOWLEDGE_LIMIT) return items;
+    }
+    if (rows.length < KNOWLEDGE_LIMIT) break;
+    afterSubject = rows[rows.length - 1].subject_id;
   }
   return items;
 }
@@ -414,7 +426,8 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   if (catalogFetcher.isStale() || !(await catalogFetcher.isCurrent())) return held(params, 'Workflow authority changed during the content-index read.');
 
   const now = await step.do('capture-editorial-run-time', () => new Date().toISOString());
-  const knowledge = independentKnowledge(await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now))), catalog);
+  const storedKnowledge = await step.do('read-authorized-public-knowledge', () => readKnowledge(env.DB, new Date(now), catalog));
+  const knowledge = independentKnowledge(storedKnowledge, catalog);
   const knowledgeRevision = await step.do('fingerprint-authorized-public-knowledge', () => fingerprintPublicKnowledge(knowledge));
   if (processor?.reconcileMergeCapacity) await step.do('reconcile-publication-capacity', async () => {
     await processor.reconcileMergeCapacity?.(control.owner_epoch);
@@ -426,7 +439,8 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     candidate: pending.candidate, signal: pending.signal, catalog, knowledge, policy,
     owner_epoch: control.owner_epoch, step, resumeCapacity: pending,
   }) : null;
-  if (pending && retry && (retry.status !== 'held' || !retry.continue_after_hold)) {
+  const deferredHold = retry?.status === 'held' ? retry : null;
+  if (pending && retry && (retry.status === 'verified' || (deferredHold && !deferredHold.continue_after_hold))) {
     const action = retry.status === 'verified' ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-deferred-publication-result', () => recordReceipt(env.DB,
       params.slot_claim_id, pending.candidate.id, action, { reason: retry.reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
@@ -494,18 +508,19 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
       if (!saved) return held(params, 'Workflow authority changed before the hold could be recorded.');
       return held(params, reason);
     }
-    if (pending && retry) {
+    if (pending && deferredHold) {
       const saved = await step.do('record-deferred-publication-hold', () => recordReceipt(env.DB,
         params.slot_claim_id, pending.candidate.id, 'HELD_PUBLICATION_PIPELINE',
-        { reason: retry.reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
+        { reason: deferredHold.reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
       if (!saved) return held(params, 'Workflow authority changed before the deferred publication hold could be recorded.');
-      return held(params, retry.reason);
+      return held(params, deferredHold.reason);
     }
     if (needsReconciliation.size) return reconciliationHold();
     const reason = batch.signals.length ? 'No fresh public signal qualifies for a site change.' : 'No fresh public signals were found.';
     const saved = await step.do('record-no-change-result', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'NO_CHANGE', {
       reason, owner_epoch: control.owner_epoch, signals: batch.signals.map(signalHistory),
       no_change_reasons: noChangeSignals.map(({ signal, decision }) => ({ signal_id: signal.id, reason: decision.action === 'NO_CHANGE' ? decision.reason : '' })),
+      ...(pending && retry ? { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}),
       source_failures: batch.failures.map(({ source_id, code }) => ({ source_id, code })),
       uncovered_source_ids: batch.uncovered,
     }, control.owner_epoch));
@@ -557,15 +572,15 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
       }
     }
     if (outcomes.length === needsReconciliation.size && needsReconciliation.size) return reconciliationHold();
-    const settled = !retry && outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status !== 'held');
+    const settled = !deferredHold && outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status !== 'held');
     const verified = settled && outcomes.some((outcome) => outcome.status === 'verified');
     const noChange = settled && qualifying.length === actionable.length && !batch.uncovered.length && !batch.failures.length;
     const verifiedReason = outcomes.every((outcome) => outcome.status === 'verified')
       ? 'All admitted candidates passed publication and public readback.'
       : 'All admitted candidates were resolved and each publication passed public readback.';
     const reason = verified ? verifiedReason :
-      noChange ? 'Each qualifying relationship was already present in the deployed content.' :
-      stopReason ?? retry?.reason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ??
+      noChange ? 'No admitted candidate required a site change.' :
+      stopReason ?? deferredHold?.reason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ??
         'Source coverage or candidate capacity was incomplete for a NO_CHANGE result.';
     const action = verified ? 'VERIFIED' : noChange ? 'NO_CHANGE' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,

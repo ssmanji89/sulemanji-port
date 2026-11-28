@@ -78,7 +78,8 @@ ${fileHash}`),
         href: related, sources: [cited], text_sha256: await hash(normalizeVisibleText(
           `<p>Use the <a href="${related}">related guide</a> (<a href="${cited}">source 1</a>).</p>`)),
       } }] };
-    const review: ReviewReceipt = { ...proposal, reviewer_run_id: 'independent-1', decision: 'CLEAR', findings: [] };
+    const review: ReviewReceipt = { ...proposal, reviewer_run_id: 'independent-1', decision: 'CLEAR', findings: [],
+      knowledge_fence: { generation: 0, derivatives: [] } };
     const attempt = { id: 'publication:guide', candidate_id: candidate.id, owner_epoch: 1, branch: 'editorial/candidate-guide',
       pull_request: 17, source_commit: base, deployment_version: null, public_urls: [url],
       expected_content: proposal.expected_content, status: 'CAPACITY_HELD' as const };

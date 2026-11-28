@@ -53,6 +53,13 @@ export async function canPublish(proposal: ContentProposal, receipt: ReviewRecei
   if (proposal.owner_epoch !== state.owner_epoch || receipt.owner_epoch !== state.owner_epoch) reasons.push('Publication owner epoch changed after review.');
   if (proposal.policy_revision !== state.policy_revision || receipt.policy_revision !== state.policy_revision) reasons.push('Editorial policy changed after review.');
   if (proposal.knowledge_revision !== state.knowledge_revision || receipt.knowledge_revision !== state.knowledge_revision) reasons.push('Authorized knowledge changed after review.');
+  const currentKnowledge = state.knowledge_fence;
+  const reviewedKnowledge = receipt.knowledge_fence;
+  if (currentKnowledge && (!reviewedKnowledge || reviewedKnowledge.generation !== currentKnowledge.generation ||
+      reviewedKnowledge.derivatives.length !== currentKnowledge.derivatives.length ||
+      reviewedKnowledge.derivatives.some((derivative, index) => derivative !== currentKnowledge.derivatives[index]))) {
+    reasons.push('Knowledge authority changed after review.');
+  }
   if (proposal.source_digest !== state.source_digest || receipt.source_digest !== state.source_digest) reasons.push('Public source set changed after review.');
   if (state.paused) reasons.push('Editorial publishing is paused.');
   if (receipt.candidate_id !== proposal.candidate_id || !Number.isSafeInteger(state.owner_epoch) || state.owner_epoch < 1) reasons.push('Publication owner epoch is invalid.');

@@ -70,6 +70,44 @@ class FakeGitHub implements GitHubPublisher {
 }
 
 describe('guarded source publication effects', () => {
+  it.each([false, true])('denies an old clearance after withdrawal and identical regrant (branch already exists: %s)', async (opened) => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const reviewed = { generation: 4, derivatives: ['approved-derivative'] };
+    let knowledge = reviewed;
+    const exactReceipt = { ...receipt, knowledge_fence: reviewed };
+    const deps = { store, github, readAuthority: async () => state,
+      currentState: async () => ({ ...state, knowledge_fence: knowledge }) };
+    if (opened) {
+      expect((await publishContent(proposal, exactReceipt, deps)).status).toBe('SOURCE_PUBLISHED');
+      github.pr!.checks = 'success';
+    }
+    knowledge = { ...reviewed, generation: 6 };
+    expect((await publishContent(proposal, exactReceipt, deps)).status).toBe('FAILED');
+    expect(github.creates).toBe(opened ? 1 : 0);
+    expect(github.merges).toBe(0);
+  });
+
+  it('can observe a previously merged effect after authority changes without writing to GitHub again', async () => {
+    const { proposal, receipt, state } = await fixture();
+    const github = new FakeGitHub();
+    const store = new FakeStore();
+    const reviewed = { generation: 4, derivatives: ['approved-derivative'] };
+    let knowledge = reviewed;
+    const exactReceipt = { ...receipt, knowledge_fence: reviewed };
+    const deps = { store, github, readAuthority: async () => state,
+      currentState: async () => ({ ...state, knowledge_fence: knowledge }) };
+    await publishContent(proposal, exactReceipt, deps);
+    github.pr!.checks = 'success';
+    const merged = await publishContent(proposal, exactReceipt, deps);
+    expect(merged.source_commit).toBe('e'.repeat(40));
+    knowledge = { ...reviewed, generation: 6 };
+    expect(await publishContent(proposal, exactReceipt, deps)).toEqual(merged);
+    expect(github.creates).toBe(1);
+    expect(github.merges).toBe(1);
+  });
+
   it('rejects protected files, changed source, and stale base before any GitHub call', async () => {
     const { proposal, receipt, state } = await fixture();
     const protectedProposal = { ...proposal, files: [{ ...proposal.files[0], path: 'worker/src/index.ts' }] };

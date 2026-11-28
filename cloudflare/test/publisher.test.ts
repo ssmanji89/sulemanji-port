@@ -242,7 +242,11 @@ describe('public publication identity verification', () => {
     const assetDigest = `sha256:${'a'.repeat(64)}`;
     const builtAt = '2026-11-28T08:00:00Z';
     const citation = 'https://vendor.example.test/evidence?x=1&y=2#section';
-    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body><p>NIST’s <a href="${citation.replace('&', '&amp;')}">source-backed guidance</a>.</p></div></body></html>`;
+    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body>
+      <p>NIST’s <a href="${citation.replace('&', '&amp;')}">source-backed guidance</a>.</p>
+      <a href="https://@vendor.example.test/empty-userinfo">Empty userinfo</a>
+      <a href="https://vendor.example.test:65536/invalid-port">Invalid port</a>
+    </div></body></html>`;
     const listing = {
       '/writing': `<a href="${url}">Article</a>`,
       '/feed.xml': `<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="${url}"/></entry></feed>`,

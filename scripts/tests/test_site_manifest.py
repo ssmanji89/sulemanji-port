@@ -111,6 +111,8 @@ class SiteManifestTests(unittest.TestCase):
             '<div data-writing-body><p>Evidence <a href="https://docs.example.org/?a=1&amp;b=2#policy">Policy</a>'
             ' <a href="https://docs.example.org/?a=1&amp;b=2#policy">Same</a>'
             ' <a href="https://user:pass@example.org/private">Credentials</a>'
+            ' <a href="https://@example.org/empty-userinfo">Empty userinfo</a>'
+            ' <a href="https://example.org:65536/invalid-port">Invalid port</a>'
             ' <a href="/notes/related">Internal</a>'
             ' <img src="https://example.org/not-a-citation"></p>'
             '<template><a href="https://example.org/not-visible">Hidden</a></template></div>',

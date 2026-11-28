@@ -132,7 +132,7 @@ class _ArticleCitations(_VisibleContainerText):
             return
         try:
             parsed = urlsplit(href)
-            if parsed.hostname and parsed.username is None and parsed.password is None:
+            if parsed.hostname and '@' not in parsed.netloc and 0 <= (parsed.port or 0) <= 65535:
                 self.citations.add(href)
         except ValueError:
             return

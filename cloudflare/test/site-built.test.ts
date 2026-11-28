@@ -1,6 +1,9 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import * as parse5 from 'parse5';
 import { describe, expect, it } from 'vitest';
+import { articleCitationsFromManifest } from '../src/editorial/release-proof.js';
+import { articleCitations, type HtmlNode } from '../src/editorial/site-readback.js';
 
 const base = process.env.SITE_PREVIEW_URL;
 type ArticleIdentity = { url: string; published_on: string | null };
@@ -77,6 +80,27 @@ describe.skipIf(!base)('built site in Wrangler Worker runtime', () => {
       expect(response.headers.get('cache-control'), path).toBe('public, max-age=31536000, immutable');
       const body = Buffer.from(await response.arrayBuffer());
       expect(createHash('sha256').update(body).digest('hex'), path).toBe(digest);
+    }
+  });
+
+  it('publishes the same citation index the editorial Worker reads from rendered articles', async () => {
+    const release = await fetch(`${base}/release.json`);
+    const manifest = await release.json() as Parameters<typeof articleCitationsFromManifest>[0] & {
+      articles: Array<ArticleIdentity & { indexable: boolean }>;
+    };
+    const articleRoutes = manifest.articles.filter((article) => article.indexable).map((article) => article.url);
+    expect(Object.keys(manifest.article_citations ?? {}).sort()).toEqual([...articleRoutes].sort());
+
+    function articleBody(node: HtmlNode): HtmlNode[] {
+      if (node.tagName === 'div' && node.attrs?.some(({ name }) => name === 'data-writing-body')) return [node];
+      return (node.childNodes ?? []).flatMap(articleBody);
+    }
+    for (const route of articleRoutes) {
+      const response = await fetch(`${base}${route}`, { redirect: 'manual' });
+      expect(response.status, route).toBe(200);
+      const bodies = articleBody(parse5.parse(await response.text()) as unknown as HtmlNode);
+      expect(bodies.length, route).toBe(1);
+      expect(articleCitationsFromManifest(manifest, route), route).toEqual(articleCitations(bodies[0]));
     }
   });
 });

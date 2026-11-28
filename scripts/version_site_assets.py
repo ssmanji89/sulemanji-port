@@ -5,18 +5,20 @@ import argparse
 import hashlib
 import posixpath
 import re
-from html import unescape
+from html import escape, unescape
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import quote, unquote, urlsplit
+from urllib.parse import SplitResult, quote, unquote, urljoin, urlsplit
 
 ASSET_DIRECTORY = '_site-assets'
 SOURCE_PATHS = ('/assets/css/', '/assets/js/')
+SITE_ORIGIN = 'https://www.sulemanji.com'
+SITE_HOSTS = {'www.sulemanji.com', 'sulemanji.com'}
 DIGEST = r'[0-9a-f]{64}'
 VERSIONED_PATH = re.compile(rf'^/{ASSET_DIRECTORY}/({DIGEST})(/assets/(?:css|js)/.+)$')
 ATTRIBUTE = re.compile(r"""\s+([^\s"'<>/=]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>\x60]+)))?""")
 CSS_REFERENCE = re.compile(
-    r"""/\*.*?\*/|(?<![\w-])(?:url\(\s*|@import\s+)(?:"([^"]*)"|'([^']*)'|([^\s'";()]+))"""
+    r"""/\*.*?\*/|(?<![\w-])(?:(?:@import\s+)?url\(\s*|@import\s+)(?:"([^"]*)"|'([^']*)'|([^\s'";()]+))"""
     r"""|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'""",
     re.DOTALL | re.IGNORECASE,
 )
@@ -54,11 +56,12 @@ def _source_asset(path: str) -> bool:
     return path.startswith(SOURCE_PATHS) and Path(path).suffix in {'.css', '.js', '.mjs'}
 
 
-def _url_path(value: str) -> str:
-    parsed = urlsplit(unescape(value))
-    if parsed.scheme or parsed.netloc:
-        return ''
-    return unquote(parsed.path)
+def _site_url(value: str, page: Path) -> SplitResult | None:
+    base = SITE_ORIGIN + '/' + quote(page.as_posix())
+    parsed = urlsplit(urljoin(base, unescape(value)))
+    if parsed.scheme not in {'http', 'https'} or parsed.netloc.lower() not in SITE_HOSTS:
+        return None
+    return parsed
 
 
 def _read_asset(root: Path, path: str) -> bytes:
@@ -89,10 +92,8 @@ def _build_bundle(root: Path, paths: set[str]) -> dict[str, bytes]:
                 if not resolved.startswith(('assets/', 'images/')):
                     raise ValueError(f'{path}: CSS dependency is outside site assets: {parsed.path}')
                 pending.add(resolved)
-                if not parsed.path.startswith('/'):
-                    return match[0]
-                relative_url = quote(posixpath.relpath(resolved, folder))
-                replacement = parsed._replace(path=relative_url).geturl()
+                relative_path = posixpath.relpath(resolved, folder)
+                replacement = parsed._replace(path=quote(relative_path)).geturl()
                 start, end = match.span(group)
                 return match[0][:start - match.start()] + replacement + match[0][end - match.start():]
             content = CSS_REFERENCE.sub(rewrite_reference, content.decode('utf-8')).encode('utf-8')
@@ -130,33 +131,45 @@ def _verified_bundles(root: Path) -> dict[str, dict[str, bytes]]:
 def _html_pages(root: Path):
     for page in sorted(root.rglob('*.html')):
         if ASSET_DIRECTORY not in page.relative_to(root).parts:
-            yield page
+            if page.is_symlink():
+                raise ValueError(f'symlinked HTML is unsupported: {page.relative_to(root)}')
+            if page.is_file():
+                yield page
 
 
-def verify_versioned_assets(root: Path) -> None:
+def verify_versioned_assets(root: Path, *, allow_legacy: bool = False) -> None:
     root = root.resolve()
-    bundles = _verified_bundles(root)
+    directory = root / ASSET_DIRECTORY
+    legacy = allow_legacy and not directory.exists() and not directory.is_symlink()
+    bundles = {} if legacy else _verified_bundles(root)
     for page in _html_pages(root):
         for _, _, value in AssetReferences(page.read_bytes().decode('utf-8')).references:
-            path = _url_path(value)
+            parsed = _site_url(value, page.relative_to(root))
+            if parsed is None:
+                continue
+            path = unquote(parsed.path)
             version = VERSIONED_PATH.fullmatch(path)
-            if _source_asset(path) or (path.startswith(f'/{ASSET_DIRECTORY}/') and
+            if (not legacy and _source_asset(path)) or (path.startswith(f'/{ASSET_DIRECTORY}/') and
                     (version is None or version[2][1:] not in bundles.get(version[1], {}))):
                 raise ValueError(f'{page.relative_to(root)}: missing immutable asset reference {path}')
 
 
 def version_assets(root: Path, *, retain_from: Path | None = None) -> str:
     root = root.resolve()
-    if (root / ASSET_DIRECTORY).exists():
+    directory = root / ASSET_DIRECTORY
+    if directory.exists() or directory.is_symlink():
         raise ValueError('asset versioning requires a clean Jekyll build')
     pages = []
     paths: set[str] = set()
     for page in _html_pages(root):
         html = page.read_bytes().decode('utf-8')
-        references = [(start, value) for start, _, value in AssetReferences(html).references
-                      if _source_asset(_url_path(value))]
+        references = []
+        for start, end, value in AssetReferences(html).references:
+            parsed = _site_url(value, page.relative_to(root))
+            if parsed is not None and _source_asset(unquote(parsed.path)):
+                paths.add(unquote(parsed.path)[1:])
+                references.append((start, end, parsed))
         if references:
-            paths.update(_url_path(value)[1:] for _, value in references)
             pages.append((page, html, references))
     if not paths:
         raise ValueError('no site script or style entrypoints found')
@@ -171,8 +184,10 @@ def version_assets(root: Path, *, retain_from: Path | None = None) -> str:
             target.write_bytes(content)
     prefix = f'/{ASSET_DIRECTORY}/{revision}'
     for page, html, references in pages:
-        for start, _ in reversed(references):
-            html = html[:start] + prefix + html[start:]
+        for start, end, parsed in reversed(references):
+            path = prefix + quote(unquote(parsed.path))
+            target = parsed._replace(scheme='', netloc='', path=path).geturl()
+            html = html[:start] + escape(target, quote=True) + html[end:]
         page.write_bytes(html.encode('utf-8'))
     verify_versioned_assets(root)
     return revision

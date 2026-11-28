@@ -66,6 +66,44 @@ class SiteAssetVersionTest(unittest.TestCase):
                 version_assets(root)
             self.assertIn('href="/assets/css/site.css"', (root / 'index.html').read_text())
 
+    def test_keeps_url_form_import_and_rebases_root_clamped_dependencies(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.build(root)
+            (root / 'assets/css/site.css').write_text('@import url("tokens.css") screen;')
+            (root / 'assets/css/tokens.css').write_text('div { background: url(../../../../images/grid.svg) }')
+            bundle = root / ASSET_DIRECTORY / version_assets(root)
+            self.assertEqual((bundle / 'assets/css/site.css').read_text(), '@import url("tokens.css") screen;')
+            self.assertIn('url(../../images/grid.svg)', (bundle / 'assets/css/tokens.css').read_text())
+
+    def test_rejects_symlinked_html_before_rewriting_any_page(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            root = base / 'site'
+            self.build(root)
+            external = base / 'external.html'
+            original = '<script src="/assets/js/main.js"></script>'
+            external.write_text(original)
+            (root / 'outside.html').symlink_to(external)
+            with self.assertRaisesRegex(ValueError, 'symlink'):
+                version_assets(root)
+            self.assertEqual(external.read_text(), original)
+            self.assertFalse((root / ASSET_DIRECTORY).exists())
+
+    def test_versions_relative_and_same_site_absolute_entrypoints(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.build(root)
+            (root / 'projects').mkdir()
+            page = root / 'projects/index.html'
+            page.write_text(
+                '<script src="../assets/js/main.js"></script>'
+                '<link rel="stylesheet" href="https://www.sulemanji.com/assets/css/site.css">'
+            )
+            prefix = f'/{ASSET_DIRECTORY}/{version_assets(root)}'
+            self.assertIn(f'src="{prefix}/assets/js/main.js"', page.read_text())
+            self.assertIn(f'href="{prefix}/assets/css/site.css"', page.read_text())
+
     def test_rejects_mutable_script_in_a_versioned_artifact(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

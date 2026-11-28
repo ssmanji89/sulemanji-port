@@ -100,6 +100,19 @@ class CloudflareReleaseTests(unittest.TestCase):
             with self.assertRaisesRegex(ReleaseError, 'identity headers'):
                 verify_artifact(root, '1111111', '1111111')
 
+    def test_versioned_html_cannot_be_promoted_without_its_namespace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            add_public_pages(root)
+            articles = add_article(root)
+            with (root / 'index.html').open('a', encoding='utf-8') as page:
+                page.write('<script src="/_site-assets/' + '1' * 64 + '/assets/js/main.js"></script>')
+            manifest = build_manifest(root, '1111111', articles, '2026-11-26T00:00:00Z')
+            (root / 'release.json').write_text(json.dumps(manifest), encoding='utf-8')
+            (root / '_headers').write_text(render_release_headers(manifest), encoding='utf-8')
+            with self.assertRaisesRegex(ReleaseError, 'immutable asset'):
+                verify_artifact(root, '1111111', '1111111')
+
     def test_article_body_change_is_rejected_even_if_release_header_remains(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

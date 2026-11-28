@@ -187,6 +187,7 @@ function sourceFetcher({ candidate }: { candidate: boolean }): typeof fetch {
       { id: 'worker-routes', canonical_url: '/notes/worker-routes', title: 'Worker deployment routes', topics: ['infrastructure'] },
     ] : [] });
     if (url.hostname === 'science.nasa.gov') return Response.json([]);
+    if (url.hostname === 'github.com') return new Response('<feed/>');
     if (candidate && url.hostname === 'blog.cloudflare.com') {
       const date = new Date().toUTCString();
       return new Response(`<rss><channel><item><title>Cloudflare Workers depends on Worker deployment routes</title><description>A new documented relationship.</description><link>https://blog.cloudflare.com/workers/release/</link><pubDate>${date}</pubDate></item></channel></rss>`);
@@ -276,6 +277,7 @@ describe('deterministic signal workflow', () => {
           ? [entry('Market systems depends on Market data notes', 'https://www.federalreserve.gov/newsevents/pressreleases/monetary20261127a.htm')]
           : [];
       if (url.hostname === 'science.nasa.gov') return Response.json([]);
+      if (url.hostname === 'github.com') return new Response('<feed/>');
       return new Response(`<rss><channel>${items.join('')}</channel></rss>`);
     });
     const processed: Array<string | null> = [];
@@ -398,7 +400,7 @@ describe('deterministic signal workflow', () => {
     const db = new PipelineD1();
     const now = Date.now();
     for (const source of (sourceRegistry as Array<{ id: string }>)) {
-      db.sourceStates.set(source.id, { source_id: source.id, fetched_at: new Date(now - 60 * 60 * 1000).toISOString(), signals_json: '[]' });
+      db.sourceStates.set(source.id, { source_id: source.id, fetched_at: new Date(now - 60 * 60 * 1000).toISOString(), signals_json: '{"version":2,"signals":[]}' });
     }
     vi.stubGlobal('fetch', sourceFetcher({ candidate: false }));
     const result = await runEditorialAdmission({ slot_claim_id: 'source-cache-fresh' }, { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep());
@@ -442,6 +444,41 @@ describe('deterministic signal workflow', () => {
     expect(new Set(fetchedUrls)).toEqual(new Set(sources.map((source) => source.url)));
     expect(db.sourceStates.size).toBe(sources.length);
     expect(result?.status).toBe('no_change');
+  });
+
+  it('rechecks old cached signals for provenance before starting a new editorial candidate', async () => {
+    const now = new Date('2026-11-27T14:00:00Z');
+    vi.useFakeTimers();
+    vi.setSystemTime(now);
+    const db = new PipelineD1();
+    const sourceId = 'cloudflare-workers-sdk-releases';
+    const registered = sourceRegistry.find(({ id }) => id === sourceId)!;
+    const repost = 'https://github.com/cloudflare/workers-sdk/releases/tag/repost';
+    const title = 'Cloudflare Workers depends on Worker deployment routes';
+    const old = { id: 'old-repost', episode_id: 'old-episode', source_id: sourceId, source_revision: 'old-revision',
+      expires_at: '2026-11-28T14:00:00Z', topic_ids: ['infrastructure'], title, summary: 'A rewritten claim.',
+      evidence: [{ url: repost }] };
+    for (const source of sourceRegistry) {
+      db.sourceStates.set(source.id, { source_id: source.id, fetched_at: now.toISOString(),
+        signals_json: source.id === sourceId ? JSON.stringify([old]) : '{"version":2,"signals":[]}' });
+    }
+    const base = sourceFetcher({ candidate: true });
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input) !== registered.url) return base(input);
+      return new Response(`<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>urn:repost</id><title>${title}</title>
+        <summary>A rewritten claim.</summary><updated>${now.toISOString()}</updated><link href="${repost}"/>
+        <content xml:base="https://www.sulemanji.com/notes/" src="previous-article"/></entry></feed>`);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const processCandidate = vi.fn();
+    const claim = { slot_claim_id: 'old-provenance-cache' };
+    const result = await runEditorialAdmission(claim, { DB: db, EDITORIAL_POLICY_JSON: policy } as never, new DurableStep(), { processCandidate });
+    expect(result.status).toBe('no_change');
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher.mock.calls.map(([input]) => String(input))).toContain(registered.url);
+    expect(processCandidate).not.toHaveBeenCalled();
+    expect(db.candidates.size).toBe(0);
+    expect(JSON.parse(String(db.sourceStates.get(sourceId)?.signals_json))).toEqual({ version: 2, signals: [] });
   });
 
   it('backs off failed source attempts without treating them as successful coverage', async () => {
@@ -552,6 +589,7 @@ describe('deterministic signal workflow', () => {
         id: 'published', canonical_url: '/notes/published-release', title, summary, topics: ['infrastructure'],
       }] });
       if (url.hostname === 'science.nasa.gov') return Response.json([]);
+      if (url.hostname === 'github.com') return new Response('<feed/>');
       const item = (id: string, attribution: string) => `<item><guid>${id}</guid><title>${title}</title><description>${summary}</description><link>https://blog.cloudflare.com/repost/${id}</link><pubDate>${now.toUTCString()}</pubDate>${attribution}</item>`;
       const entries = url.hostname === 'blog.cloudflare.com'
         ? item('a', '<source url="https://www.sulemanji.com/feed.xml">Original</source>') + item('b', '')

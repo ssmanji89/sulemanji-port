@@ -4,7 +4,7 @@ import publicSources from '../config/public-sources.json' with { type: 'json' };
 import type { SourceConfig } from '../src/editorial/contracts.js';
 
 const now = new Date('2026-11-26T18:00:00.000Z');
-const xml = `<?xml version="1.0"?><rss><channel><item><title>Workers SDK releases version 4.2</title><link>https://blog.example.test/releases/42</link><guid>release-42</guid><pubDate>Thu, 26 Nov 2026 17:00:00 GMT</pubDate><description>New release improves durable workflow support.</description></item></channel></rss>`;
+const xml = `<?xml version="1.0"?><rss xmlns:atom="http://www.w3.org/2005/Atom"><channel><item><title>Workers SDK releases version 4.2</title><link>https://blog.example.test/releases/42</link><guid>release-42</guid><pubDate>Thu, 26 Nov 2026 17:00:00 GMT</pubDate><description>New release improves durable workflow support.</description></item></channel></rss>`;
 const config = (overrides: Partial<SourceConfig> = {}): SourceConfig => ({ id: 'vendor', url: 'https://blog.example.test/feed.xml', format: 'rss',
   topic_ids: ['infrastructure'], allowed_hostnames: ['blog.example.test'], min_interval_seconds: 3600, max_age_seconds: 86400, enabled: true, ...overrides });
 
@@ -86,6 +86,69 @@ describe('bounded public signal collection', () => {
     const { signals, failures } = await collectSignals([config({ format: 'atom' })], now, async () => new Response(atom));
     expect(failures).toEqual([]);
     expect(signals.map(({ evidence }) => evidence[0].url)).toEqual(['https://blog.example.test/original']);
+  });
+
+  it('treats Atom external content and scoped XML bases as provenance instead of a new publisher', async () => {
+    const feed = '<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>urn:fixture:repost</id><title>A changed title</title>' +
+      '<summary>The article is presented under a fresh summary.</summary><updated>2026-11-26T17:00:00Z</updated>' +
+      '<link href="https://blog.example.test/repost"/><content xml:base="https://www.sulemanji.com/notes/" src="original"/></entry>' +
+      '<entry><id>urn:fixture:original</id><title>Primary source</title><summary>An original report.</summary><updated>2026-11-26T17:00:00Z</updated>' +
+      '<link rel="alternate" href="https://blog.example.test/primary"/></entry></feed>';
+    const batch = await collectSignals([config({ format: 'atom' })], now, async () => new Response(feed));
+    expect(batch.failures).toEqual([]);
+    expect(batch.signals.map(({ evidence }) => evidence[0].url)).toEqual(['https://blog.example.test/primary']);
+  });
+
+  it('reads the primary link from namespaced Atom without using self and enclosing links as the article', async () => {
+    const feed = '<a:feed xmlns:a="http://www.w3.org/2005/Atom" xml:base="https://blog.example.test/">' +
+      '<a:entry><a:id>urn:primary</a:id><a:title>Primary assertion</a:title><a:link rel="self" href="api/entry"/>' +
+      '<a:link rel="enclosure" href="download.zip"/><a:link rel="alternate" href="articles/primary"/>' +
+      '<a:summary>The primary authority published new measurements.</a:summary><a:updated>2026-11-26T17:00:00Z</a:updated></a:entry></a:feed>';
+    const batch = await collectSignals([config({ format: 'atom' })], now, async () => new Response(feed));
+    expect(batch.failures).toEqual([]);
+    expect(batch.signals.map(({ evidence }) => evidence[0].url)).toEqual(['https://blog.example.test/articles/primary']);
+  });
+
+  it('reads scoped XHTML attribution while excluding hidden markup from the evidence text', async () => {
+    const article = '<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>urn:primary</id><title>New findings</title>' +
+      '<updated>2026-11-26T17:00:00Z</updated><link href="https://blog.example.test/findings"/>' +
+      '<summary type="xhtml"><div xmlns="http://www.w3.org/1999/xhtml" xml:base="https://www.sulemanji.com/notes/">' +
+      '<p>New findings alongside an <a rel="via" href="old">article</a>.</p><script>Excluded</script></div></summary></entry></feed>';
+    expect(await collectSignals([config({ format: 'atom' })], now, async () => new Response(article))).toEqual({ signals: [], failures: [] });
+    const independent = await collectSignals([config({ format: 'atom' })], now, async () => new Response(article.replace(' rel="via"', '')));
+    expect(independent.signals).toHaveLength(1);
+    expect(independent.signals[0].summary).not.toContain('Excluded');
+  });
+
+  it('rejects explicitly attributed copies and preserves ordinary site references in independent reporting', async () => {
+    const owned = 'https://www.sulemanji.com/notes/released-note';
+    const reference = '<p>We ran an independent test. <a href="' + owned + '">Related reading</a>.</p>';
+    const declared = '<p>Rewritten account <a rel="via" href="' + owned + '">from the original</a>.</p>';
+    const quoted = '<blockquote cite="' + owned + '">An edited excerpt from the original.</blockquote>';
+    function rss(html: string, additional = '') {
+      return xml.replace('<rss xmlns:', '<rss xmlns:meta="http://purl.org/dc/terms/" xmlns:r="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:')
+        .replace(/<description>[^<]+<\/description>/, '<description><![CDATA[' + html + ']]></description>' + additional);
+    }
+    for (const mirrored of [rss(declared), rss(quoted), rss('Fresh prose', '<meta:source r:resource="' + owned + '"/>')]) {
+      const batch = await collectSignals([config()], now, async () => new Response(mirrored));
+      expect(batch).toEqual({ signals: [], failures: [] });
+    }
+    const ordinary = await collectSignals([config()], now, async () => new Response(rss(reference)));
+    expect(ordinary.failures).toEqual([]);
+    expect(ordinary.signals).toHaveLength(1);
+    const json = (content_html: string) => ({ items: [{ id: 'original', title: 'A different title', content_html,
+      url: 'https://blog.example.test/story', date_published: '2026-11-26T17:00:00Z' }] });
+    await expect(collectSignals([config({ format: 'json' })], now, async () => Response.json(json(declared))))
+      .resolves.toEqual({ signals: [], failures: [] });
+    expect((await collectSignals([config({ format: 'json' })], now, async () => Response.json(json(reference)))).signals).toHaveLength(1);
+  });
+
+  it('distinguishes unreadable XML from empty independent-source coverage', async () => {
+    for (const body of ['<rss><channel>', '<html>Incorrect response</html>', '<!DOCTYPE rss><rss><channel/></rss>']) {
+      const result = await collectSignals([config()], now, async () => new Response(body));
+      expect(result.failures).toMatchObject([{ code: 'INVALID' }]);
+      expect(result.signals).toEqual([]);
+    }
   });
 
   it('rejects redirects outside the registered host allowlist', async () => {

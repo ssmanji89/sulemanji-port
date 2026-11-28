@@ -1,5 +1,6 @@
 import type { PublicSource, Signal, SignalBatch, SourceConfig, SourceFailure } from './contracts.js';
 import { isSiteOutput } from './evidence-origin.js';
+import { readSourceHtml, readSyndicatedEntries, type SourceEntry } from './syndication.js';
 import { DOTNET_CITATION, DOTNET_POLICY_URL, DOTNET_SOURCE_ID, dotnetSnapshotDigest, parseDotnetSupport } from './dotnet-support.js';
 
 const MAX_SOURCE_BYTES = 1_048_576;
@@ -48,50 +49,25 @@ function text(value: string): string {
     .replace(/&gt;/gi, '>').replace(/&quot;/gi, '"').replace(/&#39;|&apos;/gi, "'").replace(/&#8217;|&rsquo;/gi, '’').replace(/\s+/g, ' ').trim();
 }
 
-function tag(block: string, name: string): string {
-  const match = block.match(new RegExp(`<${name}\\b[^>]*>([\\s\\S]*?)<\\/${name}>`, 'i'));
-  if (!match) return '';
-  const cdata = match[1].match(/^\s*<!\[CDATA\[([\s\S]*?)\]\]>\s*$/);
-  return text(cdata ? cdata[1] : match[1]);
-}
-
-type Entry = { title: string; summary: string; url: string; date: string | null; id: string; origin?: unknown[] };
-
-function attribute(tagText: string, name: string): string {
-  const match = tagText.match(new RegExp(`\\s${name}\\s*=\\s*(["'])(.*?)\\1`, 'i'));
-  return match ? text(match[2]) : '';
-}
-
-function originLinks(block: string, rels = ['canonical', 'via']): string[] {
-  return [...block.matchAll(/<(?:[\w-]+:)?link\b[^>]*>/gi)].flatMap(([link]) =>
-    attribute(link, 'rel').toLowerCase().split(/\s+/).some((rel) => rels.includes(rel))
-      ? [attribute(link, 'href')] : []);
-}
-
 function isSiteReference(value: unknown, base: URL): boolean {
   if (typeof value !== 'string' || !value.trim()) return false;
   try { return isSiteOutput(new URL(value, base).toString()); } catch { return false; }
 }
 
-function feedOrigins(block: string): string[] {
-  const metadata = block.replace(/<(description|summary|content(?::encoded)?)\b[^>]*>[\s\S]*?<\/\1>/gi, '');
-  const source = metadata.match(/(<source\b[^>]*>)([\s\S]*?)<\/source>/i);
-  return [...originLinks(metadata), ...(source ? [attribute(source[1], 'url'), tag(source[2], 'id'),
-    ...originLinks(source[2], ['self', 'alternate'])] : [])];
-}
-
-function entries(body: string, format: SourceConfig['format'], base: URL): Entry[] {
+function entries(body: string, format: SourceConfig['format'], base: URL): SourceEntry[] {
+  if (format === 'rss' || format === 'atom') return readSyndicatedEntries(body, format, base);
   if (format === 'json') {
-    const parsed = JSON.parse(body) as { items?: unknown[]; feed_url?: unknown };
+    const parsed = JSON.parse(body) as { items?: unknown[]; feed_url?: unknown; home_page_url?: unknown };
     if (!Array.isArray(parsed.items)) throw new Error('INVALID');
-    if (isSiteReference(parsed.feed_url, base)) return [];
+    if ([parsed.feed_url, parsed.home_page_url].some((value) => isSiteReference(value, base))) return [];
     return parsed.items.slice(0, MAX_ENTRIES_PER_SOURCE).map((item, index) => {
       if (!item || typeof item !== 'object') throw new Error('INVALID');
       const row = item as Record<string, unknown>;
       const url = typeof row.url === 'string' ? new URL(row.url, base).toString() : '';
-      return { title: text(String(row.title ?? '')), summary: text(String(row.summary ?? row.content_text ?? '')),
+      const markup = typeof row.content_html === 'string' ? readSourceHtml(row.content_html, base) : null;
+      return { title: text(String(row.title ?? '')), summary: text(String(row.summary ?? row.content_text ?? markup?.text ?? '')),
         url, date: typeof row.date_published === 'string' ? row.date_published : null, id: String(row.id ?? url ?? index),
-        origin: [row.external_url] };
+        origin: [row.external_url, ...(markup?.origin ?? [])] };
     });
   }
   if (format === 'nasa-skywatching') {
@@ -112,33 +88,11 @@ function entries(body: string, format: SourceConfig['format'], base: URL): Entry
         date: date.toISOString(), id: row.link };
     });
   }
-  if (format === 'rss' || format === 'atom') {
-    const feedMetadata = body.replace(/<(item|entry)\b[^>]*>[\s\S]*?<\/\1>/gi, '');
-    if (originLinks(feedMetadata, ['canonical', 'via', 'self']).some((value) => isSiteReference(value, base))) return [];
-  }
-  if (format === 'rss') {
-    const blocks = body.match(/<item\b[^>]*>[\s\S]*?<\/item>/gi) ?? [];
-    return blocks.slice(0, MAX_ENTRIES_PER_SOURCE).map((block, index) => {
-      const link = tag(block, 'link') || block.match(/<link\b[^>]*href=["']([^"']+)["']/i)?.[1] || '';
-      return { title: tag(block, 'title'), summary: tag(block, 'description') || tag(block, 'content:encoded'),
-        url: new URL(link, base).toString(), date: tag(block, 'pubDate') || tag(block, 'dc:date') || null, id: tag(block, 'guid') || link || String(index),
-        origin: feedOrigins(block) };
-    });
-  }
-  if (format === 'atom') {
-    const blocks = body.match(/<entry\b[^>]*>[\s\S]*?<\/entry>/gi) ?? [];
-    return blocks.slice(0, MAX_ENTRIES_PER_SOURCE).map((block, index) => {
-      const link = block.match(/<link\b[^>]*href=["']([^"']+)["'][^>]*>/i)?.[1] ?? '';
-      return { title: tag(block, 'title'), summary: tag(block, 'summary') || tag(block, 'content'),
-        url: new URL(link, base).toString(), date: tag(block, 'updated') || tag(block, 'published') || null, id: tag(block, 'id') || link || String(index),
-        origin: feedOrigins(block) };
-    });
-  }
   const title = body.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] ?? '';
   const description = body.match(/<meta\b[^>]*name=["']description["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1] ?? '';
   const published = body.match(/<meta\b[^>]*(?:property|name)=["'](?:article:published_time|date)["'][^>]*content=["']([^"']*)["'][^>]*>/i)?.[1] ?? '';
   const head = body.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] ?? '';
-  return [{ title: text(title), summary: text(description), url: base.toString(), date: published || null, id: base.toString(), origin: originLinks(head) }];
+  return [{ title: text(title), summary: text(description), url: base.toString(), date: published || null, id: base.toString(), origin: readSourceHtml(head, base).origin }];
 }
 
 async function sha(value: string): Promise<string> {

@@ -3,6 +3,7 @@ import { createEditorialCandidateProcessor } from '../src/editorial/runtime.js';
 import { collectSignals, sourceSetDigest } from '../src/editorial/sources.js';
 import { fingerprintPublicKnowledge } from '../src/editorial/knowledge.js';
 import { parseEditorialPolicy } from '../src/editorial/scheduler.js';
+import { normalizeVisibleText } from '../src/editorial/review.js';
 import type { Candidate, ContentProposal, ReviewReceipt } from '../src/editorial/contracts.js';
 import sources from '../config/public-sources.json' with { type: 'json' };
 
@@ -56,13 +57,15 @@ describe('editorial runtime configuration', () => {
     const sourceDigest = await sourceSetDigest(signal.evidence);
     expect(sourceDigest).not.toBe(signal.source_revision);
     const knowledgeRevision = await fingerprintPublicKnowledge([]);
-    const candidate: Candidate = { id: 'refresh:dated-signal:guide', action: 'REFRESH', target_id: 'guide', signal_ids: [signal.id],
+    const candidate: Candidate = { id: 'connect:dated-signal:guide', action: 'CONNECT', target_id: 'guide', related_id: 'related', signal_ids: [signal.id],
       reader: 'Readers', question: 'What changed?', benefit: 'A current explanation', policy_revision: 'active-r1',
       knowledge_revision: knowledgeRevision, source_digest: signal.source_revision, state: 'DISCOVERED' };
     const hash = async (value: string) => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',
       new TextEncoder().encode(value))), (byte) => byte.toString(16).padStart(2, '0')).join('');
     const path = 'notes/existing-guide.md';
-    const content = `${original}\n\n[Current evidence](${signal.evidence[0].url}).`;
+    const related = '/notes/related-guide';
+    const cited = signal.evidence[0].url;
+    const content = `${original}\n\nUse the [related guide](${related}) ([source 1](${cited})).`;
     const fileHash = await hash(content);
     const url = '/notes/existing-guide';
     const proposal: ContentProposal = { candidate_id: candidate.id, owner_epoch: 1, base_commit: base, author_run_id: 'author-1',
@@ -71,7 +74,10 @@ describe('editorial runtime configuration', () => {
 ${fileHash}`),
       files: [{ path, content, operation: 'update', encoding: 'utf-8', content_sha256: fileHash }],
       public_sources: signal.evidence, required_media_paths: [], public_urls: [url],
-      expected_content: [{ url, title: 'Existing guide', text_sha256: fileHash }] };
+      expected_content: [{ url, title: 'Existing guide', text_sha256: fileHash, contextual_link: {
+        href: related, sources: [cited], text_sha256: await hash(normalizeVisibleText(
+          `<p>Use the <a href="${related}">related guide</a> (<a href="${cited}">source 1</a>).</p>`)),
+      } }] };
     const review: ReviewReceipt = { ...proposal, reviewer_run_id: 'independent-1', decision: 'CLEAR', findings: [] };
     const attempt = { id: 'publication:guide', candidate_id: candidate.id, owner_epoch: 1, branch: 'editorial/candidate-guide',
       pull_request: 17, source_commit: base, deployment_version: null, public_urls: [url],
@@ -106,7 +112,9 @@ ${fileHash}`),
       EDITORIAL_MODEL_CONFIG_JSON: model, EDITORIAL_MODEL_API_KEY: 'fixture', EDITORIAL_GITHUB_TOKEN: 'fixture',
       EDITORIAL_GITHUB_CONFIG_JSON: JSON.stringify({ repository: 'ssmanji89/sulemanji-port', required_checks: ['build'], default_branch: 'main' }),
     } as never, renderSocialCard, fetcher)!;
-    const input = { candidate, signal, catalog: [], knowledge: [], owner_epoch: 1, policy: parseEditorialPolicy(rawPolicy)!,
+    const catalog = [{ id: 'guide', title: 'Existing guide', url, topics: ['infrastructure'] },
+      { id: 'related', title: 'Related guide', url: related, topics: ['infrastructure'] }];
+    const input = { candidate, signal, catalog, knowledge: [], owner_epoch: 1, policy: parseEditorialPolicy(rawPolicy)!,
       resumeCapacity: { proposal, review, attempt, claim: 'slot-A' }, step: {
         async do<T>(_name: string, callback: () => T | Promise<T>) { return callback(); },
         async sleep() {},
@@ -115,6 +123,11 @@ ${fileHash}`),
     expect(reachedWriteBoundary).toBe(1);
     activeClaim = 'slot-B';
     await expect(processor.processCandidate(input)).resolves.toMatchObject({ status: 'held' });
+    expect(reachedWriteBoundary).toBe(1);
+    activeClaim = 'slot-A';
+    const previousProposal = { ...proposal, expected_content: [{ url, title: 'Existing guide', text_sha256: fileHash }] };
+    await expect(processor.processCandidate({ ...input, candidate: { ...candidate, action: 'REFRESH' },
+      resumeCapacity: { ...input.resumeCapacity, proposal: previousProposal } })).resolves.toMatchObject({ status: 'held' });
     expect(reachedWriteBoundary).toBe(1);
   });
 

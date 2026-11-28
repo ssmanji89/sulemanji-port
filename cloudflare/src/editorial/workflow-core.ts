@@ -9,6 +9,7 @@ import type { WorkflowParams, WorkflowResult } from './workflow-types.js';
 import { fixtureSiteFetcher } from './site-readback.js';
 import { independentKnowledge, isRecycledKnowledge } from './evidence-origin.js';
 import type { DeferredReview } from './pipeline.js';
+import { isDotnetSupport, type DotnetRefresh } from './dotnet-support.js';
 
 export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
@@ -18,6 +19,7 @@ export type CandidateProcessOutcome = { status: 'verified' | 'no_change'; reason
   | { status: 'held'; reason: string; continue_after_hold?: true };
 export type EditorialCandidateProcessor = {
   reconcileMergeCapacity?(ownerEpoch: number): Promise<void>;
+  checkDotnetRefresh?(signal: Signal, catalog: CatalogItem[], at: Date, ownerEpoch: number): Promise<DotnetRefresh>;
   processCandidate(input: {
     candidate: Candidate;
     signal: Signal;
@@ -472,7 +474,25 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     return held(params, reason);
   }
 
-  const decisions = await step.do('select-actions-from-dated-signals', () => batch.signals.map((signal) => ({ signal, decision: chooseAction(signal, catalog, knowledge, history, new Date(now)) })));
+  const releaseComparison = await step.do('read-published-dotnet-claim', async () => {
+    const signal = batch.signals.find(isDotnetSupport);
+    if (!signal) return { result: null };
+    try {
+      if (processor?.checkDotnetRefresh) return { result: await processor.checkDotnetRefresh(signal, catalog, new Date(now), control.owner_epoch) };
+    } catch { /* An unavailable release cannot establish the prior claim. */ }
+    return { result: null, unavailable: true };
+  });
+  if (releaseComparison.unavailable) {
+    const reason = 'The exact published release is unavailable for the .NET claim comparison.';
+    const saved = await step.do('record-published-claim-hold', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'HELD_PUBLISHED_CLAIM_UNAVAILABLE',
+      { reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
+    return held(params, saved ? reason : 'Workflow authority changed before the claim comparison could be recorded.');
+  }
+  if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed during the published claim comparison.');
+  const decisions = await step.do('select-actions-from-dated-signals-v2', () => batch.signals.map((signal) => ({
+    signal, decision: chooseAction(signal, catalog, knowledge, history, new Date(now),
+      isDotnetSupport(signal) ? releaseComparison.result ?? undefined : undefined),
+  })));
   const qualifying = decisions.filter((row): row is { signal: Signal; decision: Extract<ActionDecision, { candidate: Candidate }> } => 'candidate' in row.decision);
   const actionable = qualifying.slice(0, policy.max_candidates_per_scan);
   const noChangeSignals = decisions.filter((row) => row.decision.action === 'NO_CHANGE');

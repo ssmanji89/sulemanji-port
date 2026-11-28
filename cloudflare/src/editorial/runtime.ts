@@ -1,6 +1,6 @@
 import sourceRegistry from '../../config/public-sources.json' with { type: 'json' };
 import type { EditorialEnv, Candidate } from './contracts.js';
-import type { Signal, SourceConfig } from './contracts.js';
+import type { CatalogItem, Signal, SourceConfig } from './contracts.js';
 import { parseEditorialPolicy, type EditorialPolicy } from './scheduler.js';
 import { BudgetedModelGateway, JsonSchemaGateway, type ModelConfig } from './models.js';
 import { GitHubApiPublisher } from './github.js';
@@ -15,6 +15,7 @@ import { createEditorialCandidatePipeline, type CandidateCheckpoint, type Candid
 import { fixtureSiteFetcher, readConnectionBaseline } from './site-readback.js';
 import { articleSourcePath, connectionArticles } from './review.js';
 import { parseEditorialRuntimeSettings } from './runtime-settings.mjs';
+import { correctDotnetClaim, isDotnetSupport, qualifyDotnetRefresh } from './dotnet-support.js';
 
 export type EditorialRuntimeEnv = EditorialEnv & {
   EDITORIAL_POLICY_JSON?: string;
@@ -84,6 +85,16 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
   const provider = new JsonSchemaGateway(model, fetcher);
   const limits = { new_articles: policy.max_new_articles_daily, refreshes: policy.max_refreshes_daily };
   const siteFetch = staging ? fixtureSiteFetcher(env.EDITORIAL_FIXTURE_SITE) : fetcher;
+  const readback = staging ? 'private-binding' : 'public';
+  const readDigests = (commit: string) => github.readReleaseManifestDigests(commit);
+  const guardedFetch = (reader: typeof fetch, epoch: number): typeof fetch => async (input, init) => {
+    const before = await readControl(env.DB);
+    if (before.paused || before.owner_epoch !== epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');
+    const response = await reader(input, init);
+    const after = await readControl(env.DB);
+    if (after.paused || after.owner_epoch !== epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');
+    return response;
+  };
   const pipeline = createEditorialCandidatePipeline({
     renderSocialCard,
     modelsFor(candidate, ownerEpoch, activePolicy) {
@@ -95,6 +106,12 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
     async preparationContext(input) {
       const baseCommit = await github.readDefaultBranchHead();
       const refreshPath = pathForRefresh(input.candidate, input.catalog);
+      const dotnetRefresh = refreshPath && isDotnetSupport(input.signal) && input.candidate.refresh_base_commit === baseCommit
+        ? await qualifyDotnetRefresh(input.signal, input.catalog, baseCommit, new Date(), guardedFetch(siteFetch, input.owner_epoch), readback, readDigests)
+        : null;
+      if (refreshPath && (dotnetRefresh?.action !== 'REFRESH' || dotnetRefresh.target.id !== input.candidate.target_id)) {
+        return { refresh_hold: 'The exact published factual claim changed before drafting.' } as const;
+      }
       const connection = connectionArticles(input.candidate, input.catalog);
       const existingPaths = refreshPath ? [refreshPath] : connection ? [connection.path, connection.peerPath] : [];
       const existingFiles: Record<string, string> = {};
@@ -104,7 +121,8 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         : null;
       return { catalog: input.catalog, sources: input.signal.evidence, source_excerpt: input.signal.summary.slice(0, 3000), knowledge: input.knowledge,
         policy_revision: input.policy.revision, knowledge_revision: input.candidate.knowledge_revision,
-        base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths, ...(baseline ? { connection_baseline: baseline } : {}) };
+        base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths,
+        ...(baseline ? { connection_baseline: baseline } : {}), ...(dotnetRefresh ? { dotnet_refresh: true as const } : {}) };
     },
     async publish(proposal, review, signal, catalog, claim) {
       const store = new D1PublishEffectStore(env.DB, review.owner_epoch, limits);
@@ -117,31 +135,38 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
         return row ? { paused: row.paused === 1, owner_epoch: row.owner_epoch } : { paused: true, owner_epoch: 0 };
       };
       const attempt = await publishContent(proposal, review, { store, github, readAuthority, async currentState() {
-        const guardedSourceFetch: typeof fetch = async (input, init) => {
-          const before = await readControl(env.DB);
-          if (before.paused || before.owner_epoch !== review.owner_epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');
-          const response = await fetcher(input, init);
-          const after = await readControl(env.DB);
-          if (after.paused || after.owner_epoch !== review.owner_epoch) throw new Error('SOURCE_REVALIDATION_AUTHORITY_CHANGED');
-          return response;
-        };
         const [control, baseCommit, knowledge, sourceDigest] = await Promise.all([
           readAuthority(), github.readDefaultBranchHead(), readKnowledge(env.DB, new Date(), catalog),
-          revalidateSignalSourceDigest(signal, sourceRegistry as SourceConfig[], new Date(), guardedSourceFetch),
+          revalidateSignalSourceDigest(signal, sourceRegistry as SourceConfig[], new Date(), guardedFetch(fetcher, review.owner_epoch)),
         ]);
+        const file = proposal.files[0];
+        const refresh = file?.operation === 'update' && !proposal.expected_content[0]?.contextual_link;
+        let refreshStillQualified = !refresh;
+        if (refresh && !control.paused && sourceDigest && baseCommit === proposal.base_commit && isDotnetSupport(signal)) {
+          try {
+            const result = await qualifyDotnetRefresh(signal, catalog, baseCommit, new Date(), guardedFetch(siteFetch, review.owner_epoch), readback, readDigests);
+            if (result.action === 'REFRESH' && proposal.files.length === 1 && file.path === articleSourcePath(result.target.url)) {
+              const old = await github.readTextFile(file.path, baseCommit);
+              refreshStillQualified = correctDotnetClaim(old) === file.content;
+            }
+          } catch { /* An unverified article cannot authorize the merge. */ }
+        }
         const currentPolicy = parseEditorialPolicy(env.EDITORIAL_POLICY_JSON);
         return { owner_epoch: control.owner_epoch, paused: control.paused || !currentPolicy || currentPolicy.revision !== proposal.policy_revision,
           base_commit: baseCommit, policy_revision: currentPolicy?.revision ?? 'unqualified',
           knowledge_revision: await fingerprintPublicKnowledge(knowledge),
-          source_digest: sourceDigest ?? '', allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id };
+          source_digest: refreshStillQualified ? sourceDigest ?? '' : '',
+          allowed_paths: proposal.files.map((file) => file.path), author_run_id: proposal.author_run_id };
       } });
       const effect = await store.read(proposal.candidate_id);
       return { attempt, merged: Boolean(effect?.merge_commit) };
     },
-    verify: (attempt) => verifyPublicationDetailed(attempt, siteFetch, staging ? 'private-binding' : 'public',
-      (commit) => github.readReleaseManifestDigests(commit)),
+    verify: (attempt) => verifyPublicationDetailed(attempt, siteFetch, readback, readDigests),
     persist: (candidateId, ownerEpoch, state, checkpoint, claim) => persistCandidateCheckpoint(env.DB, candidateId, ownerEpoch, state, checkpoint, claim),
   });
-  return { ...pipeline, reconcileMergeCapacity: (ownerEpoch: number) =>
+  return { ...pipeline, async checkDotnetRefresh(signal: Signal, catalog: CatalogItem[], at: Date, ownerEpoch: number) {
+    const baseCommit = await github.readDefaultBranchHead();
+    return qualifyDotnetRefresh(signal, catalog, baseCommit, at, guardedFetch(siteFetch, ownerEpoch), readback, readDigests);
+  }, reconcileMergeCapacity: (ownerEpoch: number) =>
     new D1PublishEffectStore(env.DB, ownerEpoch, limits).reconcileMergeCapacity((branch) => github.findPullRequest(branch)) };
 }

@@ -6,6 +6,7 @@ import { ModelAdmissionHoldError, type ModelGateway, type ModelRequest } from '.
 import { CARD_HEIGHT, CARD_WIDTH, encodeSocialCard, isSocialCardPng, socialCardPath, SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
 import { sourceSetDigest } from './sources.js';
 import { articleCitations, articleLinks, connectionParagraph, matchesConnectionParagraph, normalizeNodeText, publicCitationUrl, textDigest, type HtmlNode } from './site-readback.js';
+import { correctDotnetClaim, DOTNET_CITATION } from './dotnet-support.js';
 
 const FAMILY_FIELDS = new Set(['professional-analysis', 'technical-guide', 'research-note', 'field-note', 'experiment']);
 const HORIZONS = new Set(['timely', 'durable']);
@@ -313,6 +314,21 @@ export async function prepareContent(candidate: Candidate, context: PreparationC
   }
   const authorRunId = stableRunId;
   if (original && original.body.length > MAX_ARTICLE_BODY_CHARS) throw new ModelAdmissionHoldError('MODEL_REQUEST_LIMIT');
+  if (context.dotnet_refresh) {
+    const content = previous && correctDotnetClaim(previous);
+    const corrected = content && frontMatterParts(content);
+    if (!target || !refreshPath || !original || !content || !corrected || context.sources.length !== 1 || context.sources[0].url !== DOTNET_CITATION ||
+        context.base_commit !== candidate.refresh_base_commit) throw new Error('DOTNET_CORRECTION_SCOPE_UNQUALIFIED');
+    const rendered = markdownArticle(corrected.body);
+    const required = requiredCitations(context.sources, original.body);
+    if (!safeArticleLinks(rendered, required, context.existing_paths ?? [], [refreshPath])) throw new Error('ARTICLE_PATH_OR_CITATION_REJECTED');
+    const file: FileChange = { path: refreshPath, operation: 'update', encoding: 'utf-8', content, content_sha256: await sha256(content) };
+    return { candidate_id: candidate.id, author_run_id: authorRunId, content_digest: await digestFiles([file]),
+      source_digest: await sourceSetDigest(context.sources), policy_revision: context.policy_revision, knowledge_revision: context.knowledge_revision,
+      base_commit: context.base_commit, owner_epoch: context.owner_epoch, files: [file], public_sources: context.sources, required_media_paths: [],
+      public_urls: [target.url], expected_content: [{ url: target.url, title: target.title,
+        text_sha256: await sha256(normalizeNodeText(rendered)), required_citations: required }] };
+  }
   const modelOutput = await outputSchema(candidate, context, models, authorRunId, undefined, original?.body);
   if (!validGenerated(modelOutput)) throw new Error('MODEL_ARTICLE_SCHEMA_REJECTED');
   const article = addSourceDisclosure(modelOutput, context);
@@ -349,6 +365,7 @@ export async function prepareContent(candidate: Candidate, context: PreparationC
 
 export async function reviseContent(previous: ContentProposal, candidate: Candidate, context: PreparationContext, findings: ReviewReceipt['findings'],
   models: ModelGateway, stableRunId: string): Promise<ContentProposal> {
+  if (context.dotnet_refresh) throw new Error('DOTNET_CORRECTION_REQUIRES_OWNER_REVIEW');
   if (!stableRunId || candidate.action === 'REPAIR' || candidate.action === 'PROPOSE' || previous.candidate_id !== candidate.id || previous.policy_revision !== context.policy_revision ||
       previous.knowledge_revision !== context.knowledge_revision || previous.base_commit !== context.base_commit || previous.owner_epoch !== context.owner_epoch ||
       context.policy_revision === 'editorial-policy-unbound' || context.sources.length === 0 || !previous.files.length || previous.files.length > 2 ||

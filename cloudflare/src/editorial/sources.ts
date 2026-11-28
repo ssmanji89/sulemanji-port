@@ -1,5 +1,6 @@
 import type { PublicSource, Signal, SignalBatch, SourceConfig, SourceFailure } from './contracts.js';
 import { isSiteOutput } from './evidence-origin.js';
+import { DOTNET_CITATION, DOTNET_POLICY_URL, DOTNET_SOURCE_ID, dotnetSnapshotDigest, parseDotnetSupport } from './dotnet-support.js';
 
 const MAX_SOURCE_BYTES = 1_048_576;
 const MAX_ENTRIES_PER_SOURCE = 100;
@@ -155,11 +156,14 @@ async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fe
       !Number.isSafeInteger(source.max_age_seconds) || source.max_age_seconds <= 0 || !Number.isSafeInteger(source.min_interval_seconds) || source.min_interval_seconds < 0) throw new Error('INVALID');
   const url = allowedUrl(source.url, source.allowed_hostnames);
   if (!url) throw new Error('FORBIDDEN');
+  const lifecycle = source.format === 'dotnet-lifecycle';
+  if (lifecycle && (source.id !== DOTNET_SOURCE_ID || url.href !== DOTNET_POLICY_URL)) throw new Error('FORBIDDEN');
   let current = url;
   let response: Response | null = null;
   for (let i = 0; i <= REDIRECT_LIMIT; i += 1) {
     response = await fetcher(current, { redirect: 'manual', headers: { accept: 'application/rss+xml, application/atom+xml, application/feed+json, application/json, text/html;q=0.8' } });
     if (![301, 302, 303, 307, 308].includes(response.status)) break;
+    if (lifecycle) throw new Error('FORBIDDEN');
     const location = response.headers.get('location');
     const destination = location ? new URL(location, current).toString() : '';
     if (isSiteOutput(destination)) return [];
@@ -171,6 +175,20 @@ async function collectSource(source: SourceConfig, now: Date, fetcher: typeof fe
   if (response.status >= 300 && response.status < 400) throw new Error('FORBIDDEN');
   const body = await boundedBody(response);
   const retrievedAt = now.toISOString();
+  if (lifecycle) {
+    const support = parseDotnetSupport(body);
+    const title = 'Microsoft .NET support policy';
+    const contentHash = await dotnetSnapshotDigest(support);
+    const revision = await sha(`${DOTNET_CITATION}\n${contentHash}`);
+    return [{
+      id: await sha(`${source.id}\n${revision}`), episode_id: revision, source_id: source.id, source_revision: revision,
+      observed_at: retrievedAt, occurred_at: null, published_at: null,
+      expires_at: new Date(now.getTime() + source.max_age_seconds * 1000).toISOString(), topic_ids: [...source.topic_ids],
+      title, summary: support.map(({ version, ended_on }) => `${version} ended support on ${ended_on}.`).join('\n'),
+      evidence: [{ url: DOTNET_CITATION, title, retrieved_at: retrievedAt, source_date: null, content_sha256: contentHash }],
+      dotnet_support: support,
+    }];
+  }
   const parsed = entries(body, source.format, current);
   const signals: Signal[] = [];
   for (const entry of parsed) {

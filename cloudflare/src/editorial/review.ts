@@ -212,7 +212,10 @@ export async function verifiesContextualLink(file: FileChange, publicUrl: string
   if (!article) return false;
   const body = article.body.trimEnd();
   const start = body.lastIndexOf('\n\n');
-  const paragraph = start < 0 ? undefined : paragraphFromMarkdown(body.slice(start + 2), link.href);
+  if (start < 0) return false;
+  const addition = body.slice(start + 2);
+  if (/<(?:!--|\/?[A-Za-z])/.test(addition)) return false;
+  const paragraph = paragraphFromMarkdown(addition, link.href);
   return Boolean(paragraph && await matchesConnectionParagraph(paragraph, link));
 }
 
@@ -244,7 +247,11 @@ async function prepareContextualLink(candidate: Candidate, context: PreparationC
   if (baseline.already_linked) throw new ContextualLinkHold('CONNECT_ALREADY_LINKED');
   const sources = context.sources.map(({ url }) => url);
   if (!sources.length || sources.some((url) => normalizeCitation(url) === null)) throw new ContextualLinkHold('CONNECT_SOURCE_UNQUALIFIED');
-  const citations = sources.map((url, index) => `[source ${index + 1}](<${url}>)`);
+  // Encode characters that Markdown could interpret without changing the rendered URL.
+  const citations = sources.map((url, index) => {
+    const destination = url.replace(/[&()]/g, (char) => `&#${char.charCodeAt(0)};`);
+    return `[source ${index + 1}](${destination})`;
+  });
   if (revision) {
     const [file] = revision.proposal.files;
     if (revision.proposal.files.length !== 1 || file.operation !== 'update' || file.path !== path ||

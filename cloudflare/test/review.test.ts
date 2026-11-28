@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { canPublish, verifyPublicationDetailed } from '../src/editorial/publisher.js';
-import { attachSocialCard, normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, reviseContent, verifyRequiredMedia } from '../src/editorial/review.js';
+import { attachSocialCard, normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, reviseContent, verifiesContextualLink, verifyRequiredMedia } from '../src/editorial/review.js';
 import { readConnectionBaseline } from '../src/editorial/site-readback.js';
 import type { Candidate, ContentProposal, PreparationContext, PublishAttempt, ReviewContext } from '../src/editorial/contracts.js';
 import type { ModelGateway, ModelRequest, ModelResult } from '../src/editorial/models.js';
@@ -112,12 +112,18 @@ describe('independent content preparation and review', () => {
     expect(proposal.files[0]).toMatchObject({ path: initial.files[0].path, operation: 'update' });
     expect(proposal.files[0].content.startsWith(previous)).toBe(true);
     expect(proposal.files[0].content).toContain(`[${to.title}](${to.url})`);
-    expect(proposal.files[0].content).toContain(source.url);
+    expect(proposal.files[0].content).toContain(`[source 1](${source.url})`);
+    expect(proposal.files[0].content.slice(previous.length)).not.toMatch(/<(?:!--|\/?[A-Za-z])/);
     expect(proposal.public_urls).toEqual([from.url]);
     expect(proposal.required_media_paths).toEqual([]);
     expect(proposal.expected_content[0]).toMatchObject({ url: from.url, title: from.title, text_sha256: 'a'.repeat(64),
       contextual_link: { href: to.url, sources: [source.url] } });
     expect(models.calls[0].schema_id).toBe('site-contextual-link-v1');
+    const [file] = proposal.files;
+    const [expected] = proposal.expected_content;
+    const oldCitation = { ...file, content: file.content.replace(`[source 1](${source.url})`, `[source 1](<${source.url}>)`) };
+    await expect(verifiesContextualLink(file, expected.url, expected.contextual_link!)).resolves.toBe(true);
+    await expect(verifiesContextualLink(oldCitation, expected.url, expected.contextual_link!)).resolves.toBe(false);
 
     models.outputs.push({ context: 'The release record explains where the two verification checklists overlap.' });
     const revised = await reviseContent(proposal, connect, existing, [{ code: 'CLARITY', detail: 'Name the relationship.' }],
@@ -165,7 +171,7 @@ describe('independent content preparation and review', () => {
     expect(baseline).toMatchObject({ already_linked: false });
     const models = new FakeModels();
     models.outputs = [{ context: `A reader's "exact" next step ties an evaluation to a capacity decision.` }];
-    const scopedSource = { ...source, url: 'https://vendor.example.test/releases/42?release=4.2&part=runtime' };
+    const scopedSource = { ...source, url: 'https://vendor.example.test/releases/42)?release=4.2&part=&copy;' };
     const proposal = await prepareContent({ ...candidate, action: 'CONNECT', target_id: from.id, related_id: to.id }, {
       ...context, sources: [scopedSource], catalog: [from, to], existing_paths: [fromPath, toPath],
       existing_files: { [fromPath]: original, [toPath]: peer }, connection_baseline: baseline!,

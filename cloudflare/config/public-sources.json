@@ -48,5 +48,15 @@
     "min_interval_seconds": 21600,
     "max_age_seconds": 15552000,
     "enabled": true
+  },
+  {
+    "id": "nasa-skywatching",
+    "url": "https://science.nasa.gov/wp-json/wp/v2/posts?categories=1985&search=Skywatching%20Tips%20from%20NASA&per_page=4&_fields=link,date_gmt,title,content",
+    "format": "nasa-skywatching",
+    "topic_ids": ["astronomy", "skywatching"],
+    "allowed_hostnames": ["science.nasa.gov"],
+    "min_interval_seconds": 21600,
+    "max_age_seconds": 1209600,
+    "enabled": true
   }
 ]

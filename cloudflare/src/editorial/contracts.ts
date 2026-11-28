@@ -44,7 +44,7 @@ export interface EditorialEnv {
 export type SourceConfig = {
   id: string;
   url: string;
-  format: 'rss' | 'atom' | 'json' | 'html';
+  format: 'rss' | 'atom' | 'json' | 'html' | 'nasa-skywatching';
   topic_ids: string[];
   allowed_hostnames: string[];
   min_interval_seconds: number;
@@ -83,7 +83,7 @@ export type ContentProposal = {
   candidate_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string;
   base_commit: string; owner_epoch: number; files: FileChange[]; public_sources: PublicSource[]; required_media_paths: string[]; public_urls: string[]; expected_content: ExpectedContent[];
 };
-export type PreparationContext = { catalog: CatalogItem[]; sources: PublicSource[]; knowledge: PublicKnowledge[]; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; existing_files?: Record<string, string>; existing_paths?: string[] };
+export type PreparationContext = { catalog: CatalogItem[]; sources: PublicSource[]; source_excerpt?: string; knowledge: PublicKnowledge[]; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; existing_files?: Record<string, string>; existing_paths?: string[] };
 export type ReviewContext = PreparationContext & { reviewer_run_id: string };
 export type ReviewReceipt = { candidate_id: string; reviewer_run_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string; base_commit: string; owner_epoch: number; decision: 'CLEAR' | 'FIX_REQUIRED' | 'HOLD'; findings: Array<{ code: string; detail: string }> };
 export type PublicationState = { owner_epoch: number; paused: boolean; base_commit: string; policy_revision: string; knowledge_revision: string; source_digest: string; allowed_paths: string[]; author_run_id: string };

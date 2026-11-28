@@ -30,6 +30,27 @@ describe('reader relevance and action selection', () => {
     expect(result).toMatchObject({ action: 'PROPOSE', candidate: { target_id: 'skywatching' } });
   });
 
+  it('qualifies a fresh NASA observing guide for a new article without targeting an authored page', () => {
+    const release = signal({
+      source_id: 'nasa-skywatching', topic_ids: ['astronomy', 'skywatching'],
+      title: 'What’s Up: November 2026 Skywatching Tips from NASA',
+      summary: 'Look for meteors after moonset and compare how moonlight affects visibility.',
+    });
+    release.evidence[0].url = 'https://science.nasa.gov/solar-system/skywatching/whats-up-november-2026-skywatching-tips-from-nasa/';
+    const result = chooseAction(release, catalog, [], history, now);
+    expect(result).toMatchObject({ action: 'CREATE', candidate: {
+      target_id: null, reader: 'Skywatchers', source_digest: release.source_revision, question: expect.stringContaining('observe'),
+    } });
+    expect(chooseAction({ ...release, summary: 'A spacecraft operations release updates a mission schedule.' }, catalog, [], history, now))
+      .toMatchObject({ action: 'NO_CHANGE' });
+    expect(chooseAction({ ...release, summary: 'Watch the Moon and look for meteors.' }, catalog, [], history, now))
+      .toMatchObject({ action: 'NO_CHANGE' });
+    expect(chooseAction({ ...release, title: 'NASA Science Soars During Total Solar Eclipse' }, catalog, [], history, now))
+      .toMatchObject({ action: 'NO_CHANGE' });
+    expect(chooseAction(release, catalog, [], { ...history, episode_ids: [release.episode_id] }, now))
+      .toMatchObject({ action: 'NO_CHANGE' });
+  });
+
   it('keeps expired evidence and repeated episodes at NO_CHANGE', () => {
     expect(chooseAction(signal({ expires_at: '2026-11-26T17:00:00.000Z' }), catalog, [], history, now)).toMatchObject({ action: 'NO_CHANGE' });
     expect(chooseAction(signal(), catalog, [], { ...history, episode_ids: ['episode-1'] }, now)).toMatchObject({ action: 'NO_CHANGE' });

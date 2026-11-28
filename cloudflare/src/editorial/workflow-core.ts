@@ -13,7 +13,7 @@ export type DurableStep = {
   do<T>(name: string, callback: () => Promise<T> | T): Promise<T>;
   sleep(name: string, milliseconds: number): Promise<void>;
 };
-export type CandidateProcessOutcome = { status: 'verified'; reason: string }
+export type CandidateProcessOutcome = { status: 'verified' | 'no_change'; reason: string }
   | { status: 'held'; reason: string; continue_after_hold?: true };
 export type EditorialCandidateProcessor = {
   reconcileMergeCapacity?(ownerEpoch: number): Promise<void>;
@@ -425,7 +425,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     candidate: pending.candidate, signal: pending.signal, catalog, knowledge, policy,
     owner_epoch: control.owner_epoch, step, resumeCapacity: pending,
   }) : null;
-  if (pending && retry && (retry.status === 'verified' || !retry.continue_after_hold)) {
+  if (pending && retry && (retry.status !== 'held' || !retry.continue_after_hold)) {
     const action = retry.status === 'verified' ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-deferred-publication-result', () => recordReceipt(env.DB,
       params.slot_claim_id, pending.candidate.id, action, { reason: retry.reason, owner_epoch: control.owner_epoch }, control.owner_epoch));
@@ -458,8 +458,8 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   }
 
   const decisions = await step.do('select-actions-from-dated-signals', () => batch.signals.map((signal) => ({ signal, decision: chooseAction(signal, catalog, knowledge, history, new Date(now)) })));
-  const actionable = decisions.filter((row): row is { signal: Signal; decision: Extract<ActionDecision, { candidate: Candidate }> } => 'candidate' in row.decision)
-    .slice(0, policy.max_candidates_per_scan);
+  const qualifying = decisions.filter((row): row is { signal: Signal; decision: Extract<ActionDecision, { candidate: Candidate }> } => 'candidate' in row.decision);
+  const actionable = qualifying.slice(0, policy.max_candidates_per_scan);
   const noChangeSignals = decisions.filter((row) => row.decision.action === 'NO_CHANGE');
   const selectedIds = new Set(actionable.map(({ decision }) => decision.candidate.id));
   const unreconciled = [...pendingWork.values()].filter((work) => work.slot &&
@@ -555,15 +555,22 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
       }
     }
     if (outcomes.length === needsReconciliation.size && needsReconciliation.size) return reconciliationHold();
-    const verified = !retry && outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');
-    const reason = verified ? 'All admitted candidates passed publication and public readback.' :
-      stopReason ?? retry?.reason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ?? 'Candidate processing did not complete.';
-    const action = verified ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
+    const settled = !retry && outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status !== 'held');
+    const verified = settled && outcomes.some((outcome) => outcome.status === 'verified');
+    const noChange = settled && qualifying.length === actionable.length && !batch.uncovered.length && !batch.failures.length;
+    const verifiedReason = outcomes.every((outcome) => outcome.status === 'verified')
+      ? 'All admitted candidates passed publication and public readback.'
+      : 'All admitted candidates were resolved and each publication passed public readback.';
+    const reason = verified ? verifiedReason :
+      noChange ? 'Each qualifying relationship was already present in the deployed content.' :
+      stopReason ?? retry?.reason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ??
+        'Source coverage or candidate capacity was incomplete for a NO_CHANGE result.';
+    const action = verified ? 'VERIFIED' : noChange ? 'NO_CHANGE' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
       ready[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes, ...(pending && retry ?
         { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}) }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the publication result could be recorded.');
-    return verified ? { status: 'admitted', reason, slot_claim_id: params.slot_claim_id } : held(params, reason);
+    return { status: verified ? 'admitted' : noChange ? 'no_change' : 'held', reason, slot_claim_id: params.slot_claim_id };
   }
   const reason = 'Candidate awaits configured author, reviewer, publisher, and readback adapters.';
   const first = ready[0];

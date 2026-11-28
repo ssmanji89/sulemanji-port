@@ -89,6 +89,49 @@ describe('durable candidate publication pipeline', () => {
     expect(models.calls.map((call) => call.purpose)).toEqual(['author', 'review']);
   });
 
+  it('reports an existing contextual link without any model or publishing work', async () => {
+    const from = { id: 'existing', title: 'Existing guide', url: '/notes/existing', topics: ['infrastructure'] };
+    const to = { id: 'related', title: 'Related guide', url: '/notes/related', topics: ['infrastructure'] };
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => { throw new Error('The deployed connection already exists'); }, renderSocialCard,
+      preparationContext: async () => ({ ...context, connection_baseline: { text_sha256: 'a'.repeat(64), already_linked: true } }),
+      publish: async () => { throw new Error('Unexpected publication'); },
+      verify: async () => { throw new Error('Unexpected readback'); },
+      persist: async () => { throw new Error('Unexpected draft or hold'); },
+    });
+    const result = await pipeline.processCandidate({
+      candidate: { ...candidate, action: 'CONNECT', target_id: from.id, related_id: to.id },
+      signal: { id: 'signal-1' } as Signal, catalog: [from, to], knowledge: [], policy, owner_epoch: 1, step: new Steps(),
+    });
+    expect(result).toMatchObject({ status: 'no_change' });
+  });
+
+  it('holds a deferred legacy connection without opening or merging its new article', async () => {
+    const models = new Models();
+    const legacy = { ...candidate, id: 'connect:signal-1:workers', target_id: 'workers', action: 'CONNECT' as const };
+    const proposal = { candidate_id: legacy.id, files: [{ operation: 'create', path: 'notes/new-article.md' }] } as ContentProposal;
+    const deferred = { proposal, claim: 'later-slot' } as DeferredReview;
+    const checkpoints: string[] = [];
+    const pipeline = createEditorialCandidatePipeline({
+      modelsFor: () => models, renderSocialCard,
+      preparationContext: async () => { throw new Error('Legacy connection attempted to prepare content'); },
+      publish: async () => { throw new Error('Legacy connection attempted to publish'); },
+      verify: async () => { throw new Error('Legacy connection attempted to verify'); },
+      persist: async (id, epoch, state, checkpoint, claim) => {
+        expect({ id, epoch, state, claim }).toEqual({ id: legacy.id, epoch: 1, state: 'NEEDS_OWNER', claim: 'later-slot' });
+        expect(checkpoint.proposal).toBe(proposal);
+        checkpoints.push(state);
+        return true;
+      },
+    });
+    await expect(pipeline.processCandidate({
+      candidate: legacy, signal: { id: 'signal-1' } as Signal,
+      catalog: context.catalog, knowledge: [], policy, owner_epoch: 1, step: new Steps(), resumeCapacity: deferred,
+    })).resolves.toMatchObject({ status: 'held', continue_after_hold: true });
+    expect(checkpoints).toEqual(['NEEDS_OWNER']);
+    expect(models.calls).toEqual([]);
+  });
+
   it('holds a portfolio refresh before preparing content and allows work on a separate target', async () => {
     const models = new Models();
     const target = { id: 'market-systems', title: 'Market systems', url: '/work/market-systems/', topics: ['markets'] };

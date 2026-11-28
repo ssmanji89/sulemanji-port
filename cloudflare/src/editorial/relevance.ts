@@ -1,5 +1,36 @@
 import type { ActionDecision, Candidate, CatalogItem, PublicKnowledge, RecentHistory, Signal } from './contracts.js';
 
+import { articleSourcePath } from './review.js';
+
+function normalizeTitle(title: string): string {
+  return title.normalize('NFKC').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+function editorialConnection(signal: Signal, relevant: CatalogItem[], catalog: CatalogItem[]) {
+  const normalizedTitles = new Map<string, CatalogItem | null>();
+  for (const item of catalog) {
+    if (!articleSourcePath(item.url)) continue;
+    const title = normalizeTitle(item.title);
+    normalizedTitles.set(title, normalizedTitles.has(title) ? null : item);
+  }
+  const relevantIds = new Set(relevant.map(({ id }) => id));
+  const pairs = new Map<string, { from: CatalogItem; to: CatalogItem }>();
+  const clauses = signal.summary.match(/[^.!?;\n]+[.!?;]?/g) ?? [];
+  for (const clause of [signal.title, ...clauses]) {
+    const statement = normalizeTitle(clause);
+    if (statement.endsWith('?')) continue;
+    const parts = statement.replace(/[.!;]$/, '').split(/ (?:integrates with|depends on|requires) /);
+    if (parts.length !== 2) continue;
+    const from = normalizedTitles.get(parts[0]);
+    const to = normalizedTitles.get(parts[1]);
+    if (from && to && from.id !== to.id && articleSourcePath(from.url) !== articleSourcePath(to.url) &&
+        (relevantIds.has(from.id) || relevantIds.has(to.id))) {
+      pairs.set(JSON.stringify([from.id, to.id]), { from, to });
+    }
+  }
+  return pairs.size === 1 ? Array.from(pairs.values())[0] : null;
+}
+
 export function chooseAction(signal: Signal, catalog: CatalogItem[], context: PublicKnowledge[], history: RecentHistory, now = new Date()): ActionDecision {
   if (Date.parse(signal.expires_at) <= now.getTime()) return { action: 'NO_CHANGE', reason: 'The evidence is outside its source-authorized freshness window.', signal_ids: [signal.id] };
   if (history.source_revisions.includes(signal.source_revision) || history.episode_ids.includes(signal.episode_id) ||
@@ -34,21 +65,24 @@ export function chooseAction(signal: Signal, catalog: CatalogItem[], context: Pu
     } };
   }
 
-  const target = ranked[0].item;
+  const connection = editorialConnection(signal, ranked.map(({ item }) => item), catalog);
+  const target = connection?.from ?? ranked[0].item;
   const words = `${signal.title} ${signal.summary}`.toLowerCase();
   const asksForUpdate = /\b(release|released|version|update|updated|deprecat|security|api|workflow|package|standard|policy)\b/.test(words);
-  const sameTopicItems = ranked.filter(({ item }) => item.topics.some((topic) => target.topics.includes(topic)));
-  const action: Candidate['action'] = asksForUpdate ? 'REFRESH' : sameTopicItems.length > 1 ? 'CONNECT' : 'PROPOSE';
+  const action: Candidate['action'] = connection ? 'CONNECT' : asksForUpdate ? 'REFRESH' : 'PROPOSE';
   const use = context.find((item) => item.allowed_uses.includes('factual-update') && target.topics.some((topic) => words.includes(topic.replace(/-/g, ' '))));
   const knowledgeRevision = use ? `subject:${use.subject_id}` : 'none';
   const candidate: Candidate = {
     id: `${action.toLowerCase()}:${signal.id.slice(0, 24)}:${target.id}`,
     signal_ids: [signal.id],
     target_id: target.id,
+    ...(connection ? { related_id: connection.to.id } : {}),
     action,
     reader: `Readers exploring ${target.topics[0] ?? 'related work'}`,
-    question: `Does this dated evidence change what ${target.title} explains?`,
-    benefit: `Keeps ${target.title} useful when the evidence materially affects its guidance.`,
+    question: connection ? `What relationship does this dated evidence establish between ${target.title} and ${connection.to.title}?`
+      : `Does this dated evidence change what ${target.title} explains?`,
+    benefit: connection ? `Helps readers of ${target.title} understand when ${connection.to.title} applies.`
+      : `Keeps ${target.title} useful when the evidence materially affects its guidance.`,
     source_digest: signal.source_revision,
     policy_revision: 'editorial-policy-unbound',
     knowledge_revision: knowledgeRevision,

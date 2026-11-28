@@ -782,6 +782,36 @@ describe('deterministic signal workflow', () => {
     expect([...db.receipts.values()].map((row) => row.action)).toEqual(['VERIFIED']);
   });
 
+  it.each([false, true])('records an already linked CONNECT with source failure=%s', async (sourceFailure) => {
+    const base = sourceFetcher({ candidate: true });
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/content-index.json') return Response.json({ schema_version: 1, items: [
+        { id: 'assets', canonical_url: '/notes/assets', title: 'Cloudflare static assets', topics: ['infrastructure'] },
+        { id: 'routes', canonical_url: '/notes/routes', title: 'Cloudflare worker routes', topics: ['infrastructure'] },
+      ] });
+      if (url.hostname === 'blog.cloudflare.com') return new Response(`<rss><channel><item>
+        <title>Cloudflare static assets depends on Cloudflare worker routes</title><description>Documented details.</description>
+        <link>https://blog.cloudflare.com/workers/connection/</link><pubDate>${new Date().toUTCString()}</pubDate></item></channel></rss>`);
+      if (sourceFailure && url.hostname === 'science.nasa.gov') return new Response('unavailable', { status: 503 });
+      return base(input);
+    });
+    const db = new PipelineD1();
+    const processCandidate = vi.fn(async () => ({ status: 'no_change' as const, reason: 'The deployed connection is already present.' }));
+    const params = { slot_claim_id: '2026-11-27:13:05' };
+    const env = { DB: db as unknown as D1Database, EDITORIAL_POLICY_JSON: policy } as never;
+    expect(await runEditorialAdmission(params, env, new DurableStep(), { processCandidate }))
+      .toMatchObject({ status: sourceFailure ? 'held' : 'no_change' });
+    expect(processCandidate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      candidate: expect.objectContaining({ action: 'CONNECT', target_id: 'assets', related_id: 'routes' }),
+    }));
+    expect([...db.receipts.values()].map((row) => row.action))
+      .toEqual([sourceFailure ? 'HELD_PUBLICATION_PIPELINE' : 'NO_CHANGE']);
+    expect(await runEditorialAdmission(params, env, new DurableStep(), { processCandidate }))
+      .toMatchObject({ status: sourceFailure ? 'held' : 'no_change' });
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+  });
+
   it('holds a failed source batch instead of reporting NO_CHANGE', async () => {
     vi.stubGlobal('fetch', (async (input: RequestInfo | URL) => {
       const url = new URL(String(input));

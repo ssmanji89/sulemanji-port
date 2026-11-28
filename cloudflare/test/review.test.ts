@@ -1,8 +1,14 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { canPublish } from '../src/editorial/publisher.js';
+import { canPublish, verifyPublicationDetailed } from '../src/editorial/publisher.js';
 import { attachSocialCard, normalizeVisibleText, prepareContent, reviewContent, reviewThroughBoundedRounds, reviseContent, verifyRequiredMedia } from '../src/editorial/review.js';
-import type { Candidate, ContentProposal, PreparationContext, ReviewContext } from '../src/editorial/contracts.js';
+import { readConnectionBaseline } from '../src/editorial/site-readback.js';
+import type { Candidate, ContentProposal, PreparationContext, PublishAttempt, ReviewContext } from '../src/editorial/contracts.js';
 import type { ModelGateway, ModelRequest, ModelResult } from '../src/editorial/models.js';
 
 async function sha(value: string): Promise<string> {
@@ -85,6 +91,111 @@ describe('independent content preparation and review', () => {
     const noSource = new FakeModels();
     await expect(prepareContent(refresh, { ...existing, existing_files: {} }, noSource)).rejects.toThrow('EXISTING_ARTICLE_NOT_IN_SOURCE_HEAD');
     expect(noSource.calls).toHaveLength(0);
+  });
+
+  it('CONNECT adds a sourced contextual link to an existing article without rewriting it', async () => {
+    const initial = await makeProposal();
+    const from = { id: 'existing', title: output.title, url: initial.public_urls[0], topics: ['infrastructure'] };
+    const to = { id: 'peer', title: 'A related artifact verification guide', url: '/notes/verification-guide', topics: ['infrastructure'] };
+    const connect = { ...candidate, action: 'CONNECT' as const, target_id: from.id, related_id: to.id };
+    const previous = initial.files[0].content;
+    const peerPath = 'notes/verification-guide.md';
+    const peer = previous.replace(output.title, to.title).replace(initial.public_urls[0], to.url);
+    const existing = { ...context, catalog: [from, to], existing_paths: [initial.files[0].path, peerPath],
+      connection_baseline: { text_sha256: 'a'.repeat(64), already_linked: false },
+      existing_files: { [initial.files[0].path]: previous, [peerPath]: peer } };
+    const models = new FakeModels();
+    models.outputs = [{ context: 'The release record connects package verification with the checks in this guide.' }];
+    const proposal = await prepareContent(connect, existing, models);
+
+    expect(proposal.files).toHaveLength(1);
+    expect(proposal.files[0]).toMatchObject({ path: initial.files[0].path, operation: 'update' });
+    expect(proposal.files[0].content.startsWith(previous)).toBe(true);
+    expect(proposal.files[0].content).toContain(`[${to.title}](${to.url})`);
+    expect(proposal.files[0].content).toContain(source.url);
+    expect(proposal.public_urls).toEqual([from.url]);
+    expect(proposal.required_media_paths).toEqual([]);
+    expect(proposal.expected_content[0]).toMatchObject({ url: from.url, title: from.title, text_sha256: 'a'.repeat(64),
+      contextual_link: { href: to.url, sources: [source.url] } });
+    expect(models.calls[0].schema_id).toBe('site-contextual-link-v1');
+
+    models.outputs.push({ context: 'The release record explains where the two verification checklists overlap.' });
+    const revised = await reviseContent(proposal, connect, existing, [{ code: 'CLARITY', detail: 'Name the relationship.' }],
+      models, 'author:contextual-link-revision');
+    expect(revised.files[0].content.startsWith(previous)).toBe(true);
+    expect(revised.files[0].content.match(/\]\(\/notes\/verification-guide\)/g)).toHaveLength(1);
+    expect(revised.expected_content[0]).toMatchObject({ contextual_link: { href: to.url } });
+    const unsafe = { ...existing, sources: [{ ...source, url: 'https://vendor.example.test/?term={{site.description}}' }] };
+    await expect(prepareContent(connect, unsafe, models)).rejects.toThrow('CONNECT_SOURCE_UNQUALIFIED');
+    expect(models.calls.map(({ purpose }) => purpose)).toEqual(['author', 'revise']);
+  });
+
+  it.runIf(Boolean(process.env.SITE_BUILD_PATH))('verifies a Jekyll-rendered connection without changing the original body or citations', async () => {
+    const root = new URL('../../', import.meta.url);
+    const from = { id: 'capacity', title: 'An AI acceleration estimate is not a capacity plan',
+      url: '/notes/ai-acceleration-estimate-capacity-plan', topics: ['infrastructure'] };
+    const to = { id: 'identity', title: 'An AI agent identity is not an authorization decision',
+      url: '/notes/ai-agent-identity-authorization', topics: ['infrastructure'] };
+    const fromPath = from.url.slice(1) + '.md';
+    const toPath = to.url.slice(1) + '.md';
+    const [current, peer] = await Promise.all([readFile(new URL(fromPath, root), 'utf-8'), readFile(new URL(toPath, root), 'utf-8')]);
+    // Kramdown makes the footnote a final sibling after the added paragraph.
+    const original = current + '\n\nAn existing example.[^example]\n\n[^example]: The original footnote.\n';
+    const render = (file: string) => {
+      const sourceRoot = mkdtempSync(join(tmpdir(), 'editorial-link-jekyll-'));
+      const destination = join(sourceRoot, '_site');
+      try {
+        const body = file.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/, '');
+        writeFileSync(join(sourceRoot, 'probe.md'), `---\nlayout: null\npermalink: /probe.html\n---\n${body}`);
+        execFileSync('bundle', ['exec', 'jekyll', 'build', '--quiet', '--source', sourceRoot, '--destination', destination,
+          '--config', fileURLToPath(new URL('_config.yml', root))], {
+          cwd: root, env: { ...process.env, JEKYLL_ENV: 'production' }, stdio: ['ignore', 'pipe', 'pipe'], timeout: 10_000,
+        });
+        return readFileSync(join(destination, 'probe.html'), 'utf-8');
+      } finally {
+        rmSync(sourceRoot, { recursive: true, force: true });
+      }
+    };
+    const canonical = 'https://www.sulemanji.com' + from.url;
+    const wrap = (html: string) => `<head><link rel="canonical" href="${canonical}"></head><h1>${from.title}</h1><div data-writing-body>${html}</div>`;
+    const headers = { 'x-site-source-commit': context.base_commit, 'x-site-asset-digest': 'sha256:' + 'a'.repeat(64),
+      'x-site-built-at': '2026-11-28T02:00:00Z' };
+    const baseline = await readConnectionBaseline(async () => new Response(wrap(render(original)), { headers }),
+      from.url, to.url, context.base_commit, true);
+    expect(baseline).toMatchObject({ already_linked: false });
+    const models = new FakeModels();
+    models.outputs = [{ context: `A reader's "exact" next step ties an evaluation to a capacity decision.` }];
+    const scopedSource = { ...source, url: 'https://vendor.example.test/releases/42?release=4.2&part=runtime' };
+    const proposal = await prepareContent({ ...candidate, action: 'CONNECT', target_id: from.id, related_id: to.id }, {
+      ...context, sources: [scopedSource], catalog: [from, to], existing_paths: [fromPath, toPath],
+      existing_files: { [fromPath]: original, [toPath]: peer }, connection_baseline: baseline!,
+    }, models);
+    const rendered = render(proposal.files[0].content);
+    expect(rendered).toContain(`A reader's "exact" next step`);
+    expect(rendered.indexOf(to.url)).toBeLessThan(rendered.indexOf('class="footnotes"'));
+    const attempt: PublishAttempt = {
+      id: 'attempt-connection', candidate_id: proposal.candidate_id, owner_epoch: proposal.owner_epoch, branch: 'editorial/fixture', pull_request: 1,
+      source_commit: context.base_commit, deployment_version: null, public_urls: proposal.public_urls,
+      expected_content: proposal.expected_content, status: 'SOURCE_PUBLISHED',
+    };
+    const discovery: Record<string, string> = {
+      '/writing': `<a href="${canonical}">Article</a>`,
+      '/feed.xml': `<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="${canonical}"/></entry></feed>`,
+      '/sitemap.xml': `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${canonical}</loc></url></urlset>`,
+    };
+    const result = await verifyPublicationDetailed(attempt, async (input) => {
+      const path = new URL(String(input)).pathname;
+      return new Response(path === from.url ? wrap(rendered) : discovery[path], { headers });
+    }, 'private-binding');
+    expect(result.failure).toBeUndefined();
+    expect(result.receipt.outcome).toBe('VERIFIED');
+  }, 25_000);
+
+  it('holds old or unresolved CONNECT identities before a model call', async () => {
+    const models = new FakeModels();
+    const legacy = { ...candidate, action: 'CONNECT' as const, target_id: 'tooling' };
+    await expect(prepareContent(legacy, context, models)).rejects.toThrow('CONNECT_TARGETS_UNQUALIFIED');
+    expect(models.calls).toHaveLength(0);
   });
 
   it('keeps article identity and authority server-assigned', async () => {

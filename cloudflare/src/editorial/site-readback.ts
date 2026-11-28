@@ -1,3 +1,6 @@
+import * as parse5 from 'parse5';
+import type { ContextualLink } from './contracts.js';
+
 export const CANONICAL_SITE_ORIGIN = 'https://www.sulemanji.com';
 
 export type EditorialFixtureSite = Pick<Fetcher, 'fetch'>;
@@ -13,4 +16,67 @@ export function fixtureSiteFetcher(binding: EditorialFixtureSite | undefined): t
     }
     return binding.fetch(request);
   };
+}
+
+export type HtmlNode = { nodeName?: string; tagName?: string; value?: string; attrs?: Array<{ name: string; value: string }>; childNodes?: HtmlNode[] };
+
+export function htmlAttribute(node: HtmlNode, name: string): string | undefined {
+  return node.attrs?.find((attr) => attr.name === name)?.value;
+}
+
+export function normalizeNodeText(node: HtmlNode): string {
+  const extract = (row: HtmlNode): string => {
+    if (['script', 'style', 'noscript', 'template'].includes(row.nodeName ?? '')) return '';
+    return row.value ?? (row.childNodes ?? []).map(extract).join(' ');
+  };
+  return extract(node).replace(/\s+/g, ' ').trim();
+}
+
+export function articleLinks(node: HtmlNode): string[] {
+  if (['script', 'style', 'noscript', 'template'].includes(node.nodeName ?? '')) return [];
+  const href = node.tagName === 'a' ? htmlAttribute(node, 'href') : undefined;
+  return [...(href === undefined ? [] : [href]), ...(node.childNodes ?? []).flatMap(articleLinks)];
+}
+
+export function connectionParagraph(body: HtmlNode, href: string): HtmlNode | undefined {
+  const paragraphs = (body.childNodes ?? []).filter((node) => node.tagName === 'p' && articleLinks(node).includes(href));
+  return paragraphs.length === 1 ? paragraphs[0] : undefined;
+}
+
+export async function textDigest(text: string): Promise<string> {
+  const bytes = new TextEncoder().encode(text);
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer));
+  return [...digest].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function matchesConnectionParagraph(paragraph: HtmlNode, expected: ContextualLink): Promise<boolean> {
+  const links = articleLinks(paragraph);
+  return links.length === 1 + expected.sources.length && links[0] === expected.href &&
+    expected.sources.every((url, index) => url === links[index + 1]) &&
+    await textDigest(normalizeNodeText(paragraph)) === expected.text_sha256;
+}
+
+export async function readConnectionBaseline(fetcher: typeof fetch, articleUrl: string, relatedUrl: string, baseCommit: string, staging: boolean) {
+  const url = new URL(articleUrl, CANONICAL_SITE_ORIGIN);
+  const peer = new URL(relatedUrl, CANONICAL_SITE_ORIGIN);
+  if ([url, peer].some((item) => item.origin !== CANONICAL_SITE_ORIGIN ||
+      !/^\/notes\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.pathname) || item.search || item.hash || item.username || item.password)) return null;
+  const response = await fetcher(url, { redirect: 'manual' });
+  if (!response.ok || (response.url ? response.url !== url.href : !staging) ||
+      response.headers.get('x-site-source-commit') !== baseCommit) return null;
+  const html = await response.text();
+  if (html.length > 2_000_000) return null;
+  const bodies: HtmlNode[] = [];
+  const walk = (node: HtmlNode): void => {
+    if (node.tagName === 'div' && htmlAttribute(node, 'data-writing-body') !== undefined) bodies.push(node);
+    for (const child of node.childNodes ?? []) walk(child);
+  };
+  walk(parse5.parse(html) as unknown as HtmlNode);
+  if (bodies.length !== 1) return null;
+  const text = normalizeNodeText(bodies[0]);
+  if (!text) return null;
+  const alreadyLinked = articleLinks(bodies[0]).some((href) => {
+    try { return new URL(href, url).href === peer.href; } catch { return false; }
+  });
+  return { text_sha256: await textDigest(text), already_linked: alreadyLinked };
 }

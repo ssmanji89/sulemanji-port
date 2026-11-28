@@ -12,8 +12,8 @@ import { readKnowledge } from './workflow-core.js';
 import { revalidateSignalSourceDigest } from './sources.js';
 import type { SocialCardRenderer } from './social-card-format.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
-import { fixtureSiteFetcher } from './site-readback.js';
-import { articleSourcePath } from './review.js';
+import { fixtureSiteFetcher, readConnectionBaseline } from './site-readback.js';
+import { articleSourcePath, connectionArticles } from './review.js';
 import { parseEditorialRuntimeSettings } from './runtime-settings.mjs';
 
 export type EditorialRuntimeEnv = EditorialEnv & {
@@ -80,6 +80,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
   const github = new GitHubApiPublisher({ ...settings.publisher, token: githubToken, require_private: staging }, fetcher);
   const provider = new JsonSchemaGateway(model, fetcher);
   const limits = { new_articles: policy.max_new_articles_daily, refreshes: policy.max_refreshes_daily };
+  const siteFetch = staging ? fixtureSiteFetcher(env.EDITORIAL_FIXTURE_SITE) : fetcher;
   const pipeline = createEditorialCandidatePipeline({
     renderSocialCard,
     modelsFor(candidate, ownerEpoch, activePolicy) {
@@ -90,16 +91,17 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
     },
     async preparationContext(input) {
       const baseCommit = await github.readDefaultBranchHead();
-      const path = pathForRefresh(input.candidate, input.catalog);
+      const refreshPath = pathForRefresh(input.candidate, input.catalog);
+      const connection = connectionArticles(input.candidate, input.catalog);
+      const existingPaths = refreshPath ? [refreshPath] : connection ? [connection.path, connection.peerPath] : [];
       const existingFiles: Record<string, string> = {};
-      const existingPaths: string[] = [];
-      if (path) {
-        existingFiles[path] = await github.readTextFile(path, baseCommit);
-        existingPaths.push(path);
-      }
+      for (const path of existingPaths) existingFiles[path] = await github.readTextFile(path, baseCommit);
+      const baseline = connection
+        ? await readConnectionBaseline(siteFetch, connection.from.url, connection.to.url, baseCommit, staging)
+        : null;
       return { catalog: input.catalog, sources: input.signal.evidence, source_excerpt: input.signal.summary.slice(0, 3000), knowledge: input.knowledge,
         policy_revision: input.policy.revision, knowledge_revision: input.candidate.knowledge_revision,
-        base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths };
+        base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths, ...(baseline ? { connection_baseline: baseline } : {}) };
     },
     async publish(proposal, review, signal, claim) {
       const store = new D1PublishEffectStore(env.DB, review.owner_epoch, limits);
@@ -131,8 +133,7 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
       const effect = await store.read(proposal.candidate_id);
       return { attempt, merged: Boolean(effect?.merge_commit) };
     },
-    verify: (attempt) => verifyPublicationDetailed(attempt,
-      staging ? fixtureSiteFetcher(env.EDITORIAL_FIXTURE_SITE) : fetcher, staging ? 'private-binding' : 'public'),
+    verify: (attempt) => verifyPublicationDetailed(attempt, siteFetch, staging ? 'private-binding' : 'public'),
     persist: (candidateId, ownerEpoch, state, checkpoint, claim) => persistCandidateCheckpoint(env.DB, candidateId, ownerEpoch, state, checkpoint, claim),
   });
   return { ...pipeline, reconcileMergeCapacity: (ownerEpoch: number) =>

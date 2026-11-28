@@ -20,6 +20,26 @@ describe('reader relevance and action selection', () => {
     if (result.action !== 'NO_CHANGE') expect(result.candidate.benefit).toContain('useful');
   });
 
+  it('connects two existing articles only when the source states their relationship', () => {
+    const articles = [
+      { id: 'asset-deploy', title: 'Workers asset deployment', url: '/notes/asset-deploy', topics: ['infrastructure'] },
+      { id: 'rust-workers', title: 'Workers Rust examples', url: '/notes/rust-workers', topics: ['infrastructure'] },
+    ];
+    const evidence = signal({ title: 'Workers asset deployment integrates with Workers Rust examples', summary: '' });
+    expect(chooseAction(evidence, articles, [], history, now)).toMatchObject({
+      action: 'CONNECT', candidate: { target_id: 'asset-deploy', related_id: 'rust-workers' },
+    });
+    for (const title of [
+      'Workers asset deployment and Workers Rust examples',
+      'Workers asset deployment integrates with Workers Rust examples?',
+      'Workers asset deployment requires no Workers Rust examples',
+      'Workers asset deployment requires Workers Rust examples to be removed',
+    ]) {
+      expect(chooseAction({ ...evidence, title }, articles, [], history, now).action).toBe('PROPOSE');
+      expect(chooseAction({ ...evidence, title: 'Workers discussion', summary: title }, articles, [], history, now).action).toBe('PROPOSE');
+    }
+  });
+
   it('returns NO_CHANGE for an unrelated macro event', () => {
     const result = chooseAction(signal({ title: 'National employment data released', summary: 'A macroeconomic report was published.', topic_ids: ['markets', 'mathematics'] }), catalog, [], history, now);
     expect(result).toMatchObject({ action: 'NO_CHANGE' });

@@ -85,7 +85,8 @@ export function readSourceHtml(markup: string, base: URL | null): { text: string
 
 function textConstruct(node: Element | undefined, markup = false): { text: string; origin: string[] } {
   if (!node) return { text: '', origin: [] };
-  if (attr(node, 'type') === 'xhtml') {
+  const type = attr(node, 'type')?.split(';', 1)[0].trim().toLowerCase();
+  if (type === 'xhtml' || type === 'application/xhtml+xml') {
     const origin: string[] = [];
     function visible(part: Element | string): string {
       if (typeof part === 'string') return part;
@@ -97,7 +98,7 @@ function textConstruct(node: Element | undefined, markup = false): { text: strin
     }
     return { text: normalized(node.parts.map(visible).join(' ')), origin };
   }
-  return markup || attr(node, 'type') === 'html' ? readSourceHtml(xmlText(node), node.base)
+  return markup || type === 'html' || type === 'text/html' ? readSourceHtml(xmlText(node), node.base)
     : { text: normalized(xmlText(node)), origin: [] };
 }
 
@@ -121,6 +122,12 @@ function linkRel(node: Element): string {
 const href = (link: Element) => absolute(attr(link, 'href'), link.base);
 const originLinks = (node: Element, rels: string[]) => atomLinks(node).filter((link) => rels.includes(linkRel(link))).map(href);
 
+function primaryAlternate(node: Element): string {
+  const alternates = atomLinks(node).filter((link) => linkRel(link) === 'alternate' && href(link));
+  const primary = alternates.find((link) => !attr(link, 'hreflang')) ?? alternates[0];
+  return primary ? href(primary) : '';
+}
+
 function originMetadata(node: Element): string[] {
   return children(node).flatMap((child) => {
     if (DC.has(child.tag.uri) && child.tag.local === 'source') {
@@ -142,16 +149,15 @@ export function readSyndicatedEntries(body: string, format: 'rss' | 'atom', base
   const feed = rss ? select(root, 'channel') : root;
   if (!feed) throw new Error('INVALID');
   const single = !rss && root.tag.local === 'entry';
-  if (!single && [urlField(feed, 'id'), ...originLinks(feed, ['canonical', 'via', 'self']),
+  const homepage = rss ? urlField(feed, 'link') || primaryAlternate(feed) : primaryAlternate(feed);
+  if (!single && [homepage, urlField(feed, 'id'), ...originLinks(feed, ['canonical', 'via', 'self']),
     ...originMetadata(feed)].some(isSiteOutput)) return [];
   const rows = single ? [root] : children(feed).filter(({ tag }) => tag.local === (rss ? 'item' : 'entry') && tag.uri === feed.tag.uri);
   return rows.slice(0, MAX_FEED_ENTRIES).map((entry) => {
     const entryLink = select(entry, 'link');
-    const alternates = atomLinks(entry).filter((link) => linkRel(link) === 'alternate' && href(link));
-    const primary = alternates.find((link) => !attr(link, 'hreflang')) ?? alternates[0];
     const guide = select(entry, 'guid');
     const id = rawField(entry, rss ? 'guid' : 'id');
-    const url = (rss && entryLink ? absolute(xmlText(entryLink), entryLink.base) : '') || (primary ? href(primary) : '') ||
+    const url = (rss && entryLink ? absolute(xmlText(entryLink), entryLink.base) : '') || primaryAlternate(entry) ||
       (rss && guide && attr(guide, 'isPermaLink') !== 'false' ? absolute(id, null) : '');
     const content = rss ? select(entry, 'encoded', 'http://purl.org/rss/1.0/modules/content/') : select(entry, 'content');
     const summary = select(entry, rss ? 'description' : 'summary');

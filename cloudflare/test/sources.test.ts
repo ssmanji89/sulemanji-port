@@ -125,6 +125,26 @@ describe('bounded public signal collection', () => {
     expect(await collectSignals([config({ format: 'atom' })], now, async () => new Response(alternateExcerpt))).toEqual({ signals: [], failures: [] });
   });
 
+  it('reads HTML media-type content even with a separate Atom summary', async () => {
+    const document = '<feed xmlns="http://www.w3.org/2005/Atom"><entry><id>urn:primary</id><title>Fresh account</title>' +
+      '<updated>2026-11-26T17:00:00Z</updated><link href="https://blog.example.test/story"/><summary>Editorial summary</summary>' +
+      '<content type="text/html; charset=UTF-8">&lt;a rel="via" href="https://sulemanji.com/notes/source"&gt;Original&lt;/a&gt;</content>' +
+      '</entry></feed>';
+    expect(await collectSignals([config({ format: 'atom' })], now, async () => new Response(document))).toEqual({ signals: [], failures: [] });
+    const independent = await collectSignals([config({ format: 'atom' })], now, async () => new Response(document.replace(' rel="via"', '')));
+    expect(independent.signals[0].summary).toBe('Editorial summary');
+  });
+
+  it('filters a syndicated feed declaring the site as its homepage', async () => {
+    const homepage = 'https://www.sulemanji.com/';
+    const rss = xml.replace('<channel>', '<channel><link>' + homepage + '</link>');
+    const atom = '<feed xmlns="http://www.w3.org/2005/Atom"><link rel="alternate" href="' + homepage +
+      '"/><entry><id>urn:fixture</id><title>Retitled release</title><link href="https://blog.example.test/repost"/>' +
+      '<summary>Fresh prose</summary><updated>2026-11-26T17:00:00Z</updated></entry></feed>';
+    expect(await collectSignals([config()], now, async () => new Response(rss))).toEqual({ signals: [], failures: [] });
+    expect(await collectSignals([config({ format: 'atom' })], now, async () => new Response(atom))).toEqual({ signals: [], failures: [] });
+  });
+
   it('rejects explicitly attributed copies and preserves ordinary site references in independent reporting', async () => {
     const owned = 'https://www.sulemanji.com/notes/released-note';
     const reference = '<p>We ran an independent test. <a href="' + owned + '">Related reading</a>.</p>';

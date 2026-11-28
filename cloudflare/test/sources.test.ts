@@ -107,6 +107,8 @@ describe('bounded public signal collection', () => {
     const batch = await collectSignals([config({ format: 'atom' })], now, async () => new Response(feed));
     expect(batch.failures).toEqual([]);
     expect(batch.signals.map(({ evidence }) => evidence[0].url)).toEqual(['https://blog.example.test/articles/primary']);
+    const language = feed.replace('rel="alternate" href=', 'rel="alternate" hreflang="en" href=');
+    expect((await collectSignals([config({ format: 'atom' })], now, async () => new Response(language))).signals).toHaveLength(1);
   });
 
   it('reads scoped XHTML attribution while excluding hidden markup from the evidence text', async () => {
@@ -118,6 +120,9 @@ describe('bounded public signal collection', () => {
     const independent = await collectSignals([config({ format: 'atom' })], now, async () => new Response(article.replace(' rel="via"', '')));
     expect(independent.signals).toHaveLength(1);
     expect(independent.signals[0].summary).not.toContain('Excluded');
+    const alternateExcerpt = article.replace('<summary type="xhtml">', '<summary>New excerpt</summary><content type="xhtml">')
+      .replace('</summary></entry>', '</content></entry>');
+    expect(await collectSignals([config({ format: 'atom' })], now, async () => new Response(alternateExcerpt))).toEqual({ signals: [], failures: [] });
   });
 
   it('rejects explicitly attributed copies and preserves ordinary site references in independent reporting', async () => {

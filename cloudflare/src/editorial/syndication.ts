@@ -147,18 +147,21 @@ export function readSyndicatedEntries(body: string, format: 'rss' | 'atom', base
   const rows = single ? [root] : children(feed).filter(({ tag }) => tag.local === (rss ? 'item' : 'entry') && tag.uri === feed.tag.uri);
   return rows.slice(0, MAX_FEED_ENTRIES).map((entry) => {
     const entryLink = select(entry, 'link');
-    const primary = atomLinks(entry).filter((link) => linkRel(link) === 'alternate' && !attr(link, 'hreflang')).map(href).find(Boolean);
+    const alternates = atomLinks(entry).filter((link) => linkRel(link) === 'alternate' && href(link));
+    const primary = alternates.find((link) => !attr(link, 'hreflang')) ?? alternates[0];
     const guide = select(entry, 'guid');
     const id = rawField(entry, rss ? 'guid' : 'id');
-    const url = (rss && entryLink ? absolute(xmlText(entryLink), entryLink.base) : '') || primary ||
+    const url = (rss && entryLink ? absolute(xmlText(entryLink), entryLink.base) : '') || (primary ? href(primary) : '') ||
       (rss && guide && attr(guide, 'isPermaLink') !== 'false' ? absolute(id, null) : '');
     const content = rss ? select(entry, 'encoded', 'http://purl.org/rss/1.0/modules/content/') : select(entry, 'content');
-    const body = textConstruct(select(entry, rss ? 'description' : 'summary') ?? content, rss);
+    const summary = select(entry, rss ? 'description' : 'summary');
+    const body = textConstruct(summary ?? content, rss);
     const title = textConstruct(select(entry, 'title'), rss);
     const dated = rss ? rawField(entry, 'pubDate') || rawField(entry, 'date', 'http://purl.org/dc/elements/1.1/')
       : rawField(entry, 'updated') || rawField(entry, 'published');
     return { id: absolute(id, null) || id || url, url, title: title.text, summary: body.text, date: dated || null,
       origin: [urlField(entry, rss ? 'guid' : 'id'), ...originLinks(entry, ['canonical', 'via', 'self']), ...originMetadata(entry),
-        ...(content ? [absolute(attr(content, 'src'), content.base)] : []), ...title.origin, ...body.origin] };
+        ...(content ? [absolute(attr(content, 'src'), content.base)] : []),
+        ...(summary && content ? textConstruct(content, rss).origin : []), ...title.origin, ...body.origin] };
   });
 }

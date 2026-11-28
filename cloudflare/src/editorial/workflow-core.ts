@@ -76,23 +76,62 @@ export async function readKnowledge(db: D1Database, now: Date): Promise<PublicKn
   return items;
 }
 
-function historyFromRows(receipts: ReceiptRow[], candidates: CandidateRow[]): RecentHistory {
+type CandidatePayload = {
+  candidate?: Candidate;
+  signal?: SignalHistory;
+  owner_epoch?: number;
+  awaiting_processing?: true;
+  processing_slot?: string;
+};
+type PendingCandidate = { row: CandidateRow; candidate: Candidate; signal: SignalHistory; slot?: string };
+
+function pendingCandidates(receipts: ReceiptRow[], candidates: CandidateRow[], ownerEpoch: number,
+  currentSlot: string): Map<string, PendingCandidate> {
+  const legacyHolds = new Set<string>();
+  const completedSlots = new Set(receipts.filter((row) => row.action !== 'HELD_CANDIDATE_RECONCILIATION').map((row) => row.id));
+  for (const row of receipts) {
+    if (row.action !== 'HELD_PROVIDER_UNCONFIGURED') continue;
+    const result = parseJson<{ owner_epoch?: number; candidates?: string[] }>(row.result_json);
+    if (result?.owner_epoch === ownerEpoch && Array.isArray(result.candidates)) {
+      for (const id of result.candidates) legacyHolds.add(id);
+    }
+  }
+  const pending = new Map<string, PendingCandidate>();
+  for (const row of candidates) {
+    const payload = parseJson<CandidatePayload>(row.payload_json);
+    const { candidate, signal, processing_slot: slot } = payload ?? {};
+    if (payload?.owner_epoch !== ownerEpoch || candidate?.id !== row.id ||
+        !signal || signal.source_revision !== row.revision || !Array.isArray(candidate.signal_ids) ||
+        !candidate.signal_ids.includes(signal.id)) continue;
+    if (slot) {
+      if (completedSlots.has(`slot-result:${slot}`) ||
+          (slot !== currentSlot && !['HELD', 'DRAFTED', 'REVIEWED', 'SOURCE_PUBLISHED'].includes(row.state))) continue;
+    } else if (row.state !== 'HELD' || (!payload.awaiting_processing && !legacyHolds.has(row.id))) continue;
+    pending.set(row.id, { row, candidate, signal, slot });
+  }
+  return pending;
+}
+
+function historyFromRows(receipts: ReceiptRow[], candidates: CandidateRow[], pending: Map<string, PendingCandidate>): RecentHistory {
   const sourceRevisions = new Set<string>();
   const episodeIds = new Set<string>();
   const recentTopics = new Set<string>();
-  const rememberSignal = (signal: SignalHistory) => {
+  const heldSignals = new Set([...pending.values()].map(({ signal }) => signal.id));
+  const rememberSignal = (signal: SignalHistory, skipProviderHolds = false) => {
+    if (skipProviderHolds && heldSignals.has(signal.id)) return;
     if (signal.source_revision) sourceRevisions.add(signal.source_revision);
     if (signal.episode_id) episodeIds.add(signal.episode_id);
     for (const topic of signal.topic_ids ?? []) recentTopics.add(topic);
   };
   for (const row of receipts) {
     const result = parseJson<{ signals?: SignalHistory[]; topic_ids?: string[] }>(row.result_json);
-    for (const signal of result?.signals ?? []) rememberSignal(signal);
+    for (const signal of result?.signals ?? []) rememberSignal(signal, true);
     for (const topic of result?.topic_ids ?? []) recentTopics.add(topic);
   }
   const priorCandidates: Candidate[] = [];
   for (const row of candidates) {
-    const payload = parseJson<{ candidate?: Candidate; signal?: SignalHistory }>(row.payload_json);
+    if (pending.has(row.id)) continue;
+    const payload = parseJson<CandidatePayload>(row.payload_json);
     if (payload?.candidate && typeof payload.candidate.id === 'string') priorCandidates.push(payload.candidate);
     if (payload?.signal) rememberSignal(payload.signal);
   }
@@ -116,20 +155,43 @@ async function recordReceipt(db: D1Database, slotId: string, candidateId: string
   return parseJson<{ owner_epoch?: number }>(saved.result_json)?.owner_epoch === ownerEpoch;
 }
 
-async function persistHeldCandidate(db: D1Database, candidate: Candidate, signal: Signal, policy: EditorialPolicy, ownerEpoch: number): Promise<boolean> {
-  const boundCandidate = { ...candidate, policy_revision: policy.revision };
-  const payload = { candidate: boundCandidate, signal: signalHistory(signal), owner_epoch: ownerEpoch };
+async function persistHeldCandidate(db: D1Database, candidate: Candidate, signal: Signal, policy: EditorialPolicy,
+  ownerEpoch: number): Promise<boolean> {
+  const payload = { candidate: { ...candidate, policy_revision: policy.revision }, signal: signalHistory(signal),
+    owner_epoch: ownerEpoch, awaiting_processing: true };
   const payloadJson = JSON.stringify(payload);
   await db.prepare(`INSERT OR IGNORE INTO editorial_candidates(id, state, revision, payload_json, updated_at)
     SELECT ?, 'HELD', ?, ?, ? WHERE EXISTS (
       SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?
     )`).bind(candidate.id, candidate.source_digest, payloadJson, new Date().toISOString(), ownerEpoch).run();
-  const saved = await db.prepare('SELECT id, state, revision, payload_json FROM editorial_candidates WHERE id = ?').bind(candidate.id).first<CandidateRow>();
-  if (!saved) return false;
-  const savedPayload = parseJson<{ owner_epoch?: number }>(saved.payload_json);
-  if (savedPayload?.owner_epoch !== ownerEpoch) return false;
-  if (saved.payload_json !== payloadJson || saved.revision !== candidate.source_digest) throw new Error('WORKFLOW_CANDIDATE_CONFLICT');
+  const saved = await db.prepare('SELECT id, state, revision, payload_json FROM editorial_candidates WHERE id = ?')
+    .bind(candidate.id).first<CandidateRow>();
+  const previous = saved && parseJson<CandidatePayload>(saved.payload_json);
+  if (!saved || previous?.owner_epoch !== ownerEpoch) return false;
+  if (saved.revision !== candidate.source_digest || previous.candidate?.id !== candidate.id ||
+      previous.signal?.id !== signal.id) throw new Error('WORKFLOW_CANDIDATE_CONFLICT');
   return true;
+}
+
+async function claimCandidateForProcessing(db: D1Database, candidate: Candidate, signal: Signal, policy: EditorialPolicy,
+  ownerEpoch: number, slotId: string, pending: PendingCandidate | undefined): Promise<boolean> {
+  const saved = await db.prepare('SELECT id, state, revision, payload_json FROM editorial_candidates WHERE id = ?')
+    .bind(candidate.id).first<CandidateRow>();
+  const previous = saved && parseJson<CandidatePayload>(saved.payload_json);
+  if (!saved || previous?.owner_epoch !== ownerEpoch || saved.state !== 'HELD' || saved.revision !== candidate.source_digest ||
+      previous.signal?.id !== signal.id || (previous.processing_slot && previous.processing_slot !== slotId) ||
+      (!previous.processing_slot && !previous.awaiting_processing && !pending)) return false;
+
+  const payload = { candidate: { ...candidate, policy_revision: policy.revision }, signal: signalHistory(signal),
+    owner_epoch: ownerEpoch, processing_slot: slotId };
+  // Recheck the exact row and external intents even when a restarted Workflow already owns the claim.
+  const updated = await db.prepare(`UPDATE editorial_candidates SET payload_json = ?, updated_at = ?
+    WHERE id = ? AND state = 'HELD' AND revision = ? AND payload_json = ? AND model_calls = 0 AND review_rounds = 0
+      AND NOT EXISTS (SELECT 1 FROM usage_reservations WHERE candidate_id = editorial_candidates.id)
+      AND NOT EXISTS (SELECT 1 FROM publication_effects WHERE candidate_id = editorial_candidates.id)
+      AND EXISTS (SELECT 1 FROM editorial_control WHERE singleton = 1 AND paused = 0 AND owner_epoch = ?)`)
+    .bind(JSON.stringify(payload), new Date().toISOString(), candidate.id, candidate.source_digest, saved.payload_json, ownerEpoch).run();
+  return (updated.meta.changes ?? 0) === 1;
 }
 
 type DeferredPublication = DeferredReview & { candidate: Candidate; signal: Signal };
@@ -373,11 +435,15 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   const historyRows = await step.do('read-recent-editorial-history', async () => {
     const [receipts, candidates] = await Promise.all([
       env.DB.prepare('SELECT id, action, result_json, created_at FROM editorial_receipts ORDER BY created_at DESC LIMIT ?').bind(HISTORY_LIMIT).all<ReceiptRow>(),
-      env.DB.prepare('SELECT id, state, revision, payload_json FROM editorial_candidates ORDER BY updated_at DESC LIMIT ?').bind(HISTORY_LIMIT).all<CandidateRow>(),
+      env.DB.prepare(`SELECT id, state, revision, payload_json FROM editorial_candidates
+        ORDER BY CASE WHEN json_valid(payload_json) THEN COALESCE(json_extract(payload_json, '$.processing_slot') = ?, 0) ELSE 0 END DESC,
+          updated_at DESC LIMIT ?`).bind(params.slot_claim_id, HISTORY_LIMIT).all<CandidateRow>(),
     ]);
     return { receipts: receipts.results ?? [], candidates: candidates.results ?? [] };
   });
-  const history = historyFromRows(historyRows.receipts, historyRows.candidates);
+  const pendingWork = pendingCandidates(historyRows.receipts, historyRows.candidates, control.owner_epoch, params.slot_claim_id);
+  const history = historyFromRows(historyRows.receipts, historyRows.candidates, pendingWork);
+  const reconciliationReason = 'The candidate is already being processed or has a prior attempt to reconcile.';
   const sources = sourceRegistry as SourceConfig[];
   const sourceFetcher = createGuardedFetcher(env.DB, control.owner_epoch, fetch, policy.max_fetches_per_scan);
   const batch = await step.do('collect-dated-public-signals-v3', () => collectCoveredSignals(sources, policy.max_fetches_per_scan, new Date(now), env.DB, control.owner_epoch, sourceFetcher));
@@ -395,6 +461,20 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
   const actionable = decisions.filter((row): row is { signal: Signal; decision: Extract<ActionDecision, { candidate: Candidate }> } => 'candidate' in row.decision)
     .slice(0, policy.max_candidates_per_scan);
   const noChangeSignals = decisions.filter((row) => row.decision.action === 'NO_CHANGE');
+  const selectedIds = new Set(actionable.map(({ decision }) => decision.candidate.id));
+  const unreconciled = [...pendingWork.values()].filter((work) => work.slot &&
+    (work.slot !== params.slot_claim_id || work.row.state !== 'HELD' || !selectedIds.has(work.candidate.id) || !processor));
+  const heldTargets = new Set(unreconciled.flatMap(({ candidate }) => candidate.target_id ? [candidate.target_id] : []));
+  const needsReconciliation = new Map(unreconciled.map(({ candidate }) => [candidate.id,
+    { candidate_id: candidate.id, status: 'held' as const, reason: reconciliationReason }]));
+  const reconciliationHold = async () => {
+    const outcomes = [...needsReconciliation.values()];
+    if (!outcomes.length) throw new Error('WORKFLOW_RECONCILIATION_MISSING');
+    const saved = await step.do('record-candidate-reconciliation-hold', () => recordReceipt(env.DB,
+      params.slot_claim_id, outcomes[0].candidate_id, 'HELD_CANDIDATE_RECONCILIATION',
+      { reason: reconciliationReason, owner_epoch: control.owner_epoch, outcomes }, control.owner_epoch));
+    return held(params, saved ? reconciliationReason : 'Workflow authority changed before the reconciliation hold could be recorded.');
+  };
   if (!actionable.length) {
     if (batch.failures.length) {
       const reason = 'Some public source reads failed; the run cannot certify NO_CHANGE.';
@@ -420,6 +500,7 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
       if (!saved) return held(params, 'Workflow authority changed before the deferred publication hold could be recorded.');
       return held(params, retry.reason);
     }
+    if (needsReconciliation.size) return reconciliationHold();
     const reason = batch.signals.length ? 'No fresh public signal qualifies for a site change.' : 'No fresh public signals were found.';
     const saved = await step.do('record-no-change-result', () => recordReceipt(env.DB, params.slot_claim_id, params.slot_claim_id, 'NO_CHANGE', {
       reason, owner_epoch: control.owner_epoch, signals: batch.signals.map(signalHistory),
@@ -430,21 +511,36 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
     return { status: 'no_change', reason, slot_claim_id: params.slot_claim_id };
   }
 
-  for (const { signal, decision } of actionable) {
+  const ready: typeof actionable = [];
+  for (const entry of actionable) {
+    const { signal, decision } = entry;
     const candidate = { ...decision.candidate, knowledge_revision: knowledgeRevision };
-    const saved = await step.do(`persist-held-candidate-${candidate.id.slice(0, 48)}`, () => persistHeldCandidate(env.DB, candidate, signal, policy, control.owner_epoch));
+    if (needsReconciliation.has(candidate.id)) continue;
+    const saved = await step.do(`persist-held-candidate-${candidate.id.slice(0, 48)}`, () =>
+      persistHeldCandidate(env.DB, candidate, signal, policy, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the candidate could be recorded.');
+    ready.push(entry);
   }
+  if (!ready.length) return reconciliationHold();
   if (processor) {
-    const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [];
-    const heldTargets = new Set<string>();
+    const outcomes: Array<{ candidate_id: string; status: CandidateProcessOutcome['status']; reason: string }> = [...needsReconciliation.values()];
     if (pending?.candidate.target_id) heldTargets.add(pending.candidate.target_id);
     let stopReason: string | undefined;
-    for (const { signal, decision } of actionable) {
+    for (const { signal, decision } of ready) {
       if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the next candidate.');
       const candidate = { ...decision.candidate, knowledge_revision: knowledgeRevision };
       if (candidate.target_id && heldTargets.has(candidate.target_id)) {
         outcomes.push({ candidate_id: candidate.id, status: 'held', reason: 'Another candidate for this item requires review.' });
+        continue;
+      }
+      const claimed = await step.do(`claim-candidate-${candidate.id.slice(0, 48)}`, () =>
+        claimCandidateForProcessing(env.DB, candidate, signal, policy, control.owner_epoch, params.slot_claim_id, pendingWork.get(candidate.id)));
+      if (!claimed) {
+        if (!(await sourceFetcher.isCurrent())) return held(params, 'Workflow authority changed before the candidate could be claimed.');
+        if (candidate.target_id) heldTargets.add(candidate.target_id);
+        const outcome = { candidate_id: candidate.id, status: 'held' as const, reason: reconciliationReason };
+        needsReconciliation.set(candidate.id, outcome);
+        outcomes.push(outcome);
         continue;
       }
       const outcome = await processor.processCandidate({ candidate, signal, catalog, knowledge, policy,
@@ -458,22 +554,23 @@ export async function runEditorialAdmission(params: WorkflowParams, env: Editori
         if (candidate.target_id) heldTargets.add(candidate.target_id);
       }
     }
+    if (outcomes.length === needsReconciliation.size && needsReconciliation.size) return reconciliationHold();
     const verified = !retry && outcomes.length === actionable.length && outcomes.every((outcome) => outcome.status === 'verified');
     const reason = verified ? 'All admitted candidates passed publication and public readback.' :
       stopReason ?? retry?.reason ?? outcomes.find((outcome) => outcome.status === 'held')?.reason ?? 'Candidate processing did not complete.';
     const action = verified ? 'VERIFIED' : 'HELD_PUBLICATION_PIPELINE';
     const saved = await step.do('record-candidate-pipeline-result', () => recordReceipt(env.DB, params.slot_claim_id,
-      actionable[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes, ...(pending && retry ?
+      ready[0].decision.candidate.id, action, { reason, owner_epoch: control.owner_epoch, outcomes, ...(pending && retry ?
         { deferred_candidate: { candidate_id: pending.candidate.id, status: retry.status, reason: retry.reason } } : {}) }, control.owner_epoch));
     if (!saved) return held(params, 'Workflow authority changed before the publication result could be recorded.');
     return verified ? { status: 'admitted', reason, slot_claim_id: params.slot_claim_id } : held(params, reason);
   }
   const reason = 'Candidate awaits configured author, reviewer, publisher, and readback adapters.';
-  const first = actionable[0];
+  const first = ready[0];
   const saved = await step.do('record-provider-adapter-hold', () => recordReceipt(env.DB, params.slot_claim_id, first.decision.candidate.id, 'HELD_PROVIDER_UNCONFIGURED', {
-    reason, owner_epoch: control.owner_epoch, candidates: actionable.map(({ decision }) => decision.candidate.id),
-    signals: actionable.map(({ signal }) => signalHistory(signal)),
-    held_candidates: actionable.map(({ signal, decision }) => ({ candidate_id: decision.candidate.id, signal_id: signal.id, state: 'HELD' })),
+    reason, owner_epoch: control.owner_epoch, candidates: ready.map(({ decision }) => decision.candidate.id),
+    signals: ready.map(({ signal }) => signalHistory(signal)),
+    held_candidates: ready.map(({ signal, decision }) => ({ candidate_id: decision.candidate.id, signal_id: signal.id, state: 'HELD' })),
   }, control.owner_epoch));
   if (!saved) return held(params, 'Workflow authority changed before the hold could be recorded.');
   return held(params, reason);

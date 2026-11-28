@@ -1,4 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { runEditorialAdmission as runWorkerAdmission } from '../src/editorial/workflow-core.js';
 import { nextChicagoBudgetDay, parseEditorialPolicy } from '../src/editorial/scheduler.js';
 import { fingerprintPublicKnowledge } from '../src/editorial/knowledge.js';
@@ -126,7 +128,7 @@ class PipelineD1 {
         if (sql.includes('FROM editorial_source_state')) return { results: [...this.sourceStates.values()] as T[] };
         if (sql.includes('FROM editorial_source_attempts')) return { results: [...this.sourceAttempts.values()] as T[] };
         if (sql.includes('FROM editorial_receipts')) return { results: [...this.receipts.values()].sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, Number(args[0])) as T[] };
-        if (sql.includes('FROM editorial_candidates')) return { results: [...this.candidates.values()].slice(0, Number(args[0])) as T[] };
+        if (sql.includes('FROM editorial_candidates')) return { results: [...this.candidates.values()].slice(0, Number(args.at(-1))) as T[] };
         return { results: [] as T[] };
       },
       run: async () => {
@@ -142,6 +144,15 @@ class PipelineD1 {
           if (sql.includes('owner_epoch = ?') && (this.control.paused !== 0 || this.control.owner_epoch !== Number(args.at(-1)))) return { meta: { changes: 0 } };
           if (this.candidates.has(String(id))) return { meta: { changes: 0 } };
           this.candidates.set(String(id), { id, state: 'HELD', revision, payload_json, model_calls: 0, review_rounds: 0, updated_at });
+          return { meta: { changes: 1 } };
+        }
+        if (sql.includes('UPDATE editorial_candidates SET payload_json')) {
+          const [payload_json, updated_at, id, revision, previous, ownerEpoch] = args;
+          const row = this.candidates.get(String(id));
+          if (this.control.paused !== 0 || this.control.owner_epoch !== ownerEpoch ||
+              row?.state !== 'HELD' || row.revision !== revision || row.payload_json !== previous ||
+              row.model_calls !== 0 || row.review_rounds !== 0) return { meta: { changes: 0 } };
+          Object.assign(row, { payload_json, updated_at });
           return { meta: { changes: 1 } };
         }
         if (sql.includes('editorial_source_state')) {
@@ -483,6 +494,273 @@ describe('deterministic signal workflow', () => {
     const savedPayload = JSON.parse(String([...db.candidates.values()][0].payload_json));
     expect(savedPayload.candidate.knowledge_revision).toBe(await fingerprintPublicKnowledge([]));
     expect([...db.receipts.values()].map((row) => row.action)).toEqual(['HELD_PROVIDER_UNCONFIGURED']);
+  });
+
+  function providerRecoveryDatabase() {
+    const sqlite = new DatabaseSync(':memory:');
+    onTestFinished(() => sqlite.close());
+    const migrations = new URL('../migrations/', import.meta.url);
+    for (const name of readdirSync(migrations).filter((file) => file.endsWith('.sql')).sort()) {
+      sqlite.exec(readFileSync(new URL(name, migrations), 'utf8'));
+    }
+    sqlite.exec('UPDATE editorial_control SET paused = 0');
+    const insert = sqlite.prepare('INSERT INTO schedule_claims(id, local_date, slot, claimed_at, owner_epoch) VALUES (?, ?, ?, ?, 1)');
+    const slots = ['08:00', '13:00', '14:00'].map((time) => {
+      const id = `2026-11-27:${time}`;
+      insert.run(id, '2026-11-27', time, new Date().toISOString());
+      return { id, workflow: `slot-2026-11-27-${time.replace(':', '')}` };
+    });
+    const db = { prepare(sql: string) {
+      const statement = sqlite.prepare(sql);
+      let bindings: SQLInputValue[] = [];
+      return {
+        bind(...values: SQLInputValue[]) { bindings = values; return this; },
+        async first() { return statement.get(...bindings) ?? null; },
+        async all() { return { results: statement.all(...bindings) }; },
+        async run() { return { meta: { changes: Number(statement.run(...bindings).changes) } }; },
+      };
+    } } as unknown as D1Database;
+    const env = { DB: db, EDITORIAL_POLICY_JSON: policy } as never;
+    return { sqlite, run: (slot: typeof slots[number], processor?: Parameters<typeof runWorkerAdmission>[4], step = new DurableStep()) => runWorkerAdmission(
+      { slot_claim_id: slot.id }, env, step, slot.workflow, processor,
+    ), slots };
+  }
+
+  it.each([
+    { providerRestored: false, legacyRow: false },
+    { providerRestored: true, legacyRow: false },
+    { providerRestored: true, legacyRow: true },
+  ])('keeps a provider-held candidate actionable (provider restored: $providerRestored, legacy row: $legacyRow)', async ({ providerRestored, legacyRow }) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    const initial = sqlite.prepare('SELECT id, state FROM editorial_candidates').get();
+    expect(initial).toMatchObject({ state: 'HELD' });
+    if (legacyRow) sqlite.exec("UPDATE editorial_candidates SET payload_json = json_remove(payload_json, '$.awaiting_processing')");
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    const result = await run(next, providerRestored ? { processCandidate } : undefined);
+
+    expect(result.status).toBe(providerRestored ? 'admitted' : 'held');
+    expect(sqlite.prepare('SELECT id FROM editorial_candidates').all()).toEqual([{ id: initial!.id }]);
+    const receipt = sqlite.prepare('SELECT action FROM editorial_receipts WHERE id = ?');
+    expect(receipt.get(`slot-result:${first.id}`)?.action).toBe('HELD_PROVIDER_UNCONFIGURED');
+    expect(receipt.get(`slot-result:${next.id}`)?.action).toBe(providerRestored ? 'VERIFIED' : 'HELD_PROVIDER_UNCONFIGURED');
+    if (providerRestored) expect(processCandidate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      candidate: expect.objectContaining({ id: initial!.id }),
+    }));
+    else expect(processCandidate).not.toHaveBeenCalled();
+  });
+
+  it('keeps recent unstarted candidates ahead of older unrelated claims in bounded history', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    sqlite.exec(`WITH RECURSIVE old(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM old WHERE n<1000)
+      INSERT INTO editorial_candidates(id,state,revision,payload_json,updated_at)
+      SELECT 'old'||n,'VERIFIED','fixture','{"processing_slot":"earlier-slot"}','2026-10-01T00:00:00Z' FROM old`);
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    expect(await run(next, { processCandidate })).toMatchObject({ status: 'admitted' });
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+  });
+
+  it('admits only one concurrent slot to a provider-held candidate', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next, concurrent] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    const results = await Promise.all([run(next, { processCandidate }), run(concurrent, { processCandidate })]);
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+    expect(results.filter((result) => result.status === 'admitted')).toHaveLength(1);
+    expect(sqlite.prepare('SELECT count(*) AS count FROM editorial_candidates').get()?.count).toBe(1);
+  });
+
+  it('records a hold while another slot is processing the recovered candidate', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next, overlapping] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    let started!: () => void;
+    let release!: () => void;
+    const processing = new Promise<void>((resolve) => { started = resolve; });
+    const finish = new Promise<void>((resolve) => { release = resolve; });
+    const processCandidate = vi.fn(async () => {
+      started();
+      await finish;
+      return { status: 'verified' as const, reason: 'Fixture publication verified.' };
+    });
+    const running = run(next, { processCandidate });
+    await Promise.race([processing, running.then(() => { throw new Error('First workflow did not start the candidate'); })]);
+
+    try {
+      expect(await run(overlapping, { processCandidate })).toMatchObject({ status: 'held' });
+      expect(sqlite.prepare('SELECT action FROM editorial_receipts WHERE id = ?').get(`slot-result:${overlapping.id}`)?.action)
+        .toBe('HELD_CANDIDATE_RECONCILIATION');
+    } finally {
+      release();
+      await running;
+    }
+    expect(processCandidate).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['HELD', 'DRAFTED'])('continues only unrelated work while a recovered candidate owns its target (%s)', async (candidateState) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    const base = sourceFetcher({ candidate: true });
+    vi.stubGlobal('fetch', base);
+    const { sqlite, run, slots: [first, next, overlapping] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+
+    let started!: () => void;
+    let release!: () => void;
+    const processing = new Promise<void>((resolve) => { started = resolve; });
+    const finish = new Promise<void>((resolve) => { release = resolve; });
+    const dispatched: Array<string | null> = [];
+    const processor: NonNullable<Parameters<typeof runWorkerAdmission>[4]> = {
+      async processCandidate({ candidate }) {
+        dispatched.push(candidate.target_id);
+        if (dispatched.length === 1) {
+          started();
+          await finish;
+        }
+        return { status: 'verified', reason: 'Fixture publication verified.' };
+      },
+    };
+    const running = run(next, processor);
+    await Promise.race([processing, running.then(() => { throw new Error('First workflow did not start the candidate'); })]);
+
+    sqlite.prepare('UPDATE editorial_candidates SET state = ?').run(candidateState);
+
+    try {
+      vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+        const url = new URL(String(input));
+        if (url.pathname === '/content-index.json') {
+          const index = await (await base(input)).json() as { items: unknown[] };
+          index.items.push({ id: 'market-systems', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] });
+          return Response.json(index);
+        }
+        if (url.hostname === 'github.com') return new Response(`<feed><entry><title>Workers SDK update</title>
+          <summary>New public details.</summary><link href="https://github.com/cloudflare/workers-sdk/releases/tag/fixture" />
+          <updated>${new Date().toISOString()}</updated></entry></feed>`);
+        if (url.hostname === 'www.federalreserve.gov') return new Response(`<rss><channel><item><title>Market policy update</title>
+          <description>New public details.</description><link>https://www.federalreserve.gov/newsevents/fixture.htm</link>
+          <pubDate>${new Date().toUTCString()}</pubDate></item></channel></rss>`);
+        return base(input);
+      });
+      sqlite.exec(`DELETE FROM editorial_source_state WHERE source_id IN ('cloudflare-workers-sdk-releases', 'federal-reserve-press-releases')`);
+      expect(await run(overlapping, processor)).toMatchObject({ status: 'held' });
+      expect(dispatched).toEqual(['cloudflare-workers', 'market-systems']);
+    } finally {
+      release();
+      await running;
+    }
+  });
+
+  it('recovers an unstarted candidate if the first slot stops before recording the provider hold', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase();
+    class InterruptedStep extends DurableStep {
+      override async do<T>(name: string, callback: () => Promise<T> | T): Promise<T> {
+        if (name === 'record-provider-adapter-hold') throw new Error('stop before final receipt');
+        return super.do(name, callback);
+      }
+    }
+    await expect(run(first, undefined, new InterruptedStep())).rejects.toThrow('stop before final receipt');
+    const candidate = sqlite.prepare('SELECT id FROM editorial_candidates').get();
+    expect(candidate?.id).toBeTruthy();
+    expect(sqlite.prepare('SELECT * FROM editorial_receipts').all()).toEqual([]);
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    expect(await run(next, { processCandidate })).toMatchObject({ status: 'admitted' });
+    expect(processCandidate).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      candidate: expect.objectContaining({ id: candidate!.id }),
+    }));
+  });
+
+  it.each(['DRAFTED', 'REVIEWED', 'VERIFIED', 'NEEDS_OWNER', 'CAPACITY_HELD'])('holds a cacheless restart after a %s checkpoint', async (checkpointState) => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    const checkpoint: NonNullable<Parameters<typeof runWorkerAdmission>[4]> = {
+      async processCandidate({ candidate }) {
+        sqlite.prepare('UPDATE editorial_candidates SET state = ?, model_calls = 1 WHERE id = ?').run(checkpointState, candidate.id);
+        throw new Error('stop after draft checkpoint');
+      },
+    };
+    await expect(run(next, checkpoint)).rejects.toThrow('stop after draft checkpoint');
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+
+    expect(await run(next, { processCandidate })).toMatchObject({ status: 'held' });
+    expect(processCandidate).not.toHaveBeenCalled();
+    expect(sqlite.prepare('SELECT action FROM editorial_receipts WHERE id = ?').get(`slot-result:${next.id}`)?.action)
+      .toBe('HELD_CANDIDATE_RECONCILIATION');
+    expect(sqlite.prepare('SELECT state, model_calls FROM editorial_candidates').get()).toMatchObject({ state: checkpointState, model_calls: 1 });
+  });
+
+  it('leaves untouched candidates available after an earlier one stops processing', async () => {
+    vi.useFakeTimers();
+    const published = new Date('2026-11-27T14:00:00.000Z');
+    vi.setSystemTime(published);
+    const base = sourceFetcher({ candidate: true });
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.pathname === '/content-index.json') {
+        const index = await (await base(input)).json() as { items: unknown[] };
+        index.items.push({ id: 'market-systems', canonical_url: '/notes/market-systems', title: 'Market systems', topics: ['markets'] });
+        return Response.json(index);
+      }
+      if (url.hostname === 'www.federalreserve.gov') return new Response(`<rss><channel><item><title>Market policy update</title>
+        <description>Documented details.</description><link>https://www.federalreserve.gov/newsevents/fixture.htm</link>
+        <pubDate>${published.toUTCString()}</pubDate></item></channel></rss>`);
+      return base(input);
+    });
+    const { sqlite, run, slots: [first, next, later] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    expect(sqlite.prepare('SELECT count(*) AS count FROM editorial_candidates').get()?.count).toBe(2);
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    const hold = vi.fn(async () => ({ status: 'held' as const, reason: 'Shared model pause.' }));
+    expect(await run(next, { processCandidate: hold })).toMatchObject({ status: 'held' });
+    expect(hold).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      candidate: expect.objectContaining({ target_id: 'cloudflare-workers' }),
+    }));
+
+    const resumed = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    expect(await run(later, { processCandidate: resumed })).toMatchObject({ status: 'admitted' });
+    expect(resumed).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      candidate: expect.objectContaining({ target_id: 'market-systems' }),
+    }));
+  });
+
+  it('blocks a provider-held candidate with an unresolved model reservation from automatic recovery', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-11-27T14:00:00.000Z'));
+    vi.stubGlobal('fetch', sourceFetcher({ candidate: true }));
+    const { sqlite, run, slots: [first, next] } = providerRecoveryDatabase();
+    expect(await run(first)).toMatchObject({ status: 'held' });
+    sqlite.prepare(`INSERT INTO usage_reservations(id, candidate_id, attempt_id, maximum_micros, local_date, local_month, pricing_revision, requested_at)
+      SELECT 'reserved', id, 'attempt', 1, '2026-11-27', '2026-11', 'test-only', ? FROM editorial_candidates`).run(new Date().toISOString());
+    vi.setSystemTime(new Date('2026-11-27T19:00:00.000Z'));
+    const processCandidate = vi.fn(async () => ({ status: 'verified' as const, reason: 'Fixture publication verified.' }));
+    expect(await run(next, { processCandidate })).toMatchObject({ status: 'held' });
+    expect(processCandidate).not.toHaveBeenCalled();
+    expect(sqlite.prepare('SELECT count(*) AS count FROM usage_reservations').get()?.count).toBe(1);
   });
 
   it('hands an actionable candidate to configured durable publication adapters', async () => {

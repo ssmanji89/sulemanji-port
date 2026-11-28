@@ -2,6 +2,33 @@ import { describe, expect, it, vi } from 'vitest';
 import { GitHubApiPublisher } from '../src/editorial/github.js';
 
 describe('GitHub publication read adapters', () => {
+  it('reads exactly one manifest annotation per successful site deploy of the requested commit', async () => {
+    const repository = 'ssmanji89/sulemanji-port';
+    const commit = 'a'.repeat(40);
+    const digest = 'c'.repeat(64);
+    const check = { id: 42, name: 'deploy-cloudflare', head_sha: commit, status: 'completed', conclusion: 'success',
+      app: { id: 15368, slug: 'github-actions' }, details_url: `https://github.com/${repository}/actions/runs/10/job/42` };
+    const annotation = { path: '.github/workflows/jekyll.yml', annotation_level: 'notice', title: 'Verified site manifest',
+      message: `site-release-manifest-sha256-v1 ${commit} ${digest}` };
+    let annotations = [annotation];
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const uri = new URL(String(input));
+      expect(uri.origin).toBe('https://api.github.com');
+      if (uri.pathname.endsWith(`/commits/${commit}/check-runs`)) return Response.json({
+        check_runs: [{ ...check, id: 99, app: { id: 999, slug: 'untrusted' } }, { ...check, id: 98, head_sha: 'e'.repeat(40) },
+          { ...check, id: 97, conclusion: 'failure' }, { ...check, id: 96, name: 'deploy-editorial-fixture' }, check],
+      });
+      if (uri.pathname.endsWith('/check-runs/42/annotations')) return Response.json(annotations);
+      throw new Error('Unexpected GitHub request');
+    });
+    const github = new GitHubApiPublisher({ token: 'fixture-token', repository, required_checks: ['build'] }, fetcher as typeof fetch);
+    await expect(github.readReleaseManifestDigests(commit)).resolves.toEqual([digest]);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    annotations = [{ ...annotation, message: `site-release-manifest-sha256-v1 ${'b'.repeat(40)} ${digest}` }];
+    await expect(github.readReleaseManifestDigests(commit)).resolves.toEqual([]);
+    annotations = [annotation, { ...annotation, message: `site-release-manifest-sha256-v1 ${commit} ${'d'.repeat(64)}` }];
+    await expect(github.readReleaseManifestDigests(commit)).resolves.toEqual([]);
+  });
   it('rejects a redirect from the authenticated GitHub request', async () => {
     const fetcher = vi.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       expect(init?.redirect).toBe('manual');

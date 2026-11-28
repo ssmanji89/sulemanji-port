@@ -160,6 +160,10 @@ jobs:
           path: _site
       - name: Deploy privately for editorial readback
         run: bash scripts/deploy_site.sh --environment editorial-fixture --source-commit "${{ github.sha }}" --artifact _site
+      - name: Record verified site manifest
+        run: |
+          digest=$(sha256sum _site/release.json)
+          printf '::notice file=.github/workflows/jekyll.yml,title=Verified site manifest::site-release-manifest-sha256-v1 %s %s\n' "$GITHUB_SHA" "${digest%% *}"
       - name: Preserve private deployment receipt
         if: always()
         uses: actions/upload-artifact@v4
@@ -205,6 +209,10 @@ jobs:
           path: _site
       - name: Deploy production and verify canonical host
         run: bash scripts/deploy_site.sh --environment production --source-commit "${{ github.sha }}" --artifact _site
+      - name: Record verified site manifest
+        run: |
+          digest=$(sha256sum _site/release.json)
+          printf '::notice file=.github/workflows/jekyll.yml,title=Verified site manifest::site-release-manifest-sha256-v1 %s %s\n' "$GITHUB_SHA" "${digest%% *}"
       - name: Preserve private deployment receipt
         if: always()
         uses: actions/upload-artifact@v4

@@ -236,6 +236,62 @@ describe('guarded source publication effects', () => {
 });
 
 describe('public publication identity verification', () => {
+  it('compares canonical article bytes to the authenticated Jekyll artifact', async () => {
+    const url = 'https://www.sulemanji.com/notes/reviewed-article';
+    const commit = 'd'.repeat(40);
+    const assetDigest = `sha256:${'a'.repeat(64)}`;
+    const builtAt = '2026-11-28T08:00:00Z';
+    const article = `<html><head><link rel="canonical" href="${url}"></head><body><h1>Reviewed title</h1><div data-writing-body><p>NIST’s source-backed guidance.</p></div></body></html>`;
+    const listing = {
+      '/writing': `<a href="${url}">Article</a>`,
+      '/feed.xml': `<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="${url}"/></entry></feed>`,
+      '/sitemap.xml': `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${url}</loc></url></urlset>`,
+    };
+    const manifest = JSON.stringify({ schema_version: 1, source_commit: commit, asset_digest: assetDigest, built_at: builtAt,
+      files: { 'notes/reviewed-article.html': await sha(article) } });
+    const digest = await sha(manifest);
+    const path = '/notes/reviewed-article';
+    const attempt: PublishAttempt = { id: 'attempt-42', candidate_id: 'candidate-42', owner_epoch: 7, branch: 'editorial/candidate-42',
+      pull_request: 12, source_commit: commit, deployment_version: null, public_urls: [path], status: 'SOURCE_PUBLISHED',
+      expected_content: [{ url: path, title: 'Reviewed title', text_sha256: await sha("NIST's source-backed guidance.") }] };
+    let damaged: 'none' | 'html' | 'manifest' | 'headers' | 'oversized-manifest' | 'oversized-article' = 'none';
+    let cancelled = 0;
+    function oversizedBody() {
+      let chunks = 0;
+      return new ReadableStream<Uint8Array>({
+        pull(controller) {
+          if (++chunks < 4) controller.enqueue(new Uint8Array(1_100_000));
+          else controller.close();
+        },
+        cancel() { cancelled += 1; },
+      });
+    }
+    const fetcher: typeof fetch = async (input) => {
+      const uri = new URL(String(input));
+      const oversize = (uri.pathname === '/release.json' && damaged === 'oversized-manifest') || (uri.pathname === path && damaged === 'oversized-article');
+      const content = uri.pathname === '/release.json' ? manifest + (damaged === 'manifest' ? ' ' : '') :
+        uri.pathname === path ? article.replace('guidance', damaged === 'html' ? 'fiction' : 'guidance') : listing[uri.pathname as keyof typeof listing];
+      const response = new Response(oversize ? oversizedBody() : content,
+      { headers: { 'x-site-source-commit': commit, 'x-site-asset-digest': assetDigest,
+        'x-site-built-at': uri.pathname === path && damaged === 'headers' ? '2026-11-28T09:00:00Z' : builtAt } });
+      Object.defineProperty(response, 'url', { value: uri.href });
+      return response;
+    };
+    const trusted = async (sha: string) => { expect(sha).toBe(commit); return [digest]; };
+    await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({ receipt: { outcome: 'VERIFIED' } });
+    await expect(verifyPublicationDetailed(attempt, fetcher, 'public', async () => [])).resolves.toMatchObject({ receipt: { outcome: 'UNCERTAIN' } });
+    for (const kind of ['html', 'manifest', 'headers'] as const) {
+      damaged = kind;
+      await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({ receipt: { outcome: 'UNCERTAIN' } });
+    }
+    for (const kind of ['oversized-manifest', 'oversized-article'] as const) {
+      damaged = kind;
+      await expect(verifyPublicationDetailed(attempt, fetcher, 'public', trusted)).resolves.toMatchObject({
+        receipt: { outcome: 'UNCERTAIN' }, failure: expect.stringContaining('response exceeds bound'),
+      });
+    }
+    expect(cancelled).toBe(2);
+  });
   it('accepts the digest and timestamp formats emitted by the Jekyll release manifest', async () => {
     const body = 'A source-backed reader explanation.';
     const related = '/notes/related-article';

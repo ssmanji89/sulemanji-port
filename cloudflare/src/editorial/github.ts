@@ -4,7 +4,9 @@ import type { GitHubPublisher, PullRequestState } from './publisher.js';
 type GitHubConfig = { token: string; repository: string; required_checks: string[]; default_branch?: string; api_origin?: string; require_private?: boolean };
 type PullRequestApi = { number: number; state: 'open' | 'closed'; merged_at?: string | null; merge_commit_sha: string | null; head: { ref: string; sha: string }; base: { ref: string } };
 type BranchRule = { type: string; parameters?: { strict_required_status_checks_policy?: boolean; required_status_checks?: Array<{ context?: string }> } };
-type CheckRunsApi = { check_runs?: Array<{ name: string; status: string; conclusion: string | null }> };
+type CheckRunsApi = { check_runs?: Array<{ name: string; status: string; conclusion: string | null; id?: number; head_sha?: string;
+  app?: { id?: number; slug?: string }; details_url?: string }> };
+type CheckAnnotation = { title?: string; path?: string; annotation_level?: string; message?: string };
 
 function binaryBase64(bytes: Uint8Array): string {
   let binary = '';
@@ -73,6 +75,32 @@ export class GitHubApiPublisher implements GitHubPublisher {
     const ref = await this.request<{ object?: { sha?: unknown } }>(`/repos/${this.owner}/${this.repo}/git/ref/heads/${encodeURIComponent(this.branch)}`);
     if (typeof ref.object?.sha !== 'string' || !/^[0-9a-f]{40}$/i.test(ref.object.sha)) throw new Error('GITHUB_BASE_HEAD_INVALID');
     return ref.object.sha;
+  }
+
+  async readReleaseManifestDigests(commit: string): Promise<string[]> {
+    if (!/^[a-f0-9]{40}$/.test(commit)) throw new Error('GITHUB_RELEASE_COMMIT_INVALID');
+    await this.assertPrivateFixture();
+    const repo = `/repos/${this.owner}/${this.repo}`;
+    const name = this.config.require_private ? 'deploy-editorial-fixture' : 'deploy-cloudflare';
+    const query = new URLSearchParams({ check_name: name, filter: 'all', per_page: '30' });
+    const { check_runs: checks } = await this.request<CheckRunsApi>(`${repo}/commits/${commit}/check-runs?${query}`);
+    const jobPrefix = `https://github.com/${this.owner}/${this.repo}/actions/runs/`;
+    const qualified = (checks ?? []).filter((check) => {
+      if (check.name !== name || check.status !== 'completed' || check.conclusion !== 'success' || check.head_sha !== commit ||
+          check.app?.id !== 15368 || check.app.slug !== 'github-actions' || !Number.isSafeInteger(check.id) || !check.details_url?.startsWith(jobPrefix)) return false;
+      const parts = check.details_url.slice(jobPrefix.length).match(/^\d+\/job\/(\d+)$/);
+      return parts?.[1] === String(check.id);
+    }).slice(0, 5);
+    const digests = new Set<string>();
+    for (const check of qualified) {
+      const annotations = await this.request<CheckAnnotation[]>(`${repo}/check-runs/${check.id}/annotations?per_page=100`);
+      const proofs = annotations.filter((annotation) => annotation.title === 'Verified site manifest' &&
+        annotation.path === '.github/workflows/jekyll.yml' && annotation.annotation_level === 'notice');
+      if (proofs.length !== 1) continue;
+      const match = proofs[0].message?.match(/^site-release-manifest-sha256-v1 ([a-f0-9]{40}) ([a-f0-9]{64})$/);
+      if (match?.[1] === commit) digests.add(match[2]);
+    }
+    return [...digests];
   }
 
   async readTextFile(path: string, ref: string): Promise<string> {

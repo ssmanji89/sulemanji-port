@@ -71,14 +71,14 @@ export type SourceFailure = { source_id: string; code: 'NETWORK' | 'LIMIT' | 'IN
 export type SignalBatch = { signals: Signal[]; failures: SourceFailure[] };
 export type CatalogItem = { id: string; title: string; url: string; topics: string[]; summary?: string };
 export type Candidate = {
-  id: string; signal_ids: string[]; target_id: string | null; action: 'REPAIR' | 'REFRESH' | 'CONNECT' | 'CREATE' | 'PROPOSE';
+  id: string; signal_ids: string[]; target_id: string | null; related_id?: string; action: 'REPAIR' | 'REFRESH' | 'CONNECT' | 'CREATE' | 'PROPOSE';
   reader: string; question: string; benefit: string; source_digest: string; policy_revision: string; knowledge_revision: string; state: 'DISCOVERED';
 };
 export type RecentHistory = { source_revisions: string[]; episode_ids: string[]; candidates: Candidate[]; recent_topic_ids: string[] };
 export type ActionDecision = { action: 'NO_CHANGE'; reason: string; signal_ids: string[] } | { action: Candidate['action']; candidate: Candidate };
 
 export type FileChange = { path: string; operation: 'create' | 'update'; encoding: 'utf-8' | 'base64'; content: string; content_sha256: string };
-export type ExpectedContent = { url: string; title: string; text_sha256: string; social_image?: { path: string; content_sha256: string } };
+export type ExpectedContent = { url: string; title: string; text_sha256: string; required_link?: string; social_image?: { path: string; content_sha256: string } };
 export type ContentProposal = {
   candidate_id: string; author_run_id: string; content_digest: string; source_digest: string; policy_revision: string; knowledge_revision: string;
   base_commit: string; owner_epoch: number; files: FileChange[]; public_sources: PublicSource[]; required_media_paths: string[]; public_urls: string[]; expected_content: ExpectedContent[];

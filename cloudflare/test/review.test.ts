@@ -87,6 +87,45 @@ describe('independent content preparation and review', () => {
     expect(noSource.calls).toHaveLength(0);
   });
 
+  it('CONNECT adds a sourced contextual link to an existing article without rewriting it', async () => {
+    const initial = await makeProposal();
+    const from = { id: 'existing', title: output.title, url: initial.public_urls[0], topics: ['infrastructure'] };
+    const to = { id: 'peer', title: 'A related artifact verification guide', url: '/notes/verification-guide', topics: ['infrastructure'] };
+    const connect = { ...candidate, action: 'CONNECT' as const, target_id: from.id, related_id: to.id };
+    const previous = initial.files[0].content;
+    const peerPath = 'notes/verification-guide.md';
+    const peer = previous.replace(output.title, to.title).replace(initial.public_urls[0], to.url);
+    const existing = { ...context, catalog: [from, to], existing_paths: [initial.files[0].path, peerPath],
+      existing_files: { [initial.files[0].path]: previous, [peerPath]: peer } };
+    const models = new FakeModels();
+    models.outputs = [{ context: 'The release record connects package verification with the checks in this guide.' }];
+    const proposal = await prepareContent(connect, existing, models);
+
+    expect(proposal.files).toHaveLength(1);
+    expect(proposal.files[0]).toMatchObject({ path: initial.files[0].path, operation: 'update' });
+    expect(proposal.files[0].content.startsWith(previous)).toBe(true);
+    expect(proposal.files[0].content).toContain(`[${to.title}](${to.url})`);
+    expect(proposal.files[0].content).toContain(source.url);
+    expect(proposal.public_urls).toEqual([from.url]);
+    expect(proposal.required_media_paths).toEqual([]);
+    expect(proposal.expected_content[0]).toMatchObject({ url: from.url, title: from.title, required_link: to.url });
+    expect(models.calls[0].schema_id).toBe('site-contextual-link-v1');
+
+    models.outputs.push({ context: 'The release record explains where the two verification checklists overlap.' });
+    const revised = await reviseContent(proposal, connect, existing, [{ code: 'CLARITY', detail: 'Name the relationship.' }],
+      models, 'author:contextual-link-revision');
+    expect(revised.files[0].content.startsWith(previous)).toBe(true);
+    expect(revised.files[0].content.match(/\]\(\/notes\/verification-guide\)/g)).toHaveLength(1);
+    expect(revised.expected_content[0]).toMatchObject({ required_link: to.url });
+  });
+
+  it('holds old or unresolved CONNECT identities before a model call', async () => {
+    const models = new FakeModels();
+    const legacy = { ...candidate, action: 'CONNECT' as const, target_id: 'tooling' };
+    await expect(prepareContent(legacy, context, models)).rejects.toThrow('CONNECT_TARGETS_UNQUALIFIED');
+    expect(models.calls).toHaveLength(0);
+  });
+
   it('keeps article identity and authority server-assigned', async () => {
     const models = new FakeModels();
     const proposal = await prepareContent(candidate, context, models);

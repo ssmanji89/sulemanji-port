@@ -2,7 +2,7 @@ import type { Candidate, CatalogItem, ContentProposal, PreparationContext, Publi
 import { ModelAdmissionHoldError, type ModelGateway } from './models.js';
 import { nextChicagoBudgetDay, type EditorialPolicy } from './scheduler.js';
 import { SocialCardContentError, type SocialCardRenderer } from './social-card-format.js';
-import { articleSourcePath, attachSocialCard, prepareContent, reviewContent, reviseContent } from './review.js';
+import { articleSourcePath, attachSocialCard, connectionArticles, ContextualLinkHold, prepareContent, reviewContent, reviseContent } from './review.js';
 import type { CandidateProcessOutcome, DurableStep } from './workflow-core.js';
 
 const PUBLICATION_WAIT_MS = [30_000, 60_000, 90_000, 120_000, 180_000];
@@ -19,7 +19,7 @@ type CandidatePipelineInput = {
 export type ReviewedPublication = { proposal: ContentProposal; review: ReviewReceipt; attempt: PublishAttempt };
 export type DeferredReview = ReviewedPublication & { claim: string };
 type PublicationResult = { attempt: PublishAttempt; merged: boolean };
-type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true };
+type ModelStepHold = { modelHoldReason: string; continue_after_hold?: true; checkpoint_owner?: true };
 export type CandidateCheckpoint = { proposal?: ContentProposal; review?: ReviewReceipt; attempt?: PublishAttempt; publication?: PublicationReceipt; retry_after?: string; signal?: Signal };
 export type CandidatePipelineDependencies = {
   modelsFor(candidate: Candidate, ownerEpoch: number, policy: EditorialPolicy): ModelGateway;
@@ -39,6 +39,7 @@ async function runModelStep<T>(step: DurableStep, name: string, generate: () => 
     try {
       return await generate();
     } catch (error) {
+      if (error instanceof ContextualLinkHold) return { modelHoldReason: error.message, continue_after_hold: true, checkpoint_owner: true };
       if (error instanceof ModelAdmissionHoldError) {
         // Only limits specific to this candidate leave unrelated model work qualified.
         const candidateLimit = error.message === 'MODEL_CALL_LIMIT_HOLD' || error.message === 'MODEL_REVIEW_ROUND_LIMIT_HOLD';
@@ -64,10 +65,29 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
           policy.max_review_rounds_per_candidate < 1 || policy.max_review_rounds_per_candidate > 3) {
         return { status: 'held', reason: 'Candidate publication context is not qualified.' };
       }
-      if (input.resumeCapacity) {
-        return publishReviewed(input, input.resumeCapacity.proposal, input.resumeCapacity.review, deps);
-      }
       const key = stepPart(candidate.id);
+      const connection = connectionArticles(candidate, input.catalog);
+      const holdConnection = async (reason: string, label: string, checkpoint: CandidateCheckpoint): Promise<CandidateProcessOutcome> => {
+        const claim = input.resumeCapacity?.claim;
+        const recorded = await step.do(`persist-candidate-${key}-NEEDS_OWNER-connect-${label}`, () =>
+          deps.persist(candidate.id, ownerEpoch, 'NEEDS_OWNER', checkpoint, claim));
+        if (!recorded) return { status: 'held', reason: 'Could not checkpoint the contextual link hold.' };
+        return { status: 'held', reason, continue_after_hold: true };
+      };
+      const qualifiedConnection = (proposal: ContentProposal): boolean => {
+        if (!connection) return false;
+        const [file] = proposal.files;
+        const [expected] = proposal.expected_content;
+        const relatedUrl = new URL(connection.to.url, 'https://www.sulemanji.com').pathname;
+        return proposal.files.length === 1 && file.operation === 'update' && file.path === connection.path &&
+          proposal.expected_content.length === 1 && expected.url === connection.from.url && expected.required_link === relatedUrl;
+      };
+      const deferred = input.resumeCapacity;
+      if (candidate.action === 'CONNECT' && (!connection || (deferred && !qualifiedConnection(deferred.proposal)))) {
+        const checkpoint = deferred ? { proposal: deferred.proposal, review: deferred.review, attempt: deferred.attempt } : {};
+        return holdConnection('The contextual link requires two qualified article identities and an existing-article update.', deferred ? 'deferred' : 'targets', checkpoint);
+      }
+      if (deferred) return publishReviewed(input, deferred.proposal, deferred.review, deps);
       if (candidate.action === 'REFRESH') {
         const target = input.catalog.find((item) => item.id === candidate.target_id);
         if (target && !articleSourcePath(target.url)) {
@@ -81,7 +101,12 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
       const models = deps.modelsFor(candidate, ownerEpoch, policy);
       const draftProposal = await runModelStep(step, `prepare-content-${key}`,
         () => prepareContent(candidate, context, models, `author:${candidate.id}`));
-      if ('modelHoldReason' in draftProposal) return modelHoldOutcome(draftProposal);
+      if ('modelHoldReason' in draftProposal) {
+        return draftProposal.checkpoint_owner ? holdConnection(draftProposal.modelHoldReason, 'draft', {}) : modelHoldOutcome(draftProposal);
+      }
+      if (candidate.action === 'CONNECT' && !qualifiedConnection(draftProposal)) {
+        return holdConnection('The contextual link draft does not update the reviewed article.', 'draft-shape', { proposal: draftProposal });
+      }
       let proposal = draftProposal;
       if (proposal.files[0]?.operation === 'create') {
         const draft = proposal;
@@ -132,7 +157,12 @@ export function createEditorialCandidatePipeline(deps: CandidatePipelineDependen
         }
         const revision = await runModelStep(step, `revise-content-${key}-round-${round}`, () => reviseContent(proposal, candidate, context, receipt.findings,
           models, `author:${candidate.id}:revision-${round}`));
-        if ('modelHoldReason' in revision) return modelHoldOutcome(revision);
+        if ('modelHoldReason' in revision) {
+          return revision.checkpoint_owner ? holdConnection(revision.modelHoldReason, `revision-${round}`, checkpoint) : modelHoldOutcome(revision);
+        }
+        if (candidate.action === 'CONNECT' && !qualifiedConnection(revision)) {
+          return holdConnection('The contextual link revision changed the article identities.', `revision-shape-${round}`, checkpoint);
+        }
         proposal = revision;
         checkpoint = { proposal, review: receipt };
         if (!(await step.do(`persist-candidate-${key}-DRAFTED-round-${round}`, () => deps.persist(candidate.id, ownerEpoch, 'DRAFTED', checkpoint)))) {

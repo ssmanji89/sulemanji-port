@@ -1,6 +1,6 @@
 import type { ContentProposal, PublicationReceipt, PublicationState, PublishAttempt, ReviewReceipt } from './contracts.js';
 import * as parse5 from 'parse5';
-import { articleSourcePath, verifyRequiredMedia } from './review.js';
+import { articleSourcePath, hasArticleLink, verifiesContextualLink, verifyRequiredMedia } from './review.js';
 import { CANONICAL_SITE_ORIGIN } from './site-readback.js';
 import { encodeSocialCard, isSocialCardPng, MAX_CARD_BYTES, socialCardPath } from './social-card-format.js';
 import { readDiscoveryLinks } from './discovery-readback.js';
@@ -61,6 +61,8 @@ export async function canPublish(proposal: ContentProposal, receipt: ReviewRecei
   if (!proposal.files.length || proposal.files.some((file) => !safePath(file.path) || !state.allowed_paths.includes(file.path) || !['create', 'update'].includes(file.operation))) reasons.push('Changed path is outside the guarded publication allowlist.');
   if (new Set(proposal.files.map((file) => file.path)).size !== proposal.files.length) reasons.push('Proposal contains duplicate paths.');
   if (!proposal.public_urls.length || proposal.expected_content.length !== proposal.public_urls.length || proposal.expected_content.some((item) => !proposal.public_urls.includes(item.url) || !item.title || !/^[0-9a-f]{64}$/.test(item.text_sha256))) reasons.push('Expected public content is incomplete.');
+  if (proposal.expected_content.some((item) => item.required_link !== undefined &&
+      !proposal.files.some((file) => verifiesContextualLink(file, item.url, item.required_link!)))) reasons.push('Required contextual link is missing or unsafe.');
   if (proposal.files.some((file) => file.operation === 'create' && ARTICLE.test(file.path) &&
       !proposal.expected_content.some((item) => item.social_image && articleSourcePath(item.url) === file.path)) ||
       !verifyRequiredMedia(proposal, state.allowed_paths)) reasons.push('Required media is missing or unsafe.');
@@ -239,14 +241,18 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
       if (!item) throw new Error('expected article absent');
       const page = parse5.parse(html) as unknown as { childNodes?: Array<{ tagName?: string; childNodes?: unknown[] }> };
       const titles: string[] = [];
-      const articles: string[] = [];
+      const articles: Array<{ text: string; linked: boolean }> = [];
       const canonicalUrls: string[] = [];
       const socialImages: string[] = [];
-      const walk = (node: unknown): void => {
-        if (!node || typeof node !== 'object') return;
-        const row = node as { tagName?: string; attrs?: Array<{ name: string; value: string }>; childNodes?: unknown[] };
-        if (row.tagName === 'h1') titles.push(normalizeNodeText(node));
-        if (row.tagName === 'div' && row.attrs?.some((attr) => attr.name === 'data-writing-body')) articles.push(normalizeNodeText(node));
+      const requiredLink = item.required_link === undefined ? null : new URL(item.required_link, expectedUrl);
+      if (requiredLink && (requiredLink.origin !== expectedUrl.origin || requiredLink.pathname !== item.required_link ||
+          !articleSourcePath(requiredLink.href) || requiredLink.href === expectedUrl.href)) throw new Error('required contextual link is invalid');
+      type PageNode = Parameters<typeof hasArticleLink>[0];
+      const walk = (row: PageNode): void => {
+        if (row.tagName === 'h1') titles.push(normalizeNodeText(row));
+        if (row.tagName === 'div' && row.attrs?.some((attr) => attr.name === 'data-writing-body')) articles.push({
+          text: normalizeNodeText(row), linked: !requiredLink || hasArticleLink(row, requiredLink.href),
+        });
         if (row.tagName === 'link' && row.attrs?.some((attr) => attr.name === 'rel' && attr.value === 'canonical')) {
           const href = row.attrs.find((attr) => attr.name === 'href')?.value; if (href) canonicalUrls.push(new URL(href, expectedUrl).toString());
         }
@@ -255,9 +261,9 @@ export async function verifyPublicationDetailed(attempt: PublishAttempt, fetcher
         }
         for (const child of row.childNodes ?? []) walk(child);
       };
-      walk(page);
-      const matchingText = await Promise.all(articles.map((text) => sha256(text)));
-      if (!canonicalUrls.includes(expectedUrl.toString()) || !titles.some((title) => title === item.title) || !matchingText.includes(item.text_sha256)) throw new Error('canonical URL, title, or visible article text mismatch');
+      walk(page as PageNode);
+      const matchingText = await Promise.all(articles.filter(({ linked }) => linked).map(({ text }) => sha256(text)));
+      if (!canonicalUrls.includes(expectedUrl.toString()) || !titles.some((title) => title === item.title) || !matchingText.includes(item.text_sha256)) throw new Error('canonical URL, title, visible article text, or required contextual link mismatch');
       const sourceCommit = response.headers.get('x-site-source-commit');
       if (sourceCommit !== attempt.source_commit) throw new Error('deployed source revision mismatch');
       const assetDigest = response.headers.get('x-site-asset-digest');

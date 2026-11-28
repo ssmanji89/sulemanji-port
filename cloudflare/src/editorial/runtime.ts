@@ -13,7 +13,7 @@ import { revalidateSignalSourceDigest } from './sources.js';
 import type { SocialCardRenderer } from './social-card-format.js';
 import { createEditorialCandidatePipeline, type CandidateCheckpoint } from './pipeline.js';
 import { fixtureSiteFetcher } from './site-readback.js';
-import { articleSourcePath } from './review.js';
+import { articleSourcePath, connectionArticles } from './review.js';
 import { parseEditorialRuntimeSettings } from './runtime-settings.mjs';
 
 export type EditorialRuntimeEnv = EditorialEnv & {
@@ -90,13 +90,11 @@ export function createEditorialCandidateProcessor(env: EditorialRuntimeEnv, rend
     },
     async preparationContext(input) {
       const baseCommit = await github.readDefaultBranchHead();
-      const path = pathForRefresh(input.candidate, input.catalog);
+      const refreshPath = pathForRefresh(input.candidate, input.catalog);
+      const connection = connectionArticles(input.candidate, input.catalog);
+      const existingPaths = refreshPath ? [refreshPath] : connection ? [connection.path, connection.peerPath] : [];
       const existingFiles: Record<string, string> = {};
-      const existingPaths: string[] = [];
-      if (path) {
-        existingFiles[path] = await github.readTextFile(path, baseCommit);
-        existingPaths.push(path);
-      }
+      for (const path of existingPaths) existingFiles[path] = await github.readTextFile(path, baseCommit);
       return { catalog: input.catalog, sources: input.signal.evidence, source_excerpt: input.signal.summary.slice(0, 3000), knowledge: input.knowledge,
         policy_revision: input.policy.revision, knowledge_revision: input.candidate.knowledge_revision,
         base_commit: baseCommit, owner_epoch: input.owner_epoch, existing_files: existingFiles, existing_paths: existingPaths };
